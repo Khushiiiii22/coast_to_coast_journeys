@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Booking Confirmed - Coast to Coast Journeys">
+    <title>Booking Confirmed | Coast To Coast Journeys</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/hotel-booking.css">
+    <style>
+        .confirmation-main {
+            padding: 6rem 0 4rem;
+            min-height: 80vh;
+            background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+
+        .confirmation-card {
+            background: white;
+            border-radius: 24px;
+            padding: 3rem;
+            max-width: 700px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .success-animation {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            animation: scaleIn 0.5s ease;
+        }
+
+        .success-animation i {
+            font-size: 3.5rem;
+            color: white;
+        }
+
+        @keyframes scaleIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .confirmation-title {
+            font-size: 2rem;
+            color: var(--navy);
+            margin-bottom: 0.5rem;
+        }
+
+        .confirmation-subtitle {
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+
+        .confirmation-number-box {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border: 2px dashed var(--primary-blue);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .confirmation-number-box label {
+            display: block;
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .confirmation-number-box .number {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+
+        .booking-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            text-align: left;
+            margin-bottom: 2rem;
+        }
+
+        .detail-card {
+            background: #f8fafc;
+            padding: 1.25rem;
+            border-radius: 12px;
+        }
+
+        .detail-card h4 {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .detail-card h4 i {
+            color: var(--primary-blue);
+        }
+
+        .detail-card p {
+            color: var(--navy);
+            font-weight: 500;
+        }
+
+        .detail-card.full-width {
+            grid-column: span 2;
+        }
+
+        .hotel-summary {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .hotel-summary-image {
+            width: 80px;
+            height: 60px;
+            border-radius: 8px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .hotel-summary-info h4 {
+            color: var(--navy);
+            margin-bottom: 0.25rem;
+        }
+
+        .hotel-summary-info .stars {
+            font-size: 0.85rem;
+            color: var(--accent-gold);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons .btn {
+            padding: 0.85rem 1.75rem;
+            border-radius: 10px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-blue), var(--navy));
+            color: white;
+            border: none;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .email-notice {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #fef3c7;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #92400e;
+        }
+
+        .email-notice i {
+            margin-right: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .booking-details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-card.full-width {
+                grid-column: span 1;
+            }
+
+            .confirmation-card {
+                margin: 0 1rem;
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body class="confirmation-page">
+    <!-- Header -->
+    <header class="header scrolled" id="header">
+        <nav class="main-nav">
+            <div class="container">
+                <div class="nav-content">
+                    <a href="index.html" class="logo">
+                        <img src="assets/images/logo.jpg" alt="Coast to Coast Journeys">
+                        <span class="brand-name">Coast to Coast Journeys</span>
+                    </a>
+
+                    <ul class="nav-menu" id="navMenu">
+                        <li><a href="index.html" class="nav-link">Home</a></li>
+                        <li><a href="index.html#hotels" class="nav-link">Hotels</a></li>
+                        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="confirmation-main">
+        <div class="container">
+            <div class="confirmation-card">
+                <!-- Success Icon -->
+                <div class="success-animation">
+                    <i class="fas fa-check"></i>
+                </div>
+
+                <h1 class="confirmation-title">Booking Confirmed!</h1>
+                <p class="confirmation-subtitle">Your hotel reservation has been successfully booked.</p>
+
+                <!-- Confirmation Number -->
+                <div class="confirmation-number-box">
+                    <label>Confirmation Number</label>
+                    <div class="number" id="confirmationNumber">-</div>
+                </div>
+
+                <!-- Hotel Summary -->
+                <div class="hotel-summary">
+                    <div class="hotel-summary-image" id="hotelImage"></div>
+                    <div class="hotel-summary-info">
+                        <div class="stars" id="hotelStars"></div>
+                        <h4 id="hotelName">Hotel Name</h4>
+                        <p id="roomName" style="color: #64748b; font-size: 0.9rem;"></p>
+                    </div>
+                </div>
+
+                <!-- Booking Details -->
+                <div class="booking-details-grid">
+                    <div class="detail-card">
+                        <h4><i class="fas fa-calendar-check"></i> Check-in</h4>
+                        <p id="checkinDate">-</p>
+                    </div>
+                    <div class="detail-card">
+                        <h4><i class="fas fa-calendar-times"></i> Check-out</h4>
+                        <p id="checkoutDate">-</p>
+                    </div>
+                    <div class="detail-card">
+                        <h4><i class="fas fa-users"></i> Guests</h4>
+                        <p id="guestNames">-</p>
+                    </div>
+                    <div class="detail-card">
+                        <h4><i class="fas fa-credit-card"></i> Total Amount</h4>
+                        <p id="totalAmount">-</p>
+                    </div>
+                    <div class="detail-card full-width">
+                        <h4><i class="fas fa-utensils"></i> Meal Plan</h4>
+                        <p id="mealPlan">-</p>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <a href="index.html" class="btn btn-primary">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                    <button class="btn btn-outline" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print Confirmation
+                    </button>
+                </div>
+
+                <!-- Email Notice -->
+                <div class="email-notice">
+                    <i class="fas fa-envelope"></i>
+                    A confirmation email has been sent to <strong id="confirmEmail">your email</strong>.
+                    Please save this for your records.
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 Coast to Coast Journeys. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/hotel-api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const bookingData = SearchSession.getBookingData();
+
+            if (!bookingData || !bookingData.confirmation) {
+                // No booking data, redirect
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const { hotel, rate, search_params, confirmation, guests, email, total_amount } = bookingData;
+
+            // Confirmation number
+            document.getElementById('confirmationNumber').textContent = confirmation.confirmation_number || confirmation.partner_order_id || 'CTCHOTEL' + Date.now();
+
+            // Hotel info
+            const hotelImage = hotel.images?.[0] || hotel.image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=200';
+            document.getElementById('hotelImage').style.backgroundImage = `url('${hotelImage}')`;
+            document.getElementById('hotelStars').innerHTML = HotelUtils.generateStars(hotel.star_rating || 4);
+            document.getElementById('hotelName').textContent = hotel.name;
+            document.getElementById('roomName').textContent = rate.room_name;
+
+            // Dates
+            document.getElementById('checkinDate').textContent = HotelUtils.formatDate(search_params.checkin);
+            document.getElementById('checkoutDate').textContent = HotelUtils.formatDate(search_params.checkout);
+
+            // Guests
+            const guestNames = guests.map(g => `${g.first_name} ${g.last_name}`).join(', ');
+            document.getElementById('guestNames').textContent = guestNames;
+
+            // Amount
+            document.getElementById('totalAmount').textContent = HotelUtils.formatPrice(total_amount);
+
+            // Meal plan
+            document.getElementById('mealPlan').textContent = HotelUtils.getMealPlanText(rate.meal_plan);
+
+            // Email
+            document.getElementById('confirmEmail').textContent = email || 'your email';
+
+            // Clear booking session after showing confirmation
+            // Keep for potential view later
+            // SearchSession.clear();
+        });
+    </script>
+</body>
+
+</html>

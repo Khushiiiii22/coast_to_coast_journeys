@@ -317,28 +317,63 @@ async function handleFlightSearch(e) {
 async function handleHotelSearch(e) {
     e.preventDefault();
 
-    const formData = {
+    // Parse rooms and guests from display text
+    const roomsText = DOM.roomsCount.textContent;
+    const rooms = parseInt(roomsText) || 1;
+
+    const adults = parseInt(document.getElementById('hotelAdults')?.value) || 2;
+    const children = parseInt(document.getElementById('hotelChildren')?.value) || 0;
+    const childrenAges = [];
+    for (let i = 0; i < children; i++) {
+        childrenAges.push(8); // Default child age
+    }
+
+    const searchParams = {
         destination: document.getElementById('hotelDestination').value,
-        checkIn: document.getElementById('checkInDate').value,
-        checkOut: document.getElementById('checkOutDate').value,
-        rooms: DOM.roomsCount.textContent,
-        guests: DOM.guestsCount.textContent
+        checkin: document.getElementById('checkInDate').value,
+        checkout: document.getElementById('checkOutDate').value,
+        rooms: rooms,
+        adults: adults,
+        children_ages: childrenAges,
+        currency: 'INR'
     };
 
-    console.log('Hotel Search:', formData);
+    // Validate
+    if (!searchParams.destination) {
+        showNotification('Please enter a destination', 'warning');
+        return;
+    }
 
-    // Show notification
+    if (!searchParams.checkin || !searchParams.checkout) {
+        showNotification('Please select check-in and check-out dates', 'warning');
+        return;
+    }
+
+    console.log('Hotel Search:', searchParams);
     showNotification('Searching for hotels...', 'info');
+
+    // Save search params to session for results page
+    if (window.SearchSession) {
+        window.SearchSession.saveSearchParams(searchParams);
+        window.SearchSession.remove(window.SearchSession.KEYS.SEARCH_RESULTS);
+    } else {
+        // Fallback if hotel-api.js not loaded
+        sessionStorage.setItem('ctc_hotel_search_params', JSON.stringify(searchParams));
+    }
 
     // Save search to database if Supabase is available
     if (window.SupabaseService) {
-        await window.SupabaseService.saveHotelSearch(formData);
+        await window.SupabaseService.saveHotelSearch({
+            destination: searchParams.destination,
+            check_in_date: searchParams.checkin,
+            check_out_date: searchParams.checkout,
+            rooms: searchParams.rooms,
+            guests: searchParams.adults + childrenAges.length
+        });
     }
 
-    // Here you would integrate with hotel API
-    setTimeout(() => {
-        showNotification('Hotel search saved! Booking feature coming soon.', 'success');
-    }, 1500);
+    // Redirect to hotel results page
+    window.location.href = 'hotel-results.html';
 }
 
 async function handleContactForm(e) {

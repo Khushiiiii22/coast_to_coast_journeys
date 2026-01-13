@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Search results for hotels - Coast to Coast Journeys">
+    <title>Hotel Search Results | Coast To Coast Journeys</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/hotel-booking.css">
+</head>
+
+<body class="hotel-results-page">
+    <!-- Header -->
+    <header class="header scrolled" id="header">
+        <nav class="main-nav">
+            <div class="container">
+                <div class="nav-content">
+                    <a href="index.html" class="logo">
+                        <img src="assets/images/logo.jpg" alt="Coast to Coast Journeys">
+                        <span class="brand-name">Coast to Coast Journeys</span>
+                    </a>
+
+                    <ul class="nav-menu" id="navMenu">
+                        <li><a href="index.html" class="nav-link">Home</a></li>
+                        <li><a href="index.html#flights" class="nav-link">Flights</a></li>
+                        <li><a href="index.html#hotels" class="nav-link active">Hotels</a></li>
+                        <li><a href="index.html#deals" class="nav-link">Deals</a></li>
+                        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                    </ul>
+
+                    <div class="nav-actions">
+                        <a href="#" class="btn btn-outline" id="loginBtn">
+                            <i class="fas fa-user"></i> Login
+                        </a>
+                    </div>
+
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="hotel-results-main">
+        <!-- Search Summary Bar -->
+        <section class="search-summary-bar">
+            <div class="container">
+                <div class="search-summary">
+                    <div class="search-info">
+                        <h1 id="searchTitle">Hotels in <span id="destinationText">Loading...</span></h1>
+                        <p id="searchDates">
+                            <span id="checkinText"></span> - <span id="checkoutText"></span>
+                            <span class="separator">|</span>
+                            <span id="nightsText"></span>
+                            <span class="separator">|</span>
+                            <span id="guestsText"></span>
+                        </p>
+                    </div>
+                    <button class="modify-search-btn" id="modifySearchBtn">
+                        <i class="fas fa-edit"></i> Modify Search
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section class="results-section">
+            <div class="container">
+                <div class="results-layout">
+                    <!-- Filters Sidebar -->
+                    <aside class="filters-sidebar" id="filtersSidebar">
+                        <div class="filters-header">
+                            <h3><i class="fas fa-filter"></i> Filters</h3>
+                            <button class="clear-filters" id="clearFilters">Clear All</button>
+                        </div>
+
+                        <!-- Price Range Filter -->
+                        <div class="filter-group">
+                            <h4>Price Range</h4>
+                            <div class="price-range">
+                                <input type="range" id="priceRange" min="0" max="50000" value="50000" step="1000">
+                                <div class="price-labels">
+                                    <span>₹0</span>
+                                    <span id="maxPriceLabel">₹50,000+</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Star Rating Filter -->
+                        <div class="filter-group">
+                            <h4>Star Rating</h4>
+                            <div class="star-filters">
+                                <label class="star-filter">
+                                    <input type="checkbox" value="5" checked>
+                                    <span class="stars">★★★★★</span>
+                                </label>
+                                <label class="star-filter">
+                                    <input type="checkbox" value="4" checked>
+                                    <span class="stars">★★★★☆</span>
+                                </label>
+                                <label class="star-filter">
+                                    <input type="checkbox" value="3" checked>
+                                    <span class="stars">★★★☆☆</span>
+                                </label>
+                                <label class="star-filter">
+                                    <input type="checkbox" value="2">
+                                    <span class="stars">★★☆☆☆</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Amenities Filter -->
+                        <div class="filter-group">
+                            <h4>Amenities</h4>
+                            <div class="amenities-filters">
+                                <label class="amenity-filter">
+                                    <input type="checkbox" value="wifi">
+                                    <span><i class="fas fa-wifi"></i> Free WiFi</span>
+                                </label>
+                                <label class="amenity-filter">
+                                    <input type="checkbox" value="pool">
+                                    <span><i class="fas fa-swimming-pool"></i> Pool</span>
+                                </label>
+                                <label class="amenity-filter">
+                                    <input type="checkbox" value="parking">
+                                    <span><i class="fas fa-parking"></i> Parking</span>
+                                </label>
+                                <label class="amenity-filter">
+                                    <input type="checkbox" value="spa">
+                                    <span><i class="fas fa-spa"></i> Spa</span>
+                                </label>
+                                <label class="amenity-filter">
+                                    <input type="checkbox" value="restaurant">
+                                    <span><i class="fas fa-utensils"></i> Restaurant</span>
+                                </label>
+                                <label class="amenity-filter">
+                                    <input type="checkbox" value="gym">
+                                    <span><i class="fas fa-dumbbell"></i> Gym</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Meal Plan Filter -->
+                        <div class="filter-group">
+                            <h4>Meal Plan</h4>
+                            <div class="meal-filters">
+                                <label class="meal-filter">
+                                    <input type="checkbox" value="breakfast">
+                                    <span>Breakfast Included</span>
+                                </label>
+                                <label class="meal-filter">
+                                    <input type="checkbox" value="halfboard">
+                                    <span>Half Board</span>
+                                </label>
+                                <label class="meal-filter">
+                                    <input type="checkbox" value="fullboard">
+                                    <span>Full Board</span>
+                                </label>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- Results Grid -->
+                    <div class="results-content">
+                        <!-- Sort Bar -->
+                        <div class="sort-bar">
+                            <div class="results-count">
+                                <span id="resultsCount">0</span> hotels found
+                            </div>
+                            <div class="sort-options">
+                                <label>Sort by:</label>
+                                <select id="sortSelect">
+                                    <option value="recommended">Recommended</option>
+                                    <option value="price_low">Price: Low to High</option>
+                                    <option value="price_high">Price: High to Low</option>
+                                    <option value="rating">Guest Rating</option>
+                                    <option value="stars">Star Rating</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Loading State -->
+                        <div class="loading-state" id="loadingState">
+                            <div class="loading-spinner">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                            <p>Searching for the best hotels...</p>
+                        </div>
+
+                        <!-- Error State -->
+                        <div class="error-state hidden" id="errorState">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <h3>Oops! Something went wrong</h3>
+                            <p id="errorMessage">Unable to load hotels. Please try again.</p>
+                            <button class="btn btn-primary" id="retryBtn">Try Again</button>
+                        </div>
+
+                        <!-- No Results State -->
+                        <div class="no-results-state hidden" id="noResultsState">
+                            <i class="fas fa-search"></i>
+                            <h3>No hotels found</h3>
+                            <p>Try adjusting your search criteria or filters</p>
+                            <button class="btn btn-primary" id="modifySearchBtn2">Modify Search</button>
+                        </div>
+
+                        <!-- Hotels Grid -->
+                        <div class="hotels-grid hidden" id="hotelsGrid">
+                            <!-- Hotel cards will be dynamically inserted here -->
+                        </div>
+
+                        <!-- Load More -->
+                        <div class="load-more hidden" id="loadMore">
+                            <button class="btn btn-outline" id="loadMoreBtn">
+                                Load More Hotels
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modify Search Modal -->
+    <div class="modal" id="modifySearchModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="closeModifyModal">&times;</button>
+            <h2>Modify Your Search</h2>
+            <form id="modifySearchForm">
+                <div class="form-group">
+                    <label>Destination</label>
+                    <input type="text" id="modifyDestination" placeholder="City or Hotel Name" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Check In</label>
+                        <input type="date" id="modifyCheckin" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Check Out</label>
+                        <input type="date" id="modifyCheckout" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Rooms</label>
+                        <select id="modifyRooms">
+                            <option value="1">1 Room</option>
+                            <option value="2">2 Rooms</option>
+                            <option value="3">3 Rooms</option>
+                            <option value="4">4 Rooms</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Adults</label>
+                        <select id="modifyAdults">
+                            <option value="1">1 Adult</option>
+                            <option value="2" selected>2 Adults</option>
+                            <option value="3">3 Adults</option>
+                            <option value="4">4 Adults</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-search"></i> Search Hotels
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 Coast to Coast Journeys. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/hotel-api.js"></script>
+    <script src="js/hotel-results.js"></script>
+</body>
+
+</html>
