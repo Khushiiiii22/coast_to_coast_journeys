@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Coast to Coast Journeys - Your trusted travel partner for flights, hotels, and unforgettable journeys across the globe.">
+    <meta name="keywords" content="travel, flights, hotels, booking, vacation, holidays, coast to coast journeys">
+    <title>Coast To Coast Journeys | Book Flights & Hotels</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- Preloader -->
+    <div class="preloader" id="preloader">
+        <div class="loader">
+            <div class="compass-loader">
+                <i class="fas fa-compass"></i>
+            </div>
+            <p>Loading your journey...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="top-bar">
+            <div class="container">
+                <div class="top-bar-content">
+                    <div class="contact-info">
+                        <a href="tel:+911234567890"><i class="fas fa-phone"></i> +91 1234 567 890</a>
+                        <a href="mailto:info@coasttocoastjourneys.com"><i class="fas fa-envelope"></i>
+                            info@coasttocoastjourneys.com</a>
+                    </div>
+                    <div class="top-actions">
+                        <a href="#" class="get-quote-btn"><i class="fas fa-file-alt"></i> Get a Free Quote</a>
+                        <div class="language-selector">
+                            <select id="language">
+                                <option value="en">English</option>
+                                <option value="hi">हिंदी</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="main-nav">
+            <div class="container">
+                <div class="nav-content">
+                    <a href="#" class="logo">
+                        <img src="assets/images/logo.jpg" alt="Coast to Coast Journeys">
+                        <span class="brand-name">Coast to Coast Journeys</span>
+                    </a>
+
+                    <ul class="nav-menu" id="navMenu">
+                        <li><a href="#home" class="nav-link active">Home</a></li>
+                        <li><a href="#flights" class="nav-link">Flights</a></li>
+                        <li><a href="#hotels" class="nav-link">Hotels</a></li>
+                        <li class="dropdown">
+                            <a href="#" class="nav-link">Destinations <i class="fas fa-chevron-down"></i></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">Domestic</a></li>
+                                <li><a href="#">International</a></li>
+                                <li><a href="#">Beach Holidays</a></li>
+                                <li><a href="#">Hill Stations</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#deals" class="nav-link">Deals</a></li>
+                        <li><a href="#contact" class="nav-link">Contact</a></li>
+                    </ul>
+
+                    <div class="nav-actions">
+                        <a href="#" class="btn btn-outline" id="loginBtn">
+                            <i class="fas fa-user"></i> Login
+                        </a>
+                        <a href="#" class="btn btn-primary">
+                            <i class="fas fa-user-plus"></i> Sign Up
+                        </a>
+                    </div>
+
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Full Page Slider -->
+    <main class="fullpage-wrapper" id="fullpageWrapper">
+
+        <!-- Section 1: Hero with Search -->
+        <section class="fullpage-section hero-section" id="home">
+            <div class="hero-slider">
+                <div class="slide active"
+                    style="background-image: linear-gradient(135deg, rgba(14, 100, 166, 0.85), rgba(26, 54, 93, 0.9)), url('https://images.unsplash.com/photo-1506929562872-bb421503ef21?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');">
+                    <div class="slide-content">
+                        <span class="tagline">Explore the World</span>
+                        <h1>Your Journey Begins Here</h1>
+                        <p>Discover amazing destinations, find the best deals on flights & hotels</p>
+                    </div>
+                </div>
+                <div class="slide"
+                    style="background-image: linear-gradient(135deg, rgba(14, 100, 166, 0.85), rgba(26, 54, 93, 0.9)), url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');">
+                    <div class="slide-content">
+                        <span class="tagline">Adventure Awaits</span>
+                        <h1>Unforgettable Experiences</h1>
+                        <p>From beaches to mountains, we've got you covered</p>
+                    </div>
+                </div>
+                <div class="slide"
+                    style="background-image: linear-gradient(135deg, rgba(14, 100, 166, 0.85), rgba(26, 54, 93, 0.9)), url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');">
+                    <div class="slide-content">
+                        <span class="tagline">Paradise Found</span>
+                        <h1>Tropical Getaways</h1>
+                        <p>Escape to pristine beaches and crystal clear waters</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slider-controls">
+                <button class="slider-arrow prev" id="prevSlide"><i class="fas fa-chevron-left"></i></button>
+                <div class="slider-dots" id="sliderDots"></div>
+                <button class="slider-arrow next" id="nextSlide"><i class="fas fa-chevron-right"></i></button>
+            </div>
+
+            <!-- Search Box -->
+            <div class="search-box-container">
+                <div class="search-tabs">
+                    <button class="search-tab active" data-tab="flights">
+                        <i class="fas fa-plane"></i>
+                        <span>Flights</span>
+                    </button>
+                    <button class="search-tab" data-tab="hotels">
+                        <i class="fas fa-hotel"></i>
+                        <span>Hotels</span>
+                    </button>
+                </div>
+
+                <div class="search-panels">
+                    <!-- Flights Search Panel -->
+                    <div class="search-panel active" id="flightsPanel">
+                        <div class="trip-type">
+                            <label class="trip-option active">
+                                <input type="radio" name="tripType" value="oneway" checked>
+                                <span class="checkmark"></span>
+                                One Way
+                            </label>
+                            <label class="trip-option">
+                                <input type="radio" name="tripType" value="roundtrip">
+                                <span class="checkmark"></span>
+                                Round Trip
+                            </label>
+                            <label class="trip-option">
+                                <input type="radio" name="tripType" value="multicity">
+                                <span class="checkmark"></span>
+                                Multi City
+                            </label>
+                        </div>
+
+                        <form class="search-form" id="flightSearchForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>From</label>
+                                    <div class="input-icon">
+                                        <i class="fas fa-plane-departure"></i>
+                                        <input type="text" id="flightFrom" placeholder="Leaving From"
+                                            autocomplete="off">
+                                    </div>
+                                </div>
+
+                                <button type="button" class="swap-btn" id="swapLocations">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </button>
+
+                                <div class="form-group">
+                                    <label>To</label>
+                                    <div class="input-icon">
+                                        <i class="fas fa-plane-arrival"></i>
+                                        <input type="text" id="flightTo" placeholder="Going To" autocomplete="off">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Depart</label>
+                                    <div class="input-icon">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <input type="date" id="departDate">
+                                    </div>
+                                </div>
+
+                                <div class="form-group return-date" id="returnDateGroup">
+                                    <label>Return</label>
+                                    <div class="input-icon">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <input type="date" id="returnDate" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="form-group travelers-group">
+                                    <label>Travellers & Class</label>
+                                    <div class="travelers-selector" id="travelersSelector">
+                                        <span class="travelers-display">
+                                            <i class="fas fa-users"></i>
+                                            <span id="travelersCount">1 Traveler(s)</span>
+                                            <span id="travelClass">Economy</span>
+                                        </span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+
+                                    <div class="travelers-dropdown" id="travelersDropdown">
+                                        <div class="traveler-type">
+                                            <div class="traveler-info">
+                                                <span class="traveler-label">Adults</span>
+                                                <span class="traveler-age">(12+ years)</span>
+                                            </div>
+                                            <div class="counter">
+                                                <button type="button" class="counter-btn minus"
+                                                    data-target="adults">-</button>
+                                                <input type="number" id="adults" value="1" min="1" max="9" readonly>
+                                                <button type="button" class="counter-btn plus"
+                                                    data-target="adults">+</button>
+                                            </div>
+                                        </div>
+                                        <div class="traveler-type">
+                                            <div class="traveler-info">
+                                                <span class="traveler-label">Children</span>
+                                                <span class="traveler-age">(2-11 years)</span>
+                                            </div>
+                                            <div class="counter">
+                                                <button type="button" class="counter-btn minus"
+                                                    data-target="children">-</button>
+                                                <input type="number" id="children" value="0" min="0" max="9" readonly>
+                                                <button type="button" class="counter-btn plus"
+                                                    data-target="children">+</button>
+                                            </div>
+                                        </div>
+                                        <div class="traveler-type">
+                                            <div class="traveler-info">
+                                                <span class="traveler-label">Infants</span>
+                                                <span class="traveler-age">(0-2 years)</span>
+                                            </div>
+                                            <div class="counter">
+                                                <button type="button" class="counter-btn minus"
+                                                    data-target="infants">-</button>
+                                                <input type="number" id="infants" value="0" min="0" max="9" readonly>
+                                                <button type="button" class="counter-btn plus"
+                                                    data-target="infants">+</button>
+                                            </div>
+                                        </div>
+                                        <div class="travel-class">
+                                            <label>Travel Class</label>
+                                            <select id="classSelect">
+                                                <option value="economy">Economy</option>
+                                                <option value="premium">Premium Economy</option>
+                                                <option value="business">Business</option>
+                                                <option value="first">First Class</option>
+                                            </select>
+                                        </div>
+                                        <button type="button" class="apply-btn" id="applyTravelers">Apply</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="search-btn">
+                                <i class="fas fa-search"></i>
+                                Search Flights
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Hotels Search Panel -->
+                    <div class="search-panel" id="hotelsPanel">
+                        <form class="search-form" id="hotelSearchForm">
+                            <div class="form-row">
+                                <div class="form-group destination-group">
+                                    <label>Destination</label>
+                                    <div class="input-icon">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <input type="text" id="hotelDestination" placeholder="City, Area or Hotel Name"
+                                            autocomplete="off">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Check In</label>
+                                    <div class="input-icon">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <input type="date" id="checkInDate">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Check Out</label>
+                                    <div class="input-icon">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <input type="date" id="checkOutDate">
+                                    </div>
+                                </div>
+
+                                <div class="form-group rooms-group">
+                                    <label>Rooms & Guests</label>
+                                    <div class="rooms-selector" id="roomsSelector">
+                                        <span class="rooms-display">
+                                            <i class="fas fa-door-open"></i>
+                                            <span id="roomsCount">1 Room</span>
+                                            <span id="guestsCount">2 Guests</span>
+                                        </span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+
+                                    <div class="rooms-dropdown" id="roomsDropdown">
+                                        <div class="room-type">
+                                            <div class="room-info">
+                                                <span class="room-label">Rooms</span>
+                                            </div>
+                                            <div class="counter">
+                                                <button type="button" class="counter-btn minus"
+                                                    data-target="rooms">-</button>
+                                                <input type="number" id="rooms" value="1" min="1" max="8" readonly>
+                                                <button type="button" class="counter-btn plus"
+                                                    data-target="rooms">+</button>
+                                            </div>
+                                        </div>
+                                        <div class="room-type">
+                                            <div class="room-info">
+                                                <span class="room-label">Adults</span>
+                                                <span class="room-age">(12+ years)</span>
+                                            </div>
+                                            <div class="counter">
+                                                <button type="button" class="counter-btn minus"
+                                                    data-target="hotelAdults">-</button>
+                                                <input type="number" id="hotelAdults" value="2" min="1" max="16"
+                                                    readonly>
+                                                <button type="button" class="counter-btn plus"
+                                                    data-target="hotelAdults">+</button>
+                                            </div>
+                                        </div>
+                                        <div class="room-type">
+                                            <div class="room-info">
+                                                <span class="room-label">Children</span>
+                                                <span class="room-age">(0-12 years)</span>
+                                            </div>
+                                            <div class="counter">
+                                                <button type="button" class="counter-btn minus"
+                                                    data-target="hotelChildren">-</button>
+                                                <input type="number" id="hotelChildren" value="0" min="0" max="8"
+                                                    readonly>
+                                                <button type="button" class="counter-btn plus"
+                                                    data-target="hotelChildren">+</button>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="apply-btn" id="applyRooms">Apply</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="search-btn">
+                                <i class="fas fa-search"></i>
+                                Search Hotels
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scroll-indicator">
+                <span>Scroll Down</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+        </section>
+
+        <!-- Section 2: Flights -->
+        <section class="fullpage-section flights-section" id="flights">
+            <div class="section-content">
+                <div class="section-header">
+                    <span class="section-badge"><i class="fas fa-plane"></i> Flights</span>
+                    <h2>Search <span class="highlight">Domestic & International</span> Flights</h2>
+                    <p>Find the best deals on flights to your dream destinations</p>
+                </div>
+
+                <div class="popular-routes">
+                    <h3><i class="fas fa-fire"></i> Popular Flight Routes</h3>
+                    <div class="routes-grid">
+                        <div class="route-card">
+                            <div class="route-image"
+                                style="background-image: url('https://images.unsplash.com/photo-1587474260584-136574528ed5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');">
+                                <div class="route-overlay">
+                                    <span class="price">From ₹4,999</span>
+                                </div>
+                            </div>
+                            <div class="route-info">
+                                <div class="route-path">
+                                    <span class="from">Delhi</span>
+                                    <i class="fas fa-plane"></i>
+                                    <span class="to">Mumbai</span>
+                                </div>
+                                <span class="route-meta">Non-stop • 2h 10m</span>
+                            </div>
+                        </div>
+                        <div class="route-card">
+                            <div class="route-image"
+                                style="background-image: url('https://images.unsplash.com/photo-1570168007204-dfb528c6958f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');">
+                                <div class="route-overlay">
+                                    <span class="price">From ₹12,499</span>
+                                </div>
+                            </div>
+                            <div class="route-info">
+                                <div class="route-path">
+                                    <span class="from">Mumbai</span>
+                                    <i class="fas fa-plane"></i>
+                                    <span class="to">Dubai</span>
+                                </div>
+                                <span class="route-meta">Non-stop • 3h 30m</span>
+                            </div>
+                        </div>
+                        <div class="route-card">
+                            <div class="route-image"
+                                style="background-image: url('https://images.unsplash.com/photo-1525625293386-3f8f99389edd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');">
+                                <div class="route-overlay">
+                                    <span class="price">From ₹8,999</span>
+                                </div>
+                            </div>
+                            <div class="route-info">
+                                <div class="route-path">
+                                    <span class="from">Bangalore</span>
+                                    <i class="fas fa-plane"></i>
+                                    <span class="to">Singapore</span>
+                                </div>
+                                <span class="route-meta">Non-stop • 4h 45m</span>
+                            </div>
+                        </div>
+                        <div class="route-card">
+                            <div class="route-image"
+                                style="background-image: url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');">
+                                <div class="route-overlay">
+                                    <span class="price">From ₹25,999</span>
+                                </div>
+                            </div>
+                            <div class="route-info">
+                                <div class="route-path">
+                                    <span class="from">Delhi</span>
+                                    <i class="fas fa-plane"></i>
+                                    <span class="to">Bangkok</span>
+                                </div>
+                                <span class="route-meta">Non-stop • 4h 20m</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="airlines-partners">
+                    <h3>Our Airline Partners</h3>
+                    <div class="airlines-slider">
+                        <div class="airline-logo"><i class="fas fa-plane-circle-check"></i> IndiGo</div>
+                        <div class="airline-logo"><i class="fas fa-plane-circle-check"></i> Air India</div>
+                        <div class="airline-logo"><i class="fas fa-plane-circle-check"></i> SpiceJet</div>
+                        <div class="airline-logo"><i class="fas fa-plane-circle-check"></i> Vistara</div>
+                        <div class="airline-logo"><i class="fas fa-plane-circle-check"></i> Emirates</div>
+                        <div class="airline-logo"><i class="fas fa-plane-circle-check"></i> Singapore Airlines</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Hotels -->
+        <section class="fullpage-section hotels-section" id="hotels">
+            <div class="section-content">
+                <div class="section-header">
+                    <span class="section-badge"><i class="fas fa-hotel"></i> Hotels</span>
+                    <h2>Find Your Perfect <span class="highlight">Stay</span></h2>
+                    <p>From luxury resorts to budget-friendly options</p>
+                </div>
+
+                <div class="hotel-categories">
+                    <div class="category-card luxury">
+                        <div class="category-icon">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <h4>Luxury Hotels</h4>
+                        <p>5-star experiences</p>
+                        <span class="category-count">500+ Hotels</span>
+                    </div>
+                    <div class="category-card boutique">
+                        <div class="category-icon">
+                            <i class="fas fa-gem"></i>
+                        </div>
+                        <h4>Boutique Hotels</h4>
+                        <p>Unique & stylish</p>
+                        <span class="category-count">300+ Hotels</span>
+                    </div>
+                    <div class="category-card resort">
+                        <div class="category-icon">
+                            <i class="fas fa-umbrella-beach"></i>
+                        </div>
+                        <h4>Beach Resorts</h4>
+                        <p>Ocean views</p>
+                        <span class="category-count">200+ Resorts</span>
+                    </div>
+                    <div class="category-card budget">
+                        <div class="category-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <h4>Budget Stays</h4>
+                        <p>Value for money</p>
+                        <span class="category-count">1000+ Options</span>
+                    </div>
+                </div>
+
+                <div class="featured-hotels">
+                    <h3><i class="fas fa-star"></i> Featured Hotels</h3>
+                    <div class="hotels-grid">
+                        <div class="hotel-card">
+                            <div class="hotel-image"
+                                style="background-image: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');">
+                                <span class="hotel-badge">Featured</span>
+                                <button class="wishlist-btn"><i class="far fa-heart"></i></button>
+                            </div>
+                            <div class="hotel-info">
+                                <div class="hotel-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <span>5.0</span>
+                                </div>
+                                <h4>The Leela Palace</h4>
+                                <p class="hotel-location"><i class="fas fa-map-marker-alt"></i> New Delhi</p>
+                                <div class="hotel-price">
+                                    <span class="price">₹15,999</span>
+                                    <span class="per-night">per night</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hotel-card">
+                            <div class="hotel-image"
+                                style="background-image: url('https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');">
+                                <span class="hotel-badge sale">20% Off</span>
+                                <button class="wishlist-btn"><i class="far fa-heart"></i></button>
+                            </div>
+                            <div class="hotel-info">
+                                <div class="hotel-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                    <span>4.5</span>
+                                </div>
+                                <h4>Taj Exotica</h4>
+                                <p class="hotel-location"><i class="fas fa-map-marker-alt"></i> Goa</p>
+                                <div class="hotel-price">
+                                    <span class="original-price">₹25,000</span>
+                                    <span class="price">₹19,999</span>
+                                    <span class="per-night">per night</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hotel-card">
+                            <div class="hotel-image"
+                                style="background-image: url('https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');">
+                                <span class="hotel-badge new">New</span>
+                                <button class="wishlist-btn"><i class="far fa-heart"></i></button>
+                            </div>
+                            <div class="hotel-info">
+                                <div class="hotel-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <span>4.0</span>
+                                </div>
+                                <h4>Oberoi Udaivilas</h4>
+                                <p class="hotel-location"><i class="fas fa-map-marker-alt"></i> Udaipur</p>
+                                <div class="hotel-price">
+                                    <span class="price">₹35,999</span>
+                                    <span class="per-night">per night</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Deals & Offers -->
+        <section class="fullpage-section deals-section" id="deals">
+            <div class="section-content">
+                <div class="section-header">
+                    <span class="section-badge"><i class="fas fa-tags"></i> Deals</span>
+                    <h2>Offers & <span class="highlight">Deals</span></h2>
+                    <p>Exclusive deals curated just for you</p>
+                </div>
+
+                <div class="deals-slider-wrapper">
+                    <div class="deals-slider" id="dealsSlider">
+                        <div class="deal-card">
+                            <div class="deal-icon weekend">
+                                <i class="fas fa-gift"></i>
+                            </div>
+                            <div class="deal-content">
+                                <h4>Weekend Offer</h4>
+                                <p>Exclusive deals on weekend tours</p>
+                                <span class="deal-discount">Up to 30% OFF</span>
+                                <a href="#" class="deal-link">View Deals <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                        <div class="deal-card">
+                            <div class="deal-icon flight">
+                                <i class="fas fa-plane"></i>
+                            </div>
+                            <div class="deal-content">
+                                <h4>Flight Bonanza</h4>
+                                <p>Domestic flights at lowest prices</p>
+                                <span class="deal-discount">Starting ₹1,999</span>
+                                <a href="#" class="deal-link">Book Now <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                        <div class="deal-card">
+                            <div class="deal-icon hotel">
+                                <i class="fas fa-hotel"></i>
+                            </div>
+                            <div class="deal-content">
+                                <h4>Hotel Nights</h4>
+                                <p>Stay 3 nights, pay for 2</p>
+                                <span class="deal-discount">Free Night Included</span>
+                                <a href="#" class="deal-link">Explore <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                        <div class="deal-card">
+                            <div class="deal-icon honeymoon">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="deal-content">
+                                <h4>Honeymoon Special</h4>
+                                <p>Romantic getaways for couples</p>
+                                <span class="deal-discount">Candle-lit dinner free</span>
+                                <a href="#" class="deal-link">Plan Now <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="deal-nav prev" id="dealPrev"><i class="fas fa-chevron-left"></i></button>
+                    <button class="deal-nav next" id="dealNext"><i class="fas fa-chevron-right"></i></button>
+                </div>
+
+                <div class="why-choose-us">
+                    <h3>Why Choose Coast to Coast Journeys?</h3>
+                    <div class="features-grid">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h4>Secure Booking</h4>
+                            <p>100% secure payment gateway</p>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-rupee-sign"></i>
+                            </div>
+                            <h4>Best Prices</h4>
+                            <p>Guaranteed lowest prices</p>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <h4>24/7 Support</h4>
+                            <p>Round the clock assistance</p>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-undo"></i>
+                            </div>
+                            <h4>Easy Refunds</h4>
+                            <p>Hassle-free cancellations</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Contact -->
+        <section class="fullpage-section contact-section" id="contact">
+            <div class="section-content">
+                <div class="contact-wrapper">
+                    <div class="contact-info-panel">
+                        <div class="contact-header">
+                            <h2>Get In <span class="highlight">Touch</span></h2>
+                            <p>Have questions? We'd love to hear from you.</p>
+                        </div>
+
+                        <div class="contact-details">
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="contact-text">
+                                    <h4>Our Office</h4>
+                                    <p>123 Travel Street, New Delhi - 110001</p>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <i class="fas fa-phone-alt"></i>
+                                </div>
+                                <div class="contact-text">
+                                    <h4>Call Us</h4>
+                                    <p>+91 1234 567 890</p>
+                                    <p>+91 9876 543 210</p>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div class="contact-text">
+                                    <h4>Email Us</h4>
+                                    <p>info@coasttocoastjourneys.com</p>
+                                    <p>support@coasttocoastjourneys.com</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="social-links">
+                            <a href="https://www.facebook.com/people/Coast-to-Coast-Journeys/61574464089885/"
+                                class="social-link" target="_blank" title="Follow us on Facebook"><i
+                                    class="fab fa-facebook-f"></i></a>
+                            <a href="https://www.instagram.com/coasttocoastjourneys/" class="social-link"
+                                target="_blank" title="Follow us on Instagram"><i class="fab fa-instagram"></i></a>
+                            <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" class="social-link"
+                                target="_blank" title="Connect on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+
+                    <div class="contact-form-panel">
+                        <form class="contact-form" id="contactForm">
+                            <h3>Send us a message</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <input type="text" id="contactName" placeholder="Your Name" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="email" id="contactEmail" placeholder="Your Email" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <input type="tel" id="contactPhone" placeholder="Phone Number">
+                            </div>
+                            <div class="form-group">
+                                <select id="contactSubject">
+                                    <option value="">Select Subject</option>
+                                    <option value="flights">Flight Booking</option>
+                                    <option value="hotels">Hotel Booking</option>
+                                    <option value="packages">Holiday Packages</option>
+                                    <option value="support">Customer Support</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <textarea id="contactMessage" rows="4" placeholder="Your Message" required></textarea>
+                            </div>
+                            <button type="submit" class="submit-btn">
+                                <i class="fas fa-paper-plane"></i>
+                                Send Message
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Floating Elements -->
+    <div class="floating-actions">
+        <a href="https://wa.me/911234567890" class="whatsapp-btn" target="_blank" title="Chat on WhatsApp">
+            <i class="fab fa-whatsapp"></i>
+        </a>
+        <button class="quote-btn" id="floatingQuote">
+            <i class="fas fa-file-alt"></i>
+            <span>Free Quote</span>
+        </button>
+    </div>
+
+    <!-- Section Navigation -->
+    <nav class="section-nav" id="sectionNav">
+        <a href="#home" class="section-dot active" data-section="home" title="Home"></a>
+        <a href="#flights" class="section-dot" data-section="flights" title="Flights"></a>
+        <a href="#hotels" class="section-dot" data-section="hotels" title="Hotels"></a>
+        <a href="#deals" class="section-dot" data-section="deals" title="Deals"></a>
+        <a href="#contact" class="section-dot" data-section="contact" title="Contact"></a>
+    </nav>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col about-col">
+                    <img src="assets/images/logo.jpg" alt="Coast to Coast Journeys" class="footer-logo">
+                    <p>Your trusted travel partner. We specialize in creating unforgettable travel
+                        experiences across the globe.</p>
+                    <p class="trust-line"><i class="fas fa-shield-alt"></i> "Your trust is our responsibility."</p>
+                    <div class="payment-partners">
+                        <span>Payment Partner:</span>
+                        <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Razorpay"
+                            class="razorpay-logo">
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="#contact">Contact Us</a></li>
+                        <li><a href="faqs.html">FAQs</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="terms.html">Terms & Conditions</a></li>
+                        <li><a href="refund-policy.html">Refund Policy</a></li>
+                        <li><a href="cancellation-policy.html">Cancellation Policy</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Connect With Us</h4>
+                    <div class="footer-social-inline">
+                        <a href="https://www.facebook.com/people/Coast-to-Coast-Journeys/61574464089885/"
+                            target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/coasttocoastjourneys/" target="_blank" title="Instagram"><i
+                                class="fab fa-instagram"></i></a>
+                        <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"
+                            title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                    <div class="footer-contact">
+                        <p><i class="fas fa-envelope"></i> Info@coasttocoastjourneys.com</p>
+                        <p><i class="fas fa-clock"></i> Mon – Sat | 10 AM – 7 PM</p>
+                    </div>
+                    <div class="newsletter-section">
+                        <h5>Newsletter</h5>
+                        <form class="newsletter-form" id="newsletterForm">
+                            <input type="email" placeholder="Enter your email" required>
+                            <button type="submit"><i class="fas fa-arrow-right"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-disclaimer">
+                <p><strong>Disclaimer:</strong> Coast to Coast Journeys acts as a facilitator between customers and
+                    service providers. All bookings are subject to supplier terms and conditions.</p>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-social">
+                    <a href="https://www.facebook.com/people/Coast-to-Coast-Journeys/61574464089885/" target="_blank"
+                        title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://www.instagram.com/coasttocoastjourneys/" target="_blank" title="Instagram"><i
+                            class="fab fa-instagram"></i></a>
+                    <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"
+                        title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+                <p>&copy; 2026 Coast to Coast Journeys. All Rights Reserved.</p>
+                <p>Designed with <i class="fas fa-heart"></i> for travelers</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="closeModal">&times;</button>
+            <div class="modal-header">
+                <h3>Welcome Back</h3>
+                <p>Login to your account</p>
+            </div>
+            <form class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label>Email / Phone</label>
+                    <input type="text" placeholder="Enter email or phone" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" placeholder="Enter password" required>
+                </div>
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#" class="forgot-link">Forgot Password?</a>
+                </div>
+                <button type="submit" class="login-btn">Login</button>
+                <div class="divider"><span>or continue with</span></div>
+                <div class="social-login">
+                    <button type="button" class="social-btn google"><i class="fab fa-google"></i> Google</button>
+                    <button type="button" class="social-btn facebook"><i class="fab fa-facebook-f"></i>
+                        Facebook</button>
+                </div>
+                <p class="signup-prompt">Don't have an account? <a href="#">Sign Up</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Supabase Configuration -->
+    <script src="js/supabase-config.js"></script>
+    <!-- Main JavaScript -->
+    <script src="js/main.js"></script>
+</body>
+
+</html>

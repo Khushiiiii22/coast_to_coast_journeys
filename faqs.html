@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Frequently Asked Questions - Coast to Coast Journeys. Find answers about booking flights, refunds, data security, and more.">
+    <title>FAQs | Coast to Coast Journeys</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/pages.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header scrolled" id="header">
+        <nav class="main-nav">
+            <div class="container">
+                <div class="nav-content">
+                    <a href="index.html" class="logo">
+                        <img src="assets/images/logo.jpg" alt="Coast to Coast Journeys">
+                        <span class="brand-name">Coast to Coast Journeys</span>
+                    </a>
+
+                    <ul class="nav-menu" id="navMenu">
+                        <li><a href="index.html" class="nav-link">Home</a></li>
+                        <li><a href="index.html#flights" class="nav-link">Flights</a></li>
+                        <li><a href="index.html#hotels" class="nav-link">Hotels</a></li>
+                        <li><a href="about.html" class="nav-link">About Us</a></li>
+                        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                    </ul>
+
+                    <div class="nav-actions">
+                        <a href="index.html" class="btn btn-outline">
+                            <i class="fas fa-arrow-left"></i> Back to Home
+                        </a>
+                    </div>
+
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Page Content -->
+    <main class="page-content">
+        <div class="page-hero">
+            <div class="container">
+                <nav class="breadcrumb">
+                    <a href="index.html">Home</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <span>FAQs</span>
+                </nav>
+                <h1><i class="fas fa-question-circle"></i> Frequently Asked Questions</h1>
+                <p>Find answers to commonly asked questions about our services</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="content-wrapper">
+
+                <!-- FAQ Accordion -->
+                <div class="faq-section">
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span><i class="fas fa-plane"></i> How to Book a Flight?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Booking a flight is easy! Simply visit our website, choose your destination, select
+                                travel dates, and choose from available flights. You can also customize your search
+                                filters to find the best deal.</p>
+                            <p>Once you've selected your flight, proceed to the checkout and enter your payment details.
+                                If you need assistance, our customer service team is available to help.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span><i class="fas fa-hotel"></i> How to Book a Hotel?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Booking a hotel is simple! Enter your destination city, check-in and check-out dates, and
+                                the number of rooms and guests you need.</p>
+                            <p>Browse through available hotels, compare prices and amenities, and select the one that
+                                suits your needs. Complete your booking by entering your details and payment
+                                information.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span><i class="fas fa-money-bill-wave"></i> What is the Refund Policy?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Our refund policy ensures that you can cancel your booking within a specified time frame
+                                and receive a full refund. For non-refundable tickets, we offer the option to change
+                                dates or provide a credit voucher for future travel.</p>
+                            <p>Please note that certain conditions apply, such as booking class and fare rules. For more
+                                information, check our <a href="refund-policy.html">refund terms and conditions
+                                    page</a>.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span><i class="fas fa-shield-alt"></i> Is My Data Secured?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Yes, your data is secure with us! We use industry-standard encryption and follow best
+                                practices to ensure your personal and payment information is protected.</p>
+                            <p>Our website is PCI-DSS compliant, and we continually review our security measures to
+                                safeguard your privacy. Feel free to reach out if you have any concerns about your data
+                                security.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span><i class="fas fa-exclamation-triangle"></i> Can't Book a Flight?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>If you're having trouble booking a flight, check for common issues such as incorrect
+                                payment details, expired credit cards, or incorrect traveler information.</p>
+                            <p>Clear your browser cache or try using a different device or browser. If the problem
+                                persists, our customer service team is available 24/7 to assist with any technical
+                                difficulties or booking-related inquiries.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span><i class="fas fa-times-circle"></i> How to Cancel a Booking?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>To cancel a booking:</p>
+                            <ul>
+                                <li>Login to your booking dashboard, OR</li>
+                                <li>Contact our support team via email or phone</li>
+                            </ul>
+                            <p>Cancellation confirmation will be shared via email. Please note that cancellation charges
+                                depend on the hotel's individual cancellation policy. For more details, see our <a
+                                    href="cancellation-policy.html">Cancellation Policy</a>.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span><i class="fas fa-credit-card"></i> What Payment Methods are Accepted?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>We accept a wide range of payment methods for your convenience:</p>
+                            <ul>
+                                <li>Credit Cards (Visa, Mastercard, American Express)</li>
+                                <li>Debit Cards</li>
+                                <li>Net Banking</li>
+                                <li>UPI (Google Pay, PhonePe, Paytm)</li>
+                                <li>Wallets</li>
+                            </ul>
+                            <p>All payments are processed securely via Razorpay.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span><i class="fas fa-envelope"></i> How Can I Contact Support?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>You can reach our support team through:</p>
+                            <ul>
+                                <li><strong>Email:</strong> Info@coasttocoastjourneys.com</li>
+                                <li><strong>Phone:</strong> +91 1234 567 890</li>
+                                <li><strong>WhatsApp:</strong> Available on our website</li>
+                            </ul>
+                            <p><strong>Business Hours:</strong> Monday – Saturday | 10:00 AM – 7:00 PM</p>
+                            <p>For booking support, cancellations, or queries, please email us with your booking
+                                reference number for faster assistance. We aim to respond to all queries within 24
+                                working hours.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Still Have Questions -->
+                <div class="help-box">
+                    <div class="help-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="help-content">
+                        <h3>Still Have Questions?</h3>
+                        <p>Our support team is here to help you with any queries.</p>
+                        <a href="index.html#contact" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Contact Us
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col about-col">
+                    <img src="assets/images/logo.jpg" alt="Coast to Coast Journeys" class="footer-logo">
+                    <p>Your trusted travel partner. We specialize in creating unforgettable travel experiences across
+                        the globe.</p>
+                    <p class="trust-line"><i class="fas fa-shield-alt"></i> "Your trust is our responsibility."</p>
+                    <div class="payment-partners">
+                        <span>Payment Partner:</span>
+                        <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Razorpay"
+                            class="razorpay-logo">
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="index.html#contact">Contact Us</a></li>
+                        <li><a href="faqs.html">FAQs</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="terms.html">Terms & Conditions</a></li>
+                        <li><a href="refund-policy.html">Refund Policy</a></li>
+                        <li><a href="cancellation-policy.html">Cancellation Policy</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Connect With Us</h4>
+                    <div class="footer-social">
+                        <a href="https://www.facebook.com/people/Coast-to-Coast-Journeys/61574464089885/"
+                            target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/coasttocoastjourneys/" target="_blank" title="Instagram"><i
+                                class="fab fa-instagram"></i></a>
+                        <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"
+                            title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                    <div class="footer-contact">
+                        <p><i class="fas fa-envelope"></i> Info@coasttocoastjourneys.com</p>
+                        <p><i class="fas fa-clock"></i> Mon – Sat | 10 AM – 7 PM</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-disclaimer">
+                <p><strong>Disclaimer:</strong> Coast to Coast Journeys acts as a facilitator between customers and
+                    service providers. All bookings are subject to supplier terms and conditions.</p>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 Coast to Coast Journeys. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // FAQ Toggle
+        function toggleFaq(button) {
+            const faqItem = button.parentElement;
+            const isActive = faqItem.classList.contains('active');
+
+            // Close all FAQs
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Open clicked FAQ if it wasn't active
+            if (!isActive) {
+                faqItem.classList.add('active');
+            }
+        }
+
+        // Mobile Menu Toggle
+        document.getElementById('mobileMenuToggle').addEventListener('click', function () {
+            document.getElementById('navMenu').classList.toggle('active');
+            this.classList.toggle('active');
+        });
+    </script>
+</body>
+
+</html>
