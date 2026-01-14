@@ -171,6 +171,31 @@ def search_by_destination():
         "radius": 10000
     }
     """
+    # Popular Indian destinations with coordinates and ETG region IDs
+    POPULAR_DESTINATIONS = {
+        'goa': {'latitude': 15.2993, 'longitude': 74.1240, 'region_id': 6308855, 'name': 'Goa'},
+        'delhi': {'latitude': 28.6139, 'longitude': 77.2090, 'region_id': 6308838, 'name': 'New Delhi'},
+        'mumbai': {'latitude': 19.0760, 'longitude': 72.8777, 'region_id': 6308862, 'name': 'Mumbai'},
+        'bangalore': {'latitude': 12.9716, 'longitude': 77.5946, 'region_id': 6308822, 'name': 'Bangalore'},
+        'bengaluru': {'latitude': 12.9716, 'longitude': 77.5946, 'region_id': 6308822, 'name': 'Bangalore'},
+        'chennai': {'latitude': 13.0827, 'longitude': 80.2707, 'region_id': 6308834, 'name': 'Chennai'},
+        'kolkata': {'latitude': 22.5726, 'longitude': 88.3639, 'region_id': 6308856, 'name': 'Kolkata'},
+        'jaipur': {'latitude': 26.9124, 'longitude': 75.7873, 'region_id': 6308849, 'name': 'Jaipur'},
+        'udaipur': {'latitude': 24.5854, 'longitude': 73.7125, 'region_id': 6308883, 'name': 'Udaipur'},
+        'agra': {'latitude': 27.1767, 'longitude': 78.0081, 'region_id': 6308815, 'name': 'Agra'},
+        'hyderabad': {'latitude': 17.3850, 'longitude': 78.4867, 'region_id': 6308846, 'name': 'Hyderabad'},
+        'pune': {'latitude': 18.5204, 'longitude': 73.8567, 'region_id': 6308870, 'name': 'Pune'},
+        'kerala': {'latitude': 10.8505, 'longitude': 76.2711, 'region_id': 6308854, 'name': 'Kerala'},
+        'kochi': {'latitude': 9.9312, 'longitude': 76.2673, 'region_id': 6308855, 'name': 'Kochi'},
+        'manali': {'latitude': 32.2396, 'longitude': 77.1887, 'region_id': 6308859, 'name': 'Manali'},
+        'shimla': {'latitude': 31.1048, 'longitude': 77.1734, 'region_id': 6308876, 'name': 'Shimla'},
+        'rishikesh': {'latitude': 30.0869, 'longitude': 78.2676, 'region_id': 6308872, 'name': 'Rishikesh'},
+        'varanasi': {'latitude': 25.3176, 'longitude': 82.9739, 'region_id': 6308885, 'name': 'Varanasi'},
+        'amritsar': {'latitude': 31.6340, 'longitude': 74.8723, 'region_id': 6308818, 'name': 'Amritsar'},
+        'darjeeling': {'latitude': 27.0410, 'longitude': 88.2663, 'region_id': 6308837, 'name': 'Darjeeling'},
+        'ooty': {'latitude': 11.4102, 'longitude': 76.6950, 'region_id': 6308866, 'name': 'Ooty'},
+    }
+    
     try:
         data = request.get_json()
         
@@ -179,32 +204,54 @@ def search_by_destination():
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
         
-        # Geocode destination
-        geo_result = google_maps_service.geocode(data['destination'])
+        destination = data['destination'].lower().strip()
+        coords = None
+        region_id = None
         
-        if not geo_result.get('success'):
+        # Check if destination matches a known location
+        for key, loc_data in POPULAR_DESTINATIONS.items():
+            if key in destination or destination in key:
+                coords = {'latitude': loc_data['latitude'], 'longitude': loc_data['longitude'], 'name': loc_data['name']}
+                region_id = loc_data.get('region_id')
+                break
+        
+        # If not found in popular destinations, try Google Maps
+        if not coords:
+            geo_result = google_maps_service.geocode(data['destination'])
+            if geo_result.get('success'):
+                coords = geo_result['data']
+        
+        if not coords:
             return jsonify({
                 'success': False,
-                'error': f"Could not find location: {data['destination']}"
+                'error': f"Could not find location: {data['destination']}. Try: Goa, Delhi, Mumbai, Jaipur, etc."
             }), 400
         
-        coords = geo_result['data']
-        
-        # Search hotels by geo
         guests = etg_service.format_guests_for_search(
             adults=data['adults'],
             children_ages=data.get('children_ages', [])
         )
         
-        result = etg_service.search_by_geo(
-            latitude=coords['latitude'],
-            longitude=coords['longitude'],
-            radius=data.get('radius', 10000),
-            checkin=data['checkin'],
-            checkout=data['checkout'],
-            guests=guests,
-            currency=data.get('currency', 'INR')
-        )
+        # If we have a region_id, use region search (more accurate)
+        if region_id:
+            result = etg_service.search_by_region(
+                region_id=region_id,
+                checkin=data['checkin'],
+                checkout=data['checkout'],
+                guests=guests,
+                currency=data.get('currency', 'INR')
+            )
+        else:
+            # Fallback to geo search
+            result = etg_service.search_by_geo(
+                latitude=coords['latitude'],
+                longitude=coords['longitude'],
+                radius=data.get('radius', 10000),
+                checkin=data['checkin'],
+                checkout=data['checkout'],
+                guests=guests,
+                currency=data.get('currency', 'INR')
+            )
         
         # Attach location info to result
         if result.get('success'):

@@ -19,7 +19,12 @@ from routes.maps_routes import maps_bp
 
 def create_app():
     """Application factory"""
-    app = Flask(__name__)
+    # Get parent directory for serving frontend static files
+    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
+    app = Flask(__name__, 
+                static_folder=parent_dir,
+                static_url_path='')
     
     # Load configuration
     config_class = get_config()
@@ -32,10 +37,10 @@ def create_app():
         print(f"❌ Configuration Error: {e}")
         sys.exit(1)
     
-    # Enable CORS for frontend
+    # Enable CORS for all origins (development)
     CORS(app, resources={
         r"/api/*": {
-            "origins": ["http://localhost:*", "http://127.0.0.1:*", "file://*"],
+            "origins": "*",
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization"]
         }
@@ -44,6 +49,21 @@ def create_app():
     # Register blueprints
     app.register_blueprint(hotel_bp)
     app.register_blueprint(maps_bp)
+    
+    # Serve frontend pages
+    @app.route('/')
+    def serve_index():
+        return app.send_static_file('index.html')
+    
+    @app.route('/<path:filename>')
+    def serve_static(filename):
+        # Serve HTML files and other static assets
+        if filename.endswith('.html') or '.' not in filename:
+            try:
+                return app.send_static_file(filename if filename.endswith('.html') else f'{filename}.html')
+            except:
+                pass
+        return app.send_static_file(filename)
     
     # Health check endpoint
     @app.route('/api/health', methods=['GET'])
