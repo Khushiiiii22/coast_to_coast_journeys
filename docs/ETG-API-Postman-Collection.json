@@ -1,0 +1,440 @@
+{
+	"info": {
+		"_postman_id": "coast-to-coast-etg-api",
+		"name": "ETG RateHawk API v3 - Coast to Coast Journeys",
+		"description": "Complete ETG/RateHawk API v3 collection for hotel booking integration testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "username",
+				"value": "83",
+				"type": "string"
+			},
+			{
+				"key": "password",
+				"value": "6f9b55f6-eaea-4a82-ac1f-b4529646ce11",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://api.worldota.net/api/b2b/v3",
+			"type": "string"
+		},
+		{
+			"key": "checkin",
+			"value": "2026-02-15",
+			"type": "string"
+		},
+		{
+			"key": "checkout",
+			"value": "2026-02-17",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Static Data",
+			"item": [
+				{
+					"name": "1.1 Hotel Dump",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"inventory\": \"all\",\n    \"language\": \"en\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/hotel/info/dump/",
+							"host": ["{{base_url}}"],
+							"path": ["hotel", "info", "dump", ""]
+						},
+						"description": "Download complete hotel static data for mapping. This returns URLs to download hotel data dumps."
+					}
+				},
+				{
+					"name": "1.2 Hotel Info (Single Hotel)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"test_hotel\",\n    \"language\": \"en\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/hotel/info/",
+							"host": ["{{base_url}}"],
+							"path": ["hotel", "info", ""]
+						},
+						"description": "Get static information for a specific hotel."
+					}
+				},
+				{
+					"name": "1.3 Incremental Dump",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"language\": \"en\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/hotel/info/incremental_dump/",
+							"host": ["{{base_url}}"],
+							"path": ["hotel", "info", "incremental_dump", ""]
+						},
+						"description": "Get daily updates to hotel static data."
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Search",
+			"item": [
+				{
+					"name": "2.1a Search by Region (Delhi)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"checkin\": \"{{checkin}}\",\n    \"checkout\": \"{{checkout}}\",\n    \"residency\": \"gb\",\n    \"language\": \"en\",\n    \"guests\": [{\"adults\": 2, \"children\": []}],\n    \"region_id\": 6308855,\n    \"currency\": \"USD\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/search/serp/region/",
+							"host": ["{{base_url}}"],
+							"path": ["search", "serp", "region", ""]
+						},
+						"description": "Search hotels by region. Region ID 6308855 = New Delhi."
+					}
+				},
+				{
+					"name": "2.1b Search by Region (London)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"checkin\": \"{{checkin}}\",\n    \"checkout\": \"{{checkout}}\",\n    \"residency\": \"gb\",\n    \"language\": \"en\",\n    \"guests\": [{\"adults\": 2, \"children\": []}],\n    \"region_id\": 2196,\n    \"currency\": \"USD\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/search/serp/region/",
+							"host": ["{{base_url}}"],
+							"path": ["search", "serp", "region", ""]
+						},
+						"description": "Search hotels in London. Region ID 2196 = London."
+					}
+				},
+				{
+					"name": "2.1c Search by Hotels (Test Hotel)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"checkin\": \"{{checkin}}\",\n    \"checkout\": \"{{checkout}}\",\n    \"residency\": \"gb\",\n    \"language\": \"en\",\n    \"guests\": [{\"adults\": 2, \"children\": []}],\n    \"ids\": [\"test_hotel\"],\n    \"currency\": \"USD\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/search/serp/hotels/",
+							"host": ["{{base_url}}"],
+							"path": ["search", "serp", "hotels", ""]
+						},
+						"description": "Search specific hotels by their IDs. Uses test_hotel for sandbox testing."
+					}
+				},
+				{
+					"name": "2.1d Search by Geo (London Coordinates)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"checkin\": \"{{checkin}}\",\n    \"checkout\": \"{{checkout}}\",\n    \"residency\": \"gb\",\n    \"language\": \"en\",\n    \"guests\": [{\"adults\": 2, \"children\": []}],\n    \"latitude\": 51.5074,\n    \"longitude\": -0.1278,\n    \"radius\": 10000,\n    \"currency\": \"USD\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/search/serp/geo/",
+							"host": ["{{base_url}}"],
+							"path": ["search", "serp", "geo", ""]
+						},
+						"description": "Search hotels by geographic coordinates. Radius in meters (max 30000)."
+					}
+				},
+				{
+					"name": "2.2 Hotel Page (Get Room Rates)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"test_hotel\",\n    \"checkin\": \"{{checkin}}\",\n    \"checkout\": \"{{checkout}}\",\n    \"residency\": \"gb\",\n    \"language\": \"en\",\n    \"guests\": [{\"adults\": 2, \"children\": []}],\n    \"currency\": \"USD\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/search/hp/",
+							"host": ["{{base_url}}"],
+							"path": ["search", "hp", ""]
+						},
+						"description": "Get detailed hotel information with all room rates. Use the hotel_id from search results."
+					}
+				},
+				{
+					"name": "2.3 Prebook (Verify Rate)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"hash\": \"PASTE_BOOK_HASH_FROM_HOTEL_PAGE_HERE\",\n    \"price_increase_percent\": 5\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/hotel/prebook",
+							"host": ["{{base_url}}"],
+							"path": ["hotel", "prebook"]
+						},
+						"description": "Verify rate availability and get final price. Copy the book_hash from Hotel Page response."
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Booking",
+			"item": [
+				{
+					"name": "3.1 Create Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"hash\": \"PASTE_BOOK_HASH_FROM_PREBOOK_HERE\",\n    \"partner_order_id\": \"CTC-TEST-001\",\n    \"payment_type\": {\"type\": \"now\"},\n    \"user_ip\": \"127.0.0.1\",\n    \"rooms\": [\n        {\n            \"guests\": [\n                {\n                    \"first_name\": \"John\",\n                    \"last_name\": \"Doe\"\n                }\n            ]\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/hotel/order/booking/form/",
+							"host": ["{{base_url}}"],
+							"path": ["hotel", "order", "booking", "form", ""]
+						},
+						"description": "Create a booking on ETG system. Use book_hash from prebook step."
+					}
+				},
+				{
+					"name": "3.2 Finish Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"partner_order_id\": \"CTC-TEST-001\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/hotel/order/booking/finish/",
+							"host": ["{{base_url}}"],
+							"path": ["hotel", "order", "booking", "finish", ""]
+						},
+						"description": "Finalize the booking. After this, booking status will be 'processing'."
+					}
+				},
+				{
+					"name": "3.3 Check Booking Status",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"partner_order_id\": \"CTC-TEST-001\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/hotel/order/booking/finish/status/",
+							"host": ["{{base_url}}"],
+							"path": ["hotel", "order", "booking", "finish", "status", ""]
+						},
+						"description": "Poll this endpoint every 2-3 seconds until status changes from 'processing' to 'ok' or 'failed'."
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Post-Booking",
+			"item": [
+				{
+					"name": "4.1 Get Booking Info",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"partner_order_id\": \"CTC-TEST-001\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/hotel/order/info/",
+							"host": ["{{base_url}}"],
+							"path": ["hotel", "order", "info", ""]
+						},
+						"description": "Get details of a completed booking. Do not call immediately after booking - wait for confirmation."
+					}
+				},
+				{
+					"name": "4.2 Cancel Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"partner_order_id\": \"CTC-TEST-001\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/hotel/order/cancel/",
+							"host": ["{{base_url}}"],
+							"path": ["hotel", "order", "cancel", ""]
+						},
+						"description": "Cancel an existing booking."
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Backend API (Local)",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"url": {
+							"raw": "http://localhost:5000/api/health",
+							"host": ["http://localhost:5000"],
+							"path": ["api", "health"]
+						},
+						"description": "Check if local backend is running."
+					}
+				},
+				{
+					"name": "API Info",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"url": {
+							"raw": "http://localhost:5000/api",
+							"host": ["http://localhost:5000"],
+							"path": ["api"]
+						},
+						"description": "Get list of available endpoints."
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Deployed API (Render)",
+			"item": [
+				{
+					"name": "Health Check (Production)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"url": {
+							"raw": "https://coast-to-coast-journeys.onrender.com/api/health",
+							"host": ["https://coast-to-coast-journeys.onrender.com"],
+							"path": ["api", "health"]
+						},
+						"description": "Check if production backend is running."
+					}
+				},
+				{
+					"name": "API Info (Production)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"url": {
+							"raw": "https://coast-to-coast-journeys.onrender.com/api",
+							"host": ["https://coast-to-coast-journeys.onrender.com"],
+							"path": ["api"]
+						},
+						"description": "Get list of available endpoints on production."
+					}
+				}
+			]
+		}
+	]
+}

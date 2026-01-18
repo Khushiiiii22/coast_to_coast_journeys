@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Coast to Coast Journeys</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">C</div>
+                <span class="sidebar-brand">CTC Admin</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <!-- Main Navigation -->
+                <div class="nav-section">
+                    <span class="nav-section-title">Main</span>
+                    <a href="dashboard.html" class="nav-item active">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="bookings.html" class="nav-item">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Bookings</span>
+                        <span class="nav-badge">12</span>
+                    </a>
+                </div>
+
+                <!-- Finance -->
+                <div class="nav-section">
+                    <span class="nav-section-title">Finance</span>
+                    <a href="payments.html" class="nav-item">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Payments</span>
+                    </a>
+                    <a href="invoices.html" class="nav-item">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>Invoices</span>
+                    </a>
+                    <a href="refunds.html" class="nav-item">
+                        <i class="fas fa-undo"></i>
+                        <span>Refunds</span>
+                    </a>
+                </div>
+
+                <!-- Operations -->
+                <div class="nav-section">
+                    <span class="nav-section-title">Operations</span>
+                    <a href="markup.html" class="nav-item">
+                        <i class="fas fa-percentage"></i>
+                        <span>Markup Tool</span>
+                    </a>
+                    <a href="suppliers.html" class="nav-item">
+                        <i class="fas fa-handshake"></i>
+                        <span>Suppliers</span>
+                    </a>
+                    <a href="customers.html" class="nav-item">
+                        <i class="fas fa-users"></i>
+                        <span>Customers</span>
+                    </a>
+                </div>
+
+                <!-- Reports -->
+                <div class="nav-section">
+                    <span class="nav-section-title">Analytics</span>
+                    <a href="reports.html" class="nav-item">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Reports</span>
+                    </a>
+                </div>
+
+                <!-- Settings -->
+                <div class="nav-section">
+                    <span class="nav-section-title">System</span>
+                    <a href="users.html" class="nav-item">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Admin Users</span>
+                    </a>
+                    <a href="settings.html" class="nav-item">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                    <a href="activity-logs.html" class="nav-item">
+                        <i class="fas fa-history"></i>
+                        <span>Activity Logs</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">SA</div>
+                    <div class="admin-info">
+                        <div class="admin-name">Super Admin</div>
+                        <div class="admin-role">Administrator</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Dashboard</h1>
+                </div>
+
+                <div class="header-right">
+                    <div class="header-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search bookings, customers...">
+                    </div>
+
+                    <div class="header-actions">
+                        <button class="header-btn">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge"></span>
+                        </button>
+                        <button class="header-btn">
+                            <i class="fas fa-envelope"></i>
+                        </button>
+                        <button class="header-btn" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="admin-content">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-label">Total Bookings</div>
+                            <div class="stat-value" id="totalBookings">0</div>
+                            <div class="stat-change positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>12% from last month</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <i class="fas fa-rupee-sign"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-label">Total Revenue</div>
+                            <div class="stat-value" id="totalRevenue">₹0</div>
+                            <div class="stat-change positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>8% from last month</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon orange">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-label">New Customers</div>
+                            <div class="stat-value" id="newCustomers">0</div>
+                            <div class="stat-change positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>5% from last month</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon red">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-label">Cancellations</div>
+                            <div class="stat-value" id="cancellations">0</div>
+                            <div class="stat-change negative">
+                                <i class="fas fa-arrow-down"></i>
+                                <span>3% from last month</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="stats-grid" style="grid-template-columns: 2fr 1fr;">
+                    <!-- Revenue Chart -->
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Revenue Overview</h3>
+                            <div class="card-actions">
+                                <button class="btn btn-secondary btn-sm">
+                                    <i class="fas fa-download"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <canvas id="revenueChart" height="100"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Booking Status Chart -->
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Booking Status</h3>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Bookings -->
+                <div class="admin-card" style="margin-top: 1.5rem;">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Bookings</h3>
+                        <div class="card-actions">
+                            <a href="bookings.html" class="btn btn-primary btn-sm">
+                                View All <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Customer</th>
+                                <th>Hotel</th>
+                                <th>Check-in</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentBookings">
+                            <tr>
+                                <td><strong>#CTC-10001</strong></td>
+                                <td>Rahul Sharma</td>
+                                <td>The Leela Palace, New Delhi</td>
+                                <td>Jan 25, 2026</td>
+                                <td><strong>₹45,500</strong></td>
+                                <td><span class="status-badge confirmed">Confirmed</span></td>
+                                <td>
+                                    <button class="btn btn-secondary btn-icon" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>#CTC-10002</strong></td>
+                                <td>Priya Patel</td>
+                                <td>Taj Exotica, Goa</td>
+                                <td>Jan 28, 2026</td>
+                                <td><strong>₹32,000</strong></td>
+                                <td><span class="status-badge pending">Pending</span></td>
+                                <td>
+                                    <button class="btn btn-secondary btn-icon" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>#CTC-10003</strong></td>
+                                <td>Amit Kumar</td>
+                                <td>Oberoi Udaivilas, Udaipur</td>
+                                <td>Feb 1, 2026</td>
+                                <td><strong>₹78,000</strong></td>
+                                <td><span class="status-badge confirmed">Confirmed</span></td>
+                                <td>
+                                    <button class="btn btn-secondary btn-icon" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>#CTC-10004</strong></td>
+                                <td>Neha Singh</td>
+                                <td>JW Marriott, Mumbai</td>
+                                <td>Feb 5, 2026</td>
+                                <td><strong>₹28,500</strong></td>
+                                <td><span class="status-badge cancelled">Cancelled</span></td>
+                                <td>
+                                    <button class="btn btn-secondary btn-icon" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>#CTC-10005</strong></td>
+                                <td>Vikram Reddy</td>
+                                <td>ITC Grand Chola, Chennai</td>
+                                <td>Feb 10, 2026</td>
+                                <td><strong>₹52,000</strong></td>
+                                <td><span class="status-badge processing">Processing</span></td>
+                                <td>
+                                    <button class="btn btn-secondary btn-icon" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Admin JavaScript -->
+    <script src="js/admin.js"></script>
+    <script>
+        // Initialize Dashboard
+        document.addEventListener('DOMContentLoaded', function () {
+            initDashboard();
+            initCharts();
+        });
+
+        function initDashboard() {
+            // Animate stats
+            animateValue('totalBookings', 0, 1247, 1500);
+            animateValue('totalRevenue', 0, 8750000, 1500, '₹', true);
+            animateValue('newCustomers', 0, 324, 1500);
+            animateValue('cancellations', 0, 23, 1500);
+        }
+
+        function animateValue(id, start, end, duration, prefix = '', format = false) {
+            const element = document.getElementById(id);
+            const range = end - start;
+            const startTime = performance.now();
+
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                let value = Math.floor(start + (range * easeOutQuart(progress)));
+
+                if (format) {
+                    value = prefix + (value / 100000).toFixed(1) + 'L';
+                } else {
+                    value = prefix + value.toLocaleString();
+                }
+
+                element.textContent = value;
+
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        function easeOutQuart(x) {
+            return 1 - Math.pow(1 - x, 4);
+        }
+
+        function initCharts() {
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Revenue (₹ Lakhs)',
+                        data: [45, 52, 48, 61, 55, 67, 72, 68, 75, 82, 78, 87],
+                        borderColor: '#0e64a6',
+                        backgroundColor: 'rgba(14, 100, 166, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Status Chart
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Confirmed', 'Pending', 'Cancelled', 'Processing'],
+                    datasets: [{
+                        data: [65, 20, 8, 7],
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#06b6d4'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

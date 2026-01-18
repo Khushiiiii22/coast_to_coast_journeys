@@ -303,15 +303,32 @@ async function handleFlightSearch(e) {
     // Show notification
     showNotification('Searching for flights...', 'info');
 
-    // Save search to database if Supabase is available
-    if (window.SupabaseService) {
-        await window.SupabaseService.saveFlightSearch(formData);
-    }
+    try {
+        // Call Backend API
+        const response = await fetch('/api/flights/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
 
-    // Here you would integrate with flight API
-    setTimeout(() => {
-        showNotification('Flight search saved! Booking feature coming soon.', 'success');
-    }, 1500);
+        const data = await response.json();
+
+        if (data.success) {
+            // Save results to session storage for results page
+            sessionStorage.setItem('ctc_flight_results', JSON.stringify(data.data));
+            sessionStorage.setItem('ctc_flight_search_params', JSON.stringify(formData));
+
+            // Redirect to results page
+            window.location.href = 'flight-results.html';
+        } else {
+            showNotification(data.error || 'Failed to search flights', 'error');
+        }
+    } catch (error) {
+        console.error('Search error:', error);
+        showNotification('Error connecting to server', 'error');
+    }
 }
 
 async function handleHotelSearch(e) {
@@ -335,7 +352,7 @@ async function handleHotelSearch(e) {
         rooms: rooms,
         adults: adults,
         children_ages: childrenAges,
-        currency: 'INR'
+        currency: 'USD'  // Sandbox requires USD
     };
 
     // Validate
@@ -760,6 +777,164 @@ function initEventListeners() {
             closeLoginModal();
         }
     });
+
+    // Destination Quick Pills
+    document.querySelectorAll('.dest-pill').forEach(pill => {
+        pill.addEventListener('click', function () {
+            const destination = this.dataset.destination;
+            const regionId = this.dataset.regionId;
+
+            // Switch to hotels tab
+            const hotelTab = document.querySelector('.search-tab[data-tab="hotels"]');
+            if (hotelTab) {
+                hotelTab.click();
+            }
+
+            // Fill destination input
+            const hotelDestination = document.getElementById('hotelDestination');
+            if (hotelDestination) {
+                hotelDestination.value = destination;
+                hotelDestination.dataset.regionId = regionId;
+            }
+
+            // Add active state to clicked pill
+            document.querySelectorAll('.dest-pill').forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+
+            // Show notification
+            showNotification(`Searching hotels in ${destination}`, 'info');
+        });
+    });
+
+    // Mobile Bottom Navigation
+    document.querySelectorAll('.mobile-bottom-nav .nav-item').forEach(item => {
+        item.addEventListener('click', function (e) {
+            // Update active state
+            document.querySelectorAll('.mobile-bottom-nav .nav-item').forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    // Mobile Profile Button
+    const mobileProfileBtn = document.getElementById('mobileProfileBtn');
+    if (mobileProfileBtn) {
+        mobileProfileBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            // Open login modal if not logged in
+            if (DOM.loginModal) {
+                DOM.loginModal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+        });
+    }
+}
+
+// ========================================
+// Scroll Reveal Animation
+// ========================================
+function initScrollReveal() {
+    const sections = document.querySelectorAll('.fullpage-section');
+    const cards = document.querySelectorAll('.hotel-card, .category-card, .deal-card, .partner-card, .flight-route-card');
+
+    const revealOptions = {
+        threshold: 0.15,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const revealOnScroll = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, revealOptions);
+
+    sections.forEach(section => {
+        if (!section.classList.contains('hero-section')) {
+            revealOnScroll.observe(section);
+        }
+    });
+
+    // Staggered reveal for cards
+    const cardObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 100);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        cardObserver.observe(card);
+    });
+}
+
+// ========================================
+// Smooth Number Counter Animation
+// ========================================
+function animateCounter(element, target, duration = 2000) {
+    let start = 0;
+    const increment = target / (duration / 16);
+
+    const updateCounter = () => {
+        start += increment;
+        if (start < target) {
+            element.textContent = Math.floor(start).toLocaleString();
+            requestAnimationFrame(updateCounter);
+        } else {
+            element.textContent = target.toLocaleString();
+        }
+    };
+
+    updateCounter();
+}
+
+// ========================================
+// Enhanced Hover Effects
+// ========================================
+function initEnhancedHovers() {
+    // 3D tilt effect on cards
+    const cards = document.querySelectorAll('.hotel-card, .category-card, .deal-card');
+
+    cards.forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
+            const rotateX = (y - centerY) / 20;
+            const rotateY = (centerX - x) / 20;
+
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-5px)`;
+        });
+
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+        });
+    });
+}
+
+// ========================================
+// Smooth Page Load
+// ========================================
+function initSmoothLoad() {
+    document.body.style.opacity = '0';
+    document.body.style.transition = 'opacity 0.5s ease';
+
+    window.addEventListener('load', () => {
+        document.body.style.opacity = '1';
+    });
 }
 
 // ========================================
@@ -770,6 +945,8 @@ function init() {
     initSlider();
     setDateDefaults();
     initEventListeners();
+    initScrollReveal();
+    initEnhancedHovers();
 
     // Initial scroll check
     handleScroll();
@@ -778,6 +955,9 @@ function init() {
     if (window.SupabaseService) {
         window.SupabaseService.init();
     }
+
+    // Add loaded class for animations
+    document.body.classList.add('loaded');
 
     console.log('Coast to Coast Journeys - Website Loaded Successfully!');
 }

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Results | Coast To Coast Journeys</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/hotel-booking.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .flight-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .flight-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .airline-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 25%;
+        }
+
+        .airline-logo {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
+
+        .flight-route {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            width: 50%;
+            justify-content: center;
+        }
+
+        .route-point {
+            text-align: center;
+        }
+
+        .route-time {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--dark-text);
+        }
+
+        .route-code {
+            font-size: 0.9rem;
+            color: var(--light-text);
+        }
+
+        .flight-duration {
+            text-align: center;
+            position: relative;
+        }
+
+        .duration-line {
+            width: 100px;
+            height: 2px;
+            background: #e0e0e0;
+            margin: 5px 0;
+            position: relative;
+        }
+
+        .duration-line::after {
+            content: '✈';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%) rotate(90deg);
+            color: var(--primary-color);
+            background: white;
+            padding: 0 5px;
+        }
+
+        .flight-price-action {
+            text-align: right;
+            width: 20%;
+        }
+
+        .flight-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .book-btn {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .book-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </div>
+                Coast to Coast Journeys
+            </a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="#" class="active">Flights</a>
+                <a href="hotel-results.html">Hotels</a>
+                <a href="#">Deals</a>
+                <a href="#">Contact</a>
+                <a href="admin/login.html" class="admin-link">Admin</a>
+            </div>
+            <div class="nav-auth">
+                <button class="btn-login"><i class="fa-regular fa-user"></i> Login</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Summary -->
+    <div class="search-summary-bar">
+        <div class="container">
+            <div class="summary-content">
+                <div class="summary-details">
+                    <h1>Flights from <span id="summaryOrigin">...</span> to <span id="summaryDest">...</span></h1>
+                    <p id="summaryDates">...</p>
+                </div>
+                <button class="btn-modify" onclick="window.location.href='index.html'">
+                    <i class="fa-solid fa-pen"></i> Modify Search
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="results-container">
+        <!-- Sidebar Filters -->
+        <aside class="filters-sidebar">
+            <div class="filter-header">
+                <h3><i class="fa-solid fa-filter"></i> Filters</h3>
+                <button class="clear-filters">Clear All</button>
+            </div>
+
+            <div class="filter-group">
+                <h4>Stops</h4>
+                <label class="checkbox-container">
+                    <input type="checkbox" checked>
+                    <span class="checkmark"></span>
+                    Direct
+                </label>
+                <label class="checkbox-container">
+                    <input type="checkbox" checked>
+                    <span class="checkmark"></span>
+                    1 Stop
+                </label>
+            </div>
+
+            <div class="filter-group">
+                <h4>Airlines</h4>
+                <div id="airlineFilters">
+                    <!-- Dynamic -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Results -->
+        <main class="results-content">
+            <div class="results-header">
+                <h2 id="resultsCount">Loading flights...</h2>
+                <div class="sort-options">
+                    <label>Sort by:</label>
+                    <select id="sortSelect">
+                        <option value="price_asc">Price: Low to High</option>
+                        <option value="duration_asc">Duration: Shortest</option>
+                        <option value="depart_asc">Departure: Earliest</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="outboundFlights" class="flights-list">
+                <!-- Flight Cards injected here -->
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const results = JSON.parse(sessionStorage.getItem('ctc_flight_results'));
+            const params = JSON.parse(sessionStorage.getItem('ctc_flight_search_params'));
+
+            if (!results || !params) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Update Summary
+            document.getElementById('summaryOrigin').textContent = params.from;
+            document.getElementById('summaryDest').textContent = params.to;
+            document.getElementById('summaryDates').textContent =
+                `${new Date(params.departDate).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}` +
+                (params.returnDate ? ` - ${new Date(params.returnDate).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}` : '');
+
+            // Render Flights
+            const container = document.getElementById('outboundFlights');
+            const count = document.getElementById('resultsCount');
+
+            const flights = results.outbound || [];
+            count.textContent = `${flights.length} flights found`;
+
+            flights.forEach(flight => {
+                const card = document.createElement('div');
+                card.className = 'flight-card';
+                card.innerHTML = `
+                    <div class="airline-info">
+                        <img src="${flight.airline.logo}" alt="${flight.airline.name}" class="airline-logo">
+                        <div>
+                            <h4>${flight.airline.name}</h4>
+                            <span class="flight-number">${flight.flight_number}</span>
+                        </div>
+                    </div>
+                    <div class="flight-route">
+                        <div class="route-point">
+                            <div class="route-time">${flight.depart_time}</div>
+                            <div class="route-code">${flight.origin}</div>
+                        </div>
+                        <div class="flight-duration">
+                            <span class="duration-text">${flight.duration}</span>
+                            <div class="duration-line"></div>
+                            <span class="stops-text">${flight.stops === 0 ? 'Direct' : flight.stops + ' Stop'}</span>
+                        </div>
+                        <div class="route-point">
+                            <div class="route-time">${flight.arrival_time}${flight.next_day ? '<sup>+1</sup>' : ''}</div>
+                            <div class="route-code">${flight.destination}</div>
+                        </div>
+                    </div>
+                    <div class="flight-price-action">
+                        <div class="flight-price">$${flight.price}</div>
+                        <button class="book-btn">Select</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        });
+    </script>
+</body>
+
+</html>

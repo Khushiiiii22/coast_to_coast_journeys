@@ -12,6 +12,38 @@ hotel_bp = Blueprint('hotels', __name__, url_prefix='/api/hotels')
 
 
 # ==========================================
+# SUGGEST/AUTOCOMPLETE ENDPOINT
+# ==========================================
+
+@hotel_bp.route('/suggest', methods=['POST'])
+def suggest():
+    """
+    Search suggestions for hotels and regions
+    
+    Request Body:
+    {
+        "query": "Paris",
+        "language": "en"
+    }
+    """
+    try:
+        data = request.get_json()
+        
+        if 'query' not in data or len(data['query']) < 2:
+            return jsonify({'success': False, 'error': 'Query must be at least 2 characters'}), 400
+        
+        result = etg_service.suggest(
+            query=data['query'],
+            language=data.get('language', 'en')
+        )
+        
+        return jsonify(result)
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ==========================================
 # SEARCH ENDPOINTS
 # ==========================================
 
@@ -51,8 +83,8 @@ def search_by_region():
             checkin=data['checkin'],
             checkout=data['checkout'],
             guests=guests,
-            currency=data.get('currency', 'INR'),
-            residency=data.get('residency', 'in')
+            currency=data.get('currency', 'USD'),
+            residency=data.get('residency', 'gb')
         )
         
         # Save search to history (async, don't wait)
@@ -107,7 +139,7 @@ def search_by_geo():
             checkin=data['checkin'],
             checkout=data['checkout'],
             guests=guests,
-            currency=data.get('currency', 'INR')
+            currency=data.get('currency', 'USD')
         )
         
         return jsonify(result)
@@ -147,7 +179,7 @@ def search_by_hotel_ids():
             checkin=data['checkin'],
             checkout=data['checkout'],
             guests=guests,
-            currency=data.get('currency', 'INR')
+            currency=data.get('currency', 'USD')
         )
         
         return jsonify(result)
@@ -205,26 +237,33 @@ def search_by_destination():
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
         
         destination = data['destination'].lower().strip()
-        coords = None
         region_id = None
+        location_name = data['destination']
         
-        # Check if destination matches a known location
+        # Check if destination matches a known location first (for production Indian regions)
         for key, loc_data in POPULAR_DESTINATIONS.items():
             if key in destination or destination in key:
-                coords = {'latitude': loc_data['latitude'], 'longitude': loc_data['longitude'], 'name': loc_data['name']}
                 region_id = loc_data.get('region_id')
+                location_name = loc_data['name']
                 break
         
-        # If not found in popular destinations, try Google Maps
-        if not coords:
-            geo_result = google_maps_service.geocode(data['destination'])
-            if geo_result.get('success'):
-                coords = geo_result['data']
+        # If not in our local list, use ETG suggest API to find the region_id
+        if not region_id:
+            suggest_result = etg_service.suggest(data['destination'])
+            if suggest_result.get('success') and suggest_result.get('data'):
+                # ETG returns nested structure: data.data.regions
+                inner_data = suggest_result['data'].get('data', suggest_result['data'])
+                regions = inner_data.get('regions', [])
+                if regions:
+                    # Use the first matching region
+                    region_id = regions[0].get('id')
+                    location_name = regions[0].get('name', data['destination'])
         
-        if not coords:
+        # If still no region_id, return error (sandbox doesn't support geo search well)
+        if not region_id:
             return jsonify({
                 'success': False,
-                'error': f"Could not find location: {data['destination']}. Try: Goa, Delhi, Mumbai, Jaipur, etc."
+                'error': f"Could not find region for: {data['destination']}. Try: Paris, London, New York, etc."
             }), 400
         
         guests = etg_service.format_guests_for_search(
@@ -232,35 +271,128 @@ def search_by_destination():
             children_ages=data.get('children_ages', [])
         )
         
-        # If we have a region_id, use region search (more accurate)
-        if region_id:
-            result = etg_service.search_by_region(
-                region_id=region_id,
-                checkin=data['checkin'],
-                checkout=data['checkout'],
-                guests=guests,
-                currency=data.get('currency', 'INR')
-            )
-        else:
-            # Fallback to geo search
-            result = etg_service.search_by_geo(
-                latitude=coords['latitude'],
-                longitude=coords['longitude'],
-                radius=data.get('radius', 10000),
-                checkin=data['checkin'],
-                checkout=data['checkout'],
-                guests=guests,
-                currency=data.get('currency', 'INR')
-            )
+        # Always use region search (more reliable in sandbox)
+        # SANDBOX FIX: Force USD and gb residency (sandbox doesn't support INR/in)
+        result = etg_service.search_by_region(
+            region_id=region_id,
+            checkin=data['checkin'],
+            checkout=data['checkout'],
+            guests=guests,
+            currency='USD',
+            residency='gb'
+        )
         
-        # Attach location info to result
-        if result.get('success'):
-            result['location'] = coords
+        # Transform ETG response to frontend format
+        # ETG returns nested structure: data.data.hotels
+        if result.get('success') and result.get('data'):
+            inner_data = result['data'].get('data', result['data'])
+            etg_hotels = inner_data.get('hotels', [])
+            transformed_hotels = transform_etg_hotels(etg_hotels, location_name)
+            result['data'] = {'hotels': transformed_hotels}
+            result['location'] = {'name': location_name, 'region_id': region_id}
+            result['hotels_count'] = len(transformed_hotels)
         
         return jsonify(result)
     
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+def transform_etg_hotels(etg_hotels, destination):
+    """Transform ETG hotel response to frontend format"""
+    transformed = []
+    
+    # Sample hotel images for demo
+    hotel_images = [
+        'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600',
+        'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600',
+        'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=600',
+        'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600',
+        'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=600',
+        'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=600',
+        'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=600',
+        'https://images.unsplash.com/photo-1549294413-26f195471c9e?w=600',
+    ]
+    
+    for idx, hotel in enumerate(etg_hotels):
+        rates = hotel.get('rates', [])
+        
+        # Get lowest price from rates
+        lowest_price = 0
+        best_rate = None
+        meal_plan = 'nomeal'
+        
+        for rate in rates:
+            payment_types = rate.get('payment_options', {}).get('payment_types', [])
+            for pt in payment_types:
+                amount = float(pt.get('amount', 0))
+                if lowest_price == 0 or amount < lowest_price:
+                    lowest_price = amount
+                    best_rate = rate
+                    meal_plan = rate.get('meal', 'nomeal')
+        
+        # Extract star rating from rg_ext
+        rg_ext = rates[0].get('rg_ext', {}) if rates else {}
+        star_rating = rg_ext.get('class', 3)
+        
+        # Create transformed hotel object
+        transformed_hotel = {
+            'id': hotel.get('id', f'hotel_{idx}'),
+            'hid': hotel.get('hid'),
+            'name': hotel.get('name', best_rate.get('room_name', 'Hotel') if best_rate else 'Hotel'),
+            'star_rating': star_rating if star_rating else 4,
+            'guest_rating': round(3.5 + (star_rating or 3) * 0.3, 1),  # Estimated rating
+            'review_count': 50 + (idx * 23) % 500,  # Demo review count
+            'address': destination.title(),
+            'image': hotel_images[idx % len(hotel_images)],
+            'price': lowest_price,
+            'original_price': lowest_price * 1.15 if lowest_price > 0 else 0,  # 15% discount shown
+            'currency': 'USD',
+            'amenities': extract_amenities(rates),
+            'meal_plan': meal_plan,
+            'discount': 15,
+            'rates': [
+                {
+                    'book_hash': rate.get('match_hash', ''),
+                    'room_name': rate.get('room_name', rate.get('room_data_trans', {}).get('main_name', 'Standard Room')),
+                    'price': float(rate.get('payment_options', {}).get('payment_types', [{}])[0].get('amount', 0)),
+                    'meal': rate.get('meal', 'nomeal')
+                }
+                for rate in rates[:3]  # Limit to 3 rates per hotel
+            ] if rates else []
+        }
+        
+        transformed.append(transformed_hotel)
+    
+    return transformed
+
+
+def extract_amenities(rates):
+    """Extract amenities from rate data"""
+    amenities = set()
+    
+    for rate in rates:
+        for amenity in rate.get('amenities_data', []):
+            if 'wifi' in amenity.lower():
+                amenities.add('wifi')
+            if 'pool' in amenity.lower() or 'swimming' in amenity.lower():
+                amenities.add('pool')
+            if 'park' in amenity.lower():
+                amenities.add('parking')
+            if 'spa' in amenity.lower():
+                amenities.add('spa')
+            if 'restaurant' in amenity.lower() or 'dining' in amenity.lower():
+                amenities.add('restaurant')
+            if 'gym' in amenity.lower() or 'fitness' in amenity.lower():
+                amenities.add('gym')
+            if 'bathroom' in amenity.lower():
+                amenities.add('bathroom')
+    
+    # Add some default amenities
+    if not amenities:
+        amenities = {'wifi', 'parking'}
+    
+    return list(amenities)[:4]
 
 
 # ==========================================
@@ -355,7 +487,7 @@ def prebook_rate():
         if 'book_hash' not in data:
             return jsonify({'success': False, 'error': 'Missing book_hash'}), 400
         
-        result = etg_service.prebook_rate(
+        result = etg_service.prebook(
             book_hash=data['book_hash'],
             price_increase_percent=data.get('price_increase_percent', 5)
         )

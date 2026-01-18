@@ -83,7 +83,7 @@ const HotelAPI = {
                 adults: params.adults || 2,
                 children_ages: params.children_ages || [],
                 radius: params.radius || 10000,
-                currency: params.currency || 'INR'
+                currency: params.currency || 'USD'
             })
         });
     },
@@ -100,7 +100,7 @@ const HotelAPI = {
                 checkout: params.checkout,
                 adults: params.adults || 2,
                 children_ages: params.children_ages || [],
-                currency: params.currency || 'INR'
+                currency: params.currency || 'USD'
             })
         });
     },
@@ -119,7 +119,7 @@ const HotelAPI = {
                 checkout: params.checkout,
                 adults: params.adults || 2,
                 children_ages: params.children_ages || [],
-                currency: params.currency || 'INR'
+                currency: params.currency || 'USD'
             })
         });
     },
@@ -140,7 +140,7 @@ const HotelAPI = {
                 checkout: params.checkout,
                 adults: params.adults || 2,
                 children_ages: params.children_ages || [],
-                currency: params.currency || 'INR'
+                currency: params.currency || 'USD'
             })
         });
     },

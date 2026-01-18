@@ -15,6 +15,7 @@ from config import Config, get_config
 # Import routes
 from routes.hotel_routes import hotel_bp
 from routes.maps_routes import maps_bp
+from routes.flight_routes import flight_bp
 
 
 def create_app():
@@ -49,6 +50,7 @@ def create_app():
     # Register blueprints
     app.register_blueprint(hotel_bp)
     app.register_blueprint(maps_bp)
+    app.register_blueprint(flight_bp)
     
     # Serve frontend pages
     @app.route('/')
