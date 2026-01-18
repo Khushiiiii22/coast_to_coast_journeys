@@ -72,28 +72,30 @@ async function performSearch(params) {
         try {
             await HotelAPI.healthCheck();
         } catch (e) {
-            showError('Backend server is not running. Please start the backend server.');
+            console.log('Backend server not reachable, using demo data');
+            showDemoResults(params);
             return;
         }
 
         // Perform search
         const result = await HotelAPI.searchByDestination(params);
 
-        if (result.success) {
+        if (result.success && result.data?.hotels?.length > 0) {
             SearchSession.saveSearchResults(result);
             displayResults(result);
+        } else if (result.success) {
+            // API succeeded but no results - show demo data
+            console.log('No hotels found from API, using demo data');
+            showDemoResults(params);
         } else {
-            showError(result.error || 'Failed to search hotels');
+            // API returned an error - fall back to demo data for better UX
+            console.log('API error, using demo data:', result.error);
+            showDemoResults(params);
         }
     } catch (error) {
         console.error('Search error:', error);
-
-        // Show demo data if API not available
-        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-            showDemoResults(params);
-        } else {
-            showError(error.message);
-        }
+        // Always fall back to demo data on any error
+        showDemoResults(params);
     }
 }
 

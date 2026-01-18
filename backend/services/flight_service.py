@@ -28,23 +28,66 @@ class FlightService:
             'MAA': {'name': 'Chennai International Airport', 'city': 'Chennai', 'country': 'India'},
             'CCU': {'name': 'Netaji Subhash Chandra Bose International Airport', 'city': 'Kolkata', 'country': 'India'},
             'HYD': {'name': 'Rajiv Gandhi International Airport', 'city': 'Hyderabad', 'country': 'India'},
+            'GOI': {'name': 'Goa International Airport', 'city': 'Goa', 'country': 'India'},
+            'JAI': {'name': 'Jaipur International Airport', 'city': 'Jaipur', 'country': 'India'},
             'DXB': {'name': 'Dubai International Airport', 'city': 'Dubai', 'country': 'UAE'},
             'LHR': {'name': 'Heathrow Airport', 'city': 'London', 'country': 'UK'},
             'JFK': {'name': 'John F. Kennedy International Airport', 'city': 'New York', 'country': 'USA'},
             'SIN': {'name': 'Changi Airport', 'city': 'Singapore', 'country': 'Singapore'},
             'CDG': {'name': 'Charles de Gaulle Airport', 'city': 'Paris', 'country': 'France'},
-            'FRA': {'name': 'Frankfurt Airport', 'city': 'Frankfurt', 'country': 'Germany'}
+            'FRA': {'name': 'Frankfurt Airport', 'city': 'Frankfurt', 'country': 'Germany'},
+            'BKK': {'name': 'Suvarnabhumi Airport', 'city': 'Bangkok', 'country': 'Thailand'},
+            'MLE': {'name': 'Velana International Airport', 'city': 'Male', 'country': 'Maldives'}
         }
+        
+        # City name to code mapping for common searches
+        self.city_to_code = {}
+        for code, details in self.airports.items():
+            city_lower = details['city'].lower()
+            self.city_to_code[city_lower] = code
+            # Also add common variations
+            if 'new delhi' in city_lower:
+                self.city_to_code['delhi'] = code
+            if 'bangalore' in city_lower:
+                self.city_to_code['bengaluru'] = code
+
+    def _resolve_airport_code(self, location):
+        """Resolve city name or airport code to airport code"""
+        if not location:
+            return location
+        
+        location_upper = location.upper().strip()
+        location_lower = location.lower().strip()
+        
+        # If it's already a valid airport code
+        if location_upper in self.airports:
+            return location_upper
+        
+        # Try to find by city name
+        if location_lower in self.city_to_code:
+            return self.city_to_code[location_lower]
+        
+        # Try partial match
+        for city, code in self.city_to_code.items():
+            if location_lower in city or city in location_lower:
+                return code
+        
+        # Return as is (will generate flights anyway for demo)
+        return location_upper if len(location_upper) <= 4 else location_upper[:3]
 
     def search_flights(self, origin, destination, depart_date, return_date=None, adults=1, flight_class='economy'):
         """Search flights with realistic mock data"""
+        # Resolve city names to airport codes
+        origin_code = self._resolve_airport_code(origin)
+        dest_code = self._resolve_airport_code(destination)
+        
         results = {
-            'outbound': self._generate_flights(origin, destination, depart_date, adults, flight_class),
+            'outbound': self._generate_flights(origin_code, dest_code, depart_date, adults, flight_class),
             'inbound': []
         }
         
         if return_date:
-            results['inbound'] = self._generate_flights(destination, origin, return_date, adults, flight_class)
+            results['inbound'] = self._generate_flights(dest_code, origin_code, return_date, adults, flight_class)
             
         return {
             'success': True,

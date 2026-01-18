@@ -378,15 +378,19 @@ async function handleHotelSearch(e) {
         sessionStorage.setItem('ctc_hotel_search_params', JSON.stringify(searchParams));
     }
 
-    // Save search to database if Supabase is available
+    // Save search to database if Supabase is available (non-blocking)
     if (window.SupabaseService) {
-        await window.SupabaseService.saveHotelSearch({
-            destination: searchParams.destination,
-            check_in_date: searchParams.checkin,
-            check_out_date: searchParams.checkout,
-            rooms: searchParams.rooms,
-            guests: searchParams.adults + childrenAges.length
-        });
+        try {
+            window.SupabaseService.saveHotelSearch({
+                destination: searchParams.destination,
+                check_in_date: searchParams.checkin,
+                check_out_date: searchParams.checkout,
+                rooms: searchParams.rooms,
+                guests: searchParams.adults + childrenAges.length
+            }).catch(err => console.log('Save hotel search skipped:', err.message));
+        } catch (err) {
+            console.log('Supabase not configured, skipping save');
+        }
     }
 
     // Redirect to hotel results page

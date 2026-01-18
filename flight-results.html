@@ -4,207 +4,602 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Search results for flights - Coast to Coast Journeys">
     <title>Flight Results | Coast To Coast Journeys</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/hotel-booking.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        .flight-card {
+        /* Flight Results Page Specific Styles - Trip.com Inspired */
+        :root {
+            --primary-blue: #0e64a6;
+            --navy: #1a365d;
+            --accent-gold: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        /* Simple Header */
+        .simple-header {
             background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--navy);
+        }
+
+        .logo-link img {
+            height: 45px;
+            border-radius: 8px;
+        }
+
+        .logo-link span {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #64748b;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--primary-blue);
+        }
+
+        /* Search Summary Bar */
+        .search-summary-bar {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--navy) 100%);
+            padding: 1.5rem 0;
+            margin-top: 77px;
+            color: white;
+        }
+
+        .summary-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .summary-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .summary-details h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .summary-details p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .btn-modify {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .btn-modify:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Main Content */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 992px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-panel {
+                display: none;
+            }
+        }
+
+        /* Filters Panel */
+        .filters-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .filters-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .filters-header h3 {
+            font-size: 1.1rem;
+            color: var(--navy);
+            font-weight: 600;
+        }
+
+        .clear-btn {
+            background: none;
+            border: none;
+            color: var(--primary-blue);
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .filter-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-group h4 {
+            font-size: 0.95rem;
+            color: var(--navy);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .filter-option:hover {
+            background: #f8fafc;
+        }
+
+        .filter-option input {
+            accent-color: var(--primary-blue);
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Results Panel */
+        .results-panel {
+            min-height: 500px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .results-count {
+            font-weight: 500;
+            color: var(--navy);
+        }
+
+        .results-count strong {
+            color: var(--primary-blue);
+        }
+
+        .sort-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        /* Flight Cards */
+        .flights-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .flight-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            display: grid;
+            grid-template-columns: 180px 1fr 150px;
+            align-items: center;
+            gap: 2rem;
             transition: all 0.3s ease;
         }
 
         .flight-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
         }
 
-        .airline-info {
+        /* Airline Info */
+        .airline-section {
             display: flex;
             align-items: center;
-            gap: 15px;
-            width: 25%;
+            gap: 1rem;
         }
 
         .airline-logo {
-            width: 50px;
-            height: 50px;
+            width: 48px;
+            height: 48px;
             object-fit: contain;
+            border-radius: 8px;
         }
 
-        .flight-route {
+        .airline-details h4 {
+            font-size: 1rem;
+            color: var(--navy);
+            margin-bottom: 0.25rem;
+        }
+
+        .flight-number {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        /* Flight Route */
+        .route-section {
             display: flex;
             align-items: center;
-            gap: 30px;
-            width: 50%;
             justify-content: center;
+            gap: 1.5rem;
         }
 
-        .route-point {
+        .time-point {
             text-align: center;
         }
 
-        .route-time {
-            font-size: 1.2rem;
+        .time {
+            font-size: 1.5rem;
             font-weight: 700;
-            color: var(--dark-text);
+            color: var(--navy);
         }
 
-        .route-code {
+        .airport-code {
             font-size: 0.9rem;
-            color: var(--light-text);
+            color: #64748b;
+            margin-top: 0.25rem;
         }
 
-        .flight-duration {
+        .duration-section {
+            flex: 1;
             text-align: center;
             position: relative;
+            padding: 0 1rem;
+        }
+
+        .duration-time {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
         }
 
         .duration-line {
-            width: 100px;
             height: 2px;
-            background: #e0e0e0;
-            margin: 5px 0;
+            background: linear-gradient(90deg, #e2e8f0 0%, var(--primary-blue) 50%, #e2e8f0 100%);
             position: relative;
         }
 
-        .duration-line::after {
+        .duration-line::before {
             content: '✈';
             position: absolute;
-            top: -8px;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%) rotate(90deg);
-            color: var(--primary-color);
+            transform: translate(-50%, -50%) rotate(90deg);
             background: white;
-            padding: 0 5px;
+            padding: 0.25rem;
+            color: var(--primary-blue);
+            font-size: 0.9rem;
         }
 
-        .flight-price-action {
+        .stops-info {
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .stops-info.direct {
+            color: var(--success);
+        }
+
+        .stops-info.has-stops {
+            color: #f59e0b;
+        }
+
+        /* Price Section */
+        .price-section {
             text-align: right;
-            width: 20%;
         }
 
-        .flight-price {
-            font-size: 1.5rem;
+        .price {
+            font-size: 1.75rem;
             font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 10px;
+            color: var(--navy);
+            margin-bottom: 0.5rem;
         }
 
-        .book-btn {
-            background: var(--gradient-primary);
+        .price-currency {
+            font-size: 1rem;
+        }
+
+        .select-btn {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--navy) 100%);
             color: white;
             border: none;
-            padding: 10px 25px;
-            border-radius: 25px;
-            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
+            width: 100%;
         }
 
-        .book-btn:hover {
+        .select-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 4px 15px rgba(14, 100, 166, 0.3);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 16px;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #cbd5e1;
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state h3 {
+            color: var(--navy);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: #64748b;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Loading State */
+        .loading-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .loading-spinner {
+            font-size: 3rem;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .flight-card {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .airline-section,
+            .price-section {
+                justify-content: center;
+                text-align: center;
+            }
+
+            .route-section {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Footer */
+        .simple-footer {
+            background: var(--navy);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .simple-footer p {
+            opacity: 0.8;
         }
     </style>
 </head>
 
 <body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="index.html" class="logo">
-                <div class="logo-icon">
-                    <i class="fa-solid fa-paper-plane"></i>
-                </div>
-                Coast to Coast Journeys
+    <!-- Header -->
+    <header class="simple-header">
+        <div class="header-content">
+            <a href="index.html" class="logo-link">
+                <img src="assets/images/logo.jpg" alt="Logo">
+                <span>Coast to Coast Journeys</span>
             </a>
-            <div class="nav-links">
+            <nav class="nav-links">
                 <a href="index.html">Home</a>
-                <a href="#" class="active">Flights</a>
+                <a href="index.html#flights" class="active">Flights</a>
                 <a href="hotel-results.html">Hotels</a>
-                <a href="#">Deals</a>
-                <a href="#">Contact</a>
-                <a href="admin/login.html" class="admin-link">Admin</a>
-            </div>
-            <div class="nav-auth">
-                <button class="btn-login"><i class="fa-regular fa-user"></i> Login</button>
-            </div>
+                <a href="index.html#deals">Deals</a>
+                <a href="index.html#contact">Contact</a>
+            </nav>
         </div>
-    </nav>
+    </header>
 
     <!-- Search Summary -->
     <div class="search-summary-bar">
-        <div class="container">
+        <div class="summary-container">
             <div class="summary-content">
                 <div class="summary-details">
-                    <h1>Flights from <span id="summaryOrigin">...</span> to <span id="summaryDest">...</span></h1>
-                    <p id="summaryDates">...</p>
+                    <h1><i class="fas fa-plane"></i> Flights: <span id="summaryOrigin">...</span> → <span
+                            id="summaryDest">...</span></h1>
+                    <p id="summaryDates">Loading flight details...</p>
                 </div>
                 <button class="btn-modify" onclick="window.location.href='index.html'">
-                    <i class="fa-solid fa-pen"></i> Modify Search
+                    <i class="fas fa-edit"></i> Modify Search
                 </button>
             </div>
         </div>
     </div>
 
-    <div class="results-container">
-        <!-- Sidebar Filters -->
-        <aside class="filters-sidebar">
-            <div class="filter-header">
-                <h3><i class="fa-solid fa-filter"></i> Filters</h3>
-                <button class="clear-filters">Clear All</button>
-            </div>
-
-            <div class="filter-group">
-                <h4>Stops</h4>
-                <label class="checkbox-container">
-                    <input type="checkbox" checked>
-                    <span class="checkmark"></span>
-                    Direct
-                </label>
-                <label class="checkbox-container">
-                    <input type="checkbox" checked>
-                    <span class="checkmark"></span>
-                    1 Stop
-                </label>
-            </div>
-
-            <div class="filter-group">
-                <h4>Airlines</h4>
-                <div id="airlineFilters">
-                    <!-- Dynamic -->
+    <!-- Main Content -->
+    <main class="main-container">
+        <div class="results-grid">
+            <!-- Filters Sidebar -->
+            <aside class="filters-panel">
+                <div class="filters-header">
+                    <h3><i class="fas fa-sliders-h"></i> Filters</h3>
+                    <button class="clear-btn" id="clearFiltersBtn">Clear All</button>
                 </div>
-            </div>
-        </aside>
 
-        <!-- Main Results -->
-        <main class="results-content">
-            <div class="results-header">
-                <h2 id="resultsCount">Loading flights...</h2>
-                <div class="sort-options">
-                    <label>Sort by:</label>
-                    <select id="sortSelect">
+                <div class="filter-group">
+                    <h4>Stops</h4>
+                    <label class="filter-option">
+                        <input type="checkbox" id="filterDirect" checked>
+                        <span>Direct flights</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox" id="filter1Stop" checked>
+                        <span>1 Stop</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox" id="filter2Stop" checked>
+                        <span>2+ Stops</span>
+                    </label>
+                </div>
+
+                <div class="filter-group">
+                    <h4>Airlines</h4>
+                    <div id="airlineFilters">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <h4>Departure Time</h4>
+                    <label class="filter-option">
+                        <input type="checkbox" checked>
+                        <span>🌅 Morning (6AM - 12PM)</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox" checked>
+                        <span>☀️ Afternoon (12PM - 6PM)</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox" checked>
+                        <span>🌙 Evening (6PM - 12AM)</span>
+                    </label>
+                </div>
+            </aside>
+
+            <!-- Results -->
+            <section class="results-panel">
+                <div class="results-header">
+                    <span class="results-count" id="resultsCount">
+                        <i class="fas fa-spinner fa-spin"></i> Loading flights...
+                    </span>
+                    <select class="sort-select" id="sortSelect">
                         <option value="price_asc">Price: Low to High</option>
+                        <option value="price_desc">Price: High to Low</option>
                         <option value="duration_asc">Duration: Shortest</option>
                         <option value="depart_asc">Departure: Earliest</option>
                     </select>
                 </div>
-            </div>
 
-            <div id="outboundFlights" class="flights-list">
-                <!-- Flight Cards injected here -->
-            </div>
-        </main>
-    </div>
+                <div class="flights-list" id="flightsList">
+                    <!-- Flight cards will be injected here -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="simple-footer">
+        <p>&copy; 2026 Coast to Coast Journeys. All rights reserved.</p>
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -212,58 +607,147 @@
             const params = JSON.parse(sessionStorage.getItem('ctc_flight_search_params'));
 
             if (!results || !params) {
-                window.location.href = 'index.html';
+                document.getElementById('flightsList').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <h3>No search results</h3>
+                        <p>Please search for flights from the home page</p>
+                        <button class="select-btn" style="max-width: 200px; margin: 0 auto;" onclick="window.location.href='index.html'">
+                            Go to Home
+                        </button>
+                    </div>
+                `;
+                document.getElementById('resultsCount').innerHTML = '0 flights found';
                 return;
             }
 
             // Update Summary
-            document.getElementById('summaryOrigin').textContent = params.from;
-            document.getElementById('summaryDest').textContent = params.to;
-            document.getElementById('summaryDates').textContent =
-                `${new Date(params.departDate).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}` +
-                (params.returnDate ? ` - ${new Date(params.returnDate).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}` : '');
+            document.getElementById('summaryOrigin').textContent = params.from || 'Origin';
+            document.getElementById('summaryDest').textContent = params.to || 'Destination';
+
+            const departDate = new Date(params.departDate);
+            let dateStr = departDate.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+            if (params.returnDate) {
+                const returnDate = new Date(params.returnDate);
+                dateStr += ` - ${returnDate.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}`;
+            }
+            dateStr += ` • ${params.travelers || '1 Traveler'} • ${params.class || 'Economy'}`;
+            document.getElementById('summaryDates').textContent = dateStr;
 
             // Render Flights
-            const container = document.getElementById('outboundFlights');
-            const count = document.getElementById('resultsCount');
+            const container = document.getElementById('flightsList');
+            const countEl = document.getElementById('resultsCount');
 
             const flights = results.outbound || [];
-            count.textContent = `${flights.length} flights found`;
 
-            flights.forEach(flight => {
-                const card = document.createElement('div');
-                card.className = 'flight-card';
-                card.innerHTML = `
-                    <div class="airline-info">
-                        <img src="${flight.airline.logo}" alt="${flight.airline.name}" class="airline-logo">
-                        <div>
-                            <h4>${flight.airline.name}</h4>
-                            <span class="flight-number">${flight.flight_number}</span>
-                        </div>
-                    </div>
-                    <div class="flight-route">
-                        <div class="route-point">
-                            <div class="route-time">${flight.depart_time}</div>
-                            <div class="route-code">${flight.origin}</div>
-                        </div>
-                        <div class="flight-duration">
-                            <span class="duration-text">${flight.duration}</span>
-                            <div class="duration-line"></div>
-                            <span class="stops-text">${flight.stops === 0 ? 'Direct' : flight.stops + ' Stop'}</span>
-                        </div>
-                        <div class="route-point">
-                            <div class="route-time">${flight.arrival_time}${flight.next_day ? '<sup>+1</sup>' : ''}</div>
-                            <div class="route-code">${flight.destination}</div>
-                        </div>
-                    </div>
-                    <div class="flight-price-action">
-                        <div class="flight-price">$${flight.price}</div>
-                        <button class="book-btn">Select</button>
+            if (flights.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-plane-slash"></i>
+                        <h3>No flights found</h3>
+                        <p>Try adjusting your search criteria</p>
+                        <button class="select-btn" style="max-width: 200px; margin: 0 auto;" onclick="window.location.href='index.html'">
+                            Modify Search
+                        </button>
                     </div>
                 `;
-                container.appendChild(card);
+                countEl.innerHTML = '0 flights found';
+                return;
+            }
+
+            countEl.innerHTML = `<strong>${flights.length}</strong> flights found`;
+
+            // Populate airline filters
+            const airlines = [...new Set(flights.map(f => f.airline?.name))].filter(Boolean);
+            const airlineFiltersEl = document.getElementById('airlineFilters');
+            airlineFiltersEl.innerHTML = airlines.map(airline => `
+                <label class="filter-option">
+                    <input type="checkbox" checked data-airline="${airline}">
+                    <span>${airline}</span>
+                </label>
+            `).join('');
+
+            // Render flights
+            renderFlights(flights);
+
+            // Sorting
+            document.getElementById('sortSelect').addEventListener('change', (e) => {
+                let sorted = [...flights];
+                switch (e.target.value) {
+                    case 'price_asc':
+                        sorted.sort((a, b) => a.price - b.price);
+                        break;
+                    case 'price_desc':
+                        sorted.sort((a, b) => b.price - a.price);
+                        break;
+                    case 'duration_asc':
+                        sorted.sort((a, b) => parseDuration(a.duration) - parseDuration(b.duration));
+                        break;
+                    case 'depart_asc':
+                        sorted.sort((a, b) => a.depart_time.localeCompare(b.depart_time));
+                        break;
+                }
+                renderFlights(sorted);
             });
+
+            function parseDuration(dur) {
+                const match = dur?.match(/(\d+)h\s*(\d+)?m?/);
+                if (match) {
+                    return parseInt(match[1]) * 60 + (parseInt(match[2]) || 0);
+                }
+                return 0;
+            }
+
+            function renderFlights(flightList) {
+                container.innerHTML = flightList.map(flight => `
+                    <div class="flight-card">
+                        <div class="airline-section">
+                            <img src="${flight.airline?.logo || 'https://via.placeholder.com/48'}" 
+                                 alt="${flight.airline?.name}" 
+                                 class="airline-logo"
+                                 onerror="this.src='https://via.placeholder.com/48?text=✈'">
+                            <div class="airline-details">
+                                <h4>${flight.airline?.name || 'Airline'}</h4>
+                                <span class="flight-number">${flight.flight_number || ''}</span>
+                            </div>
+                        </div>
+
+                        <div class="route-section">
+                            <div class="time-point">
+                                <div class="time">${flight.depart_time}</div>
+                                <div class="airport-code">${flight.origin}</div>
+                            </div>
+
+                            <div class="duration-section">
+                                <div class="duration-time">${flight.duration}</div>
+                                <div class="duration-line"></div>
+                                <div class="stops-info ${flight.stops === 0 ? 'direct' : 'has-stops'}">
+                                    ${flight.stops === 0 ? 'Direct' : flight.stops + ' Stop' + (flight.stops > 1 ? 's' : '')}
+                                    ${flight.stop_city ? ' via ' + flight.stop_city : ''}
+                                </div>
+                            </div>
+
+                            <div class="time-point">
+                                <div class="time">${flight.arrival_time}${flight.next_day ? '<sup>+1</sup>' : ''}</div>
+                                <div class="airport-code">${flight.destination}</div>
+                            </div>
+                        </div>
+
+                        <div class="price-section">
+                            <div class="price"><span class="price-currency">$</span>${flight.price}</div>
+                            <button class="select-btn" onclick="selectFlight('${flight.id}')">
+                                Select <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
         });
+
+        function selectFlight(flightId) {
+            alert('Flight booking coming soon! Selected flight: ' + flightId);
+            // TODO: Implement flight booking flow
+        }
     </script>
 </body>
 
