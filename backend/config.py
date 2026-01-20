@@ -33,6 +33,11 @@ class Config:
     # Google Maps Configuration
     GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY')
     
+    # Razorpay Payment Gateway Configuration
+    RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID')
+    RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET')
+    RAZORPAY_WEBHOOK_SECRET = os.getenv('RAZORPAY_WEBHOOK_SECRET')
+    
     @classmethod
     def validate(cls):
         """Validate required configuration"""

@@ -1,7 +1,7 @@
-# Environment variables
+# Environment Variables (CRITICAL - DO NOT COMMIT)
 .env
 .env.local
-.env.production
+.env.*.local
 
 # Python
 __pycache__/
@@ -9,6 +9,10 @@ __pycache__/
 *$py.class
 *.so
 .Python
+backend/venv/
+venv/
+ENV/
+env/
 build/
 develop-eggs/
 dist/
@@ -24,43 +28,56 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-venv/
-env/
-.venv/
 
 # IDE
-.idea/
 .vscode/
+.idea/
 *.swp
 *.swo
 *~
-
-# OS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
 
 # Logs
-logs/
 *.log
-npm-debug.log*
-
-# Dependencies
-node_modules/
-
-# Flask
-instance/
-.webassets-cache
-
-# Testing
-.coverage
-.pytest_cache/
-htmlcov/
+logs/
 
 # Database
 *.db
+*.sqlite
 *.sqlite3
+
+# Certificates and Keys (IMPORTANT)
+*.pem
+*.key
+*.crt
+docs/hotelbeds_credentials.pem
+docs/hotelbeds_certificate.json
+
+# Node modules (if using npm)
+node_modules/
+
+# Temporary files
+*.tmp
+tmp/
+temp/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+
+# Test files
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Artifacts (brain directory)
+.gemini/
+
+# Generated files
+docs/HotelBeds_Certificate.html
+convert_to_pdf.py
+generate_pem.py

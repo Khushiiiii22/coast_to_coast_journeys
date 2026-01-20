@@ -249,6 +249,9 @@ function createHotelCard(hotel) {
                     <span class="current-price">${price}</span>
                     <span class="per-night">per night</span>
                 </div>
+                <button class="book-now-btn" data-hotel-id="${hotel.id}" style="background: linear-gradient(135deg, #28a745, #20c997); margin-right: 10px;">
+                    <i class="fas fa-check"></i> Book Now
+                </button>
                 <button class="view-deal-btn" data-hotel-id="${hotel.id}">
                     View Deal <i class="fas fa-arrow-right"></i>
                 </button>
@@ -256,6 +259,12 @@ function createHotelCard(hotel) {
             <p class="meal-plan"><i class="fas fa-utensils"></i> ${mealPlan}</p>
         </div>
     `;
+
+    // Add click event to book now button
+    card.querySelector('.book-now-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        bookHotel(hotel);
+    });
 
     // Add click event to view deal button
     card.querySelector('.view-deal-btn').addEventListener('click', (e) => {
@@ -297,6 +306,33 @@ function viewHotelDetails(hotel) {
 
     // Navigate to hotel details page
     window.location.href = `hotel-details.html?id=${hotel.id}`;
+}
+
+/**
+ * Book hotel - redirect to payment
+ */
+function bookHotel(hotel) {
+    const searchParams = SearchSession.getSearchParams();
+    const nights = HotelUtils.calculateNights(searchParams.checkin, searchParams.checkout);
+
+    // Prepare booking data
+    const bookingData = {
+        hotel: {
+            name: hotel.name,
+            image: hotel.image || hotel.images?.[0],
+            price: hotel.price || hotel.rates?.[0]?.price || 0,
+            roomType: hotel.rates?.[0]?.room_name || 'Standard Room'
+        },
+        searchParams: searchParams,
+        nights: nights,
+        booking_id: 'BK' + Date.now() // Temporary booking ID
+    };
+
+    // Save to sessionStorage
+    sessionStorage.setItem('pendingBooking', JSON.stringify(bookingData));
+
+    // Redirect to payment checkout
+    window.location.href = 'payment-checkout.html';
 }
 
 /**

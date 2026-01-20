@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Checkout | Coast to Coast Journeys</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .checkout-container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .booking-summary {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .hotel-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .booking-details {
+            margin: 20px 0;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .price-summary {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 100px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .total-row {
+            border-top: 2px solid #0066cc;
+            border-bottom: none;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0066cc;
+        }
+
+        .pay-button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #0066cc, #00509e);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .pay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 102, 204, 0.3);
+        }
+
+        .pay-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .secure-badge {
+            text-align: center;
+            margin-top: 15px;
+            color: #28a745;
+            font-size: 0.9rem;
+        }
+
+        .secure-badge i {
+            margin-right: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .price-summary {
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-plane"></i>
+                Coast to Coast Journeys
+            </a>
+        </div>
+    </nav>
+
+    <div class="checkout-container">
+        <h1><i class="fas fa-credit-card"></i> Complete Your Booking</h1>
+
+        <div class="checkout-grid">
+            <!-- Booking Summary -->
+            <div class="booking-summary">
+                <h2>Booking Summary</h2>
+                <img id="hotelImage" class="hotel-image" src="" alt="Hotel">
+
+                <h3 id="hotelName">Loading...</h3>
+
+                <div class="booking-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Check-in</span>
+                        <span class="detail-value" id="checkin">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Check-out</span>
+                        <span class="detail-value" id="checkout">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Nights</span>
+                        <span class="detail-value" id="nights">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Guests</span>
+                        <span class="detail-value" id="guests">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Room Type</span>
+                        <span class="detail-value" id="roomType">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Price Summary -->
+            <div class="price-summary">
+                <h2>Price Breakdown</h2>
+
+                <div class="price-row">
+                    <span>Room Rate</span>
+                    <span id="basePrice">₹0</span>
+                </div>
+                <div class="price-row">
+                    <span>Taxes & Fees</span>
+                    <span id="taxes">₹0</span>
+                </div>
+                <div class="price-row total-row">
+                    <span>Total Amount</span>
+                    <span id="totalAmount">₹0</span>
+                </div>
+
+                <button class="pay-button" id="payButton" onclick="initiatePayment()">
+                    <i class="fas fa-lock"></i> Pay Now
+                </button>
+
+                <div class="secure-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    100% Secure Payment via Razorpay
+                </div>
+
+                <div style="margin-top: 20px; text-align: center;">
+                    <img src="https://razorpay.com/assets/razorpay-glyph.svg" alt="Razorpay"
+                        style="height: 24px; opacity: 0.6;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Razorpay Checkout Script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <script>
+        // Get booking details from sessionStorage
+        const bookingData = JSON.parse(sessionStorage.getItem('pendingBooking') || '{}');
+
+        // Populate booking details
+        function loadBookingDetails() {
+            if (!bookingData.hotel) {
+                alert('No booking data found! Redirecting to home...');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const hotel = bookingData.hotel;
+            const searchParams = bookingData.searchParams;
+
+            // Hotel details
+            document.getElementById('hotelName').textContent = hotel.name || 'Hotel';
+            document.getElementById('hotelImage').src = hotel.image || 'https://via.placeholder.com/800x400?text=Hotel';
+
+            // Booking details
+            document.getElementById('checkin').textContent = searchParams.checkin || '-';
+            document.getElementById('checkout').textContent = searchParams.checkout || '-';
+            document.getElementById('nights').textContent = bookingData.nights || '-';
+            document.getElementById('guests').textContent = `${searchParams.adults} Adults`;
+            document.getElementById('roomType').textContent = hotel.roomType || 'Standard Room';
+
+            // Price breakdown
+            const basePrice = parseFloat(hotel.price || 0);
+            const taxes = basePrice * 0.18; // 18% GST
+            const total = basePrice + taxes;
+
+            document.getElementById('basePrice').textContent = `₹${basePrice.toFixed(2)}`;
+            document.getElementById('taxes').textContent = `₹${taxes.toFixed(2)}`;
+            document.getElementById('totalAmount').textContent = `₹${total.toFixed(2)}`;
+
+            // Store for payment
+            bookingData.total = total;
+        }
+
+        // Initiate Razorpay payment
+        async function initiatePayment() {
+            const payButton = document.getElementById('payButton');
+            payButton.disabled = true;
+            payButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+            try {
+                // Create order on backend
+                const response = await fetch('/api/payment/create-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        amount: bookingData.total,
+                        currency: 'INR',
+                        booking_details: {
+                            hotel_name: bookingData.hotel.name,
+                            checkin: bookingData.searchParams.checkin,
+                            checkout: bookingData.searchParams.checkout
+                        }
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to create order');
+                }
+
+                // Initialize Razorpay checkout
+                const options = {
+                    key: data.key_id,
+                    amount: data.amount,
+                    currency: data.currency,
+                    order_id: data.order_id,
+                    name: 'Coast to Coast Journeys',
+                    description: `Booking for ${bookingData.hotel.name}`,
+                    image: 'https://via.placeholder.com/100x100?text=C2C',
+                    handler: async function (response) {
+                        // Payment successful - verify on backend
+                        await verifyPayment(response);
+                    },
+                    prefill: {
+                        name: bookingData.guestName || '',
+                        email: bookingData.email || '',
+                        contact: bookingData.phone || ''
+                    },
+                    theme: {
+                        color: '#0066cc'
+                    },
+                    modal: {
+                        ondismiss: function () {
+                            payButton.disabled = false;
+                            payButton.innerHTML = '<i class="fas fa-lock"></i> Pay Now';
+                        }
+                    }
+                };
+
+                const razorpay = new Razorpay(options);
+                razorpay.open();
+
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('Payment failed: ' + error.message);
+                payButton.disabled = false;
+                payButton.innerHTML = '<i class="fas fa-lock"></i> Pay Now';
+            }
+        }
+
+        // Verify payment on backend
+        async function verifyPayment(razorpayResponse) {
+            try {
+                const response = await fetch('/api/payment/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        razorpay_order_id: razorpayResponse.razorpay_order_id,
+                        razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+                        razorpay_signature: razorpayResponse.razorpay_signature,
+                        booking_id: bookingData.booking_id
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Payment verified - redirect to success page
+                    sessionStorage.setItem('paymentSuccess', JSON.stringify({
+                        payment_id: razorpayResponse.razorpay_payment_id,
+                        amount: bookingData.total,
+                        hotel: bookingData.hotel.name
+                    }));
+
+                    window.location.href = 'payment-success.html';
+                } else {
+                    alert('Payment verification failed! Please contact support.');
+                }
+
+            } catch (error) {
+                console.error('Verification error:', error);
+                alert('Payment verification failed: ' + error.message);
+            }
+        }
+
+        // Load booking details on page load
+        document.addEventListener('DOMContentLoaded', loadBookingDetails);
+    </script>
+</body>
+
+</html>

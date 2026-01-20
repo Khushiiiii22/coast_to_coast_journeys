@@ -479,7 +479,7 @@
             }
         }
 
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
 
             const email = document.getElementById('email').value;
@@ -494,27 +494,39 @@
             loginBtn.classList.add('loading');
             loginBtn.querySelector('span').textContent = 'Signing In...';
 
-            // Simulate login (replace with actual API call)
-            setTimeout(() => {
-                // Demo credentials: admin@ctcjourneys.com / admin123
-                if (email === 'admin@ctcjourneys.com' && password === 'admin123') {
-                    // Set auth token
-                    localStorage.setItem('admin_token', 'demo_token_' + Date.now());
-                    localStorage.setItem('admin_user', JSON.stringify({
-                        name: 'Super Admin',
-                        email: email,
-                        role: 'admin'
-                    }));
+            try {
+                // Real API call
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Save auth token
+                    localStorage.setItem('admin_token', data.data.token);
+                    localStorage.setItem('admin_user', JSON.stringify(data.data.user));
 
                     // Redirect to dashboard
                     window.location.href = 'dashboard.html';
                 } else {
                     // Show error
+                    errorMessage.querySelector('span').textContent = data.error || 'Invalid email or password';
                     errorMessage.classList.add('show');
                     loginBtn.classList.remove('loading');
                     loginBtn.querySelector('span').textContent = 'Sign In';
                 }
-            }, 1500);
+            } catch (error) {
+                console.error('Login error:', error);
+                errorMessage.querySelector('span').textContent = 'Connection error. Please try again.';
+                errorMessage.classList.add('show');
+                loginBtn.classList.remove('loading');
+                loginBtn.querySelector('span').textContent = 'Sign In';
+            }
         }
 
         // Check if already logged in

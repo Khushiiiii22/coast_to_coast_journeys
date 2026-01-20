@@ -16,6 +16,8 @@ from config import Config, get_config
 from routes.hotel_routes import hotel_bp
 from routes.maps_routes import maps_bp
 from routes.flight_routes import flight_bp
+from routes.admin_routes import admin_bp
+from routes.payment_routes import payment_bp
 
 
 def create_app():
@@ -51,6 +53,28 @@ def create_app():
     app.register_blueprint(hotel_bp)
     app.register_blueprint(maps_bp)
     app.register_blueprint(flight_bp)
+    app.register_blueprint(admin_bp)
+    app.register_blueprint(payment_bp)
+    
+    # Initialize admin service
+    from services.admin_service import AdminService
+    from services.supabase_service import supabase_service
+    
+    admin_service = AdminService(supabase_service.client, app.config['SECRET_KEY'])
+    app.config['ADMIN_SERVICE'] = admin_service
+    app.config['SUPABASE'] = supabase_service.client
+    
+    # Initialize Razorpay service
+    from services.razorpay_service import RazorpayService
+    razorpay_key = app.config.get('RAZORPAY_KEY_ID')
+    razorpay_secret = app.config.get('RAZORPAY_KEY_SECRET')
+    
+    if razorpay_key and razorpay_secret:
+        razorpay_service = RazorpayService(razorpay_key, razorpay_secret)
+        app.config['RAZORPAY_SERVICE'] = razorpay_service
+        print("✅ Razorpay payment service initialized")
+    else:
+        print("⚠️  Warning: Razorpay credentials not found in .env")
     
     # Serve frontend pages
     @app.route('/')

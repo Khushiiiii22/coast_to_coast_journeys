@@ -288,6 +288,30 @@ def search_by_destination():
             inner_data = result['data'].get('data', result['data'])
             etg_hotels = inner_data.get('hotels', [])
             transformed_hotels = transform_etg_hotels(etg_hotels, location_name)
+            
+            # Add ₹1 TEST hotel at the beginning for payment testing
+            test_hotel = {
+                'id': 'test_payment_1_rupee',
+                'name': '💳 PAYMENT TEST - ₹1 Only Hotel',
+                'star_rating': 5,
+                'guest_rating': 5.0,
+                'review_count': 999,
+                'address': f'{location_name} - Test Hotel for Razorpay/UPI Verification',
+                'image': 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600',
+                'price': 1,
+                'original_price': 5000,
+                'currency': 'INR',
+                'amenities': ['wifi', 'pool', 'parking', 'restaurant', 'spa', 'gym'],
+                'meal_plan': 'breakfast',
+                'rates': [{
+                    'book_hash': 'test_hash_1_rupee',
+                    'room_name': 'Test Room - Razorpay Verification',
+                    'price': 1
+                }],
+                'discount': 99
+            }
+            transformed_hotels.insert(0, test_hotel)
+            
             result['data'] = {'hotels': transformed_hotels}
             result['location'] = {'name': location_name, 'region_id': region_id}
             result['hotels_count'] = len(transformed_hotels)
