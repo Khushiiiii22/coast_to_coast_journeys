@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | Coast to Coast Journeys Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="css/admin.css">
+
+    <style>
+        /* Settings Specific Styles */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+            min-height: calc(100vh - 200px);
+        }
+
+        /* Settings Navigation */
+        .settings-nav {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .settings-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #64748b;
+            text-decoration: none;
+            margin-bottom: 0.25rem;
+        }
+
+        .settings-nav-item:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .settings-nav-item.active {
+            background: linear-gradient(135deg, #0e64a6, #1a365d);
+            color: white;
+        }
+
+        .settings-nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .settings-nav-section {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.75rem 1rem 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Settings Content */
+        .settings-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .settings-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        .settings-section-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .settings-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .settings-section-title i {
+            color: #0e64a6;
+        }
+
+        .settings-section-body {
+            padding: 1.5rem;
+        }
+
+        /* Form Styles */
+        .settings-form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-form-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .settings-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .settings-form-group.full-width {
+            grid-column: span 2;
+        }
+
+        .settings-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #1e293b;
+        }
+
+        .settings-label-desc {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 400;
+        }
+
+        .settings-input {
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        .settings-input:focus {
+            outline: none;
+            border-color: #0e64a6;
+            box-shadow: 0 0 0 3px rgba(14, 100, 166, 0.1);
+        }
+
+        .settings-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Toggle Switch */
+        .settings-toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .settings-toggle-row:last-child {
+            border-bottom: none;
+        }
+
+        .settings-toggle-info {
+            flex: 1;
+        }
+
+        .settings-toggle-label {
+            font-weight: 500;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .settings-toggle-desc {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: 0.3s;
+            border-radius: 26px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-switch input:checked+.toggle-slider {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .toggle-switch input:checked+.toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Logo Upload */
+        .logo-upload {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logo-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #0e64a6;
+            border: 2px dashed #e2e8f0;
+        }
+
+        .logo-upload-btn {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+
+        .status-dot.warning {
+            background: #f59e0b;
+        }
+
+        .status-dot.error {
+            background: #ef4444;
+        }
+
+        /* API Key Display */
+        .api-key-display {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f8fafc;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .api-key-value {
+            flex: 1;
+            color: #64748b;
+        }
+
+        .api-key-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #64748b;
+            transition: color 0.2s;
+        }
+
+        .api-key-btn:hover {
+            color: #0e64a6;
+        }
+
+        /* Danger Zone */
+        .danger-zone {
+            border: 1px solid #fecaca;
+            background: #fef2f2;
+        }
+
+        .danger-zone .settings-section-header {
+            background: #fef2f2;
+            border-bottom-color: #fecaca;
+        }
+
+        .danger-zone .settings-section-title {
+            color: #dc2626;
+        }
+
+        .danger-zone .settings-section-title i {
+            color: #dc2626;
+        }
+
+        @media (max-width: 1024px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .settings-nav {
+                position: static;
+            }
+
+            .settings-form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .settings-form-group.full-width {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">C</div>
+                <span class="sidebar-brand">CTC Admin</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Main</span>
+                    <a href="dashboard.html" class="nav-item">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="bookings.html" class="nav-item">
+                        <i class="fas fa-hotel"></i>
+                        <span>Hotel Bookings</span>
+                    </a>
+                    <a href="flights.html" class="nav-item">
+                        <i class="fas fa-plane"></i>
+                        <span>Flight Bookings</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Finance</span>
+                    <a href="payments.html" class="nav-item">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Payments</span>
+                    </a>
+                    <a href="invoices.html" class="nav-item">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>Invoices</span>
+                    </a>
+                    <a href="refunds.html" class="nav-item">
+                        <i class="fas fa-undo"></i>
+                        <span>Refunds</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Operations</span>
+                    <a href="markup.html" class="nav-item">
+                        <i class="fas fa-percentage"></i>
+                        <span>Markup Tool</span>
+                    </a>
+                    <a href="suppliers.html" class="nav-item">
+                        <i class="fas fa-handshake"></i>
+                        <span>Suppliers</span>
+                    </a>
+                    <a href="customers.html" class="nav-item">
+                        <i class="fas fa-users"></i>
+                        <span>Customers</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Analytics</span>
+                    <a href="reports.html" class="nav-item">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Reports</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">System</span>
+                    <a href="users.html" class="nav-item">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Admin Users</span>
+                    </a>
+                    <a href="settings.html" class="nav-item active">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                    <a href="activity-logs.html" class="nav-item">
+                        <i class="fas fa-history"></i>
+                        <span>Activity Logs</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">SA</div>
+                    <div class="admin-info">
+                        <div class="admin-name">Super Admin</div>
+                        <div class="admin-role">Administrator</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Settings</h1>
+                </div>
+
+                <div class="header-right">
+                    <button class="btn btn-primary" onclick="saveAllSettings()">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <div class="settings-grid">
+                    <!-- Settings Navigation -->
+                    <nav class="settings-nav">
+                        <a href="#company" class="settings-nav-item active" onclick="scrollToSection('company')">
+                            <i class="fas fa-building"></i>
+                            Company Profile
+                        </a>
+                        <a href="#branding" class="settings-nav-item" onclick="scrollToSection('branding')">
+                            <i class="fas fa-palette"></i>
+                            Branding
+                        </a>
+
+                        <div class="settings-nav-section">Configuration</div>
+                        <a href="#general" class="settings-nav-item" onclick="scrollToSection('general')">
+                            <i class="fas fa-sliders-h"></i>
+                            General Settings
+                        </a>
+                        <a href="#booking" class="settings-nav-item" onclick="scrollToSection('booking')">
+                            <i class="fas fa-calendar-alt"></i>
+                            Booking Settings
+                        </a>
+                        <a href="#email" class="settings-nav-item" onclick="scrollToSection('email')">
+                            <i class="fas fa-envelope"></i>
+                            Email Settings
+                        </a>
+
+                        <div class="settings-nav-section">Integrations</div>
+                        <a href="#payment" class="settings-nav-item" onclick="scrollToSection('payment')">
+                            <i class="fas fa-credit-card"></i>
+                            Payment Gateway
+                        </a>
+                        <a href="#api" class="settings-nav-item" onclick="scrollToSection('api')">
+                            <i class="fas fa-plug"></i>
+                            API Configuration
+                        </a>
+
+                        <div class="settings-nav-section">Security</div>
+                        <a href="#security" class="settings-nav-item" onclick="scrollToSection('security')">
+                            <i class="fas fa-shield-alt"></i>
+                            Security
+                        </a>
+                        <a href="#danger" class="settings-nav-item" onclick="scrollToSection('danger')">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Danger Zone
+                        </a>
+                    </nav>
+
+                    <!-- Settings Content -->
+                    <div class="settings-content">
+                        <!-- Company Profile -->
+                        <section class="settings-section" id="company">
+                            <div class="settings-section-header">
+                                <h2 class="settings-section-title">
+                                    <i class="fas fa-building"></i>
+                                    Company Profile
+                                </h2>
+                            </div>
+                            <div class="settings-section-body">
+                                <div class="settings-form-row">
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">Company Name</label>
+                                        <input type="text" class="settings-input" value="Coast to Coast Journeys">
+                                    </div>
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">Legal Name</label>
+                                        <input type="text" class="settings-input"
+                                            value="Coast to Coast Journeys Pvt. Ltd.">
+                                    </div>
+                                </div>
+                                <div class="settings-form-row">
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">Email</label>
+                                        <input type="email" class="settings-input" value="info@ctcjourneys.com">
+                                    </div>
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">Phone</label>
+                                        <input type="tel" class="settings-input" value="+91 1800 123 4567">
+                                    </div>
+                                </div>
+                                <div class="settings-form-row">
+                                    <div class="settings-form-group full-width">
+                                        <label class="settings-label">Address</label>
+                                        <textarea
+                                            class="settings-input settings-textarea">123, Travel Plaza, Connaught Place, New Delhi - 110001, India</textarea>
+                                    </div>
+                                </div>
+                                <div class="settings-form-row">
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">GST Number</label>
+                                        <input type="text" class="settings-input" value="07AABCU9603R1ZM">
+                                    </div>
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">PAN Number</label>
+                                        <input type="text" class="settings-input" value="AABCU9603R">
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Branding -->
+                        <section class="settings-section" id="branding">
+                            <div class="settings-section-header">
+                                <h2 class="settings-section-title">
+                                    <i class="fas fa-palette"></i>
+                                    Branding
+                                </h2>
+                            </div>
+                            <div class="settings-section-body">
+                                <div class="settings-form-row">
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">Company Logo</label>
+                                        <div class="logo-upload">
+                                            <div class="logo-preview">
+                                                <i class="fas fa-plane"></i>
+                                            </div>
+                                            <div class="logo-upload-btn">
+                                                <button class="btn btn-secondary">
+                                                    <i class="fas fa-upload"></i> Upload Logo
+                                                </button>
+                                                <span style="font-size: 0.8rem; color: #64748b;">PNG, JPG (max
+                                                    2MB)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">Favicon</label>
+                                        <div class="logo-upload">
+                                            <div class="logo-preview"
+                                                style="width: 48px; height: 48px; font-size: 1.25rem;">
+                                                C
+                                            </div>
+                                            <div class="logo-upload-btn">
+                                                <button class="btn btn-secondary btn-sm">
+                                                    <i class="fas fa-upload"></i> Upload
+                                                </button>
+                                                <span style="font-size: 0.8rem; color: #64748b;">32x32 ICO/PNG</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="settings-form-row">
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">Primary Color</label>
+                                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                            <input type="color" value="#0e64a6"
+                                                style="width: 50px; height: 40px; border: none; cursor: pointer;">
+                                            <input type="text" class="settings-input" value="#0e64a6"
+                                                style="width: 120px;">
+                                        </div>
+                                    </div>
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">Accent Color</label>
+                                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                            <input type="color" value="#f97316"
+                                                style="width: 50px; height: 40px; border: none; cursor: pointer;">
+                                            <input type="text" class="settings-input" value="#f97316"
+                                                style="width: 120px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- General Settings -->
+                        <section class="settings-section" id="general">
+                            <div class="settings-section-header">
+                                <h2 class="settings-section-title">
+                                    <i class="fas fa-sliders-h"></i>
+                                    General Settings
+                                </h2>
+                            </div>
+                            <div class="settings-section-body">
+                                <div class="settings-form-row">
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">Timezone</label>
+                                        <select class="settings-input">
+                                            <option value="Asia/Kolkata" selected>Asia/Kolkata (IST)</option>
+                                            <option value="UTC">UTC</option>
+                                            <option value="America/New_York">America/New_York (EST)</option>
+                                        </select>
+                                    </div>
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">Currency</label>
+                                        <select class="settings-input">
+                                            <option value="INR" selected>INR (₹)</option>
+                                            <option value="USD">USD ($)</option>
+                                            <option value="EUR">EUR (€)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="settings-form-row">
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">Date Format</label>
+                                        <select class="settings-input">
+                                            <option value="DD/MM/YYYY" selected>DD/MM/YYYY</option>
+                                            <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                            <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                        </select>
+                                    </div>
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">Language</label>
+                                        <select class="settings-input">
+                                            <option value="en" selected>English</option>
+                                            <option value="hi">हिंदी (Hindi)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Booking Settings -->
+                        <section class="settings-section" id="booking">
+                            <div class="settings-section-header">
+                                <h2 class="settings-section-title">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    Booking Settings
+                                </h2>
+                            </div>
+                            <div class="settings-section-body">
+                                <div class="settings-toggle-row">
+                                    <div class="settings-toggle-info">
+                                        <div class="settings-toggle-label">Auto-confirm Bookings</div>
+                                        <div class="settings-toggle-desc">Automatically confirm bookings after
+                                            successful payment</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="settings-toggle-row">
+                                    <div class="settings-toggle-info">
+                                        <div class="settings-toggle-label">Send Confirmation Emails</div>
+                                        <div class="settings-toggle-desc">Automatically send email confirmations to
+                                            customers</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="settings-toggle-row">
+                                    <div class="settings-toggle-info">
+                                        <div class="settings-toggle-label">Allow Cancellations</div>
+                                        <div class="settings-toggle-desc">Allow customers to request cancellations
+                                            through the website</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="settings-toggle-row">
+                                    <div class="settings-toggle-info">
+                                        <div class="settings-toggle-label">Maintenance Mode</div>
+                                        <div class="settings-toggle-desc">Disable booking functionality and show
+                                            maintenance message</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Email Settings -->
+                        <section class="settings-section" id="email">
+                            <div class="settings-section-header">
+                                <h2 class="settings-section-title">
+                                    <i class="fas fa-envelope"></i>
+                                    Email Settings
+                                </h2>
+                            </div>
+                            <div class="settings-section-body">
+                                <div class="settings-form-row">
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">SMTP Host</label>
+                                        <input type="text" class="settings-input" value="smtp.gmail.com">
+                                    </div>
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">SMTP Port</label>
+                                        <input type="text" class="settings-input" value="587">
+                                    </div>
+                                </div>
+                                <div class="settings-form-row">
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">SMTP Username</label>
+                                        <input type="text" class="settings-input" value="noreply@ctcjourneys.com">
+                                    </div>
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">SMTP Password</label>
+                                        <input type="password" class="settings-input" value="••••••••••">
+                                    </div>
+                                </div>
+                                <div class="settings-form-row">
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">From Name</label>
+                                        <input type="text" class="settings-input" value="Coast to Coast Journeys">
+                                    </div>
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">From Email</label>
+                                        <input type="email" class="settings-input" value="bookings@ctcjourneys.com">
+                                    </div>
+                                </div>
+                                <div style="margin-top: 1rem;">
+                                    <button class="btn btn-secondary" onclick="testEmailSettings()">
+                                        <i class="fas fa-paper-plane"></i> Send Test Email
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Payment Gateway -->
+                        <section class="settings-section" id="payment">
+                            <div class="settings-section-header">
+                                <h2 class="settings-section-title">
+                                    <i class="fas fa-credit-card"></i>
+                                    Payment Gateway (Razorpay)
+                                </h2>
+                                <div class="status-indicator">
+                                    <span class="status-dot"></span>
+                                    <span style="color: #10b981; font-size: 0.85rem;">Connected</span>
+                                </div>
+                            </div>
+                            <div class="settings-section-body">
+                                <div class="settings-form-row">
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">Razorpay Key ID</label>
+                                        <div class="api-key-display">
+                                            <span class="api-key-value">rzp_live_••••••••••••</span>
+                                            <button class="api-key-btn" title="Copy"><i
+                                                    class="fas fa-copy"></i></button>
+                                            <button class="api-key-btn" title="Reveal"><i
+                                                    class="fas fa-eye"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="settings-form-group">
+                                        <label class="settings-label">Razorpay Secret</label>
+                                        <div class="api-key-display">
+                                            <span class="api-key-value">••••••••••••••••••••</span>
+                                            <button class="api-key-btn" title="Copy"><i
+                                                    class="fas fa-copy"></i></button>
+                                            <button class="api-key-btn" title="Reveal"><i
+                                                    class="fas fa-eye"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="settings-toggle-row">
+                                    <div class="settings-toggle-info">
+                                        <div class="settings-toggle-label">Test Mode</div>
+                                        <div class="settings-toggle-desc">Use test API keys for development</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- API Configuration -->
+                        <section class="settings-section" id="api">
+                            <div class="settings-section-header">
+                                <h2 class="settings-section-title">
+                                    <i class="fas fa-plug"></i>
+                                    API Configuration
+                                </h2>
+                            </div>
+                            <div class="settings-section-body">
+                                <!-- RateHawk -->
+                                <div
+                                    style="background: #f8fafc; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                                    <div
+                                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <div
+                                                style="width: 40px; height: 40px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #0e64a6;">
+                                                RH</div>
+                                            <div>
+                                                <div style="font-weight: 600;">RateHawk (Hotels)</div>
+                                                <div style="font-size: 0.8rem; color: #64748b;">Hotel inventory API
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="status-indicator">
+                                            <span class="status-dot"></span>
+                                            <span style="color: #10b981; font-size: 0.85rem;">Active</span>
+                                        </div>
+                                    </div>
+                                    <div class="settings-form-row" style="margin-bottom: 0;">
+                                        <div class="settings-form-group">
+                                            <label class="settings-label">API Key ID</label>
+                                            <input type="text" class="settings-input" value="7085">
+                                        </div>
+                                        <div class="settings-form-group">
+                                            <label class="settings-label">API Secret</label>
+                                            <input type="password" class="settings-input" value="••••••••••••">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- TBO (Flights) -->
+                                <div style="background: #f8fafc; padding: 1rem; border-radius: 8px;">
+                                    <div
+                                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <div
+                                                style="width: 40px; height: 40px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #0e64a6;">
+                                                TB</div>
+                                            <div>
+                                                <div style="font-weight: 600;">TBO (Flights)</div>
+                                                <div style="font-size: 0.8rem; color: #64748b;">Flight booking API</div>
+                                            </div>
+                                        </div>
+                                        <div class="status-indicator">
+                                            <span class="status-dot warning"></span>
+                                            <span style="color: #f59e0b; font-size: 0.85rem;">Pending Setup</span>
+                                        </div>
+                                    </div>
+                                    <div class="settings-form-row" style="margin-bottom: 0;">
+                                        <div class="settings-form-group">
+                                            <label class="settings-label">Client ID</label>
+                                            <input type="text" class="settings-input" placeholder="Enter TBO Client ID">
+                                        </div>
+                                        <div class="settings-form-group">
+                                            <label class="settings-label">Username</label>
+                                            <input type="text" class="settings-input" placeholder="Enter TBO Username">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Security -->
+                        <section class="settings-section" id="security">
+                            <div class="settings-section-header">
+                                <h2 class="settings-section-title">
+                                    <i class="fas fa-shield-alt"></i>
+                                    Security Settings
+                                </h2>
+                            </div>
+                            <div class="settings-section-body">
+                                <div class="settings-toggle-row">
+                                    <div class="settings-toggle-info">
+                                        <div class="settings-toggle-label">Two-Factor Authentication</div>
+                                        <div class="settings-toggle-desc">Require 2FA for all admin accounts</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="settings-toggle-row">
+                                    <div class="settings-toggle-info">
+                                        <div class="settings-toggle-label">Session Timeout</div>
+                                        <div class="settings-toggle-desc">Auto-logout after 30 minutes of inactivity
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="settings-toggle-row">
+                                    <div class="settings-toggle-info">
+                                        <div class="settings-toggle-label">IP Whitelist</div>
+                                        <div class="settings-toggle-desc">Only allow access from specific IP addresses
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="settings-toggle-row">
+                                    <div class="settings-toggle-info">
+                                        <div class="settings-toggle-label">Login Notifications</div>
+                                        <div class="settings-toggle-desc">Send email alerts for new login attempts</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Danger Zone -->
+                        <section class="settings-section danger-zone" id="danger">
+                            <div class="settings-section-header">
+                                <h2 class="settings-section-title">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Danger Zone
+                                </h2>
+                            </div>
+                            <div class="settings-section-body">
+                                <div class="settings-toggle-row">
+                                    <div class="settings-toggle-info">
+                                        <div class="settings-toggle-label">Clear All Cache</div>
+                                        <div class="settings-toggle-desc">Clear system cache and temporary files</div>
+                                    </div>
+                                    <button class="btn btn-secondary" onclick="clearCache()">Clear Cache</button>
+                                </div>
+                                <div class="settings-toggle-row">
+                                    <div class="settings-toggle-info">
+                                        <div class="settings-toggle-label">Export All Data</div>
+                                        <div class="settings-toggle-desc">Download complete system data backup</div>
+                                    </div>
+                                    <button class="btn btn-secondary" onclick="exportData()">Export</button>
+                                </div>
+                                <div class="settings-toggle-row">
+                                    <div class="settings-toggle-info">
+                                        <div class="settings-toggle-label" style="color: #dc2626;">Reset System</div>
+                                        <div class="settings-toggle-desc">Warning: This will reset all settings to
+                                            default</div>
+                                    </div>
+                                    <button class="btn btn-danger" onclick="resetSystem()">Reset</button>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Admin JavaScript -->
+    <script src="js/admin.js"></script>
+    <script>
+        // Check authentication
+        document.addEventListener('DOMContentLoaded', function () {
+            const session = localStorage.getItem('admin_session');
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const sessionData = JSON.parse(session);
+                if (new Date(sessionData.expiresAt) <= new Date()) {
+                    localStorage.removeItem('admin_token');
+                    localStorage.removeItem('admin_user');
+                    localStorage.removeItem('admin_session');
+                    window.location.href = 'login.html';
+                }
+            } catch (e) {
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Scroll to section
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                // Update active nav item
+                document.querySelectorAll('.settings-nav-item').forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('href') === '#' + sectionId) {
+                        item.classList.add('active');
+                    }
+                });
+            }
+        }
+
+        // Save all settings
+        function saveAllSettings() {
+            // Log activity
+            const activityLog = JSON.parse(localStorage.getItem('admin_activity_log') || '[]');
+            activityLog.push({
+                action: 'update_settings',
+                user: JSON.parse(localStorage.getItem('admin_user') || '{}').username || 'admin',
+                timestamp: new Date().toISOString(),
+                details: 'Updated system settings'
+            });
+            localStorage.setItem('admin_activity_log', JSON.stringify(activityLog.slice(-100)));
+
+            showNotification('Settings saved successfully!', 'success');
+        }
+
+        // Test email settings
+        function testEmailSettings() {
+            showNotification('Sending test email...', 'info');
+            setTimeout(() => {
+                showNotification('Test email sent successfully!', 'success');
+            }, 2000);
+        }
+
+        // Clear cache
+        function clearCache() {
+            if (confirm('Are you sure you want to clear all cache?')) {
+                showNotification('Cache cleared successfully!', 'success');
+            }
+        }
+
+        // Export data
+        function exportData() {
+            showNotification('Preparing data export...', 'info');
+            setTimeout(() => {
+                showNotification('Data export ready for download!', 'success');
+            }, 2000);
+        }
+
+        // Reset system
+        function resetSystem() {
+            if (confirm('⚠️ WARNING: This will reset ALL settings to default. This action cannot be undone. Are you absolutely sure?')) {
+                if (confirm('Please confirm one more time. Type "RESET" to proceed.')) {
+                    showNotification('System reset initiated...', 'warning');
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

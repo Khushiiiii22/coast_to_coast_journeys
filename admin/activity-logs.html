@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Logs | Coast to Coast Journeys Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="css/admin.css">
+
+    <style>
+        /* Activity Logs Specific Styles */
+        .logs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logs-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .log-stat {
+            background: white;
+            padding: 1.25rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .log-stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .log-stat-icon.blue {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+
+        .log-stat-icon.green {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .log-stat-icon.orange {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+        }
+
+        .log-stat-icon.red {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .log-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .log-stat-label {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        /* Filters */
+        .filters-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-size: 0.85rem;
+            color: #64748b;
+            white-space: nowrap;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.5rem 1rem 0.5rem 40px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        /* Activity Timeline */
+        .activity-timeline {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        .activity-timeline-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .activity-timeline-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .activity-list {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.2s;
+        }
+
+        .activity-item:hover {
+            background: #f8fafc;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .activity-icon.login {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .activity-icon.logout {
+            background: rgba(100, 116, 139, 0.1);
+            color: #64748b;
+        }
+
+        .activity-icon.create {
+            background: rgba(14, 100, 166, 0.1);
+            color: #0e64a6;
+        }
+
+        .activity-icon.update {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .activity-icon.delete {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .activity-icon.view {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+
+        .activity-icon.settings {
+            background: rgba(6, 182, 212, 0.1);
+            color: #06b6d4;
+        }
+
+        .activity-icon.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 500;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-title strong {
+            color: #0e64a6;
+        }
+
+        .activity-description {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .activity-meta {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .activity-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .activity-time {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .activity-time-relative {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 0.125rem;
+        }
+
+        .activity-time-absolute {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        /* Failed Login Attempts */
+        .failed-attempts {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .failed-attempts-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #fecaca;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .failed-attempts-body {
+            padding: 1rem 1.5rem;
+        }
+
+        .failed-attempt-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #fecaca;
+        }
+
+        .failed-attempt-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .pagination-info {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .pagination-buttons {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .page-btn {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover,
+        .page-btn.active {
+            background: #0e64a6;
+            color: white;
+            border-color: #0e64a6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">C</div>
+                <span class="sidebar-brand">CTC Admin</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Main</span>
+                    <a href="dashboard.html" class="nav-item">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="bookings.html" class="nav-item">
+                        <i class="fas fa-hotel"></i>
+                        <span>Hotel Bookings</span>
+                    </a>
+                    <a href="flights.html" class="nav-item">
+                        <i class="fas fa-plane"></i>
+                        <span>Flight Bookings</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Finance</span>
+                    <a href="payments.html" class="nav-item">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Payments</span>
+                    </a>
+                    <a href="invoices.html" class="nav-item">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>Invoices</span>
+                    </a>
+                    <a href="refunds.html" class="nav-item">
+                        <i class="fas fa-undo"></i>
+                        <span>Refunds</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Operations</span>
+                    <a href="markup.html" class="nav-item">
+                        <i class="fas fa-percentage"></i>
+                        <span>Markup Tool</span>
+                    </a>
+                    <a href="suppliers.html" class="nav-item">
+                        <i class="fas fa-handshake"></i>
+                        <span>Suppliers</span>
+                    </a>
+                    <a href="customers.html" class="nav-item">
+                        <i class="fas fa-users"></i>
+                        <span>Customers</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Analytics</span>
+                    <a href="reports.html" class="nav-item">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Reports</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">System</span>
+                    <a href="users.html" class="nav-item">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Admin Users</span>
+                    </a>
+                    <a href="settings.html" class="nav-item">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                    <a href="activity-logs.html" class="nav-item active">
+                        <i class="fas fa-history"></i>
+                        <span>Activity Logs</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">SA</div>
+                    <div class="admin-info">
+                        <div class="admin-name">Super Admin</div>
+                        <div class="admin-role">Administrator</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Activity Logs</h1>
+                </div>
+
+                <div class="header-right">
+                    <button class="btn btn-secondary" onclick="exportLogs()">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                    <button class="btn btn-secondary" onclick="refreshLogs()">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <!-- Stats -->
+                <div class="logs-stats">
+                    <div class="log-stat">
+                        <div class="log-stat-icon blue">
+                            <i class="fas fa-list"></i>
+                        </div>
+                        <div>
+                            <div class="log-stat-value" id="totalActions">0</div>
+                            <div class="log-stat-label">Total Actions Today</div>
+                        </div>
+                    </div>
+                    <div class="log-stat">
+                        <div class="log-stat-icon green">
+                            <i class="fas fa-sign-in-alt"></i>
+                        </div>
+                        <div>
+                            <div class="log-stat-value" id="loginCount">0</div>
+                            <div class="log-stat-label">Successful Logins</div>
+                        </div>
+                    </div>
+                    <div class="log-stat">
+                        <div class="log-stat-icon red">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <div class="log-stat-value" id="failedLogins">0</div>
+                            <div class="log-stat-label">Failed Login Attempts</div>
+                        </div>
+                    </div>
+                    <div class="log-stat">
+                        <div class="log-stat-icon orange">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <div class="log-stat-value" id="activeUsers">1</div>
+                            <div class="log-stat-label">Active Users</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Failed Login Attempts Alert -->
+                <div class="failed-attempts" id="failedAttemptsSection" style="display: none;">
+                    <div class="failed-attempts-header">
+                        <i class="fas fa-shield-alt"></i>
+                        Recent Failed Login Attempts
+                    </div>
+                    <div class="failed-attempts-body" id="failedAttemptsList">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="filters-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="logSearch" placeholder="Search activities...">
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Action:</label>
+                        <select id="actionFilter">
+                            <option value="">All Actions</option>
+                            <option value="login">Login</option>
+                            <option value="logout">Logout</option>
+                            <option value="create">Create</option>
+                            <option value="update">Update</option>
+                            <option value="delete">Delete</option>
+                            <option value="view">View</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>User:</label>
+                        <select id="userFilter">
+                            <option value="">All Users</option>
+                            <option value="admin">Super Admin</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Date:</label>
+                        <input type="date" id="fromDate">
+                        <span>to</span>
+                        <input type="date" id="toDate">
+                    </div>
+
+                    <button class="btn btn-secondary" onclick="applyFilters()">
+                        <i class="fas fa-filter"></i> Apply
+                    </button>
+                </div>
+
+                <!-- Activity Timeline -->
+                <div class="activity-timeline">
+                    <div class="activity-timeline-header">
+                        <h2 class="activity-timeline-title">Activity History</h2>
+                        <span style="font-size: 0.85rem; color: #64748b;">Last 100 activities</span>
+                    </div>
+                    <ul class="activity-list" id="activityList">
+                        <!-- Dynamic activities will be inserted here -->
+                    </ul>
+                    <div class="pagination">
+                        <div class="pagination-info" id="paginationInfo">
+                            Showing activities
+                        </div>
+                        <div class="pagination-buttons">
+                            <button class="page-btn"><i class="fas fa-chevron-left"></i></button>
+                            <button class="page-btn active">1</button>
+                            <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Admin JavaScript -->
+    <script src="js/admin.js"></script>
+    <script>
+        // Check authentication and load logs
+        document.addEventListener('DOMContentLoaded', function () {
+            const session = localStorage.getItem('admin_session');
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const sessionData = JSON.parse(session);
+                if (new Date(sessionData.expiresAt) <= new Date()) {
+                    localStorage.removeItem('admin_token');
+                    localStorage.removeItem('admin_user');
+                    localStorage.removeItem('admin_session');
+                    window.location.href = 'login.html';
+                    return;
+                }
+            } catch (e) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            loadActivityLogs();
+            loadFailedAttempts();
+            initSearch();
+        });
+
+        // Load activity logs from localStorage
+        function loadActivityLogs() {
+            const activityLog = JSON.parse(localStorage.getItem('admin_activity_log') || '[]');
+            const activityList = document.getElementById('activityList');
+
+            // Update stats
+            const todayStart = new Date();
+            todayStart.setHours(0, 0, 0, 0);
+
+            const todayActions = activityLog.filter(log => new Date(log.timestamp) >= todayStart);
+            const loginCount = activityLog.filter(log => log.action === 'login').length;
+
+            document.getElementById('totalActions').textContent = todayActions.length;
+            document.getElementById('loginCount').textContent = loginCount;
+
+            if (activityLog.length === 0) {
+                activityList.innerHTML = `
+                    <li class="activity-item" style="text-align: center; padding: 3rem;">
+                        <div style="color: #94a3b8;">
+                            <i class="fas fa-history" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                            <p>No activity logs yet. Activities will appear here as you use the admin panel.</p>
+                        </div>
+                    </li>
+                `;
+                document.getElementById('paginationInfo').textContent = 'No activities to show';
+                return;
+            }
+
+            // Sort by newest first
+            const sortedLogs = [...activityLog].reverse();
+
+            activityList.innerHTML = sortedLogs.map(log => {
+                const iconClass = getActivityIconClass(log.action);
+                const iconName = getActivityIcon(log.action);
+                const timeAgo = getTimeAgo(log.timestamp);
+                const formattedDate = formatDateTime(log.timestamp);
+
+                return `
+                    <li class="activity-item">
+                        <div class="activity-icon ${iconClass}">
+                            <i class="fas ${iconName}"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">
+                                <strong>${log.user || 'Unknown'}</strong> ${getActivityVerb(log.action)}
+                            </div>
+                            <div class="activity-description">${log.details || 'No additional details'}</div>
+                            <div class="activity-meta">
+                                <span class="activity-meta-item">
+                                    <i class="fas fa-user"></i> ${log.user || 'Unknown'}
+                                </span>
+                                <span class="activity-meta-item">
+                                    <i class="fas fa-${getActionIcon(log.action)}"></i> ${capitalizeFirst(log.action)}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="activity-time">
+                            <div class="activity-time-relative">${timeAgo}</div>
+                            <div class="activity-time-absolute">${formattedDate}</div>
+                        </div>
+                    </li>
+                `;
+            }).join('');
+
+            document.getElementById('paginationInfo').textContent = `Showing ${sortedLogs.length} activities`;
+        }
+
+        // Load failed login attempts
+        function loadFailedAttempts() {
+            const failedAttempts = JSON.parse(localStorage.getItem('failed_login_attempts') || '[]');
+            const section = document.getElementById('failedAttemptsSection');
+            const list = document.getElementById('failedAttemptsList');
+
+            document.getElementById('failedLogins').textContent = failedAttempts.length;
+
+            if (failedAttempts.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+
+            // Show last 5 failed attempts
+            const recentAttempts = [...failedAttempts].reverse().slice(0, 5);
+
+            list.innerHTML = recentAttempts.map(attempt => `
+                <div class="failed-attempt-item">
+                    <div>
+                        <div style="font-weight: 500; color: #dc2626;">Failed login: "${attempt.username}"</div>
+                        <div style="font-size: 0.8rem; color: #64748b;">IP: Unknown (client-side demo)</div>
+                    </div>
+                    <div style="font-size: 0.85rem; color: #64748b;">
+                        ${getTimeAgo(attempt.timestamp)}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Initialize search
+        function initSearch() {
+            const searchInput = document.getElementById('logSearch');
+            searchInput.addEventListener('input', function () {
+                const filter = this.value.toLowerCase();
+                const items = document.querySelectorAll('.activity-item');
+
+                items.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    item.style.display = text.includes(filter) ? '' : 'none';
+                });
+            });
+        }
+
+        // Helper functions
+        function getActivityIconClass(action) {
+            const classes = {
+                login: 'login',
+                logout: 'logout',
+                create: 'create',
+                update: 'update',
+                delete: 'delete',
+                view: 'view',
+                update_settings: 'settings',
+                create_flight_booking: 'create',
+                create_hotel_booking: 'create'
+            };
+            return classes[action] || 'view';
+        }
+
+        function getActivityIcon(action) {
+            const icons = {
+                login: 'fa-sign-in-alt',
+                logout: 'fa-sign-out-alt',
+                create: 'fa-plus-circle',
+                update: 'fa-edit',
+                delete: 'fa-trash',
+                view: 'fa-eye',
+                update_settings: 'fa-cog',
+                create_flight_booking: 'fa-plane',
+                create_hotel_booking: 'fa-hotel'
+            };
+            return icons[action] || 'fa-circle';
+        }
+
+        function getActionIcon(action) {
+            const icons = {
+                login: 'sign-in-alt',
+                logout: 'sign-out-alt',
+                create: 'plus',
+                update: 'edit',
+                delete: 'trash',
+                view: 'eye'
+            };
+            return icons[action] || 'code';
+        }
+
+        function getActivityVerb(action) {
+            const verbs = {
+                login: 'logged in to the admin panel',
+                logout: 'logged out from the admin panel',
+                create: 'created a new record',
+                update: 'updated a record',
+                delete: 'deleted a record',
+                view: 'viewed a page',
+                update_settings: 'updated system settings',
+                create_flight_booking: 'created a manual flight booking',
+                create_hotel_booking: 'created a manual hotel booking'
+            };
+            return verbs[action] || 'performed an action';
+        }
+
+        function getTimeAgo(timestamp) {
+            const now = new Date();
+            const then = new Date(timestamp);
+            const seconds = Math.floor((now - then) / 1000);
+
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)} hr ago`;
+            if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
+            return then.toLocaleDateString();
+        }
+
+        function formatDateTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function capitalizeFirst(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1).replace(/_/g, ' ');
+        }
+
+        // Refresh logs
+        function refreshLogs() {
+            loadActivityLogs();
+            loadFailedAttempts();
+            showNotification('Activity logs refreshed', 'success');
+        }
+
+        // Export logs
+        function exportLogs() {
+            const activityLog = JSON.parse(localStorage.getItem('admin_activity_log') || '[]');
+
+            if (activityLog.length === 0) {
+                showNotification('No logs to export', 'warning');
+                return;
+            }
+
+            const csv = [
+                ['Timestamp', 'User', 'Action', 'Details'].join(','),
+                ...activityLog.map(log => [
+                    log.timestamp,
+                    log.user || 'Unknown',
+                    log.action,
+                    `"${log.details || ''}"`
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `activity_logs_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showNotification('Logs exported successfully', 'success');
+        }
+
+        // Apply filters
+        function applyFilters() {
+            showNotification('Filters applied', 'info');
+            // In a real implementation, this would filter the displayed logs
+        }
+    </script>
+</body>
+
+</html>

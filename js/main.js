@@ -70,7 +70,11 @@ let slideInterval;
 // ========================================
 function hidePreloader() {
     setTimeout(() => {
-        DOM.preloader.classList.add('hidden');
+        const preloader = document.getElementById('preloader') || document.querySelector('.preloader');
+        if (preloader) {
+            preloader.classList.add('hidden');
+            preloader.style.display = 'none';
+        }
         document.body.style.overflow = 'auto';
     }, 1500);
 }

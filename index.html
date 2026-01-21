@@ -21,6 +21,9 @@
 
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="css/style.css">
+
+    <!-- Customer Sidebar Stylesheet -->
+    <link rel="stylesheet" href="css/customer-sidebar.css">
 </head>
 
 <body>
@@ -82,11 +85,11 @@
                         <li><a href="#contact" class="nav-link">Contact</a></li>
                     </ul>
 
-                    <div class="nav-actions">
-                        <a href="#" class="btn btn-outline" id="loginBtn">
+                    <div class="nav-actions" id="navActions">
+                        <a href="auth.html" class="btn btn-outline" id="loginBtn">
                             <i class="fas fa-user"></i> Login
                         </a>
-                        <a href="#" class="btn btn-primary">
+                        <a href="auth.html?tab=signup" class="btn btn-primary" id="signupBtn">
                             <i class="fas fa-user-plus"></i> Sign Up
                         </a>
                     </div>
@@ -1013,10 +1016,83 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Supabase Configuration -->
     <script src="js/supabase-config.js"></script>
+    <!-- Supabase Client (for authentication) -->
+    <script src="js/supabase-client.js"></script>
     <!-- Hotel API Service -->
     <script src="js/hotel-api.js"></script>
+    <!-- Customer Sidebar -->
+    <script src="js/customer-sidebar.js"></script>
     <!-- Main JavaScript -->
     <script src="js/main.js"></script>
+
+    <!-- Auth State Handler -->
+    <script>
+        // Update nav buttons based on auth state
+        document.addEventListener('DOMContentLoaded', async function () {
+            if (typeof SupabaseDB !== 'undefined') {
+                try {
+                    const session = await SupabaseDB.getSession();
+                    const navActions = document.getElementById('navActions');
+
+                    if (session && session.user) {
+                        const userName = session.user.user_metadata?.full_name ||
+                            session.user.user_metadata?.name ||
+                            session.user.email?.split('@')[0] || 'User';
+
+                        // User is logged in - update nav buttons
+                        navActions.innerHTML = `
+                            <div class="user-menu-wrapper">
+                                <button class="btn btn-outline user-menu-btn" id="userMenuBtn">
+                                    <i class="fas fa-user-circle"></i> ${userName}
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="user-dropdown" id="userDropdown">
+                                    <a href="my-bookings.html" class="user-dropdown-item">
+                                        <i class="fas fa-calendar-check"></i> My Bookings
+                                    </a>
+                                    <a href="wishlist.html" class="user-dropdown-item">
+                                        <i class="fas fa-heart"></i> Wishlist
+                                    </a>
+                                    <a href="my-profile.html" class="user-dropdown-item">
+                                        <i class="fas fa-user-cog"></i> Profile Settings
+                                    </a>
+                                    <div class="user-dropdown-divider"></div>
+                                    <a href="#" class="user-dropdown-item logout" onclick="handleLogout()">
+                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+
+                        // Toggle dropdown
+                        const userMenuBtn = document.getElementById('userMenuBtn');
+                        const userDropdown = document.getElementById('userDropdown');
+
+                        if (userMenuBtn && userDropdown) {
+                            userMenuBtn.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                userDropdown.classList.toggle('show');
+                            });
+
+                            document.addEventListener('click', () => {
+                                userDropdown.classList.remove('show');
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.log('Auth check error:', error);
+                }
+            }
+        });
+
+        // Handle logout
+        async function handleLogout() {
+            if (typeof SupabaseDB !== 'undefined') {
+                await SupabaseDB.signOut();
+                window.location.reload();
+            }
+        }
+    </script>
 </body>
 
 </html>

@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Bookings | Coast to Coast Journeys Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="css/admin.css">
+
+    <style>
+        /* Flight Bookings Specific Styles */
+        .flight-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .flight-stat {
+            background: white;
+            padding: 1.25rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .flight-stat:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .flight-stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .flight-stat-icon.blue {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+
+        .flight-stat-icon.green {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .flight-stat-icon.orange {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+        }
+
+        .flight-stat-icon.purple {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+        }
+
+        .flight-stat-icon.red {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .flight-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .flight-stat-label {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        /* Filters */
+        .filters-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-size: 0.85rem;
+            color: #64748b;
+            white-space: nowrap;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #0e64a6;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 280px;
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.5rem 1rem 0.5rem 40px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        /* Flight Card in Table */
+        .flight-route {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .flight-route-cities {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .flight-route-main {
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .flight-route-main i {
+            color: #0e64a6;
+            font-size: 0.9rem;
+        }
+
+        .flight-route-details {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .airline-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .airline-logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #0e64a6;
+        }
+
+        .airline-name {
+            font-size: 0.9rem;
+            color: #1e293b;
+        }
+
+        .flight-number {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-family: monospace;
+        }
+
+        .passenger-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .passenger-name {
+            font-weight: 500;
+            color: #1e293b;
+        }
+
+        .passenger-contact {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .booking-id {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: #0e64a6;
+            background: rgba(14, 100, 166, 0.08);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .pnr-code {
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #1e293b;
+            letter-spacing: 1px;
+        }
+
+        .amount-cell {
+            text-align: right;
+        }
+
+        .amount-main {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #1e293b;
+        }
+
+        .amount-margin {
+            font-size: 0.75rem;
+            color: #10b981;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 0.375rem;
+        }
+
+        /* View Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 700px;
+            position: relative;
+            z-index: 1;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #0e64a6, #1a365d);
+            color: white;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            background: #f8fafc;
+            border-radius: 0 0 16px 16px;
+        }
+
+        /* Flight Details Card */
+        .flight-detail-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .flight-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+
+        .flight-detail-airline {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .flight-detail-airline-logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #0e64a6;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .flight-detail-airline-info h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .flight-detail-airline-info span {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .flight-detail-pnr {
+            background: #0e64a6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .flight-detail-route {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .flight-detail-city {
+            text-align: center;
+            flex: 1;
+        }
+
+        .flight-detail-city .time {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .flight-detail-city .city {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .flight-detail-city .date {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .flight-detail-divider {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .flight-detail-duration {
+            font-size: 0.85rem;
+            color: #64748b;
+            background: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+        }
+
+        .flight-detail-line {
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #0e64a6, transparent);
+            position: relative;
+        }
+
+        .flight-detail-line::before {
+            content: '✈';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 0 0.5rem;
+            color: #0e64a6;
+        }
+
+        .flight-detail-stops {
+            font-size: 0.75rem;
+            color: #10b981;
+        }
+
+        /* Info Sections */
+        .info-section {
+            margin-bottom: 1.25rem;
+        }
+
+        .info-section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-section-title i {
+            color: #0e64a6;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .info-item {
+            background: #f8fafc;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+        }
+
+        .info-item-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-item-value {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #1e293b;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .pagination-info {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .pagination-buttons {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .page-btn {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .page-btn:hover,
+        .page-btn.active {
+            background: #0e64a6;
+            color: white;
+            border-color: #0e64a6;
+        }
+
+        /* Tabs for booking types */
+        .booking-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .booking-tab {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #64748b;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .booking-tab.active {
+            background: linear-gradient(135deg, #0e64a6, #1a365d);
+            color: white;
+        }
+
+        .booking-tab:hover:not(.active) {
+            background: #f1f5f9;
+        }
+
+        .booking-tab .count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+        }
+
+        .booking-tab.active .count {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">C</div>
+                <span class="sidebar-brand">CTC Admin</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Main</span>
+                    <a href="dashboard.html" class="nav-item">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="bookings.html" class="nav-item">
+                        <i class="fas fa-hotel"></i>
+                        <span>Hotel Bookings</span>
+                    </a>
+                    <a href="flights.html" class="nav-item active">
+                        <i class="fas fa-plane"></i>
+                        <span>Flight Bookings</span>
+                        <span class="nav-badge">8</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Finance</span>
+                    <a href="payments.html" class="nav-item">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Payments</span>
+                    </a>
+                    <a href="invoices.html" class="nav-item">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>Invoices</span>
+                    </a>
+                    <a href="refunds.html" class="nav-item">
+                        <i class="fas fa-undo"></i>
+                        <span>Refunds</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Operations</span>
+                    <a href="markup.html" class="nav-item">
+                        <i class="fas fa-percentage"></i>
+                        <span>Markup Tool</span>
+                    </a>
+                    <a href="suppliers.html" class="nav-item">
+                        <i class="fas fa-handshake"></i>
+                        <span>Suppliers</span>
+                    </a>
+                    <a href="customers.html" class="nav-item">
+                        <i class="fas fa-users"></i>
+                        <span>Customers</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Analytics</span>
+                    <a href="reports.html" class="nav-item">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Reports</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">System</span>
+                    <a href="users.html" class="nav-item">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Admin Users</span>
+                    </a>
+                    <a href="settings.html" class="nav-item">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                    <a href="activity-logs.html" class="nav-item">
+                        <i class="fas fa-history"></i>
+                        <span>Activity Logs</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">SA</div>
+                    <div class="admin-info">
+                        <div class="admin-name">Super Admin</div>
+                        <div class="admin-role">Administrator</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Flight Bookings</h1>
+                </div>
+
+                <div class="header-right">
+                    <button class="btn btn-secondary" onclick="exportFlightBookings()">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                    <button class="btn btn-primary" onclick="openModal('manualFlightModal')">
+                        <i class="fas fa-plus"></i> Manual Booking
+                    </button>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <!-- Flight Stats -->
+                <div class="flight-stats">
+                    <div class="flight-stat">
+                        <div class="flight-stat-icon blue">
+                            <i class="fas fa-plane-departure"></i>
+                        </div>
+                        <div>
+                            <div class="flight-stat-value">856</div>
+                            <div class="flight-stat-label">Total Flight Bookings</div>
+                        </div>
+                    </div>
+                    <div class="flight-stat">
+                        <div class="flight-stat-icon green">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div>
+                            <div class="flight-stat-value">724</div>
+                            <div class="flight-stat-label">Confirmed</div>
+                        </div>
+                    </div>
+                    <div class="flight-stat">
+                        <div class="flight-stat-icon orange">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div>
+                            <div class="flight-stat-value">89</div>
+                            <div class="flight-stat-label">Pending</div>
+                        </div>
+                    </div>
+                    <div class="flight-stat">
+                        <div class="flight-stat-icon red">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <div>
+                            <div class="flight-stat-value">43</div>
+                            <div class="flight-stat-label">Cancelled</div>
+                        </div>
+                    </div>
+                    <div class="flight-stat">
+                        <div class="flight-stat-icon purple">
+                            <i class="fas fa-rupee-sign"></i>
+                        </div>
+                        <div>
+                            <div class="flight-stat-value">₹42.5L</div>
+                            <div class="flight-stat-label">Revenue (This Month)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Type Tabs -->
+                <div class="booking-tabs">
+                    <button class="booking-tab active" onclick="filterByType('all')">
+                        <i class="fas fa-list"></i>
+                        All Bookings
+                        <span class="count">856</span>
+                    </button>
+                    <button class="booking-tab" onclick="filterByType('domestic')">
+                        <i class="fas fa-flag"></i>
+                        Domestic
+                        <span class="count">612</span>
+                    </button>
+                    <button class="booking-tab" onclick="filterByType('international')">
+                        <i class="fas fa-globe"></i>
+                        International
+                        <span class="count">244</span>
+                    </button>
+                    <button class="booking-tab" onclick="filterByType('roundtrip')">
+                        <i class="fas fa-exchange-alt"></i>
+                        Round Trip
+                        <span class="count">387</span>
+                    </button>
+                </div>
+
+                <!-- Filters -->
+                <div class="filters-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="flightSearch" placeholder="Search by PNR, booking ID, passenger name...">
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Status:</label>
+                        <select id="statusFilter">
+                            <option value="">All Status</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="pending">Pending</option>
+                            <option value="cancelled">Cancelled</option>
+                            <option value="processing">Processing</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Airline:</label>
+                        <select id="airlineFilter">
+                            <option value="">All Airlines</option>
+                            <option value="AI">Air India</option>
+                            <option value="6E">IndiGo</option>
+                            <option value="SG">SpiceJet</option>
+                            <option value="UK">Vistara</option>
+                            <option value="G8">Go First</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Date:</label>
+                        <input type="date" id="fromDate">
+                        <span>to</span>
+                        <input type="date" id="toDate">
+                    </div>
+
+                    <button class="btn btn-secondary" onclick="applyFilters()">
+                        <i class="fas fa-filter"></i> Apply
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearFilters()">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </div>
+
+                <!-- Flight Bookings Table -->
+                <div class="admin-card">
+                    <table class="admin-table" id="flightBookingsTable">
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Route</th>
+                                <th>Airline / Flight</th>
+                                <th>Passenger</th>
+                                <th>PNR</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="booking-id">#FLT-50001</span></td>
+                                <td>
+                                    <div class="flight-route">
+                                        <div class="flight-route-cities">
+                                            <span class="flight-route-main">DEL <i class="fas fa-arrow-right"></i>
+                                                BOM</span>
+                                            <span class="flight-route-details">Jan 25, 2026 • 06:30 - 08:45</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="airline-info">
+                                        <div class="airline-logo">6E</div>
+                                        <div>
+                                            <div class="airline-name">IndiGo</div>
+                                            <div class="flight-number">6E-2158</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="passenger-info">
+                                        <span class="passenger-name">Rajesh Kumar</span>
+                                        <span class="passenger-contact">+91 98765 43210</span>
+                                    </div>
+                                </td>
+                                <td><span class="pnr-code">ABC123</span></td>
+                                <td class="amount-cell">
+                                    <div class="amount-main">₹8,500</div>
+                                    <div class="amount-margin">+₹850 margin</div>
+                                </td>
+                                <td><span class="status-badge confirmed">Confirmed</span></td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="btn btn-secondary btn-icon" title="View Details"
+                                            onclick="viewFlightBooking('FLT-50001')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-secondary btn-icon" title="E-Ticket">
+                                            <i class="fas fa-ticket-alt"></i>
+                                        </button>
+                                        <button class="btn btn-secondary btn-icon" title="Email">
+                                            <i class="fas fa-envelope"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="booking-id">#FLT-50002</span></td>
+                                <td>
+                                    <div class="flight-route">
+                                        <div class="flight-route-cities">
+                                            <span class="flight-route-main">BLR <i class="fas fa-arrow-right"></i>
+                                                DEL</span>
+                                            <span class="flight-route-details">Jan 26, 2026 • 10:15 - 12:45</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="airline-info">
+                                        <div class="airline-logo">AI</div>
+                                        <div>
+                                            <div class="airline-name">Air India</div>
+                                            <div class="flight-number">AI-505</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="passenger-info">
+                                        <span class="passenger-name">Priya Sharma</span>
+                                        <span class="passenger-contact">+91 87654 32109</span>
+                                    </div>
+                                </td>
+                                <td><span class="pnr-code">XYZ789</span></td>
+                                <td class="amount-cell">
+                                    <div class="amount-main">₹12,300</div>
+                                    <div class="amount-margin">+₹1,230 margin</div>
+                                </td>
+                                <td><span class="status-badge confirmed">Confirmed</span></td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="btn btn-secondary btn-icon" title="View Details"
+                                            onclick="viewFlightBooking('FLT-50002')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-secondary btn-icon" title="E-Ticket">
+                                            <i class="fas fa-ticket-alt"></i>
+                                        </button>
+                                        <button class="btn btn-secondary btn-icon" title="Email">
+                                            <i class="fas fa-envelope"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="booking-id">#FLT-50003</span></td>
+                                <td>
+                                    <div class="flight-route">
+                                        <div class="flight-route-cities">
+                                            <span class="flight-route-main">MAA <i class="fas fa-arrow-right"></i>
+                                                DXB</span>
+                                            <span class="flight-route-details">Jan 28, 2026 • 14:00 - 18:30</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="airline-info">
+                                        <div class="airline-logo">EK</div>
+                                        <div>
+                                            <div class="airline-name">Emirates</div>
+                                            <div class="flight-number">EK-545</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="passenger-info">
+                                        <span class="passenger-name">Mohammed Ali</span>
+                                        <span class="passenger-contact">+91 99887 76655</span>
+                                    </div>
+                                </td>
+                                <td><span class="pnr-code">EK7H2P</span></td>
+                                <td class="amount-cell">
+                                    <div class="amount-main">₹28,500</div>
+                                    <div class="amount-margin">+₹2,850 margin</div>
+                                </td>
+                                <td><span class="status-badge pending">Pending</span></td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="btn btn-secondary btn-icon" title="View Details"
+                                            onclick="viewFlightBooking('FLT-50003')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-secondary btn-icon" title="Confirm">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="booking-id">#FLT-50004</span></td>
+                                <td>
+                                    <div class="flight-route">
+                                        <div class="flight-route-cities">
+                                            <span class="flight-route-main">DEL <i class="fas fa-arrow-right"></i>
+                                                GOI</span>
+                                            <span class="flight-route-details">Jan 30, 2026 • 08:00 - 10:30</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="airline-info">
+                                        <div class="airline-logo">UK</div>
+                                        <div>
+                                            <div class="airline-name">Vistara</div>
+                                            <div class="flight-number">UK-857</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="passenger-info">
+                                        <span class="passenger-name">Anita Desai</span>
+                                        <span class="passenger-contact">+91 95678 12345</span>
+                                    </div>
+                                </td>
+                                <td><span class="pnr-code">VT4K9L</span></td>
+                                <td class="amount-cell">
+                                    <div class="amount-main">₹9,800</div>
+                                    <div class="amount-margin">+₹980 margin</div>
+                                </td>
+                                <td><span class="status-badge cancelled">Cancelled</span></td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="btn btn-secondary btn-icon" title="View Details"
+                                            onclick="viewFlightBooking('FLT-50004')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-secondary btn-icon" title="Refund Status">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="booking-id">#FLT-50005</span></td>
+                                <td>
+                                    <div class="flight-route">
+                                        <div class="flight-route-cities">
+                                            <span class="flight-route-main">BOM <i class="fas fa-exchange-alt"></i>
+                                                SIN</span>
+                                            <span class="flight-route-details">Feb 1-5, 2026 • Round Trip</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="airline-info">
+                                        <div class="airline-logo">SQ</div>
+                                        <div>
+                                            <div class="airline-name">Singapore Airlines</div>
+                                            <div class="flight-number">SQ-423 / SQ-424</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="passenger-info">
+                                        <span class="passenger-name">Vikram Mehta (+1)</span>
+                                        <span class="passenger-contact">+91 88776 54321</span>
+                                    </div>
+                                </td>
+                                <td><span class="pnr-code">SQ8F3M</span></td>
+                                <td class="amount-cell">
+                                    <div class="amount-main">₹86,400</div>
+                                    <div class="amount-margin">+₹8,640 margin</div>
+                                </td>
+                                <td><span class="status-badge confirmed">Confirmed</span></td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="btn btn-secondary btn-icon" title="View Details"
+                                            onclick="viewFlightBooking('FLT-50005')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-secondary btn-icon" title="E-Ticket">
+                                            <i class="fas fa-ticket-alt"></i>
+                                        </button>
+                                        <button class="btn btn-secondary btn-icon" title="Email">
+                                            <i class="fas fa-envelope"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="booking-id">#FLT-50006</span></td>
+                                <td>
+                                    <div class="flight-route">
+                                        <div class="flight-route-cities">
+                                            <span class="flight-route-main">HYD <i class="fas fa-arrow-right"></i>
+                                                CCU</span>
+                                            <span class="flight-route-details">Feb 3, 2026 • 11:30 - 14:00</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="airline-info">
+                                        <div class="airline-logo">SG</div>
+                                        <div>
+                                            <div class="airline-name">SpiceJet</div>
+                                            <div class="flight-number">SG-245</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="passenger-info">
+                                        <span class="passenger-name">Suresh Patel</span>
+                                        <span class="passenger-contact">+91 91234 56789</span>
+                                    </div>
+                                </td>
+                                <td><span class="pnr-code">SJ2N8P</span></td>
+                                <td class="amount-cell">
+                                    <div class="amount-main">₹5,600</div>
+                                    <div class="amount-margin">+₹560 margin</div>
+                                </td>
+                                <td><span class="status-badge processing">Processing</span></td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="btn btn-secondary btn-icon" title="View Details"
+                                            onclick="viewFlightBooking('FLT-50006')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-secondary btn-icon" title="Check Status">
+                                            <i class="fas fa-sync"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="pagination">
+                        <div class="pagination-info">
+                            Showing 1-6 of 856 flight bookings
+                        </div>
+                        <div class="pagination-buttons">
+                            <button class="page-btn"><i class="fas fa-chevron-left"></i></button>
+                            <button class="page-btn active">1</button>
+                            <button class="page-btn">2</button>
+                            <button class="page-btn">3</button>
+                            <button class="page-btn">...</button>
+                            <button class="page-btn">143</button>
+                            <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Flight Booking Detail Modal -->
+    <div class="modal" id="flightDetailModal">
+        <div class="modal-overlay" onclick="closeModal('flightDetailModal')"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-plane"></i> Flight Booking Details</h3>
+                <button class="modal-close" onclick="closeModal('flightDetailModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Flight Details Card -->
+                <div class="flight-detail-card">
+                    <div class="flight-detail-header">
+                        <div class="flight-detail-airline">
+                            <div class="flight-detail-airline-logo">6E</div>
+                            <div class="flight-detail-airline-info">
+                                <h4>IndiGo Airlines</h4>
+                                <span>Flight 6E-2158 • Economy</span>
+                            </div>
+                        </div>
+                        <div class="flight-detail-pnr">ABC123</div>
+                    </div>
+                    <div class="flight-detail-route">
+                        <div class="flight-detail-city">
+                            <div class="time">06:30</div>
+                            <div class="city">DEL - New Delhi</div>
+                            <div class="date">Jan 25, 2026</div>
+                        </div>
+                        <div class="flight-detail-divider">
+                            <div class="flight-detail-duration">2h 15m</div>
+                            <div class="flight-detail-line"></div>
+                            <div class="flight-detail-stops">Non-stop</div>
+                        </div>
+                        <div class="flight-detail-city">
+                            <div class="time">08:45</div>
+                            <div class="city">BOM - Mumbai</div>
+                            <div class="date">Jan 25, 2026</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Passenger Information -->
+                <div class="info-section">
+                    <div class="info-section-title">
+                        <i class="fas fa-user"></i> Passenger Information
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-item-label">Passenger Name</div>
+                            <div class="info-item-value">Rajesh Kumar</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-item-label">Phone</div>
+                            <div class="info-item-value">+91 98765 43210</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-item-label">Email</div>
+                            <div class="info-item-value">rajesh.kumar@email.com</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-item-label">Seat</div>
+                            <div class="info-item-value">14A (Window)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Information -->
+                <div class="info-section">
+                    <div class="info-section-title">
+                        <i class="fas fa-rupee-sign"></i> Payment Details
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-item-label">Base Fare</div>
+                            <div class="info-item-value">₹6,500</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-item-label">Taxes & Fees</div>
+                            <div class="info-item-value">₹1,150</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-item-label">Service Markup</div>
+                            <div class="info-item-value" style="color: #10b981;">₹850</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-item-label">Total Amount</div>
+                            <div class="info-item-value" style="font-weight: 700; font-size: 1.1rem;">₹8,500</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-item-label">Payment Method</div>
+                            <div class="info-item-value">Credit Card (xxxx-4567)</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-item-label">Payment Status</div>
+                            <div class="info-item-value"><span class="status-badge confirmed">Paid</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Information -->
+                <div class="info-section">
+                    <div class="info-section-title">
+                        <i class="fas fa-info-circle"></i> Booking Information
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-item-label">Booking ID</div>
+                            <div class="info-item-value">#FLT-50001</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-item-label">Booked On</div>
+                            <div class="info-item-value">Jan 20, 2026 at 3:45 PM</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-item-label">Booking Source</div>
+                            <div class="info-item-value">Website</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-item-label">Supplier</div>
+                            <div class="info-item-value">TBO API</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('flightDetailModal')">Close</button>
+                <button class="btn btn-secondary"><i class="fas fa-ticket-alt"></i> E-Ticket</button>
+                <button class="btn btn-secondary"><i class="fas fa-envelope"></i> Email</button>
+                <button class="btn btn-danger"><i class="fas fa-times"></i> Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Flight Booking Modal -->
+    <div class="modal" id="manualFlightModal">
+        <div class="modal-overlay" onclick="closeModal('manualFlightModal')"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-plus-circle"></i> Manual Flight Booking</h3>
+                <button class="modal-close" onclick="closeModal('manualFlightModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="manualFlightForm">
+                    <!-- Flight Details -->
+                    <div class="info-section">
+                        <div class="info-section-title">
+                            <i class="fas fa-plane"></i> Flight Details
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">From City</label>
+                                <input type="text" class="form-control" placeholder="e.g., DEL" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">To City</label>
+                                <input type="text" class="form-control" placeholder="e.g., BOM" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Airline</label>
+                                <select class="form-control" required>
+                                    <option value="">Select Airline</option>
+                                    <option value="6E">IndiGo</option>
+                                    <option value="AI">Air India</option>
+                                    <option value="UK">Vistara</option>
+                                    <option value="SG">SpiceJet</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Flight Number</label>
+                                <input type="text" class="form-control" placeholder="e.g., 6E-2158" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Departure Date</label>
+                                <input type="date" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">PNR</label>
+                                <input type="text" class="form-control" placeholder="e.g., ABC123" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Passenger Details -->
+                    <div class="info-section">
+                        <div class="info-section-title">
+                            <i class="fas fa-user"></i> Passenger Details
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Passenger Name</label>
+                                <input type="text" class="form-control" placeholder="Full name as per ID" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" placeholder="+91 98765 43210" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" placeholder="passenger@email.com" required>
+                        </div>
+                    </div>
+
+                    <!-- Payment Details -->
+                    <div class="info-section">
+                        <div class="info-section-title">
+                            <i class="fas fa-rupee-sign"></i> Payment Details
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Base Fare</label>
+                                <input type="number" class="form-control" placeholder="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Taxes & Fees</label>
+                                <input type="number" class="form-control" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Markup</label>
+                                <input type="number" class="form-control" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Payment Status</label>
+                                <select class="form-control">
+                                    <option value="paid">Paid</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="partial">Partial</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('manualFlightModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveManualFlightBooking()">
+                    <i class="fas fa-save"></i> Save Booking
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin JavaScript -->
+    <script src="js/admin.js"></script>
+    <script>
+        // Check authentication
+        document.addEventListener('DOMContentLoaded', function () {
+            const session = localStorage.getItem('admin_session');
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const sessionData = JSON.parse(session);
+                if (new Date(sessionData.expiresAt) <= new Date()) {
+                    localStorage.removeItem('admin_token');
+                    localStorage.removeItem('admin_user');
+                    localStorage.removeItem('admin_session');
+                    window.location.href = 'login.html';
+                }
+            } catch (e) {
+                window.location.href = 'login.html';
+            }
+
+            // Initialize search
+            initFlightSearch();
+        });
+
+        // Initialize search functionality
+        function initFlightSearch() {
+            const searchInput = document.getElementById('flightSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
+                    const filter = this.value.toLowerCase();
+                    const rows = document.querySelectorAll('#flightBookingsTable tbody tr');
+
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        row.style.display = text.includes(filter) ? '' : 'none';
+                    });
+                });
+            }
+        }
+
+        // Filter by booking type
+        function filterByType(type) {
+            document.querySelectorAll('.booking-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.closest('.booking-tab').classList.add('active');
+
+            // In real implementation, this would filter the table data
+            showNotification(`Filtering by: ${type}`, 'info');
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const status = document.getElementById('statusFilter').value;
+            const airline = document.getElementById('airlineFilter').value;
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+
+            // In real implementation, this would send a request to the server
+            showNotification('Filters applied successfully', 'success');
+        }
+
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('airlineFilter').value = '';
+            document.getElementById('fromDate').value = '';
+            document.getElementById('toDate').value = '';
+            document.getElementById('flightSearch').value = '';
+
+            showNotification('Filters cleared', 'info');
+        }
+
+        // View flight booking details
+        function viewFlightBooking(bookingId) {
+            openModal('flightDetailModal');
+            // In real implementation, this would fetch booking details from server
+        }
+
+        // Export flight bookings
+        function exportFlightBookings() {
+            showNotification('Exporting flight bookings...', 'info');
+            // In real implementation, this would generate and download a CSV/Excel file
+        }
+
+        // Save manual flight booking
+        function saveManualFlightBooking() {
+            // Validate form
+            const form = document.getElementById('manualFlightForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // Log activity
+            const activityLog = JSON.parse(localStorage.getItem('admin_activity_log') || '[]');
+            activityLog.push({
+                action: 'create_flight_booking',
+                user: JSON.parse(localStorage.getItem('admin_user')).username,
+                timestamp: new Date().toISOString(),
+                details: 'Created manual flight booking'
+            });
+            localStorage.setItem('admin_activity_log', JSON.stringify(activityLog.slice(-100)));
+
+            showNotification('Flight booking created successfully!', 'success');
+            closeModal('manualFlightModal');
+        }
+    </script>
+</body>
+
+</html>
