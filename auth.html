@@ -264,13 +264,14 @@
             position: relative;
         }
 
-        .form-input-wrapper i {
+        .form-input-wrapper>i:first-child {
             position: absolute;
             left: 14px;
             top: 50%;
             transform: translateY(-50%);
             color: #94a3b8;
             font-size: 1rem;
+            z-index: 1;
         }
 
         .form-input {
@@ -282,6 +283,11 @@
             font-family: inherit;
             transition: all 0.3s;
             background: white;
+        }
+
+        .form-input[type="password"],
+        .form-input.has-toggle {
+            padding-right: 44px;
         }
 
         .form-input:focus {

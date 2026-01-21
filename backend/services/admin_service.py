@@ -45,7 +45,7 @@ class AdminService:
     def login(self, email, password, ip_address=None):
         """Authenticate admin user"""
         try:
-            # Hardcoded admin credentials for demo (since table doesn't have password_hash)
+            # Hardcoded admin credentials for demo
             ADMIN_CREDENTIALS = {
                 'admin@coasttocoast.com': {
                     'password': 'admin123',
@@ -54,42 +54,25 @@ class AdminService:
                 }
             }
             
-            # Check hardcoded credentials first
+            # Check hardcoded credentials
             if email in ADMIN_CREDENTIALS:
                 if password == ADMIN_CREDENTIALS[email]['password']:
-                    # Check if user exists in database
-                    result = self.supabase.table('admin_users').select('*').eq('email', email).eq('is_active', True).execute()
+                    # Use hardcoded user data (don't require database)
+                    user_id = 'admin-001'
+                    full_name = ADMIN_CREDENTIALS[email]['full_name']
+                    role = ADMIN_CREDENTIALS[email]['role']
                     
-                    if result.data and len(result.data) > 0:
-                        user = result.data[0]
-                        user_id = user['id']
-                        full_name = user['full_name']
-                        role = user['role']
-                        
-                        # Update last login
+                    # Try to get from database if Supabase is available
+                    if self.supabase:
                         try:
-                            self.supabase.table('admin_users').update({
-                                'last_login': datetime.datetime.utcnow().isoformat(),
-                                'login_count': user.get('login_count', 0) + 1
-                            }).eq('id', user_id).execute()
+                            result = self.supabase.table('admin_users').select('*').eq('email', email).eq('is_active', True).execute()
+                            if result.data and len(result.data) > 0:
+                                user = result.data[0]
+                                user_id = user['id']
+                                full_name = user['full_name']
+                                role = user['role']
                         except:
-                            pass
-                    else:
-                        # Create temporary user data if not in database
-                        user_id = 'admin-temp-id'
-                        full_name = ADMIN_CREDENTIALS[email]['full_name']
-                        role = ADMIN_CREDENTIALS[email]['role']
-                    
-                    # Log activity
-                    try:
-                        self.log_activity(
-                            admin_id=user_id,
-                            action='login',
-                            target_type='auth',
-                            ip_address=ip_address
-                        )
-                    except:
-                        pass
+                            pass  # Use hardcoded values if DB fails
                     
                     # Generate token
                     token = self.generate_token(user_id, email, role)
