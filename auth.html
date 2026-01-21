@@ -924,26 +924,46 @@
             setLoading('loginBtn', true);
 
             try {
-                const result = await SupabaseDB.signIn(email, password);
+                // Check if admin mode is selected
+                if (selectedUserType === 'admin') {
+                    // Use backend API for admin login
+                    const response = await fetch('/api/admin/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
 
-                if (!result.success) {
-                    showError('loginError', result.error || 'Invalid email or password');
-                    setLoading('loginBtn', false);
-                    return;
-                }
+                    const result = await response.json();
 
-                // Check user type and redirect accordingly
-                if (result.isAdmin) {
-                    // Admin user - redirect to admin dashboard
+                    if (!result.success) {
+                        showError('loginError', result.error || 'Invalid admin credentials');
+                        setLoading('loginBtn', false);
+                        return;
+                    }
+
+                    // Store admin token
+                    localStorage.setItem('adminToken', result.data.token);
+                    localStorage.setItem('adminUser', JSON.stringify(result.data.user));
+
+                    // Redirect to admin dashboard
                     window.location.href = 'admin/dashboard.html';
-                } else if (result.userRole === 'customer') {
-                    // Customer - redirect to main site
-                    window.location.href = 'index.html';
                 } else {
-                    // Unknown role - treat as customer
+                    // Customer login via Supabase
+                    const result = await SupabaseDB.signIn(email, password);
+
+                    if (!result.success) {
+                        showError('loginError', result.error || 'Invalid email or password');
+                        setLoading('loginBtn', false);
+                        return;
+                    }
+
+                    // Redirect to main site
                     window.location.href = 'index.html';
                 }
             } catch (error) {
+                console.error('Login error:', error);
                 showError('loginError', 'An error occurred. Please try again.');
                 setLoading('loginBtn', false);
             }
