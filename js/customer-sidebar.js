@@ -391,10 +391,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentPath = window.location.pathname;
     const pageName = currentPath.split('/').pop() || 'index.html';
 
-    // Pages that should show the sidebar
+    // Pages that should show the sidebar (NOT the main landing page)
     const sidebarPages = [
-        'index.html',
-        'index',
         'flight-results',
         'hotel-results',
         'hotel-details',
@@ -403,14 +401,12 @@ document.addEventListener('DOMContentLoaded', () => {
         'my-bookings',
         'wishlist',
         'my-profile',
-        'support',
-        'faqs',
-        'about'
+        'support'
     ];
 
-    // Check if current page should show sidebar
+    // Check if current page should show sidebar (strict match, NOT homepage)
     const shouldShowSidebar = sidebarPages.some(page =>
-        pageName.includes(page) || currentPath === '/' || currentPath === ''
+        pageName.includes(page) && pageName !== 'index.html' && pageName !== ''
     );
 
     if (shouldShowSidebar) {
