@@ -193,17 +193,29 @@
                     <span id="totalAmount">₹0</span>
                 </div>
 
-                <button class="pay-button" id="payButton" onclick="initiatePayment()">
-                    <i class="fas fa-lock"></i> Pay Now
+                <h3 style="margin: 30px 0 15px 0;">Select Payment Method</h3>
+
+                <button class="pay-button" style="background: linear-gradient(135deg, #0066cc, #00509e);"
+                    onclick="initiateRazorpayPayment()">
+                    <i class="fas fa-credit-card"></i> Pay with Razorpay (UPI/Cards)
+                </button>
+
+                <button class="pay-button"
+                    style="background: linear-gradient(135deg, #0070ba, #005ea6); margin-top: 15px;"
+                    onclick="initiatePayPalPayment()">
+                    <i class="fab fa-paypal"></i> Pay with PayPal
                 </button>
 
                 <div class="secure-badge">
                     <i class="fas fa-shield-alt"></i>
-                    100% Secure Payment via Razorpay
+                    100% Secure Payment
                 </div>
 
-                <div style="margin-top: 20px; text-align: center;">
+                <div
+                    style="margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 20px; align-items: center;">
                     <img src="https://razorpay.com/assets/razorpay-glyph.svg" alt="Razorpay"
+                        style="height: 24px; opacity: 0.6;">
+                    <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg" alt="PayPal"
                         style="height: 24px; opacity: 0.6;">
                 </div>
             </div>
@@ -212,6 +224,10 @@
 
     <!-- Razorpay Checkout Script -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <!-- PayPal SDK -->
+    <script
+        src="https://www.paypal.com/sdk/js?client-id=AWENm1iOqiuWw9I06eBvkfbGrFHrfy_z17v9luYkqW9WKaNtckFT_XaiMskICFNridYk_FepZBI0QErA&currency=USD"></script>
+
 
     <script>
         // Get booking details from sessionStorage
@@ -253,18 +269,19 @@
         }
 
         // Initiate Razorpay payment
-        async function initiatePayment() {
-            const payButton = document.getElementById('payButton');
-            payButton.disabled = true;
-            payButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        async function initiateRazorpayPayment() {
+            const payButtons = document.querySelectorAll('.pay-button');
+            payButtons.forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent.includes('Razorpay')) {
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                }
+            });
 
             try {
-                // Create order on backend
                 const response = await fetch('/api/payment/create-order', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         amount: bookingData.total,
                         currency: 'INR',
@@ -282,7 +299,6 @@
                     throw new Error(data.error || 'Failed to create order');
                 }
 
-                // Initialize Razorpay checkout
                 const options = {
                     key: data.key_id,
                     amount: data.amount,
@@ -292,21 +308,22 @@
                     description: `Booking for ${bookingData.hotel.name}`,
                     image: 'https://via.placeholder.com/100x100?text=C2C',
                     handler: async function (response) {
-                        // Payment successful - verify on backend
-                        await verifyPayment(response);
+                        await verifyRazorpayPayment(response);
                     },
                     prefill: {
                         name: bookingData.guestName || '',
                         email: bookingData.email || '',
                         contact: bookingData.phone || ''
                     },
-                    theme: {
-                        color: '#0066cc'
-                    },
+                    theme: { color: '#0066cc' },
                     modal: {
                         ondismiss: function () {
-                            payButton.disabled = false;
-                            payButton.innerHTML = '<i class="fas fa-lock"></i> Pay Now';
+                            payButtons.forEach(btn => {
+                                btn.disabled = false;
+                                if (btn.textContent.includes('Razorpay')) {
+                                    btn.innerHTML = '<i class="fas fa-credit-card"></i> Pay with Razorpay (UPI/Cards)';
+                                }
+                            });
                         }
                     }
                 };
@@ -317,13 +334,62 @@
             } catch (error) {
                 console.error('Payment error:', error);
                 alert('Payment failed: ' + error.message);
-                payButton.disabled = false;
-                payButton.innerHTML = '<i class="fas fa-lock"></i> Pay Now';
+                payButtons.forEach(btn => {
+                    btn.disabled = false;
+                    if (btn.textContent.includes('Razorpay')) {
+                        btn.innerHTML = '<i class="fas fa-credit-card"></i> Pay with Razorpay (UPI/Cards)';
+                    }
+                });
             }
         }
 
-        // Verify payment on backend
-        async function verifyPayment(razorpayResponse) {
+        // Initiate PayPal payment
+        async function initiatePayPalPayment() {
+            const payButtons = document.querySelectorAll('.pay-button');
+            payButtons.forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent.includes('PayPal')) {
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                }
+            });
+
+            try {
+                const response = await fetch('/api/payment/paypal/create-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: bookingData.total,
+                        currency: 'INR',  // Will be converted to USD
+                        description: `Hotel Booking: ${bookingData.hotel.name}`
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.success || !data.approval_url) {
+                    throw new Error(data.error || 'Failed to create PayPal order');
+                }
+
+                // Store order ID for later
+                sessionStorage.setItem('paypal_order_id', data.order_id);
+
+                // Redirect to PayPal for approval
+                window.location.href = data.approval_url;
+
+            } catch (error) {
+                console.error('PayPal payment error:', error);
+                alert('Payment failed: ' + error.message);
+                payButtons.forEach(btn => {
+                    btn.disabled = false;
+                    if (btn.textContent.includes('PayPal')) {
+                        btn.innerHTML = '<i class="fab fa-paypal"></i> Pay with PayPal';
+                    }
+                });
+            }
+        }
+
+        // Verify Razorpay payment on backend
+        async function verifyRazorpayPayment(razorpayResponse) {
             try {
                 const response = await fetch('/api/payment/verify', {
                     method: 'POST',

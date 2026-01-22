@@ -38,6 +38,11 @@ class Config:
     RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET')
     RAZORPAY_WEBHOOK_SECRET = os.getenv('RAZORPAY_WEBHOOK_SECRET')
     
+    # PayPal Payment Gateway Configuration
+    PAYPAL_CLIENT_ID = os.getenv('PAYPAL_CLIENT_ID')
+    PAYPAL_CLIENT_SECRET = os.getenv('PAYPAL_CLIENT_SECRET')
+    PAYPAL_MODE = os.getenv('PAYPAL_MODE', 'sandbox')
+    
     @classmethod
     def validate(cls):
         """Validate required configuration"""

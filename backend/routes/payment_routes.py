@@ -228,3 +228,100 @@ def razorpay_webhook():
     except Exception as e:
         print(f"Webhook error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# PayPal Payment Routes
+
+@payment_bp.route('/paypal/create-order', methods=['POST'])
+def create_paypal_order():
+    """
+    Create PayPal order for hotel booking
+    POST /api/payment/paypal/create-order
+    {
+        "amount": 100.00,
+        "currency": "USD",
+        "description": "Hotel Booking"
+    }
+    """
+    try:
+        data = request.get_json()
+        
+        if 'amount' not in data:
+            return jsonify({'success': False, 'error': 'Amount is required'}), 400
+        
+        paypal_service = current_app.config.get('PAYPAL_SERVICE')
+        
+        if not paypal_service:
+            return jsonify({'success': False, 'error': 'PayPal service not configured'}), 500
+        
+        result = paypal_service.create_order(
+            amount=float(data['amount']),
+            currency=data.get('currency', 'USD'),
+            description=data.get('description', 'Hotel Booking')
+        )
+        
+        return jsonify(result), 200 if result['success'] else 500
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@payment_bp.route('/paypal/capture-order/<order_id>', methods=['POST'])
+def capture_paypal_order(order_id):
+    """
+    Capture PayPal order after customer approval
+    POST /api/payment/paypal/capture-order/{order_id}
+    """
+    try:
+        paypal_service = current_app.config.get('PAYPAL_SERVICE')
+        
+        if not paypal_service:
+            return jsonify({'success': False, 'error': 'PayPal service not configured'}), 500
+        
+        result = paypal_service.capture_order(order_id)
+        
+        if result['success']:
+            # Update booking status
+            supabase = current_app.config.get('SUPABASE')
+            data = request.get_json() or {}
+            
+            if 'booking_id' in data and supabase:
+                try:
+                    supabase.table('bookings').update({
+                        'status': 'confirmed',
+                        'updated_at': 'NOW()'
+                    }).eq('id', data['booking_id']).execute()
+                    
+                    supabase.table('payments').insert({
+                        'booking_id': data['booking_id'],
+                        'paypal_order_id': order_id,
+                        'status': 'paid',
+                        'payment_method': 'paypal'
+                    }).execute()
+                except Exception as db_error:
+                    print(f"Database update error: {db_error}")
+        
+        return jsonify(result), 200 if result['success'] else 500
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@payment_bp.route('/paypal/order-details/<order_id>', methods=['GET'])
+def get_paypal_order_details(order_id):
+    """
+    Get PayPal order details
+    GET /api/payment/paypal/order-details/{order_id}
+    """
+    try:
+        paypal_service = current_app.config.get('PAYPAL_SERVICE')
+        
+        if not paypal_service:
+            return jsonify({'success': False, 'error': 'PayPal service not configured'}), 500
+        
+        result = paypal_service.get_order_details(order_id)
+        
+        return jsonify(result), 200 if result['success'] else 500
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500

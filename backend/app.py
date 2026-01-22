@@ -76,6 +76,19 @@ def create_app():
     else:
         print("⚠️  Warning: Razorpay credentials not found in .env")
     
+    # Initialize PayPal service
+    from services.paypal_service import PayPalService
+    paypal_client_id = app.config.get('PAYPAL_CLIENT_ID')
+    paypal_secret = app.config.get('PAYPAL_CLIENT_SECRET')
+    paypal_mode = app.config.get('PAYPAL_MODE', 'sandbox')
+    
+    if paypal_client_id and paypal_secret:
+        paypal_service = PayPalService(paypal_client_id, paypal_secret, paypal_mode)
+        app.config['PAYPAL_SERVICE'] = paypal_service
+        print(f"✅ PayPal payment service initialized ({paypal_mode} mode)")
+    else:
+        print("⚠️  Warning: PayPal credentials not found in .env")
+    
     # Serve frontend pages
     @app.route('/')
     def serve_index():
