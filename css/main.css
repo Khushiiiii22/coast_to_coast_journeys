@@ -576,6 +576,59 @@ h6 {
     display: none !important;
 }
 
+/* === Features Strip === */
+.features-strip {
+    background: var(--primary-gradient);
+    padding: 24px 0;
+    color: var(--white);
+    margin-top: -40px;
+    /* Overlap with hero or adjust spacing */
+    position: relative;
+    z-index: 10;
+}
+
+.features-grid {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.feature-icon-circle {
+    width: 32px;
+    height: 32px;
+    background: var(--white);
+    color: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .features-strip {
+        margin-top: 0;
+        padding: 32px 0;
+    }
+
+    .features-grid {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        text-align: center;
+    }
+}
+
 /* === Trust Section === */
 .trust-section {
     padding: 80px 0;
@@ -1629,6 +1682,56 @@ h6 {
     .help-actions {
         justify-content: center;
     }
+}
+
+/* === Footer Partners === */
+.footer-partners {
+    padding: 30px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 30px 0;
+}
+
+.partners-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.partner-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 2rem;
+    color: var(--gray-400);
+    opacity: 0.8;
+    transition: var(--transition);
+}
+
+.partner-logo:hover {
+    color: var(--white);
+    opacity: 1;
+    transform: translateY(-2px);
+}
+
+.partner-logo span {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.iata-logo {
+    font-family: sans-serif;
+    color: var(--white);
+    background: #002244;
+    /* IATA Blue */
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 1.2rem;
+}
+
+.iata-logo i {
+    font-size: 1rem;
 }
 
 /* =====================================================
