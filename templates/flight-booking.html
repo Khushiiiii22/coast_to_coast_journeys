@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Book Flights - Coast to Coast Journeys. Search and book domestic and international flights at the best prices.">
+    <title>Book Flights | Coast to Coast Journeys</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="../assets/images/logo.jpg">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+
+<body>
+    <!-- Sidebar Menu -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="../assets/images/logo.jpg" alt="Coast to Coast Journeys">
+            <span>Coast to Coast</span>
+            <button class="sidebar-close" id="sidebarClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="sidebar-link">
+                <i class="fas fa-home"></i> Home
+            </a>
+            <a href="flight-booking.html" class="sidebar-link active">
+                <i class="fas fa-plane"></i> Book Flights
+            </a>
+            <a href="hotel-booking.html" class="sidebar-link">
+                <i class="fas fa-hotel"></i> Book Hotels
+            </a>
+            <a href="visa.html" class="sidebar-link">
+                <i class="fas fa-passport"></i> Visa Services
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="index.html#contact" class="sidebar-link">
+                <i class="fas fa-headset"></i> 24/7 Support
+            </a>
+            <a href="mailto:Support@coasttocoastjourneys.com" class="sidebar-link">
+                <i class="fas fa-envelope"></i> Email Us
+            </a>
+            <a href="tel:+918237216173" class="sidebar-link">
+                <i class="fas fa-phone"></i> Call Us
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="faqs.html" class="sidebar-link">
+                <i class="fas fa-question-circle"></i> FAQs
+            </a>
+            <a href="about.html" class="sidebar-link">
+                <i class="fas fa-info-circle"></i> About Us
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="terms.html" class="sidebar-link">
+                <i class="fas fa-file-contract"></i> Terms & Conditions
+            </a>
+            <a href="privacy-policy.html" class="sidebar-link">
+                <i class="fas fa-shield-alt"></i> Privacy Policy
+            </a>
+            <a href="refund-policy.html" class="sidebar-link">
+                <i class="fas fa-undo"></i> Refund Policy
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-social">
+                <a href="https://www.facebook.com/people/Coast-to-Coast-Journeys/61574464089885/" target="_blank"><i
+                        class="fab fa-facebook-f"></i></a>
+                <a href="https://www.instagram.com/coasttocoastjourneys/" target="_blank"><i
+                        class="fab fa-instagram"></i></a>
+                <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"><i
+                        class="fab fa-linkedin-in"></i></a>
+            </div>
+            <p>© 2026 Coast to Coast Journeys</p>
+        </div>
+    </aside>
+
+    <!-- Header -->
+    <header class="header scrolled" id="header">
+        <div class="container">
+            <div class="header-content">
+                <!-- Hamburger Menu Button -->
+                <button class="hamburger-menu" id="hamburgerMenu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <a href="index.html" class="logo">
+                    <img src="../assets/images/logo.jpg" alt="Coast to Coast Journeys">
+                    <span class="logo-text">Coast to Coast Journeys</span>
+                </a>
+
+                <nav>
+                    <ul class="nav-menu" id="navMenu">
+                        <li><a href="index.html" class="nav-link">Home</a></li>
+                        <li><a href="flight-booking.html" class="nav-link active">Flights</a></li>
+                        <li><a href="hotel-booking.html" class="nav-link">Hotels</a></li>
+                        <li><a href="visa.html" class="nav-link">Visa</a></li>
+                        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                    </ul>
+                </nav>
+
+                <div class="header-actions">
+                    <a href="auth.html" class="btn btn-outline">
+                        <i class="fas fa-user"></i> Login
+                    </a>
+                </div>
+
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Hero -->
+    <section class="page-hero flight-hero">
+        <div class="container">
+            <h1><i class="fas fa-plane"></i> Book Your Flight</h1>
+            <p>Search and compare flights from top airlines worldwide</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main>
+        <div class="container">
+            <!-- Flight Search Box -->
+            <div class="booking-search-container">
+                <div class="trip-type-selector">
+                    <label class="trip-type-option active">
+                        <input type="radio" name="tripType" value="oneway" checked>
+                        One Way
+                    </label>
+                    <label class="trip-type-option">
+                        <input type="radio" name="tripType" value="roundtrip">
+                        Round Trip
+                    </label>
+                    <label class="trip-type-option">
+                        <input type="radio" name="tripType" value="multicity">
+                        Multi City
+                    </label>
+                </div>
+
+                <form id="flightSearchForm">
+                    <div class="search-form-grid">
+                        <div class="form-field" style="position: relative;">
+                            <label>From</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-plane-departure"></i>
+                                <input type="text" id="fromCity" placeholder="City or Airport" required>
+                            </div>
+                            <button type="button" class="swap-btn" id="swapCities">
+                                <i class="fas fa-exchange-alt"></i>
+                            </button>
+                        </div>
+
+                        <div class="form-field">
+                            <label>To</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-plane-arrival"></i>
+                                <input type="text" id="toCity" placeholder="City or Airport" required>
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Departure</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-calendar-alt"></i>
+                                <input type="date" id="departDate" required>
+                            </div>
+                        </div>
+
+                        <div class="form-field" id="returnDateField">
+                            <label>Return</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-calendar-alt"></i>
+                                <input type="date" id="returnDate" disabled>
+                            </div>
+                        </div>
+
+                        <div class="form-field travelers-field">
+                            <label>Travelers & Class</label>
+                            <div class="input-wrapper travelers-dropdown" id="travelersDropdown"
+                                style="padding-left: 44px;">
+                                <i class="fas fa-users"></i>
+                                <span class="travelers-display" id="travelersDisplay">1 Traveler, Economy</span>
+                                <i class="fas fa-chevron-down"
+                                    style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%);"></i>
+                            </div>
+                            <div class="travelers-popup" id="travelersPopup">
+                                <div class="traveler-row">
+                                    <div class="traveler-info">
+                                        <span class="traveler-type">Adults</span>
+                                        <span class="traveler-age">12+ years</span>
+                                    </div>
+                                    <div class="traveler-counter">
+                                        <button type="button" class="counter-btn minus" data-type="adults">-</button>
+                                        <span id="adultsCount">1</span>
+                                        <button type="button" class="counter-btn plus" data-type="adults">+</button>
+                                    </div>
+                                </div>
+                                <div class="traveler-row">
+                                    <div class="traveler-info">
+                                        <span class="traveler-type">Children</span>
+                                        <span class="traveler-age">2-11 years</span>
+                                    </div>
+                                    <div class="traveler-counter">
+                                        <button type="button" class="counter-btn minus" data-type="children">-</button>
+                                        <span id="childrenCount">0</span>
+                                        <button type="button" class="counter-btn plus" data-type="children">+</button>
+                                    </div>
+                                </div>
+                                <div class="traveler-row">
+                                    <div class="traveler-info">
+                                        <span class="traveler-type">Infants</span>
+                                        <span class="traveler-age">Under 2 years</span>
+                                    </div>
+                                    <div class="traveler-counter">
+                                        <button type="button" class="counter-btn minus" data-type="infants">-</button>
+                                        <span id="infantsCount">0</span>
+                                        <button type="button" class="counter-btn plus" data-type="infants">+</button>
+                                    </div>
+                                </div>
+                                <div class="class-selector">
+                                    <label>Cabin Class</label>
+                                    <select id="cabinClass">
+                                        <option value="economy">Economy</option>
+                                        <option value="premium">Premium Economy</option>
+                                        <option value="business">Business</option>
+                                        <option value="first">First Class</option>
+                                    </select>
+                                </div>
+                                <button type="button" class="travelers-done" id="travelersDone">Done</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: center; margin-top: 24px;">
+                        <button type="submit" class="btn-search" style="min-width: 200px; padding: 16px 32px;">
+                            <i class="fas fa-search"></i>
+                            Search Flights
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Popular Routes -->
+            <section class="routes-section">
+                <div class="routes-header">
+                    <h3><i class="fas fa-fire"></i> Popular Flight Routes</h3>
+                </div>
+                <div class="routes-grid">
+                    <div class="route-card">
+                        <div class="route-image">
+                            <img src="https://images.unsplash.com/photo-1587474260584-136574528ed5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                alt="Delhi to Mumbai">
+                            <span class="route-price">From ₹4,999</span>
+                        </div>
+                        <div class="route-content">
+                            <div class="route-path">
+                                <span class="city">Delhi</span>
+                                <i class="fas fa-plane"></i>
+                                <span class="city">Mumbai</span>
+                            </div>
+                            <span class="route-meta">Non-stop • 2h 10m</span>
+                        </div>
+                    </div>
+
+                    <div class="route-card">
+                        <div class="route-image">
+                            <img src="https://images.unsplash.com/photo-1570168007204-dfb528c6958f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                alt="Mumbai to Dubai">
+                            <span class="route-price">From ₹12,499</span>
+                        </div>
+                        <div class="route-content">
+                            <div class="route-path">
+                                <span class="city">Mumbai</span>
+                                <i class="fas fa-plane"></i>
+                                <span class="city">Dubai</span>
+                            </div>
+                            <span class="route-meta">Non-stop • 3h 30m</span>
+                        </div>
+                    </div>
+
+                    <div class="route-card">
+                        <div class="route-image">
+                            <img src="https://images.unsplash.com/photo-1525625293386-3f8f99389edd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                alt="Bangalore to Singapore">
+                            <span class="route-price">From ₹8,999</span>
+                        </div>
+                        <div class="route-content">
+                            <div class="route-path">
+                                <span class="city">Bangalore</span>
+                                <i class="fas fa-plane"></i>
+                                <span class="city">Singapore</span>
+                            </div>
+                            <span class="route-meta">Non-stop • 4h 45m</span>
+                        </div>
+                    </div>
+
+                    <div class="route-card">
+                        <div class="route-image">
+                            <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                alt="Delhi to Bangkok">
+                            <span class="route-price">From ₹25,999</span>
+                        </div>
+                        <div class="route-content">
+                            <div class="route-path">
+                                <span class="city">Delhi</span>
+                                <i class="fas fa-plane"></i>
+                                <span class="city">Bangkok</span>
+                            </div>
+                            <span class="route-meta">Non-stop • 4h 20m</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Airlines Section -->
+            <section class="airlines-section">
+                <h3>Our Airline Partners</h3>
+                <div class="airlines-grid">
+                    <div class="airline-tag"><i class="fas fa-plane-circle-check"></i> IndiGo</div>
+                    <div class="airline-tag"><i class="fas fa-plane-circle-check"></i> Air India</div>
+                    <div class="airline-tag"><i class="fas fa-plane-circle-check"></i> SpiceJet</div>
+                    <div class="airline-tag"><i class="fas fa-plane-circle-check"></i> Vistara</div>
+                    <div class="airline-tag"><i class="fas fa-plane-circle-check"></i> Emirates</div>
+                    <div class="airline-tag"><i class="fas fa-plane-circle-check"></i> Singapore Airlines</div>
+                </div>
+            </section>
+
+            <!-- Help Box -->
+            <div class="help-box">
+                <div class="help-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <div class="help-content">
+                    <h3>Need Help with Flight Booking?</h3>
+                    <p>Our travel experts are available 24×7 to assist you.</p>
+                    <div class="help-actions">
+                        <a href="tel:+918237216173" class="btn btn-white">
+                            <i class="fas fa-phone"></i> +91 8237216173
+                        </a>
+                        <a href="mailto:Support@coasttocoastjourneys.com" class="btn btn-outline"
+                            style="border-color: white; color: white;">
+                            <i class="fas fa-envelope"></i> Email Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="../assets/images/logo.jpg" alt="Coast to Coast Journeys">
+                        <span>Coast to Coast Journeys</span>
+                    </div>
+                    <p>Your trusted travel partner. We specialize in creating unforgettable travel experiences across
+                        the globe.</p>
+                    <div class="trust-line">
+                        <i class="fas fa-shield-alt"></i>
+                        "Your trust is our responsibility."
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="index.html#contact">Contact Us</a></li>
+                        <li><a href="faqs.html">FAQs</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="terms.html">Terms & Conditions</a></li>
+                        <li><a href="refund-policy.html">Refund Policy</a></li>
+                        <li><a href="cancellation-policy.html">Cancellation Policy</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Connect With Us</h4>
+                    <div style="display: flex; gap: 12px; margin-top: 8px;">
+                        <a href="https://www.facebook.com/people/Coast-to-Coast-Journeys/61574464089885/"
+                            target="_blank" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/coasttocoastjourneys/" target="_blank" class="social-link"><i
+                                class="fab fa-instagram"></i></a>
+                        <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"
+                            class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 Coast to Coast Journeys. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // ========== Sidebar Menu ==========
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        const sidebarClose = document.getElementById('sidebarClose');
+
+        function openSidebar() {
+            sidebar.classList.add('open');
+            sidebarOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        hamburgerMenu.addEventListener('click', openSidebar);
+        sidebarClose.addEventListener('click', closeSidebar);
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        // Mobile Menu Toggle
+        document.getElementById('mobileMenuToggle').addEventListener('click', function () {
+            this.classList.toggle('active');
+            document.getElementById('navMenu').classList.toggle('active');
+        });
+
+        // Trip type toggle
+        document.querySelectorAll('.trip-type-option input').forEach(radio => {
+            radio.addEventListener('change', function () {
+                document.querySelectorAll('.trip-type-option').forEach(opt => opt.classList.remove('active'));
+                this.parentElement.classList.add('active');
+
+                const returnDate = document.getElementById('returnDate');
+                const returnDateField = document.getElementById('returnDateField');
+                if (this.value === 'roundtrip') {
+                    returnDate.disabled = false;
+                    returnDateField.style.opacity = '1';
+                } else {
+                    returnDate.disabled = true;
+                    returnDateField.style.opacity = '0.5';
+                }
+            });
+        });
+
+        // Swap cities
+        document.getElementById('swapCities').addEventListener('click', function () {
+            const from = document.getElementById('fromCity');
+            const to = document.getElementById('toCity');
+            const temp = from.value;
+            from.value = to.value;
+            to.value = temp;
+            this.classList.add('rotate');
+            setTimeout(() => this.classList.remove('rotate'), 300);
+        });
+
+        // Set min date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('departDate').min = today;
+        document.getElementById('returnDate').min = today;
+
+        // ========== Travelers Dropdown ==========
+        const travelersData = { adults: 1, children: 0, infants: 0 };
+        const travelersDropdown = document.getElementById('travelersDropdown');
+        const travelersPopup = document.getElementById('travelersPopup');
+        const travelersDisplay = document.getElementById('travelersDisplay');
+        const travelersDone = document.getElementById('travelersDone');
+
+        travelersDropdown.addEventListener('click', function (e) {
+            e.stopPropagation();
+            travelersPopup.classList.toggle('active');
+        });
+
+        travelersDone.addEventListener('click', function () {
+            travelersPopup.classList.remove('active');
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!travelersDropdown.contains(e.target) && !travelersPopup.contains(e.target)) {
+                travelersPopup.classList.remove('active');
+            }
+        });
+
+        function updateTravelersDisplay() {
+            const total = travelersData.adults + travelersData.children;
+            const infants = travelersData.infants;
+            const cabinClass = document.getElementById('cabinClass').value;
+            const classLabels = { economy: 'Economy', premium: 'Premium', business: 'Business', first: 'First' };
+            let text = `${total} Traveler${total > 1 ? 's' : ''}`;
+            if (infants > 0) text += `, ${infants} Infant${infants > 1 ? 's' : ''}`;
+            text += `, ${classLabels[cabinClass]}`;
+            travelersDisplay.textContent = text;
+        }
+
+        document.querySelectorAll('#travelersPopup .counter-btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const type = this.dataset.type;
+                const isPlus = this.classList.contains('plus');
+
+                if (isPlus) {
+                    if (type === 'adults' && travelersData.adults < 9) travelersData.adults++;
+                    if (type === 'children' && travelersData.children < 9) travelersData.children++;
+                    if (type === 'infants' && travelersData.infants < travelersData.adults) travelersData.infants++;
+                } else {
+                    if (type === 'adults' && travelersData.adults > 1) travelersData.adults--;
+                    if (type === 'children' && travelersData.children > 0) travelersData.children--;
+                    if (type === 'infants' && travelersData.infants > 0) travelersData.infants--;
+                    if (travelersData.infants > travelersData.adults) travelersData.infants = travelersData.adults;
+                }
+
+                document.getElementById('adultsCount').textContent = travelersData.adults;
+                document.getElementById('childrenCount').textContent = travelersData.children;
+                document.getElementById('infantsCount').textContent = travelersData.infants;
+                updateTravelersDisplay();
+            });
+        });
+
+        document.getElementById('cabinClass').addEventListener('change', updateTravelersDisplay);
+
+        // Form submission
+        document.getElementById('flightSearchForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const from = document.getElementById('fromCity').value;
+            const to = document.getElementById('toCity').value;
+            const depart = document.getElementById('departDate').value;
+            const returnDate = document.getElementById('returnDate').value;
+            const tripType = document.querySelector('input[name="tripType"]:checked').value;
+            const cabinClass = document.getElementById('cabinClass').value;
+
+            const params = new URLSearchParams({
+                from: from,
+                to: to,
+                depart: depart,
+                type: tripType,
+                adults: travelersData.adults,
+                children: travelersData.children,
+                infants: travelersData.infants,
+                class: cabinClass
+            });
+
+            if (tripType === 'roundtrip' && returnDate) {
+                params.append('return', returnDate);
+            }
+
+            window.location.href = `flight-results.html?${params.toString()}`;
+        });
+    </script>
+</body>
+
+</html>

@@ -8,7 +8,7 @@ import sys
 # Add current directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 from config import Config, get_config
 
@@ -89,21 +89,43 @@ def create_app():
     else:
         print("⚠️  Warning: PayPal credentials not found in .env")
     
+    # Define directories
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    templates_dir = os.path.join(base_dir, 'templates')
+    
     # Serve frontend pages
     @app.route('/')
     def serve_index():
-        return app.send_static_file('index.html')
+        try:
+            return send_from_directory(templates_dir, 'index.html')
+        except Exception as e:
+            print(f"❌ Error serving index.html: {e}")
+            return "index.html not found in templates directory", 404
     
     @app.route('/<path:filename>')
     def serve_static(filename):
-        # Serve HTML files and other static assets
+        # 1. Try to serve from templates if it's an HTML file or has no extension
         if filename.endswith('.html') or '.' not in filename:
+            target = filename if filename.endswith('.html') else f"{filename}.html"
             try:
-                return app.send_static_file(filename if filename.endswith('.html') else f'{filename}.html')
+                return send_from_directory(templates_dir, target)
             except:
-                pass
-        return app.send_static_file(filename)
-    
+                pass # Fall through to next checks
+        
+        # 2. Try to serve from css, js, or assets folders
+        for folder in ['css', 'js', 'assets']:
+            if filename.startswith(f"{folder}/"):
+                try:
+                    return send_from_directory(base_dir, filename)
+                except:
+                    pass
+        
+        # 3. Last fallback: try to serve from project root
+        try:
+            return send_from_directory(base_dir, filename)
+        except:
+            return f"File '{filename}' not found", 404
+
     # Health check endpoint
     @app.route('/api/health', methods=['GET'])
     def health_check():
@@ -139,10 +161,16 @@ def create_app():
     # Error handlers
     @app.errorhandler(404)
     def not_found(error):
-        return jsonify({
-            'success': False,
-            'error': 'Endpoint not found'
-        }), 404
+        # Only return JSON if it's an API request
+        from flask import request
+        if request.path.startswith('/api/'):
+            return jsonify({
+                'success': False,
+                'error': 'API Endpoint not found'
+            }), 404
+        
+        # Otherwise, return a text message (or it was already handled by serve_static)
+        return f"The page you are looking for ({request.path}) was not found.", 404
     
     @app.errorhandler(500)
     def internal_error(error):

@@ -419,7 +419,7 @@ function proceedToBooking() {
         search_params: searchParams
     });
 
-    window.location.href = 'hotel-booking.html';
+    window.location.href = 'payment-checkout.html';
 }
 
 /**

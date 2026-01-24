@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Book Hotels - Coast to Coast Journeys. Search and book hotels at the best prices worldwide.">
+    <title>Book Hotels | Coast to Coast Journeys</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="../assets/images/logo.jpg">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header scrolled" id="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <img src="../assets/images/logo.jpg" alt="Coast to Coast Journeys">
+                    <span class="logo-text">Coast to Coast Journeys</span>
+                </a>
+
+                <nav>
+                    <ul class="nav-menu" id="navMenu">
+                        <li><a href="index.html" class="nav-link">Home</a></li>
+                        <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
+                        <li><a href="hotel-booking.html" class="nav-link active">Hotels</a></li>
+                        <li><a href="visa.html" class="nav-link">Visa</a></li>
+                        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                    </ul>
+                </nav>
+
+                <div class="header-actions">
+                    <a href="auth.html" class="btn btn-outline">
+                        <i class="fas fa-user"></i> Login
+                    </a>
+                </div>
+
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Hero -->
+    <section class="page-hero hotel-hero">
+        <div class="container">
+            <h1><i class="fas fa-hotel"></i> Find Your Perfect Stay</h1>
+            <p>Search and compare hotels from top chains worldwide</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main>
+        <div class="container">
+            <!-- Hotel Search Box -->
+            <div class="booking-search-container">
+                <form id="hotelSearchForm">
+                    <div class="search-form-grid" style="grid-template-columns: 2fr 1fr 1fr 1fr auto;">
+                        <div class="form-field">
+                            <label>Destination</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <input type="text" id="destination" placeholder="City, Hotel, or Area" value="Mumbai"
+                                    required>
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Check-in</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-calendar-alt"></i>
+                                <input type="date" id="checkIn" required>
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Check-out</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-calendar-alt"></i>
+                                <input type="date" id="checkOut" required>
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Rooms & Guests</label>
+                            <div class="input-wrapper guests-dropdown" id="guestsDropdown"
+                                style="position: relative; cursor: pointer; display: flex; align-items: center; padding-left: 14px;">
+                                <i class="fas fa-users" style="margin-right: 12px; color: #666;"></i>
+                                <span class="guests-display" id="guestsDisplay">1 Room, 2 Guests</span>
+                                <i class="fas fa-chevron-down"
+                                    style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #666;"></i>
+                            </div>
+                            <div class="travelers-popup" id="guestsPopup">
+                                <div class="traveler-row">
+                                    <div class="traveler-info">
+                                        <span class="traveler-type">Rooms</span>
+                                    </div>
+                                    <div class="traveler-counter">
+                                        <button type="button" class="counter-btn minus" data-type="rooms">-</button>
+                                        <span id="roomsCount">1</span>
+                                        <button type="button" class="counter-btn plus" data-type="rooms">+</button>
+                                    </div>
+                                </div>
+                                <div class="traveler-row">
+                                    <div class="traveler-info">
+                                        <span class="traveler-type">Adults</span>
+                                        <span class="traveler-age">12+ years</span>
+                                    </div>
+                                    <div class="traveler-counter">
+                                        <button type="button" class="counter-btn minus" data-type="adults">-</button>
+                                        <span id="adultsCount">2</span>
+                                        <button type="button" class="counter-btn plus" data-type="adults">+</button>
+                                    </div>
+                                </div>
+                                <div class="traveler-row">
+                                    <div class="traveler-info">
+                                        <span class="traveler-type">Children</span>
+                                        <span class="traveler-age">0-11 years</span>
+                                    </div>
+                                    <div class="traveler-counter">
+                                        <button type="button" class="counter-btn minus" data-type="children">-</button>
+                                        <span id="childrenCount">0</span>
+                                        <button type="button" class="counter-btn plus" data-type="children">+</button>
+                                    </div>
+                                </div>
+                                <button type="button" class="travelers-done" id="guestsDone">Done</button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-search" style="height: auto;">
+                            <i class="fas fa-search"></i>
+                            Search Hotels
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-layout">
+                <!-- Filters Sidebar -->
+                <aside class="filters-sidebar">
+                    <h3 class="filters-header">Filters</h3>
+
+                    <div class="filter-group">
+                        <h4>Price Range</h4>
+                        <label class="filter-option">
+                            <input type="checkbox" id="p1">
+                            Under ₹2,000
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" id="p2">
+                            ₹2,000 - ₹5,000
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" id="p3" checked>
+                            ₹5,000 - ₹10,000
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" id="p4">
+                            Above ₹10,000
+                        </label>
+                    </div>
+
+                    <div class="filter-group">
+                        <h4>Star Rating</h4>
+                        <label class="filter-option">
+                            <input type="checkbox" id="s5" checked>
+                            5 Star
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" id="s4">
+                            4 Star
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" id="s3">
+                            3 Star
+                        </label>
+                    </div>
+
+                    <div class="filter-group">
+                        <h4>Amenities</h4>
+                        <label class="filter-option">
+                            <input type="checkbox" id="wifi" checked>
+                            Free WiFi
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" id="pool">
+                            Swimming Pool
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" id="parking">
+                            Free Parking
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" id="breakfast">
+                            Breakfast Included
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" id="spa">
+                            Spa & Wellness
+                        </label>
+                    </div>
+
+                    <div class="filter-group">
+                        <h4>Guest Rating</h4>
+                        <label class="filter-option">
+                            <input type="checkbox" id="r9">
+                            Exceptional (9+)
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" id="r8">
+                            Very Good (8+)
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" id="r7">
+                            Good (7+)
+                        </label>
+                    </div>
+                </aside>
+
+                <!-- Hotels List -->
+                <div class="results-content">
+                    <div class="results-header">
+                        <h2>Hotels in Mumbai</h2>
+                        <p class="results-count">Showing 156 properties</p>
+                    </div>
+
+                    <div class="hotel-results-grid">
+                        <!-- Hotel 1 -->
+                        <div class="hotel-card">
+                            <div class="hotel-image">
+                                <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                    alt="The Taj Mahal Palace">
+                            </div>
+                            <div class="hotel-info">
+                                <h3 class="hotel-name">The Taj Mahal Palace</h3>
+                                <div class="hotel-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    Colaba, Mumbai • 2.5 km from center
+                                </div>
+                                <div class="hotel-stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <span style="margin-left: 8px; color: var(--text-secondary);">5 Star Luxury</span>
+                                </div>
+                                <div class="hotel-amenities">
+                                    <span class="amenity"><i class="fas fa-wifi"></i> Free WiFi</span>
+                                    <span class="amenity"><i class="fas fa-swimming-pool"></i> Pool</span>
+                                    <span class="amenity"><i class="fas fa-utensils"></i> Restaurant</span>
+                                    <span class="amenity"><i class="fas fa-spa"></i> Spa</span>
+                                </div>
+                            </div>
+                            <div class="hotel-price-section">
+                                <div>
+                                    <p class="price-label">Starting from</p>
+                                    <p class="price-amount">₹15,999</p>
+                                    <p class="price-per-night">per night</p>
+                                </div>
+                                <button class="btn btn-accent">View Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Hotel 2 -->
+                        <div class="hotel-card">
+                            <div class="hotel-image">
+                                <img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                    alt="The Oberoi Mumbai">
+                            </div>
+                            <div class="hotel-info">
+                                <h3 class="hotel-name">The Oberoi Mumbai</h3>
+                                <div class="hotel-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    Nariman Point, Mumbai • 1.2 km from center
+                                </div>
+                                <div class="hotel-stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <span style="margin-left: 8px; color: var(--text-secondary);">5 Star Luxury</span>
+                                </div>
+                                <div class="hotel-amenities">
+                                    <span class="amenity"><i class="fas fa-wifi"></i> Free WiFi</span>
+                                    <span class="amenity"><i class="fas fa-spa"></i> Spa</span>
+                                    <span class="amenity"><i class="fas fa-dumbbell"></i> Gym</span>
+                                    <span class="amenity"><i class="fas fa-concierge-bell"></i> Concierge</span>
+                                </div>
+                            </div>
+                            <div class="hotel-price-section">
+                                <div>
+                                    <p class="price-label">Starting from</p>
+                                    <p class="price-amount">₹18,500</p>
+                                    <p class="price-per-night">per night</p>
+                                </div>
+                                <button class="btn btn-accent">View Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Hotel 3 -->
+                        <div class="hotel-card">
+                            <div class="hotel-image">
+                                <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                    alt="ITC Grand Central">
+                            </div>
+                            <div class="hotel-info">
+                                <h3 class="hotel-name">ITC Grand Central</h3>
+                                <div class="hotel-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    Parel, Mumbai • 4.8 km from center
+                                </div>
+                                <div class="hotel-stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <span style="margin-left: 8px; color: var(--text-secondary);">5 Star Luxury</span>
+                                </div>
+                                <div class="hotel-amenities">
+                                    <span class="amenity"><i class="fas fa-wifi"></i> Free WiFi</span>
+                                    <span class="amenity"><i class="fas fa-swimming-pool"></i> Pool</span>
+                                    <span class="amenity"><i class="fas fa-coffee"></i> Breakfast</span>
+                                    <span class="amenity"><i class="fas fa-parking"></i> Parking</span>
+                                </div>
+                            </div>
+                            <div class="hotel-price-section">
+                                <div>
+                                    <p class="price-label">Starting from</p>
+                                    <p class="price-amount">₹12,999</p>
+                                    <p class="price-per-night">per night</p>
+                                </div>
+                                <button class="btn btn-accent">View Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Hotel 4 -->
+                        <div class="hotel-card">
+                            <div class="hotel-image">
+                                <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                    alt="Trident Nariman Point">
+                            </div>
+                            <div class="hotel-info">
+                                <h3 class="hotel-name">Trident Nariman Point</h3>
+                                <div class="hotel-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    Nariman Point, Mumbai • 0.8 km from center
+                                </div>
+                                <div class="hotel-stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <span style="margin-left: 8px; color: var(--text-secondary);">5 Star Luxury</span>
+                                </div>
+                                <div class="hotel-amenities">
+                                    <span class="amenity"><i class="fas fa-wifi"></i> Free WiFi</span>
+                                    <span class="amenity"><i class="fas fa-swimming-pool"></i> Pool</span>
+                                    <span class="amenity"><i class="fas fa-utensils"></i> Restaurant</span>
+                                    <span class="amenity"><i class="fas fa-eye"></i> Sea View</span>
+                                </div>
+                            </div>
+                            <div class="hotel-price-section">
+                                <div>
+                                    <p class="price-label">Starting from</p>
+                                    <p class="price-amount">₹9,999</p>
+                                    <p class="price-per-night">per night</p>
+                                </div>
+                                <button class="btn btn-accent">View Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Hotel 5 -->
+                        <div class="hotel-card">
+                            <div class="hotel-image">
+                                <img src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                    alt="JW Marriott Mumbai">
+                            </div>
+                            <div class="hotel-info">
+                                <h3 class="hotel-name">JW Marriott Mumbai Juhu</h3>
+                                <div class="hotel-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    Juhu Beach, Mumbai • 12 km from center
+                                </div>
+                                <div class="hotel-stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <span style="margin-left: 8px; color: var(--text-secondary);">5 Star Luxury</span>
+                                </div>
+                                <div class="hotel-amenities">
+                                    <span class="amenity"><i class="fas fa-wifi"></i> Free WiFi</span>
+                                    <span class="amenity"><i class="fas fa-umbrella-beach"></i> Beach Access</span>
+                                    <span class="amenity"><i class="fas fa-spa"></i> Spa</span>
+                                    <span class="amenity"><i class="fas fa-dumbbell"></i> Gym</span>
+                                </div>
+                            </div>
+                            <div class="hotel-price-section">
+                                <div>
+                                    <p class="price-label">Starting from</p>
+                                    <p class="price-amount">₹14,500</p>
+                                    <p class="price-per-night">per night</p>
+                                </div>
+                                <button class="btn btn-accent">View Details</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Popular Destinations -->
+            <section class="routes-section">
+                <div class="routes-header">
+                    <h3><i class="fas fa-fire"></i> Popular Hotel Destinations</h3>
+                </div>
+                <div class="routes-grid">
+                    <div class="route-card">
+                        <div class="route-image">
+                            <img src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                alt="Delhi Hotels">
+                            <span class="route-price">From ₹2,499/night</span>
+                        </div>
+                        <div class="route-content">
+                            <div class="route-path">
+                                <span class="city">Delhi</span>
+                            </div>
+                            <span class="route-meta">1,200+ Hotels Available</span>
+                        </div>
+                    </div>
+
+                    <div class="route-card">
+                        <div class="route-image">
+                            <img src="https://images.unsplash.com/photo-1582510003544-4d00b7f74220?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                alt="Goa Hotels">
+                            <span class="route-price">From ₹1,999/night</span>
+                        </div>
+                        <div class="route-content">
+                            <div class="route-path">
+                                <span class="city">Goa</span>
+                            </div>
+                            <span class="route-meta">850+ Hotels Available</span>
+                        </div>
+                    </div>
+
+                    <div class="route-card">
+                        <div class="route-image">
+                            <img src="https://images.unsplash.com/photo-1564507592333-c60657eea523?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                alt="Jaipur Hotels">
+                            <span class="route-price">From ₹1,799/night</span>
+                        </div>
+                        <div class="route-content">
+                            <div class="route-path">
+                                <span class="city">Jaipur</span>
+                            </div>
+                            <span class="route-meta">650+ Hotels Available</span>
+                        </div>
+                    </div>
+
+                    <div class="route-card">
+                        <div class="route-image">
+                            <img src="https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                alt="Dubai Hotels">
+                            <span class="route-price">From ₹4,999/night</span>
+                        </div>
+                        <div class="route-content">
+                            <div class="route-path">
+                                <span class="city">Dubai</span>
+                            </div>
+                            <span class="route-meta">2,000+ Hotels Available</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Help Box -->
+            <div class="help-box">
+                <div class="help-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <div class="help-content">
+                    <h3>Need Help with Hotel Booking?</h3>
+                    <p>Our travel experts are available 24×7 to assist you find the perfect stay.</p>
+                    <div class="help-actions">
+                        <a href="tel:+918237216173" class="btn btn-white">
+                            <i class="fas fa-phone"></i> +91 8237216173
+                        </a>
+                        <a href="mailto:Support@coasttocoastjourneys.com" class="btn btn-outline"
+                            style="border-color: white; color: white;">
+                            <i class="fas fa-envelope"></i> Email Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="../assets/images/logo.jpg" alt="Coast to Coast Journeys">
+                        <span>Coast to Coast Journeys</span>
+                    </div>
+                    <p>Your trusted travel partner. We specialize in creating unforgettable travel experiences across
+                        the globe.</p>
+                    <div class="trust-line">
+                        <i class="fas fa-shield-alt"></i>
+                        "Your trust is our responsibility."
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="index.html#contact">Contact Us</a></li>
+                        <li><a href="faqs.html">FAQs</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="terms.html">Terms & Conditions</a></li>
+                        <li><a href="refund-policy.html">Refund Policy</a></li>
+                        <li><a href="cancellation-policy.html">Cancellation Policy</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Connect With Us</h4>
+                    <div style="display: flex; gap: 12px; margin-top: 8px;">
+                        <a href="https://www.facebook.com/people/Coast-to-Coast-Journeys/61574464089885/"
+                            target="_blank" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/coasttocoastjourneys/" target="_blank" class="social-link"><i
+                                class="fab fa-instagram"></i></a>
+                        <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"
+                            class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 Coast to Coast Journeys. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Mobile Menu Toggle
+        document.getElementById('mobileMenuToggle').addEventListener('click', function () {
+            this.classList.toggle('active');
+            document.getElementById('navMenu').classList.toggle('active');
+        });
+
+        // Set min date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('checkIn').min = today;
+        document.getElementById('checkIn').value = today;
+
+        // Set checkout to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+        document.getElementById('checkOut').min = tomorrowStr;
+        document.getElementById('checkOut').value = tomorrowStr;
+
+        // Update checkout min date when checkin changes
+        document.getElementById('checkIn').addEventListener('change', function () {
+            const checkIn = new Date(this.value);
+            checkIn.setDate(checkIn.getDate() + 1);
+            document.getElementById('checkOut').min = checkIn.toISOString().split('T')[0];
+            if (new Date(document.getElementById('checkOut').value) <= new Date(this.value)) {
+                document.getElementById('checkOut').value = checkIn.toISOString().split('T')[0];
+            }
+        });
+
+        // ========== Guests Dropdown ==========
+        const guestsData = { rooms: 1, adults: 2, children: 0 };
+        const guestsDropdown = document.getElementById('guestsDropdown');
+        const guestsPopup = document.getElementById('guestsPopup');
+        const guestsDisplay = document.getElementById('guestsDisplay');
+        const guestsDone = document.getElementById('guestsDone');
+
+        guestsDropdown.addEventListener('click', function (e) {
+            e.stopPropagation();
+            guestsPopup.classList.toggle('active');
+        });
+
+        guestsDone.addEventListener('click', function () {
+            guestsPopup.classList.remove('active');
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!guestsDropdown.contains(e.target) && !guestsPopup.contains(e.target)) {
+                guestsPopup.classList.remove('active');
+            }
+        });
+
+        function updateGuestsDisplay() {
+            const totalGuests = guestsData.adults + guestsData.children;
+            guestsDisplay.textContent = `${guestsData.rooms} Room${guestsData.rooms > 1 ? 's' : ''}, ${totalGuests} Guest${totalGuests > 1 ? 's' : ''}`;
+        }
+
+        document.querySelectorAll('#guestsPopup .counter-btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const type = this.dataset.type;
+                const isPlus = this.classList.contains('plus');
+
+                if (isPlus) {
+                    if (type === 'rooms' && guestsData.rooms < 8) guestsData.rooms++;
+                    if (type === 'adults' && guestsData.adults < 30) guestsData.adults++;
+                    if (type === 'children' && guestsData.children < 10) guestsData.children++;
+                } else {
+                    if (type === 'rooms' && guestsData.rooms > 1) guestsData.rooms--;
+                    if (type === 'adults' && guestsData.adults > 1) guestsData.adults--;
+                    if (type === 'children' && guestsData.children > 0) guestsData.children--;
+                }
+
+                document.getElementById('roomsCount').textContent = guestsData.rooms;
+                document.getElementById('adultsCount').textContent = guestsData.adults;
+                document.getElementById('childrenCount').textContent = guestsData.children;
+                updateGuestsDisplay();
+            });
+        });
+
+        // Form submission
+        document.getElementById('hotelSearchForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const destination = document.getElementById('destination').value;
+            const checkIn = document.getElementById('checkIn').value;
+            const checkOut = document.getElementById('checkOut').value;
+
+            // Construct query parameters
+            const params = new URLSearchParams({
+                destination: destination,
+                checkin: checkIn,
+                checkout: checkOut,
+                rooms: guestsData.rooms,
+                adults: guestsData.adults,
+                children: guestsData.children
+            });
+
+            // Redirect to results page
+            window.location.href = `hotel-results.html?${params.toString()}`;
+        });
+    </script>
+</body>
+
+</html>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customers | Coast to Coast Journeys Admin</title>
+    <title>Bookings | Coast to Coast Journeys Admin</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- Admin Styles -->
-    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="../../admin/css/admin.css">
 
     <style>
         .filters-bar {
@@ -68,26 +68,13 @@
             border-radius: 8px;
         }
 
-        .customer-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .customer-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #e0f2fe;
-            color: #0e64a6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .booking-id {
+            font-family: monospace;
             font-weight: 600;
-            font-size: 1rem;
+            color: #0e64a6;
         }
 
-        .customer-details {
+        .customer-info {
             display: flex;
             flex-direction: column;
         }
@@ -101,25 +88,32 @@
             color: #64748b;
         }
 
-        .contact-info {
-            font-size: 0.9rem;
-            color: #475569;
-        }
-
-        .stats-cell {
+        .hotel-info {
             display: flex;
             flex-direction: column;
-            gap: 0.25rem;
         }
 
-        .stats-value {
-            font-weight: 600;
-            color: #0f172a;
+        .hotel-name {
+            font-weight: 500;
         }
 
-        .stats-label {
-            font-size: 0.75rem;
+        .hotel-dates {
+            font-size: 0.8rem;
             color: #64748b;
+        }
+
+        .amount-cell {
+            text-align: right;
+        }
+
+        .amount-main {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .amount-margin {
+            font-size: 0.75rem;
+            color: #10b981;
         }
 
         .action-btns {
@@ -160,12 +154,53 @@
             color: white;
             border-color: #0e64a6;
         }
+
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .quick-stat {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .quick-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .quick-stat-label {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .quick-stat.confirmed .quick-stat-value {
+            color: #10b981;
+        }
+
+        .quick-stat.pending .quick-stat-value {
+            color: #f59e0b;
+        }
+
+        .quick-stat.cancelled .quick-stat-value {
+            color: #ef4444;
+        }
+
+        .quick-stat.total .quick-stat-value {
+            color: #0e64a6;
+        }
     </style>
 </head>
 
 <body>
     <div class="admin-wrapper">
-        <!-- Sidebar -->
+        <!-- Sidebar (Same as dashboard) -->
         <aside class="admin-sidebar" id="adminSidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">C</div>
@@ -179,7 +214,7 @@
                         <i class="fas fa-home"></i>
                         <span>Dashboard</span>
                     </a>
-                    <a href="bookings.html" class="nav-item">
+                    <a href="bookings.html" class="nav-item active">
                         <i class="fas fa-calendar-check"></i>
                         <span>Bookings</span>
                     </a>
@@ -211,7 +246,7 @@
                         <i class="fas fa-handshake"></i>
                         <span>Suppliers</span>
                     </a>
-                    <a href="customers.html" class="nav-item active">
+                    <a href="customers.html" class="nav-item">
                         <i class="fas fa-users"></i>
                         <span>Customers</span>
                     </a>
@@ -256,35 +291,63 @@
                     <button class="sidebar-toggle" id="sidebarToggle">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h1 class="page-title">Customers</h1>
+                    <h1 class="page-title">Bookings Management</h1>
                 </div>
 
                 <div class="header-right">
                     <button class="btn btn-secondary">
-                        <i class="fas fa-download"></i> Export CSV
+                        <i class="fas fa-download"></i> Export
                     </button>
-                    <button class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Add Customer
+                    <button class="btn btn-primary" onclick="openModal('manualBookingModal')">
+                        <i class="fas fa-plus"></i> Manual Booking
                     </button>
                 </div>
             </header>
 
             <div class="admin-content">
+                <!-- Quick Stats -->
+                <div class="quick-stats">
+                    <div class="quick-stat total">
+                        <div class="quick-stat-value">1,247</div>
+                        <div class="quick-stat-label">Total Bookings</div>
+                    </div>
+                    <div class="quick-stat confirmed">
+                        <div class="quick-stat-value">892</div>
+                        <div class="quick-stat-label">Confirmed</div>
+                    </div>
+                    <div class="quick-stat pending">
+                        <div class="quick-stat-value">285</div>
+                        <div class="quick-stat-label">Pending</div>
+                    </div>
+                    <div class="quick-stat cancelled">
+                        <div class="quick-stat-value">70</div>
+                        <div class="quick-stat-label">Cancelled</div>
+                    </div>
+                </div>
+
                 <!-- Filters -->
                 <div class="filters-bar">
                     <div class="search-box">
                         <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Search by name, email, phone...">
+                        <input type="text" placeholder="Search by booking ID, customer, hotel...">
                     </div>
 
                     <div class="filter-group">
                         <label>Status:</label>
                         <select>
                             <option value="">All Status</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                            <option value="banned">Banned</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="pending">Pending</option>
+                            <option value="cancelled">Cancelled</option>
+                            <option value="processing">Processing</option>
                         </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Date:</label>
+                        <input type="date">
+                        <span>to</span>
+                        <input type="date">
                     </div>
 
                     <button class="btn btn-secondary">
@@ -292,172 +355,184 @@
                     </button>
                 </div>
 
-                <!-- Customers Table -->
+                <!-- Bookings Table -->
                 <div class="admin-card">
                     <table class="admin-table">
                         <thead>
                             <tr>
+                                <th>Booking ID</th>
                                 <th>Customer</th>
-                                <th>Phone</th>
-                                <th>Location</th>
-                                <th>Total Bookings</th>
-                                <th>Total Spent</th>
+                                <th>Hotel & Dates</th>
+                                <th>Rooms</th>
+                                <th>Amount</th>
                                 <th>Status</th>
+                                <th>Payment</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
+                                <td><span class="booking-id">#CTC-10001</span></td>
                                 <td>
                                     <div class="customer-info">
-                                        <div class="customer-avatar">RS</div>
-                                        <div class="customer-details">
-                                            <span class="customer-name">Rahul Sharma</span>
-                                            <span class="customer-email">rahul@email.com</span>
-                                        </div>
+                                        <span class="customer-name">Rahul Sharma</span>
+                                        <span class="customer-email">rahul@email.com</span>
                                     </div>
                                 </td>
-                                <td><span class="contact-info">+91 98765 43210</span></td>
-                                <td><span class="contact-info">New Delhi, India</span></td>
                                 <td>
-                                    <div class="stats-cell">
-                                        <span class="stats-value">12</span>
-                                        <span class="stats-label">Last: Jan 21, 2026</span>
+                                    <div class="hotel-info">
+                                        <span class="hotel-name">The Leela Palace, New Delhi</span>
+                                        <span class="hotel-dates">Jan 25 - Jan 28, 2026 (3N)</span>
                                     </div>
                                 </td>
-                                <td><span class="stats-value">₹4,56,800</span></td>
-                                <td><span class="status-badge confirmed">Active</span></td>
+                                <td>2</td>
+                                <td class="amount-cell">
+                                    <div class="amount-main">₹45,500</div>
+                                    <div class="amount-margin">+₹5,460 margin</div>
+                                </td>
+                                <td><span class="status-badge confirmed">Confirmed</span></td>
+                                <td><span class="status-badge confirmed">Paid</span></td>
                                 <td>
                                     <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Profile">
+                                        <button class="btn btn-secondary btn-icon" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </button>
-                                        <button class="btn btn-secondary btn-icon" title="Edit Customer">
-                                            <i class="fas fa-edit"></i>
+                                        <button class="btn btn-secondary btn-icon" title="Download Voucher">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button class="btn btn-secondary btn-icon" title="Resend Email">
+                                            <i class="fas fa-envelope"></i>
                                         </button>
                                     </div>
                                 </td>
                             </tr>
                             <tr>
+                                <td><span class="booking-id">#CTC-10002</span></td>
                                 <td>
                                     <div class="customer-info">
-                                        <div class="customer-avatar">PP</div>
-                                        <div class="customer-details">
-                                            <span class="customer-name">Priya Patel</span>
-                                            <span class="customer-email">priya@email.com</span>
-                                        </div>
+                                        <span class="customer-name">Priya Patel</span>
+                                        <span class="customer-email">priya@email.com</span>
                                     </div>
                                 </td>
-                                <td><span class="contact-info">+91 98765 12345</span></td>
-                                <td><span class="contact-info">Mumbai, India</span></td>
                                 <td>
-                                    <div class="stats-cell">
-                                        <span class="stats-value">5</span>
-                                        <span class="stats-label">Last: Jan 20, 2026</span>
+                                    <div class="hotel-info">
+                                        <span class="hotel-name">Taj Exotica, Goa</span>
+                                        <span class="hotel-dates">Jan 28 - Jan 31, 2026 (3N)</span>
                                     </div>
                                 </td>
-                                <td><span class="stats-value">₹1,24,500</span></td>
-                                <td><span class="status-badge confirmed">Active</span></td>
+                                <td>1</td>
+                                <td class="amount-cell">
+                                    <div class="amount-main">₹32,000</div>
+                                    <div class="amount-margin">+₹3,840 margin</div>
+                                </td>
+                                <td><span class="status-badge pending">Pending</span></td>
+                                <td><span class="status-badge pending">Awaiting</span></td>
                                 <td>
                                     <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Profile">
+                                        <button class="btn btn-secondary btn-icon" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </button>
-                                        <button class="btn btn-secondary btn-icon" title="Edit Customer">
-                                            <i class="fas fa-edit"></i>
+                                        <button class="btn btn-secondary btn-icon" title="Send Reminder">
+                                            <i class="fas fa-bell"></i>
                                         </button>
                                     </div>
                                 </td>
                             </tr>
                             <tr>
+                                <td><span class="booking-id">#CTC-10003</span></td>
                                 <td>
                                     <div class="customer-info">
-                                        <div class="customer-avatar">AK</div>
-                                        <div class="customer-details">
-                                            <span class="customer-name">Amit Kumar</span>
-                                            <span class="customer-email">amit.k@email.com</span>
-                                        </div>
+                                        <span class="customer-name">Amit Kumar</span>
+                                        <span class="customer-email">amit.k@email.com</span>
                                     </div>
                                 </td>
-                                <td><span class="contact-info">+91 99887 76655</span></td>
-                                <td><span class="contact-info">Bangalore, India</span></td>
                                 <td>
-                                    <div class="stats-cell">
-                                        <span class="stats-value">3</span>
-                                        <span class="stats-label">Last: Jan 15, 2026</span>
+                                    <div class="hotel-info">
+                                        <span class="hotel-name">Oberoi Udaivilas, Udaipur</span>
+                                        <span class="hotel-dates">Feb 1 - Feb 5, 2026 (4N)</span>
                                     </div>
                                 </td>
-                                <td><span class="stats-value">₹86,200</span></td>
-                                <td><span class="status-badge pending">Inactive</span></td>
+                                <td>1</td>
+                                <td class="amount-cell">
+                                    <div class="amount-main">₹78,000</div>
+                                    <div class="amount-margin">+₹11,700 margin</div>
+                                </td>
+                                <td><span class="status-badge confirmed">Confirmed</span></td>
+                                <td><span class="status-badge confirmed">Paid</span></td>
                                 <td>
                                     <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Profile">
+                                        <button class="btn btn-secondary btn-icon" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </button>
-                                        <button class="btn btn-secondary btn-icon" title="Edit Customer">
-                                            <i class="fas fa-edit"></i>
+                                        <button class="btn btn-secondary btn-icon" title="Download Voucher">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button class="btn btn-secondary btn-icon" title="Resend Email">
+                                            <i class="fas fa-envelope"></i>
                                         </button>
                                     </div>
                                 </td>
                             </tr>
                             <tr>
+                                <td><span class="booking-id">#CTC-10004</span></td>
                                 <td>
                                     <div class="customer-info">
-                                        <div class="customer-avatar">NS</div>
-                                        <div class="customer-details">
-                                            <span class="customer-name">Neha Singh</span>
-                                            <span class="customer-email">neha.singh@email.com</span>
-                                        </div>
+                                        <span class="customer-name">Neha Singh</span>
+                                        <span class="customer-email">neha.singh@email.com</span>
                                     </div>
                                 </td>
-                                <td><span class="contact-info">+91 91234 56789</span></td>
-                                <td><span class="contact-info">Chennai, India</span></td>
                                 <td>
-                                    <div class="stats-cell">
-                                        <span class="stats-value">8</span>
-                                        <span class="stats-label">Last: Jan 18, 2026</span>
+                                    <div class="hotel-info">
+                                        <span class="hotel-name">JW Marriott, Mumbai</span>
+                                        <span class="hotel-dates">Feb 5 - Feb 7, 2026 (2N)</span>
                                     </div>
                                 </td>
-                                <td><span class="stats-value">₹3,45,000</span></td>
-                                <td><span class="status-badge confirmed">Active</span></td>
+                                <td>1</td>
+                                <td class="amount-cell">
+                                    <div class="amount-main">₹28,500</div>
+                                    <div class="amount-margin">+₹3,420 margin</div>
+                                </td>
+                                <td><span class="status-badge cancelled">Cancelled</span></td>
+                                <td><span class="status-badge processing">Refunding</span></td>
                                 <td>
                                     <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Profile">
+                                        <button class="btn btn-secondary btn-icon" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </button>
-                                        <button class="btn btn-secondary btn-icon" title="Edit Customer">
-                                            <i class="fas fa-edit"></i>
+                                        <button class="btn btn-secondary btn-icon" title="View Refund">
+                                            <i class="fas fa-undo"></i>
                                         </button>
                                     </div>
                                 </td>
                             </tr>
                             <tr>
+                                <td><span class="booking-id">#CTC-10005</span></td>
                                 <td>
                                     <div class="customer-info">
-                                        <div class="customer-avatar">VR</div>
-                                        <div class="customer-details">
-                                            <span class="customer-name">Vikram Reddy</span>
-                                            <span class="customer-email">vikram.r@email.com</span>
-                                        </div>
+                                        <span class="customer-name">Vikram Reddy</span>
+                                        <span class="customer-email">vikram.r@email.com</span>
                                     </div>
                                 </td>
-                                <td><span class="contact-info">+91 88776 65544</span></td>
-                                <td><span class="contact-info">Hyderabad, India</span></td>
                                 <td>
-                                    <div class="stats-cell">
-                                        <span class="stats-value">1</span>
-                                        <span class="stats-label">Last: Jan 10, 2026</span>
+                                    <div class="hotel-info">
+                                        <span class="hotel-name">ITC Grand Chola, Chennai</span>
+                                        <span class="hotel-dates">Feb 10 - Feb 12, 2026 (2N)</span>
                                     </div>
                                 </td>
-                                <td><span class="stats-value">₹24,500</span></td>
-                                <td><span class="status-badge confirmed">Active</span></td>
+                                <td>2</td>
+                                <td class="amount-cell">
+                                    <div class="amount-main">₹52,000</div>
+                                    <div class="amount-margin">+₹6,240 margin</div>
+                                </td>
+                                <td><span class="status-badge processing">Processing</span></td>
+                                <td><span class="status-badge confirmed">Paid</span></td>
                                 <td>
                                     <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Profile">
+                                        <button class="btn btn-secondary btn-icon" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </button>
-                                        <button class="btn btn-secondary btn-icon" title="Edit Customer">
-                                            <i class="fas fa-edit"></i>
+                                        <button class="btn btn-secondary btn-icon" title="Check Status">
+                                            <i class="fas fa-sync"></i>
                                         </button>
                                     </div>
                                 </td>
@@ -467,7 +542,7 @@
 
                     <div class="pagination">
                         <div class="pagination-info">
-                            Showing 1-5 of 842 customers
+                            Showing 1-5 of 1,247 bookings
                         </div>
                         <div class="pagination-buttons">
                             <button class="page-btn"><i class="fas fa-chevron-left"></i></button>
@@ -475,7 +550,7 @@
                             <button class="page-btn">2</button>
                             <button class="page-btn">3</button>
                             <button class="page-btn">...</button>
-                            <button class="page-btn">168</button>
+                            <button class="page-btn">250</button>
                             <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
                         </div>
                     </div>
@@ -485,7 +560,7 @@
     </div>
 
     <!-- Admin JavaScript -->
-    <script src="js/admin.js"></script>
+    <script src="../../admin/js/admin.js"></script>
 </body>
 
 </html>

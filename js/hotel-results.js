@@ -17,6 +17,23 @@ const hotelsPerPage = 12;
  * Initialize hotel results page
  */
 async function initHotelResults() {
+    // Check URL params first and save to session
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('destination')) {
+        const params = {
+            destination: urlParams.get('destination'),
+            checkin: urlParams.get('checkin'),
+            checkout: urlParams.get('checkout'),
+            rooms: parseInt(urlParams.get('rooms')) || 1,
+            adults: parseInt(urlParams.get('adults')) || 2,
+            children_ages: []
+        };
+        SearchSession.saveSearchParams(params);
+
+        // Clear previous results to force new search
+        SearchSession.remove(SearchSession.KEYS.SEARCH_RESULTS);
+    }
+
     // Get search params from session
     const searchParams = SearchSession.getSearchParams();
 
@@ -315,21 +332,26 @@ function bookHotel(hotel) {
     const searchParams = SearchSession.getSearchParams();
     const nights = HotelUtils.calculateNights(searchParams.checkin, searchParams.checkout);
 
-    // Prepare booking data
-    const bookingData = {
-        hotel: {
-            name: hotel.name,
-            image: hotel.image || hotel.images?.[0],
-            price: hotel.price || hotel.rates?.[0]?.price || 0,
-            roomType: hotel.rates?.[0]?.room_name || 'Standard Room'
-        },
-        searchParams: searchParams,
-        nights: nights,
-        booking_id: 'BK' + Date.now() // Temporary booking ID
+    // Prepare rate object
+    const rate = hotel.rates?.[0] || {
+        room_name: 'Standard Room',
+        price: hotel.price,
+        meal_plan: hotel.meal_plan || 'nomeal',
+        cancellation: 'non-refundable'
     };
 
-    // Save to sessionStorage
-    sessionStorage.setItem('pendingBooking', JSON.stringify(bookingData));
+    // Add total info to rate
+    rate.total_price = rate.price * nights;
+    rate.nights = nights;
+
+    // Save using session helper
+    SearchSession.saveBookingData({
+        hotel: hotel,
+        rate: rate,
+        search_params: searchParams
+    });
+
+
 
     // Redirect to payment checkout
     window.location.href = 'payment-checkout.html';

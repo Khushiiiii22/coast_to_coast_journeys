@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Coast to Coast Journeys - Your trusted travel partner. Book cheap flights, hotels, and visa services. Best prices guaranteed with 24/7 support.">
+    <meta name="keywords" content="flights, hotels, visa, travel booking, cheap flights, hotel booking, travel agency">
+    <title>Coast to Coast Journeys | Book Flights, Hotels & Visa Services</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="../assets/images/logo.jpg">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+
+<body>
+    <!-- Sidebar Menu -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="../assets/images/logo.jpg" alt="Coast to Coast Journeys">
+            <span>Coast to Coast</span>
+            <button class="sidebar-close" id="sidebarClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="sidebar-link active">
+                <i class="fas fa-home"></i> Home
+            </a>
+            <a href="flight-booking.html" class="sidebar-link">
+                <i class="fas fa-plane"></i> Book Flights
+            </a>
+            <a href="hotel-booking.html" class="sidebar-link">
+                <i class="fas fa-hotel"></i> Book Hotels
+            </a>
+            <a href="visa.html" class="sidebar-link">
+                <i class="fas fa-passport"></i> Visa Services
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="#contact" class="sidebar-link" id="sidebarSupport">
+                <i class="fas fa-headset"></i> 24/7 Support
+            </a>
+            <a href="mailto:Support@coasttocoastjourneys.com" class="sidebar-link">
+                <i class="fas fa-envelope"></i> Email Us
+            </a>
+            <a href="tel:+918237216173" class="sidebar-link">
+                <i class="fas fa-phone"></i> Call Us
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="#" class="sidebar-link" id="feedbackLink">
+                <i class="fas fa-comment-dots"></i> Feedback
+            </a>
+            <a href="faqs.html" class="sidebar-link">
+                <i class="fas fa-question-circle"></i> FAQs
+            </a>
+            <a href="about.html" class="sidebar-link">
+                <i class="fas fa-info-circle"></i> About Us
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="terms.html" class="sidebar-link">
+                <i class="fas fa-file-contract"></i> Terms & Conditions
+            </a>
+            <a href="privacy-policy.html" class="sidebar-link">
+                <i class="fas fa-shield-alt"></i> Privacy Policy
+            </a>
+            <a href="refund-policy.html" class="sidebar-link">
+                <i class="fas fa-undo"></i> Refund Policy
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-social">
+                <a href="https://www.facebook.com/people/Coast-to-Coast-Journeys/61574464089885/" target="_blank"><i
+                        class="fab fa-facebook-f"></i></a>
+                <a href="https://www.instagram.com/coasttocoastjourneys/" target="_blank"><i
+                        class="fab fa-instagram"></i></a>
+                <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"><i
+                        class="fab fa-linkedin-in"></i></a>
+            </div>
+            <p>© 2026 Coast to Coast Journeys</p>
+        </div>
+    </aside>
+
+    <!-- Feedback Modal -->
+    <div class="feedback-modal" id="feedbackModal">
+        <div class="feedback-content">
+            <button class="feedback-close" id="feedbackClose"><i class="fas fa-times"></i></button>
+            <h3><i class="fas fa-comment-dots"></i> Share Your Feedback</h3>
+            <p>We'd love to hear from you! Your feedback helps us improve.</p>
+            <form id="feedbackForm">
+                <div class="feedback-field">
+                    <label>Your Name</label>
+                    <input type="text" placeholder="Enter your name" required>
+                </div>
+                <div class="feedback-field">
+                    <label>Email</label>
+                    <input type="email" placeholder="Enter your email" required>
+                </div>
+                <div class="feedback-field">
+                    <label>Rating</label>
+                    <div class="star-rating">
+                        <i class="fas fa-star" data-rating="1"></i>
+                        <i class="fas fa-star" data-rating="2"></i>
+                        <i class="fas fa-star" data-rating="3"></i>
+                        <i class="fas fa-star" data-rating="4"></i>
+                        <i class="fas fa-star" data-rating="5"></i>
+                    </div>
+                </div>
+                <div class="feedback-field">
+                    <label>Your Feedback</label>
+                    <textarea rows="4" placeholder="Tell us about your experience..." required></textarea>
+                </div>
+                <button type="submit" class="btn-feedback-submit">
+                    <i class="fas fa-paper-plane"></i> Submit Feedback
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="container">
+            <div class="header-content">
+                <!-- Hamburger Menu Button -->
+                <button class="hamburger-menu" id="hamburgerMenu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <a href="index.html" class="logo">
+                    <img src="../assets/images/logo.jpg" alt="Coast to Coast Journeys">
+                    <span class="logo-text">Coast to Coast Journeys</span>
+                </a>
+
+                <nav>
+                    <ul class="nav-menu" id="navMenu">
+                        <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
+                        <li><a href="hotel-booking.html" class="nav-link">Hotels</a></li>
+                        <li><a href="visa.html" class="nav-link">Visa</a></li>
+                        <li><a href="#contact" class="nav-link">Support</a></li>
+                    </ul>
+                </nav>
+
+                <div class="header-actions">
+                    <a href="tel:+918237216173" class="phone-link">
+                        <i class="fas fa-phone"></i>
+                        <span>+91 8237216173</span>
+                    </a>
+                    <a href="auth.html" class="btn btn-outline">Sign In</a>
+                </div>
+
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content animate-fade-in-up">
+                <div class="hero-badge">
+                    <i class="fas fa-globe"></i>
+                    Experience Seamless Travel Booking
+                </div>
+                <h1 class="hero-title">Your Journey Begins Here</h1>
+                <p class="hero-subtitle">Book flights, hotels, and visa services at the best prices. Trusted by
+                    thousands of travelers worldwide.</p>
+            </div>
+
+            <!-- Search Box -->
+            <div class="search-box animate-fade-in-up">
+                <div class="search-tabs">
+                    <button class="search-tab active" data-tab="flights">
+                        <i class="fas fa-plane"></i> Flights
+                    </button>
+                    <button class="search-tab" data-tab="hotels">
+                        <i class="fas fa-hotel"></i> Hotels
+                    </button>
+                </div>
+
+                <!-- Flight Search Form -->
+                <div id="flights-form" class="search-content">
+                    <div class="trip-type">
+                        <label class="trip-option">
+                            <input type="radio" name="tripType" value="roundtrip" checked>
+                            <span class="radio-custom"></span>
+                            Round Trip
+                        </label>
+                        <label class="trip-option">
+                            <input type="radio" name="tripType" value="oneway">
+                            <span class="radio-custom"></span>
+                            One Way
+                        </label>
+                    </div>
+
+                    <form class="search-form-improved" id="flightSearchForm">
+                        <div class="search-row">
+                            <div class="form-field-improved">
+                                <label><i class="fas fa-plane-departure"></i> From</label>
+                                <input type="text" id="fromCity" placeholder="City or Airport" required>
+                            </div>
+                            <div class="swap-cities-btn" id="swapCitiesBtn">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="form-field-improved">
+                                <label><i class="fas fa-plane-arrival"></i> To</label>
+                                <input type="text" id="toCity" placeholder="City or Airport" required>
+                            </div>
+                        </div>
+                        <div class="search-row">
+                            <div class="form-field-improved date-field">
+                                <label><i class="fas fa-calendar-alt"></i> Departure</label>
+                                <input type="date" id="departDate" required>
+                                <span class="date-display" id="departDateDisplay">Select Date</span>
+                            </div>
+                            <div class="form-field-improved date-field" id="returnDateWrapper">
+                                <label><i class="fas fa-calendar-alt"></i> Return</label>
+                                <input type="date" id="returnDate">
+                                <span class="date-display" id="returnDateDisplay">Select Date</span>
+                            </div>
+                            <div class="form-field-improved travelers-field">
+                                <label><i class="fas fa-users"></i> Travelers & Class</label>
+                                <div class="travelers-dropdown" id="travelersDropdown">
+                                    <span class="travelers-display" id="travelersDisplay">1 Adult, Economy</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                                <div class="travelers-popup" id="travelersPopup">
+                                    <div class="traveler-row">
+                                        <div class="traveler-info">
+                                            <span class="traveler-type">Adults</span>
+                                            <span class="traveler-age">12+ years</span>
+                                        </div>
+                                        <div class="traveler-counter">
+                                            <button type="button" class="counter-btn minus"
+                                                data-type="adults">-</button>
+                                            <span id="adultsCount">1</span>
+                                            <button type="button" class="counter-btn plus" data-type="adults">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="traveler-row">
+                                        <div class="traveler-info">
+                                            <span class="traveler-type">Children</span>
+                                            <span class="traveler-age">2-11 years</span>
+                                        </div>
+                                        <div class="traveler-counter">
+                                            <button type="button" class="counter-btn minus"
+                                                data-type="children">-</button>
+                                            <span id="childrenCount">0</span>
+                                            <button type="button" class="counter-btn plus"
+                                                data-type="children">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="traveler-row">
+                                        <div class="traveler-info">
+                                            <span class="traveler-type">Infants</span>
+                                            <span class="traveler-age">Under 2</span>
+                                        </div>
+                                        <div class="traveler-counter">
+                                            <button type="button" class="counter-btn minus"
+                                                data-type="infants">-</button>
+                                            <span id="infantsCount">0</span>
+                                            <button type="button" class="counter-btn plus"
+                                                data-type="infants">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="class-selector">
+                                        <label>Cabin Class</label>
+                                        <select id="cabinClass">
+                                            <option value="economy">Economy</option>
+                                            <option value="premium">Premium Economy</option>
+                                            <option value="business">Business</option>
+                                            <option value="first">First Class</option>
+                                        </select>
+                                    </div>
+                                    <button type="button" class="travelers-done" id="travelersDone">Done</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-search-main">
+                            <i class="fas fa-search"></i>
+                            Search Flights
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Hotel Search Form -->
+                <div id="hotels-form" class="search-content hidden">
+                    <form class="search-form-improved" id="hotelSearchForm">
+                        <div class="search-row">
+                            <div class="form-field-improved" style="flex: 2;">
+                                <label><i class="fas fa-map-marker-alt"></i> Destination</label>
+                                <input type="text" id="hotelDestination" placeholder="City, Hotel, or Area" required>
+                            </div>
+                        </div>
+                        <div class="search-row">
+                            <div class="form-field-improved date-field">
+                                <label><i class="fas fa-calendar-check"></i> Check-in</label>
+                                <input type="date" id="checkInDate" required>
+                                <span class="date-display" id="checkInDisplay">Select Date</span>
+                            </div>
+                            <div class="form-field-improved date-field">
+                                <label><i class="fas fa-calendar-times"></i> Check-out</label>
+                                <input type="date" id="checkOutDate" required>
+                                <span class="date-display" id="checkOutDisplay">Select Date</span>
+                            </div>
+                            <div class="form-field-improved travelers-field">
+                                <label><i class="fas fa-door-open"></i> Rooms & Guests</label>
+                                <div class="travelers-dropdown" id="guestsDropdown">
+                                    <span class="travelers-display" id="guestsDisplay">1 Room, 2 Guests</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                                <div class="travelers-popup" id="guestsPopup">
+                                    <div class="traveler-row">
+                                        <div class="traveler-info">
+                                            <span class="traveler-type">Rooms</span>
+                                            <span class="traveler-age">Number of rooms</span>
+                                        </div>
+                                        <div class="traveler-counter">
+                                            <button type="button" class="counter-btn minus" data-type="rooms">-</button>
+                                            <span id="roomsCount">1</span>
+                                            <button type="button" class="counter-btn plus" data-type="rooms">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="traveler-row">
+                                        <div class="traveler-info">
+                                            <span class="traveler-type">Adults</span>
+                                            <span class="traveler-age">12+ years</span>
+                                        </div>
+                                        <div class="traveler-counter">
+                                            <button type="button" class="counter-btn minus"
+                                                data-type="hotelAdults">-</button>
+                                            <span id="hotelAdultsCount">2</span>
+                                            <button type="button" class="counter-btn plus"
+                                                data-type="hotelAdults">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="traveler-row">
+                                        <div class="traveler-info">
+                                            <span class="traveler-type">Children</span>
+                                            <span class="traveler-age">0-11 years</span>
+                                        </div>
+                                        <div class="traveler-counter">
+                                            <button type="button" class="counter-btn minus"
+                                                data-type="hotelChildren">-</button>
+                                            <span id="hotelChildrenCount">0</span>
+                                            <button type="button" class="counter-btn plus"
+                                                data-type="hotelChildren">+</button>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="travelers-done" id="guestsDone">Done</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-search-main">
+                            <i class="fas fa-search"></i>
+                            Search Hotels
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Section -->
+    <section class="trust-section">
+        <div class="container">
+            <h2 class="section-title">Trusted by 100,000+ Travelers</h2>
+            <p class="section-subtitle">Experience world-class service with our commitment to your satisfaction</p>
+
+            <div class="trust-grid">
+                <div class="trust-card">
+                    <div class="trust-icon">
+                        <i class="fas fa-hotel"></i>
+                    </div>
+                    <h3>10,000+ Hotels</h3>
+                    <p>Worldwide hotel network with exclusive deals</p>
+                </div>
+                <div class="trust-card">
+                    <div class="trust-icon">
+                        <i class="fas fa-tag"></i>
+                    </div>
+                    <h3>Best Price Guarantee</h3>
+                    <p>We match any competitor's price</p>
+                </div>
+                <div class="trust-card">
+                    <div class="trust-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>24/7 Support</h3>
+                    <p>Round-the-clock customer assistance</p>
+                </div>
+                <div class="trust-card">
+                    <div class="trust-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Secure Booking</h3>
+                    <p>Your data is protected with encryption</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Offers Section -->
+    <section class="offers-section">
+        <div class="container">
+            <h2 class="section-title">Special Offers</h2>
+            <p class="section-subtitle">Exclusive deals on flights and hotels just for you</p>
+
+            <div class="offers-grid">
+                <div class="offer-card">
+                    <div class="offer-image">
+                        <img src="https://images.unsplash.com/photo-1587474260584-136574528ed5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                            alt="Delhi to Mumbai Flight">
+                        <span class="offer-badge">Hot Deal</span>
+                    </div>
+                    <div class="offer-content">
+                        <div class="offer-route">
+                            <span class="city">Delhi</span>
+                            <i class="fas fa-plane"></i>
+                            <span class="city">Mumbai</span>
+                        </div>
+                        <p class="offer-meta">Non-stop flights • 2h 10m</p>
+                        <div class="offer-price">
+                            <span class="from">From</span>
+                            <span class="amount">₹4,999</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="offer-card">
+                    <div class="offer-image">
+                        <img src="https://images.unsplash.com/photo-1570168007204-dfb528c6958f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                            alt="Mumbai to Dubai Flight">
+                        <span class="offer-badge">Popular</span>
+                    </div>
+                    <div class="offer-content">
+                        <div class="offer-route">
+                            <span class="city">Mumbai</span>
+                            <i class="fas fa-plane"></i>
+                            <span class="city">Dubai</span>
+                        </div>
+                        <p class="offer-meta">Non-stop flights • 3h 30m</p>
+                        <div class="offer-price">
+                            <span class="from">From</span>
+                            <span class="amount">₹12,499</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="offer-card">
+                    <div class="offer-image">
+                        <img src="https://images.unsplash.com/photo-1525625293386-3f8f99389edd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                            alt="Bangalore to Singapore Flight">
+                        <span class="offer-badge">Limited</span>
+                    </div>
+                    <div class="offer-content">
+                        <div class="offer-route">
+                            <span class="city">Bangalore</span>
+                            <i class="fas fa-plane"></i>
+                            <span class="city">Singapore</span>
+                        </div>
+                        <p class="offer-meta">Non-stop flights • 4h 45m</p>
+                        <div class="offer-price">
+                            <span class="from">From</span>
+                            <span class="amount">₹8,999</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section" id="contact">
+        <div class="container">
+            <h2 class="section-title">Get in Touch</h2>
+            <p class="section-subtitle">Have questions? We'd love to hear from you. Our team is always here to help.</p>
+
+            <div class="contact-card">
+                <div class="contact-grid">
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h4>Our Office</h4>
+                        <p>B 114, H N Rd, Radhika Nagar,<br>Jamshedpur, Jharkhand 831004</p>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <h4>Call Us</h4>
+                        <p>+91 8237216173<br><small style="color: var(--text-muted);">24×7 Available</small></p>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h4>Email Us</h4>
+                        <p>Info@coasttocoastjourneys.com<br>Support@coasttocoastjourneys.com</p>
+                    </div>
+                </div>
+
+                <div class="social-links">
+                    <a href="https://www.facebook.com/people/Coast-to-Coast-Journeys/61574464089885/" target="_blank"
+                        class="social-link" title="Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="https://www.instagram.com/coasttocoastjourneys/" target="_blank" class="social-link"
+                        title="Instagram">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"
+                        class="social-link" title="LinkedIn">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="https://g.page/coasttocoastjourneys" target="_blank" class="social-link" title="Google">
+                        <i class="fab fa-google"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="../assets/images/logo.jpg" alt="Coast to Coast Journeys">
+                        <span>Coast to Coast Journeys</span>
+                    </div>
+                    <p>Your trusted travel partner. We specialize in creating unforgettable travel experiences across
+                        the globe with the best prices and exceptional service.</p>
+                    <div class="trust-line">
+                        <i class="fas fa-shield-alt"></i>
+                        "Your trust is our responsibility."
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="#contact">Contact Us</a></li>
+                        <li><a href="faqs.html">FAQs</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="terms.html">Terms & Conditions</a></li>
+                        <li><a href="refund-policy.html">Refund Policy</a></li>
+                        <li><a href="cancellation-policy.html">Cancellation Policy</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="flight-booking.html">Flight Booking</a></li>
+                        <li><a href="hotel-booking.html">Hotel Booking</a></li>
+                        <li><a href="visa.html">Visa Services</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 Coast to Coast Journeys. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // ========== Sidebar Menu ==========
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        const sidebarClose = document.getElementById('sidebarClose');
+
+        function openSidebar() {
+            sidebar.classList.add('open');
+            sidebarOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        hamburgerMenu.addEventListener('click', openSidebar);
+        sidebarClose.addEventListener('click', closeSidebar);
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        document.getElementById('sidebarSupport').addEventListener('click', function () {
+            closeSidebar();
+        });
+
+        // ========== Feedback Modal ==========
+        const feedbackModal = document.getElementById('feedbackModal');
+        const feedbackLink = document.getElementById('feedbackLink');
+        const feedbackClose = document.getElementById('feedbackClose');
+
+        feedbackLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            closeSidebar();
+            feedbackModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+
+        feedbackClose.addEventListener('click', function () {
+            feedbackModal.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+
+        feedbackModal.addEventListener('click', function (e) {
+            if (e.target === feedbackModal) {
+                feedbackModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Star rating
+        const stars = document.querySelectorAll('.star-rating i');
+        let selectedRating = 0;
+
+        stars.forEach(star => {
+            star.addEventListener('click', function () {
+                selectedRating = parseInt(this.dataset.rating);
+                updateStars();
+            });
+
+            star.addEventListener('mouseenter', function () {
+                const rating = parseInt(this.dataset.rating);
+                stars.forEach((s, i) => {
+                    s.classList.toggle('hover', i < rating);
+                });
+            });
+        });
+
+        document.querySelector('.star-rating').addEventListener('mouseleave', function () {
+            stars.forEach(s => s.classList.remove('hover'));
+        });
+
+        function updateStars() {
+            stars.forEach((s, i) => {
+                s.classList.toggle('active', i < selectedRating);
+            });
+        }
+
+        document.getElementById('feedbackForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            alert('Thank you for your feedback! We appreciate your input.');
+            feedbackModal.classList.remove('active');
+            document.body.style.overflow = '';
+            this.reset();
+            selectedRating = 0;
+            updateStars();
+        });
+
+        // Header scroll effect
+        window.addEventListener('scroll', function () {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile menu toggle
+        document.getElementById('mobileMenuToggle').addEventListener('click', function () {
+            this.classList.toggle('active');
+            document.getElementById('navMenu').classList.toggle('active');
+        });
+
+        // Tab switching
+        document.querySelectorAll('.search-tab').forEach(tab => {
+            tab.addEventListener('click', function () {
+                document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+
+                document.querySelectorAll('.search-content').forEach(content => content.classList.add('hidden'));
+
+                const tabType = this.dataset.tab;
+                document.getElementById(`${tabType}-form`).classList.remove('hidden');
+            });
+        });
+
+        // ========== Date Handling ==========
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
+
+        document.querySelectorAll('input[type="date"]').forEach(input => {
+            input.min = todayStr;
+        });
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'Select Date';
+            const date = new Date(dateStr);
+            const options = { weekday: 'short', day: 'numeric', month: 'short' };
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        // Flight dates
+        const departDate = document.getElementById('departDate');
+        const returnDate = document.getElementById('returnDate');
+        const departDateDisplay = document.getElementById('departDateDisplay');
+        const returnDateDisplay = document.getElementById('returnDateDisplay');
+        const returnDateWrapper = document.getElementById('returnDateWrapper');
+
+        departDate.addEventListener('change', function () {
+            departDateDisplay.textContent = formatDate(this.value);
+            if (returnDate) {
+                returnDate.min = this.value;
+                if (returnDate.value && returnDate.value < this.value) {
+                    returnDate.value = '';
+                    returnDateDisplay.textContent = 'Select Date';
+                }
+            }
+        });
+
+        returnDate.addEventListener('change', function () {
+            returnDateDisplay.textContent = formatDate(this.value);
+        });
+
+        // Trip type toggle
+        document.querySelectorAll('input[name="tripType"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                if (this.value === 'roundtrip') {
+                    returnDateWrapper.style.display = 'flex';
+                    returnDate.required = true;
+                } else {
+                    returnDateWrapper.style.display = 'none';
+                    returnDate.required = false;
+                }
+            });
+        });
+
+        // Hotel dates
+        const checkInDate = document.getElementById('checkInDate');
+        const checkOutDate = document.getElementById('checkOutDate');
+        const checkInDisplay = document.getElementById('checkInDisplay');
+        const checkOutDisplay = document.getElementById('checkOutDisplay');
+
+        checkInDate.addEventListener('change', function () {
+            checkInDisplay.textContent = formatDate(this.value);
+            checkOutDate.min = this.value;
+            if (checkOutDate.value && checkOutDate.value <= this.value) {
+                checkOutDate.value = '';
+                checkOutDisplay.textContent = 'Select Date';
+            }
+        });
+
+        checkOutDate.addEventListener('change', function () {
+            checkOutDisplay.textContent = formatDate(this.value);
+        });
+
+        // ========== Travelers Dropdown (Flights) ==========
+        const travelersData = { adults: 1, children: 0, infants: 0 };
+        const travelersDropdown = document.getElementById('travelersDropdown');
+        const travelersPopup = document.getElementById('travelersPopup');
+        const travelersDisplay = document.getElementById('travelersDisplay');
+        const travelersDone = document.getElementById('travelersDone');
+
+        travelersDropdown.addEventListener('click', function () {
+            travelersPopup.classList.toggle('active');
+        });
+
+        travelersDone.addEventListener('click', function () {
+            travelersPopup.classList.remove('active');
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!travelersDropdown.contains(e.target) && !travelersPopup.contains(e.target)) {
+                travelersPopup.classList.remove('active');
+            }
+        });
+
+        function updateTravelersDisplay() {
+            const total = travelersData.adults + travelersData.children;
+            const infants = travelersData.infants;
+            const cabinClass = document.getElementById('cabinClass').value;
+            const classLabels = { economy: 'Economy', premium: 'Premium', business: 'Business', first: 'First' };
+            let text = `${total} Traveler${total > 1 ? 's' : ''}`;
+            if (infants > 0) text += `, ${infants} Infant${infants > 1 ? 's' : ''}`;
+            text += `, ${classLabels[cabinClass]}`;
+            travelersDisplay.textContent = text;
+        }
+
+        document.querySelectorAll('#travelersPopup .counter-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const type = this.dataset.type;
+                const isPlus = this.classList.contains('plus');
+
+                if (isPlus) {
+                    if (type === 'adults' && travelersData.adults < 9) travelersData.adults++;
+                    if (type === 'children' && travelersData.children < 9) travelersData.children++;
+                    if (type === 'infants' && travelersData.infants < travelersData.adults) travelersData.infants++;
+                } else {
+                    if (type === 'adults' && travelersData.adults > 1) travelersData.adults--;
+                    if (type === 'children' && travelersData.children > 0) travelersData.children--;
+                    if (type === 'infants' && travelersData.infants > 0) travelersData.infants--;
+                    if (travelersData.infants > travelersData.adults) travelersData.infants = travelersData.adults;
+                }
+
+                document.getElementById('adultsCount').textContent = travelersData.adults;
+                document.getElementById('childrenCount').textContent = travelersData.children;
+                document.getElementById('infantsCount').textContent = travelersData.infants;
+                updateTravelersDisplay();
+            });
+        });
+
+        document.getElementById('cabinClass').addEventListener('change', updateTravelersDisplay);
+
+        // ========== Guests Dropdown (Hotels) ==========
+        const guestsData = { rooms: 1, adults: 2, children: 0 };
+        const guestsDropdown = document.getElementById('guestsDropdown');
+        const guestsPopup = document.getElementById('guestsPopup');
+        const guestsDisplay = document.getElementById('guestsDisplay');
+        const guestsDone = document.getElementById('guestsDone');
+
+        guestsDropdown.addEventListener('click', function () {
+            guestsPopup.classList.toggle('active');
+        });
+
+        guestsDone.addEventListener('click', function () {
+            guestsPopup.classList.remove('active');
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!guestsDropdown.contains(e.target) && !guestsPopup.contains(e.target)) {
+                guestsPopup.classList.remove('active');
+            }
+        });
+
+        function updateGuestsDisplay() {
+            const totalGuests = guestsData.adults + guestsData.children;
+            guestsDisplay.textContent = `${guestsData.rooms} Room${guestsData.rooms > 1 ? 's' : ''}, ${totalGuests} Guest${totalGuests > 1 ? 's' : ''}`;
+        }
+
+        document.querySelectorAll('#guestsPopup .counter-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const type = this.dataset.type;
+                const isPlus = this.classList.contains('plus');
+
+                if (isPlus) {
+                    if (type === 'rooms' && guestsData.rooms < 9) guestsData.rooms++;
+                    if (type === 'hotelAdults' && guestsData.adults < (guestsData.rooms * 4)) guestsData.adults++;
+                    if (type === 'hotelChildren' && guestsData.children < (guestsData.rooms * 4)) guestsData.children++;
+                } else {
+                    if (type === 'rooms' && guestsData.rooms > 1) guestsData.rooms--;
+                    if (type === 'hotelAdults' && guestsData.adults > 1) guestsData.adults--;
+                    if (type === 'hotelChildren' && guestsData.children > 0) guestsData.children--;
+                }
+
+                document.getElementById('roomsCount').textContent = guestsData.rooms;
+                document.getElementById('hotelAdultsCount').textContent = guestsData.adults;
+                document.getElementById('hotelChildrenCount').textContent = guestsData.children;
+                updateGuestsDisplay();
+            });
+        });
+
+        // ========== Swap Cities ==========
+        document.getElementById('swapCitiesBtn').addEventListener('click', function () {
+            const fromCity = document.getElementById('fromCity');
+            const toCity = document.getElementById('toCity');
+            const temp = fromCity.value;
+            fromCity.value = toCity.value;
+            toCity.value = temp;
+            this.classList.add('rotate');
+            setTimeout(() => this.classList.remove('rotate'), 300);
+        });
+
+        // ========== Form Submissions ==========
+        document.getElementById('flightSearchForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const from = document.getElementById('fromCity').value;
+            const to = document.getElementById('toCity').value;
+            const depart = document.getElementById('departDate').value;
+            const returnDate = document.getElementById('returnDate').value;
+            const tripType = document.querySelector('input[name="tripType"]:checked').value;
+            const cabinClass = document.getElementById('cabinClass').value;
+
+            const params = new URLSearchParams({
+                from: from,
+                to: to,
+                depart: depart,
+                type: tripType,
+                adults: travelersData.adults,
+                children: travelersData.children,
+                infants: travelersData.infants,
+                class: cabinClass
+            });
+
+            if (tripType === 'roundtrip' && returnDate) {
+                params.append('return', returnDate);
+            }
+
+            window.location.href = `flight-results.html?${params.toString()}`;
+        });
+
+        document.getElementById('hotelSearchForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const destination = document.getElementById('hotelDestination').value;
+            const checkIn = document.getElementById('checkInDate').value;
+            const checkOut = document.getElementById('checkOutDate').value;
+
+            const params = new URLSearchParams({
+                destination: destination,
+                checkin: checkIn,
+                checkout: checkOut,
+                rooms: guestsData.rooms,
+                adults: guestsData.adults,
+                children: guestsData.children
+            });
+
+            window.location.href = `hotel-results.html?${params.toString()}`;
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href !== '#') {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

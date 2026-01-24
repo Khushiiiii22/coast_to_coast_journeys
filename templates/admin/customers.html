@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payments | Coast to Coast Journeys Admin</title>
+    <title>Customers | Coast to Coast Journeys Admin</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- Admin Styles -->
-    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="../../admin/css/admin.css">
 
     <style>
         .filters-bar {
@@ -68,13 +68,26 @@
             border-radius: 8px;
         }
 
-        .transaction-id {
-            font-family: monospace;
-            font-weight: 600;
-            color: #0e64a6;
+        .customer-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
-        .customer-info {
+        .customer-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0f2fe;
+            color: #0e64a6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .customer-details {
             display: flex;
             flex-direction: column;
         }
@@ -88,42 +101,25 @@
             color: #64748b;
         }
 
-        .booking-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .booking-ref {
-            font-weight: 500;
+        .contact-info {
+            font-size: 0.9rem;
             color: #475569;
         }
 
-        .booking-type {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #64748b;
-        }
-
-        .amount-cell {
-            text-align: right;
-            font-weight: 600;
-            font-size: 1rem;
-        }
-
-        .amount-in {
-            color: #10b981;
-        }
-
-        .amount-out {
-            color: #ef4444;
-        }
-
-        .payment-method {
+        .stats-cell {
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .stats-value {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .stats-label {
+            font-size: 0.75rem;
+            color: #64748b;
         }
 
         .action-btns {
@@ -164,51 +160,6 @@
             color: white;
             border-color: #0e64a6;
         }
-
-        .quick-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .quick-stat {
-            background: white;
-            padding: 1rem;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .quick-stat-label {
-            font-size: 0.85rem;
-            color: #64748b;
-            margin-bottom: 0.5rem;
-        }
-
-        .quick-stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        .quick-stat-trend {
-            font-size: 0.8rem;
-            margin-top: 0.25rem;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .trend-up {
-            color: #10b981;
-        }
-
-        .trend-down {
-            color: #ef4444;
-        }
     </style>
 </head>
 
@@ -236,7 +187,7 @@
 
                 <div class="nav-section">
                     <span class="nav-section-title">Finance</span>
-                    <a href="payments.html" class="nav-item active">
+                    <a href="payments.html" class="nav-item">
                         <i class="fas fa-credit-card"></i>
                         <span>Payments</span>
                     </a>
@@ -260,7 +211,7 @@
                         <i class="fas fa-handshake"></i>
                         <span>Suppliers</span>
                     </a>
-                    <a href="customers.html" class="nav-item">
+                    <a href="customers.html" class="nav-item active">
                         <i class="fas fa-users"></i>
                         <span>Customers</span>
                     </a>
@@ -305,72 +256,35 @@
                     <button class="sidebar-toggle" id="sidebarToggle">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h1 class="page-title">Payments</h1>
+                    <h1 class="page-title">Customers</h1>
                 </div>
 
                 <div class="header-right">
                     <button class="btn btn-secondary">
                         <i class="fas fa-download"></i> Export CSV
                     </button>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Customer
+                    </button>
                 </div>
             </header>
 
             <div class="admin-content">
-                <!-- Quick Stats -->
-                <div class="quick-stats">
-                    <div class="quick-stat">
-                        <div class="quick-stat-label">Total Revenue (This Month)</div>
-                        <div class="quick-stat-value">₹12,45,500</div>
-                        <div class="quick-stat-trend trend-up">
-                            <i class="fas fa-arrow-up"></i> 12% vs last month
-                        </div>
-                    </div>
-                    <div class="quick-stat">
-                        <div class="quick-stat-label">Pending Payments</div>
-                        <div class="quick-stat-value">₹85,200</div>
-                        <div class="quick-stat-trend text-muted">
-                            <i class="fas fa-clock"></i> 15 transactions
-                        </div>
-                    </div>
-                    <div class="quick-stat">
-                        <div class="quick-stat-label">Refunds Processed</div>
-                        <div class="quick-stat-value">₹28,500</div>
-                        <div class="quick-stat-trend feature-stat">
-                            <i class="fas fa-undo"></i> 4 transactions
-                        </div>
-                    </div>
-                    <div class="quick-stat">
-                        <div class="quick-stat-label">Net Profit</div>
-                        <div class="quick-stat-value">₹1,86,800</div>
-                        <div class="quick-stat-trend trend-up">
-                            <i class="fas fa-arrow-up"></i> 8% vs last month
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Filters -->
                 <div class="filters-bar">
                     <div class="search-box">
                         <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Search transaction ID, customer...">
+                        <input type="text" placeholder="Search by name, email, phone...">
                     </div>
 
                     <div class="filter-group">
                         <label>Status:</label>
                         <select>
                             <option value="">All Status</option>
-                            <option value="captured">Captured</option>
-                            <option value="authorized">Authorized</option>
-                            <option value="failed">Failed</option>
-                            <option value="refunded">Refunded</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="banned">Banned</option>
                         </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label>Date:</label>
-                        <input type="date">
-                        <span>to</span>
-                        <input type="date">
                     </div>
 
                     <button class="btn btn-secondary">
@@ -378,151 +292,172 @@
                     </button>
                 </div>
 
-                <!-- Payments Table -->
+                <!-- Customers Table -->
                 <div class="admin-card">
                     <table class="admin-table">
                         <thead>
                             <tr>
-                                <th>Transaction ID</th>
-                                <th>Date & Time</th>
                                 <th>Customer</th>
-                                <th>Booking Ref</th>
-                                <th>Amount</th>
-                                <th>Method</th>
+                                <th>Phone</th>
+                                <th>Location</th>
+                                <th>Total Bookings</th>
+                                <th>Total Spent</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td><span class="transaction-id">pay_K8s9d7f6g5h4</span></td>
-                                <td>Jan 21, 2026<br><span class="text-muted text-sm">10:45 AM</span></td>
                                 <td>
                                     <div class="customer-info">
-                                        <span class="customer-name">Rahul Sharma</span>
-                                        <span class="customer-email">rahul@email.com</span>
+                                        <div class="customer-avatar">RS</div>
+                                        <div class="customer-details">
+                                            <span class="customer-name">Rahul Sharma</span>
+                                            <span class="customer-email">rahul@email.com</span>
+                                        </div>
                                     </div>
                                 </td>
+                                <td><span class="contact-info">+91 98765 43210</span></td>
+                                <td><span class="contact-info">New Delhi, India</span></td>
                                 <td>
-                                    <div class="booking-info">
-                                        <span class="booking-ref">#CTC-10001</span>
-                                        <span class="booking-type">Hotel Booking</span>
+                                    <div class="stats-cell">
+                                        <span class="stats-value">12</span>
+                                        <span class="stats-label">Last: Jan 21, 2026</span>
                                     </div>
                                 </td>
-                                <td class="amount-cell amount-in">+₹45,500</td>
-                                <td>
-                                    <div class="payment-method">
-                                        <i class="fab fa-cc-visa fa-lg text-primary"></i>
-                                        <span>Visa •••• 4242</span>
-                                    </div>
-                                </td>
-                                <td><span class="status-badge confirmed">Captured</span></td>
+                                <td><span class="stats-value">₹4,56,800</span></td>
+                                <td><span class="status-badge confirmed">Active</span></td>
                                 <td>
                                     <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Details">
+                                        <button class="btn btn-secondary btn-icon" title="View Profile">
                                             <i class="fas fa-eye"></i>
                                         </button>
-                                        <button class="btn btn-secondary btn-icon" title="Download Receipt">
-                                            <i class="fas fa-receipt"></i>
+                                        <button class="btn btn-secondary btn-icon" title="Edit Customer">
+                                            <i class="fas fa-edit"></i>
                                         </button>
                                     </div>
                                 </td>
                             </tr>
                             <tr>
-                                <td><span class="transaction-id">pay_J7h6g5f4d3s2</span></td>
-                                <td>Jan 20, 2026<br><span class="text-muted text-sm">02:30 PM</span></td>
                                 <td>
                                     <div class="customer-info">
-                                        <span class="customer-name">Priya Patel</span>
-                                        <span class="customer-email">priya@email.com</span>
+                                        <div class="customer-avatar">PP</div>
+                                        <div class="customer-details">
+                                            <span class="customer-name">Priya Patel</span>
+                                            <span class="customer-email">priya@email.com</span>
+                                        </div>
                                     </div>
                                 </td>
+                                <td><span class="contact-info">+91 98765 12345</span></td>
+                                <td><span class="contact-info">Mumbai, India</span></td>
                                 <td>
-                                    <div class="booking-info">
-                                        <span class="booking-ref">#CTC-10002</span>
-                                        <span class="booking-type">Flight Booking</span>
+                                    <div class="stats-cell">
+                                        <span class="stats-value">5</span>
+                                        <span class="stats-label">Last: Jan 20, 2026</span>
                                     </div>
                                 </td>
-                                <td class="amount-cell amount-in">+₹12,800</td>
-                                <td>
-                                    <div class="payment-method">
-                                        <i class="fas fa-wallet fa-lg text-warning"></i>
-                                        <span>UPI</span>
-                                    </div>
-                                </td>
-                                <td><span class="status-badge confirmed">Captured</span></td>
+                                <td><span class="stats-value">₹1,24,500</span></td>
+                                <td><span class="status-badge confirmed">Active</span></td>
                                 <td>
                                     <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Details">
+                                        <button class="btn btn-secondary btn-icon" title="View Profile">
                                             <i class="fas fa-eye"></i>
                                         </button>
-                                        <button class="btn btn-secondary btn-icon" title="Download Receipt">
-                                            <i class="fas fa-receipt"></i>
+                                        <button class="btn btn-secondary btn-icon" title="Edit Customer">
+                                            <i class="fas fa-edit"></i>
                                         </button>
                                     </div>
                                 </td>
                             </tr>
                             <tr>
-                                <td><span class="transaction-id">pay_L9k8j7h6g5f4</span></td>
-                                <td>Jan 19, 2026<br><span class="text-muted text-sm">09:15 AM</span></td>
                                 <td>
                                     <div class="customer-info">
-                                        <span class="customer-name">Amit Kumar</span>
-                                        <span class="customer-email">amit.k@email.com</span>
+                                        <div class="customer-avatar">AK</div>
+                                        <div class="customer-details">
+                                            <span class="customer-name">Amit Kumar</span>
+                                            <span class="customer-email">amit.k@email.com</span>
+                                        </div>
                                     </div>
                                 </td>
+                                <td><span class="contact-info">+91 99887 76655</span></td>
+                                <td><span class="contact-info">Bangalore, India</span></td>
                                 <td>
-                                    <div class="booking-info">
-                                        <span class="booking-ref">#CTC-10003</span>
-                                        <span class="booking-type">Hotel Booking</span>
+                                    <div class="stats-cell">
+                                        <span class="stats-value">3</span>
+                                        <span class="stats-label">Last: Jan 15, 2026</span>
                                     </div>
                                 </td>
-                                <td class="amount-cell text-muted">₹78,000</td>
-                                <td>
-                                    <div class="payment-method">
-                                        <i class="fab fa-cc-mastercard fa-lg text-danger"></i>
-                                        <span>Mastercard •••• 8888</span>
-                                    </div>
-                                </td>
-                                <td><span class="status-badge cancelled">Failed</span></td>
+                                <td><span class="stats-value">₹86,200</span></td>
+                                <td><span class="status-badge pending">Inactive</span></td>
                                 <td>
                                     <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Details">
+                                        <button class="btn btn-secondary btn-icon" title="View Profile">
                                             <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-secondary btn-icon" title="Edit Customer">
+                                            <i class="fas fa-edit"></i>
                                         </button>
                                     </div>
                                 </td>
                             </tr>
                             <tr>
-                                <td><span class="transaction-id">rfnd_M5n4b3v2c1x0</span></td>
-                                <td>Jan 18, 2026<br><span class="text-muted text-sm">04:45 PM</span></td>
                                 <td>
                                     <div class="customer-info">
-                                        <span class="customer-name">Neha Singh</span>
-                                        <span class="customer-email">neha.singh@email.com</span>
+                                        <div class="customer-avatar">NS</div>
+                                        <div class="customer-details">
+                                            <span class="customer-name">Neha Singh</span>
+                                            <span class="customer-email">neha.singh@email.com</span>
+                                        </div>
                                     </div>
                                 </td>
+                                <td><span class="contact-info">+91 91234 56789</span></td>
+                                <td><span class="contact-info">Chennai, India</span></td>
                                 <td>
-                                    <div class="booking-info">
-                                        <span class="booking-ref">#CTC-10004</span>
-                                        <span class="booking-type">Hotel Booking</span>
+                                    <div class="stats-cell">
+                                        <span class="stats-value">8</span>
+                                        <span class="stats-label">Last: Jan 18, 2026</span>
                                     </div>
                                 </td>
-                                <td class="amount-cell amount-out">-₹28,500</td>
-                                <td>
-                                    <div class="payment-method">
-                                        <i class="fas fa-undo fa-lg text-info"></i>
-                                        <span>Refund to Source</span>
-                                    </div>
-                                </td>
-                                <td><span class="status-badge processing">Processed</span></td>
+                                <td><span class="stats-value">₹3,45,000</span></td>
+                                <td><span class="status-badge confirmed">Active</span></td>
                                 <td>
                                     <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Details">
+                                        <button class="btn btn-secondary btn-icon" title="View Profile">
                                             <i class="fas fa-eye"></i>
                                         </button>
-                                        <button class="btn btn-secondary btn-icon" title="Refund Details">
-                                            <i class="fas fa-file-alt"></i>
+                                        <button class="btn btn-secondary btn-icon" title="Edit Customer">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="customer-info">
+                                        <div class="customer-avatar">VR</div>
+                                        <div class="customer-details">
+                                            <span class="customer-name">Vikram Reddy</span>
+                                            <span class="customer-email">vikram.r@email.com</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="contact-info">+91 88776 65544</span></td>
+                                <td><span class="contact-info">Hyderabad, India</span></td>
+                                <td>
+                                    <div class="stats-cell">
+                                        <span class="stats-value">1</span>
+                                        <span class="stats-label">Last: Jan 10, 2026</span>
+                                    </div>
+                                </td>
+                                <td><span class="stats-value">₹24,500</span></td>
+                                <td><span class="status-badge confirmed">Active</span></td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="btn btn-secondary btn-icon" title="View Profile">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-secondary btn-icon" title="Edit Customer">
+                                            <i class="fas fa-edit"></i>
                                         </button>
                                     </div>
                                 </td>
@@ -532,7 +467,7 @@
 
                     <div class="pagination">
                         <div class="pagination-info">
-                            Showing 1-4 of 1,568 transactions
+                            Showing 1-5 of 842 customers
                         </div>
                         <div class="pagination-buttons">
                             <button class="page-btn"><i class="fas fa-chevron-left"></i></button>
@@ -540,7 +475,7 @@
                             <button class="page-btn">2</button>
                             <button class="page-btn">3</button>
                             <button class="page-btn">...</button>
-                            <button class="page-btn">50</button>
+                            <button class="page-btn">168</button>
                             <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
                         </div>
                     </div>
@@ -550,7 +485,7 @@
     </div>
 
     <!-- Admin JavaScript -->
-    <script src="js/admin.js"></script>
+    <script src="../../admin/js/admin.js"></script>
 </body>
 
 </html>

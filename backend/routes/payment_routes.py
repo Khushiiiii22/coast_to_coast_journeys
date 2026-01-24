@@ -109,8 +109,40 @@ def verify_payment():
                         'razorpay_signature': data['razorpay_signature'],
                         'status': 'paid'
                     }).execute()
+                    
+                    # Fetch booking details for email
+                    booking_response = supabase.table('bookings').select('*').eq('id', data['booking_id']).execute()
+                    if booking_response.data:
+                        booking = booking_response.data[0]
+                        
+                        # Confirm booking with ETG
+                        try:
+                            from services.etg_service import etg_service
+                            if booking.get('partner_order_id'):
+                                print(f"Confirming booking with ETG: {booking.get('partner_order_id')}")
+                                etg_service.finish_booking(booking['partner_order_id'])
+                        except Exception as etg_error:
+                            print(f"ETG Finish Booking Error: {etg_error}")
+                        
+                        # Prepare details for email
+                        email_details = {
+                            'booking_id': booking.get('id'),
+                            'hotel_name': booking.get('hotel_name', 'Hotel'),
+                            'customer_name': f"{booking.get('first_name', '')} {booking.get('last_name', '')}",
+                            'customer_email': booking.get('email'),
+                            'checkin': booking.get('checkin'),
+                            'checkout': booking.get('checkout'),
+                            'amount': booking.get('total_amount'),
+                            'currency': booking.get('currency', 'INR')
+                        }
+                        
+                        # Send confirmation email
+                        from services.email_service import email_service
+                        email_service.init_app(current_app)  # Ensure config is loaded
+                        email_service.send_booking_confirmation(booking.get('email'), email_details)
+                        
                 except Exception as db_error:
-                    print(f"Database update error: {db_error}")
+                    print(f"Database/Email update error: {db_error}")
             
             return jsonify({
                 'success': True,
@@ -300,6 +332,41 @@ def capture_paypal_order(order_id):
                     }).execute()
                 except Exception as db_error:
                     print(f"Database update error: {db_error}")
+
+                # Send confirmation email logic for PayPal
+                try:
+                    # Fetch booking details for email
+                    booking_response = supabase.table('bookings').select('*').eq('id', data['booking_id']).execute()
+                    if booking_response.data:
+                        booking = booking_response.data[0]
+                        
+                        # Confirm booking with ETG
+                        try:
+                            from services.etg_service import etg_service
+                            if booking.get('partner_order_id'):
+                                print(f"Confirming booking with ETG: {booking.get('partner_order_id')}")
+                                etg_service.finish_booking(booking['partner_order_id'])
+                        except Exception as etg_error:
+                             print(f"ETG Finish Booking Error: {etg_error}")
+
+                        # Prepare details for email
+                        email_details = {
+                            'booking_id': booking.get('id'),
+                            'hotel_name': booking.get('hotel_name', 'Hotel'),
+                            'customer_name': f"{booking.get('first_name', '')} {booking.get('last_name', '')}",
+                            'customer_email': booking.get('email'),
+                            'checkin': booking.get('checkin'),
+                            'checkout': booking.get('checkout'),
+                            'amount': booking.get('total_amount'),
+                            'currency': booking.get('currency', 'INR')
+                        }
+                        
+                        # Send confirmation email
+                        from services.email_service import email_service
+                        email_service.init_app(current_app)  # Ensure config is loaded
+                        email_service.send_booking_confirmation(booking.get('email'), email_details)
+                except Exception as email_error:
+                    print(f"Email sending error: {email_error}")
         
         return jsonify(result), 200 if result['success'] else 500
         

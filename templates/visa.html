@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Visa Services - Coast to Coast Journeys. Apply for visa assistance for your international travel.">
+    <title>Visa Services | Coast to Coast Journeys</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/pages.css">
+
+
+    <style>
+        /* Visa Page Specific Styles */
+        .visa-hero {
+            background: linear-gradient(135deg, rgba(14, 100, 166, 0.9), rgba(26, 54, 93, 0.95)),
+                url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            padding: 120px 0 80px;
+        }
+
+        .visa-intro {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        .visa-intro-text h2 {
+            font-size: 2rem;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+
+        .visa-intro-text p {
+            color: var(--text-muted);
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .visa-intro-image img {
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .visa-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .visa-type-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .visa-type-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(14, 100, 166, 0.15);
+            border-color: var(--primary-color);
+        }
+
+        .visa-type-card .icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        .visa-type-card .icon i {
+            font-size: 1.8rem;
+            color: white;
+        }
+
+        .visa-type-card h4 {
+            font-size: 1.25rem;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .visa-type-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .visa-application-form {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 24px;
+            padding: 3rem;
+            margin: 3rem 0;
+        }
+
+        .visa-application-form h2 {
+            text-align: center;
+            font-size: 2rem;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .visa-application-form .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .form-grid .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-grid .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        .form-grid label {
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-grid input,
+        .form-grid select,
+        .form-grid textarea {
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-grid input:focus,
+        .form-grid select:focus,
+        .form-grid textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(14, 100, 166, 0.1);
+        }
+
+        .submit-visa-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 2rem auto 0;
+            transition: all 0.3s ease;
+        }
+
+        .submit-visa-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(14, 100, 166, 0.3);
+        }
+
+        .popular-destinations {
+            margin: 3rem 0;
+        }
+
+        .popular-destinations h3 {
+            text-align: center;
+            font-size: 1.5rem;
+            color: var(--text-dark);
+            margin-bottom: 2rem;
+        }
+
+        .destination-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .destination-tag {
+            background: white;
+            border: 2px solid var(--border-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 500;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .destination-tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .destination-tag img {
+            width: 24px;
+            height: 18px;
+            object-fit: cover;
+            border-radius: 2px;
+        }
+
+        .process-steps {
+            margin: 3rem 0;
+        }
+
+        .process-steps h3 {
+            text-align: center;
+            font-size: 1.5rem;
+            color: var(--text-dark);
+            margin-bottom: 2rem;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+        }
+
+        .step-item {
+            text-align: center;
+            position: relative;
+        }
+
+        .step-item::after {
+            content: '';
+            position: absolute;
+            top: 35px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-color), transparent);
+        }
+
+        .step-item:last-child::after {
+            display: none;
+        }
+
+        .step-number {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-item h4 {
+            font-size: 1.1rem;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .step-item p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 992px) {
+            .visa-intro {
+                grid-template-columns: 1fr;
+            }
+
+            .steps-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .step-item::after {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid .form-group.full-width {
+                grid-column: span 1;
+            }
+
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .visa-application-form {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar Menu -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="../assets/images/logo.jpg" alt="Coast to Coast Journeys">
+            <span>Coast to Coast</span>
+            <button class="sidebar-close" id="sidebarClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="sidebar-link">
+                <i class="fas fa-home"></i> Home
+            </a>
+            <a href="flight-booking.html" class="sidebar-link">
+                <i class="fas fa-plane"></i> Book Flights
+            </a>
+            <a href="hotel-booking.html" class="sidebar-link">
+                <i class="fas fa-hotel"></i> Book Hotels
+            </a>
+            <a href="visa.html" class="sidebar-link active">
+                <i class="fas fa-passport"></i> Visa Services
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="index.html#contact" class="sidebar-link">
+                <i class="fas fa-headset"></i> 24/7 Support
+            </a>
+            <a href="mailto:Support@coasttocoastjourneys.com" class="sidebar-link">
+                <i class="fas fa-envelope"></i> Email Us
+            </a>
+            <a href="tel:+918237216173" class="sidebar-link">
+                <i class="fas fa-phone"></i> Call Us
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="faqs.html" class="sidebar-link">
+                <i class="fas fa-question-circle"></i> FAQs
+            </a>
+            <a href="about.html" class="sidebar-link">
+                <i class="fas fa-info-circle"></i> About Us
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="terms.html" class="sidebar-link">
+                <i class="fas fa-file-contract"></i> Terms & Conditions
+            </a>
+            <a href="privacy-policy.html" class="sidebar-link">
+                <i class="fas fa-shield-alt"></i> Privacy Policy
+            </a>
+            <a href="refund-policy.html" class="sidebar-link">
+                <i class="fas fa-undo"></i> Refund Policy
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-social">
+                <a href="https://www.facebook.com/people/Coast-to-Coast-Journeys/61574464089885/" target="_blank"><i
+                        class="fab fa-facebook-f"></i></a>
+                <a href="https://www.instagram.com/coasttocoastjourneys/" target="_blank"><i
+                        class="fab fa-instagram"></i></a>
+                <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"><i
+                        class="fab fa-linkedin-in"></i></a>
+            </div>
+            <p>© 2026 Coast to Coast Journeys</p>
+        </div>
+    </aside>
+
+    <!-- Header -->
+    <header class="header scrolled" id="header">
+        <nav class="main-nav">
+            <div class="container">
+                <div class="nav-content">
+                    <!-- Hamburger Menu Button -->
+                    <button class="hamburger-menu" id="hamburgerMenu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+
+                    <a href="index.html" class="logo">
+                        <img src="../assets/images/logo.jpg" alt="Coast to Coast Journeys">
+                        <span class="brand-name">Coast to Coast Journeys</span>
+                    </a>
+
+                    <ul class="nav-menu" id="navMenu">
+                        <li><a href="index.html" class="nav-link">Home</a></li>
+                        <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
+                        <li><a href="hotel-booking.html" class="nav-link">Hotels</a></li>
+                        <li><a href="visa.html" class="nav-link active">Visa</a></li>
+                        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                    </ul>
+
+                    <div class="nav-actions">
+                        <a href="index.html" class="btn btn-outline">
+                            <i class="fas fa-arrow-left"></i> Back to Home
+                        </a>
+                    </div>
+
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Page Content -->
+    <main class="page-content">
+        <div class="page-hero visa-hero">
+            <div class="container">
+                <nav class="breadcrumb">
+                    <a href="index.html">Home</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Visa Services</span>
+                </nav>
+                <h1><i class="fas fa-passport"></i> Visa Assistance Services</h1>
+                <p>Hassle-free visa processing for your international travel</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="content-wrapper">
+
+                <!-- Intro Section -->
+                <section class="visa-intro">
+                    <div class="visa-intro-text">
+                        <h2>Your Gateway to International Travel</h2>
+                        <p>Planning to travel abroad? Let Coast to Coast Journeys handle your visa application process.
+                            We provide end-to-end visa assistance for tourist, business, and work visas to destinations
+                            worldwide.</p>
+                        <p>Our experienced team will guide you through the entire process, from document collection to
+                            application submission, ensuring a smooth and stress-free experience.</p>
+                        <p><strong>Benefits of our visa service:</strong></p>
+                        <ul style="list-style: none; padding: 0; margin: 1rem 0;">
+                            <li style="padding: 0.5rem 0; color: var(--text-muted);"><i class="fas fa-check-circle"
+                                    style="color: var(--success-color); margin-right: 0.75rem;"></i> Expert guidance
+                                throughout the process</li>
+                            <li style="padding: 0.5rem 0; color: var(--text-muted);"><i class="fas fa-check-circle"
+                                    style="color: var(--success-color); margin-right: 0.75rem;"></i> Document checklist
+                                and review</li>
+                            <li style="padding: 0.5rem 0; color: var(--text-muted);"><i class="fas fa-check-circle"
+                                    style="color: var(--success-color); margin-right: 0.75rem;"></i> Application
+                                tracking</li>
+                            <li style="padding: 0.5rem 0; color: var(--text-muted);"><i class="fas fa-check-circle"
+                                    style="color: var(--success-color); margin-right: 0.75rem;"></i> Dedicated support
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="visa-intro-image">
+                        <img src="https://images.unsplash.com/photo-1569154941061-e231b4725ef1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                            alt="Visa and passport">
+                    </div>
+                </section>
+
+                <!-- Visa Types -->
+                <section class="about-section">
+                    <h2 class="section-title"><i class="fas fa-file-alt"></i> Types of Visas We Handle</h2>
+                    <div class="visa-types">
+                        <div class="visa-type-card">
+                            <div class="icon">
+                                <i class="fas fa-umbrella-beach"></i>
+                            </div>
+                            <h4>Tourist Visa</h4>
+                            <p>For leisure travel, sightseeing, and holiday purposes</p>
+                        </div>
+                        <div class="visa-type-card">
+                            <div class="icon">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <h4>Business Visa</h4>
+                            <p>For business meetings, conferences, and corporate travel</p>
+                        </div>
+                        <div class="visa-type-card">
+                            <div class="icon">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <h4>Work Visa</h4>
+                            <p>For employment and professional assignments abroad</p>
+                        </div>
+                        <div class="visa-type-card">
+                            <div class="icon">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <h4>Student Visa</h4>
+                            <p>For higher education and academic pursuits overseas</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Popular Destinations -->
+                <section class="popular-destinations">
+                    <h3><i class="fas fa-globe-americas"></i> Popular Visa Destinations</h3>
+                    <div class="destination-tags">
+                        <span class="destination-tag">🇺🇸 USA</span>
+                        <span class="destination-tag">🇬🇧 UK</span>
+                        <span class="destination-tag">🇨🇦 Canada</span>
+                        <span class="destination-tag">🇦🇺 Australia</span>
+                        <span class="destination-tag">🇦🇪 UAE</span>
+                        <span class="destination-tag">🇸🇬 Singapore</span>
+                        <span class="destination-tag">🇹🇭 Thailand</span>
+                        <span class="destination-tag">🇪🇺 Schengen</span>
+                        <span class="destination-tag">🇯🇵 Japan</span>
+                        <span class="destination-tag">🇳🇿 New Zealand</span>
+                    </div>
+                </section>
+
+                <!-- Application Process -->
+                <section class="process-steps">
+                    <h3><i class="fas fa-list-ol"></i> How It Works</h3>
+                    <div class="steps-grid">
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <h4>Submit Inquiry</h4>
+                            <p>Fill out the form with your travel details</p>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <h4>Get Checklist</h4>
+                            <p>Receive document requirements for your visa</p>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <h4>Submit Documents</h4>
+                            <p>We review and submit your application</p>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">4</div>
+                            <h4>Get Your Visa</h4>
+                            <p>Receive your approved visa and travel!</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Visa Application Form -->
+                <section class="visa-application-form">
+                    <h2><i class="fas fa-file-signature"></i> Apply for Visa Assistance</h2>
+                    <p class="subtitle">Fill out the form below and our team will get back to you within 24 hours</p>
+
+                    <form id="visaApplicationForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="fullName">Full Name (as per Passport) *</label>
+                                <input type="text" id="fullName" name="fullName" required
+                                    placeholder="Enter your full name">
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input type="email" id="email" name="email" required placeholder="your@email.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number *</label>
+                                <input type="tel" id="phone" name="phone" required placeholder="+91 XXXXX XXXXX">
+                            </div>
+                            <div class="form-group">
+                                <label for="nationality">Nationality *</label>
+                                <input type="text" id="nationality" name="nationality" required
+                                    placeholder="Your nationality">
+                            </div>
+                            <div class="form-group">
+                                <label for="destination">Destination Country *</label>
+                                <select id="destination" name="destination" required>
+                                    <option value="">Select Destination</option>
+                                    <option value="USA">USA</option>
+                                    <option value="UK">United Kingdom</option>
+                                    <option value="Canada">Canada</option>
+                                    <option value="Australia">Australia</option>
+                                    <option value="UAE">United Arab Emirates</option>
+                                    <option value="Singapore">Singapore</option>
+                                    <option value="Thailand">Thailand</option>
+                                    <option value="Schengen">Schengen Countries</option>
+                                    <option value="Japan">Japan</option>
+                                    <option value="New Zealand">New Zealand</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="visaType">Type of Visa *</label>
+                                <select id="visaType" name="visaType" required>
+                                    <option value="">Select Visa Type</option>
+                                    <option value="Tourist">Tourist Visa</option>
+                                    <option value="Business">Business Visa</option>
+                                    <option value="Work">Work Visa</option>
+                                    <option value="Student">Student Visa</option>
+                                    <option value="Transit">Transit Visa</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="travelDate">Expected Travel Date</label>
+                                <input type="date" id="travelDate" name="travelDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="prevVisa">Previously held visa for this country?</label>
+                                <select id="prevVisa" name="prevVisa">
+                                    <option value="">Select</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="additionalInfo">Additional Information / Special Requirements</label>
+                                <textarea id="additionalInfo" name="additionalInfo" rows="4"
+                                    placeholder="Tell us more about your travel plans or any specific requirements..."></textarea>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-visa-btn">
+                            <i class="fas fa-paper-plane"></i>
+                            Submit Application
+                        </button>
+                    </form>
+                </section>
+
+                <!-- Contact CTA -->
+                <div class="help-box">
+                    <div class="help-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="help-content">
+                        <h3>Need Help with Visa Application?</h3>
+                        <p>Our visa experts are available to assist you with any queries.</p>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+                            <a href="mailto:Support@coasttocoastjourneys.com" class="btn btn-primary">
+                                <i class="fas fa-envelope"></i> Email Support
+                            </a>
+                            <a href="tel:+918237216173" class="btn btn-outline-light">
+                                <i class="fas fa-phone"></i> +91 8237216173
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col about-col">
+                    <img src="../assets/images/logo.jpg" alt="Coast to Coast Journeys" class="footer-logo">
+                    <p>Your trusted travel partner. We specialize in creating unforgettable travel experiences across
+                        the globe.</p>
+                    <p class="trust-line"><i class="fas fa-shield-alt"></i> "Your trust is our responsibility."</p>
+                    <div class="payment-partners">
+                        <span>Payment Partner:</span>
+                        <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Razorpay"
+                            class="razorpay-logo">
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="index.html#contact">Contact Us</a></li>
+                        <li><a href="faqs.html">FAQs</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="terms.html">Terms & Conditions</a></li>
+                        <li><a href="refund-policy.html">Refund Policy</a></li>
+                        <li><a href="cancellation-policy.html">Cancellation Policy</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Connect With Us</h4>
+                    <div class="footer-social">
+                        <a href="https://www.facebook.com/people/Coast-to-Coast-Journeys/61574464089885/"
+                            target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/coasttocoastjourneys/" target="_blank" title="Instagram"><i
+                                class="fab fa-instagram"></i></a>
+                        <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"
+                            title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="https://g.page/coasttocoastjourneys" target="_blank" title="Google"><i
+                                class="fab fa-google"></i></a>
+                    </div>
+                    <div class="footer-contact">
+                        <p><i class="fas fa-envelope"></i> Info@coasttocoastjourneys.com</p>
+                        <p><i class="fas fa-clock"></i> 24×7 Available</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-disclaimer">
+                <p><strong>Disclaimer:</strong> Coast to Coast Journeys acts as a facilitator between customers and
+                    service providers. All bookings are subject to supplier terms and conditions.</p>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 Coast to Coast Journeys. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ========== Sidebar Menu ==========
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        const sidebarClose = document.getElementById('sidebarClose');
+
+        function openSidebar() {
+            sidebar.classList.add('open');
+            sidebarOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        hamburgerMenu.addEventListener('click', openSidebar);
+        sidebarClose.addEventListener('click', closeSidebar);
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        // Mobile Menu Toggle
+        document.getElementById('mobileMenuToggle').addEventListener('click', function () {
+            document.getElementById('navMenu').classList.toggle('active');
+            this.classList.toggle('active');
+        });
+
+        // Form submission handling
+        document.getElementById('visaApplicationForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            alert('Thank you for your visa application inquiry! Our team will contact you within 24 hours.');
+            this.reset();
+        });
+    </script>
+</body>
+
+</html>
