@@ -1720,20 +1720,6 @@ h6 {
     font-weight: 700;
 }
 
-.iata-logo {
-    font-family: sans-serif;
-    color: var(--white);
-    background: #002244;
-    /* IATA Blue */
-    padding: 4px 12px;
-    border-radius: 4px;
-    font-size: 1.2rem;
-}
-
-.iata-logo i {
-    font-size: 1rem;
-}
-
 /* =====================================================
    SIDEBAR MENU STYLES
    ===================================================== */
