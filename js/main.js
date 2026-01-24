@@ -59,8 +59,15 @@ const DOM = {
 
     // Section Navigation
     sectionDots: document.querySelectorAll('.section-dot'),
-    sections: document.querySelectorAll('.fullpage-section')
+    sections: document.querySelectorAll('.fullpage-section'),
+
+    // Testimonial Slider
+    testimonialTrack: document.querySelector('.testimonials-track'),
+    testimonialDots: document.querySelectorAll('.carousel-indicators .dot')
 };
+
+let currentTestimonialSlide = 0;
+let testimonialInterval;
 
 let currentSlide = 0;
 let slideInterval;
@@ -835,6 +842,95 @@ function initEventListeners() {
             }
         });
     }
+
+    // Testimonial Slider Init
+    if (DOM.testimonialTrack && DOM.testimonialDots.length > 0) {
+        initTestimonialSlider();
+    }
+}
+
+// ========================================
+// Testimonial Slider Logic
+// ========================================
+function initTestimonialSlider() {
+    DOM.testimonialDots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            goToTestimonialSlide(index);
+            resetTestimonialInterval();
+        });
+    });
+
+    startTestimonialInterval();
+}
+
+function goToTestimonialSlide(index) {
+    const track = DOM.testimonialTrack;
+    const cards = track.querySelectorAll('.testimonial-card');
+    const totalSlides = cards.length;
+
+    // Determine overlapping/visible items based on screen width
+    // On mobile, 1 item visible (100% width). On desktop, 2 items (50% width).
+    // The previous CSS sets width: calc(50% - 32px) and margin 0 16px.
+    // Movement logic:
+    // If we move by 1 slide index, we should translate by 50% (desktop) or 100% (mobile).
+
+    // Check if mobile
+    const isMobile = window.innerWidth <= 768;
+    const slidePercentage = isMobile ? 100 : 50;
+
+    // Cap index
+    // For simple linear slider that stops at end:
+    let maxIndex = totalSlides - (isMobile ? 1 : 2);
+    if (maxIndex < 0) maxIndex = 0;
+
+    // Handle index bounds
+    if (index > maxIndex) {
+        if (!isMobile && index === maxIndex + 1) {
+            // Allow clicking the last dot to show the last view
+            index = maxIndex;
+        } else {
+            index = 0;
+        }
+    }
+
+    currentTestimonialSlide = index;
+
+    // Update Dots
+    DOM.testimonialDots.forEach(dot => dot.classList.remove('active'));
+    // Activate the dot corresponding to current slide, or nearest
+    if (DOM.testimonialDots[currentTestimonialSlide]) {
+        DOM.testimonialDots[currentTestimonialSlide].classList.add('active');
+    }
+
+    // Update Track
+    const translateX = -(currentTestimonialSlide * slidePercentage);
+    track.style.transform = `translateX(${translateX}%)`;
+}
+
+function nextTestimonialSlide() {
+    const track = DOM.testimonialTrack;
+    if (!track) return;
+    const cards = track.querySelectorAll('.testimonial-card');
+    const isMobile = window.innerWidth <= 768;
+    const totalSlides = cards.length;
+    let maxIndex = totalSlides - (isMobile ? 1 : 2);
+    if (maxIndex < 0) maxIndex = 0;
+
+    let nextIndex = currentTestimonialSlide + 1;
+    if (nextIndex > maxIndex) {
+        nextIndex = 0;
+    }
+    goToTestimonialSlide(nextIndex);
+}
+
+function startTestimonialInterval() {
+    if (testimonialInterval) clearInterval(testimonialInterval);
+    testimonialInterval = setInterval(nextTestimonialSlide, 5000);
+}
+
+function resetTestimonialInterval() {
+    clearInterval(testimonialInterval);
+    startTestimonialInterval();
 }
 
 // ========================================
