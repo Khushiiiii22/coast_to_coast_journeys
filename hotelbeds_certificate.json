@@ -1,0 +1,20 @@
+{
+  "generated_at": "2026-01-20 18:28:34",
+  "api_credentials": {
+    "api_key": "d51bdc80bdf8f8e610882e137baa4bad",
+    "x_signature": "9adc2e289511798a797dc20cd24fc79cd712a356614a6ead2f66e1fade0ee1d1"
+  },
+  "metadata": {
+    "timestamp": "1768913914",
+    "algorithm": "SHA-256",
+    "valid_duration": "60 seconds (recommended)"
+  },
+  "usage_example": {
+    "headers": {
+      "Api-Key": "d51bdc80bdf8f8e610882e137baa4bad",
+      "X-Signature": "9adc2e289511798a797dc20cd24fc79cd712a356614a6ead2f66e1fade0ee1d1",
+      "Accept": "application/json",
+      "Content-Type": "application/json"
+    }
+  }
+}

@@ -73,7 +73,7 @@ class EmailService:
         body = f"""
         Dear {booking_details.get('customer_name', 'Customer')},
 
-        Thank you for booking with Coast to Coast Journeys!
+        Thank you for booking with C2C Journeys!
         
         Your booking for {booking_details.get('hotel_name')} has been confirmed.
         
@@ -84,7 +84,7 @@ class EmailService:
         Your invoice is attached below.
         
         Safe Travels,
-        Coast to Coast Journeys Team
+        C2C Journeys Team
         """
         
         return self.send_email(to_email, subject, body, html_body=invoice_html)
@@ -113,7 +113,7 @@ class EmailService:
             <div class="invoice-box">
                 <div class="header">
                     <div>
-                        <h2 style="margin: 0;">Coast to Coast Journeys</h2>
+                        <h2 style="margin: 0;">C2C Journeys</h2>
                         <p>Booking ID: {booking.get('booking_id', 'N/A')}</p>
                         <p>Date: {date_str}</p>
                     </div>
@@ -153,7 +153,7 @@ class EmailService:
                 </div>
                 
                 <div class="footer">
-                    <p>Thank you for choosing Coast to Coast Journeys!</p>
+                    <p>Thank you for choosing C2C Journeys!</p>
                 </div>
             </div>
         </body>

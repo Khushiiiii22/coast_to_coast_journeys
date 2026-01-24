@@ -299,6 +299,61 @@ body {
     display: none !important;
 }
 
+/* === TRUST BAND === */
+.trust-band {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%);
+    color: white;
+    padding: 14px 0;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    width: 100%;
+    overflow: hidden;
+}
+
+.trust-band .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.trust-items {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center;
+    align-items: center;
+    gap: 60px;
+    flex-wrap: nowrap !important;
+}
+
+.trust-item {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    color: white !important;
+}
+
+.trust-item i {
+    font-size: 18px;
+    width: 38px;
+    height: 38px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #2563eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.trust-item span {
+    letter-spacing: 0.3px;
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
 /* === TRUST SECTION === */
 .trust-section {
     padding: 60px 0;
@@ -511,5 +566,27 @@ body {
 
     .footer-grid {
         grid-template-columns: 1fr;
+    }
+
+    /* Trust band mobile */
+    .trust-items {
+        gap: 30px;
+        flex-wrap: nowrap !important;
+        flex-direction: row !important;
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding: 0 10px;
+    }
+
+    .trust-item {
+        font-size: 12px;
+        flex-direction: row !important;
+        flex-shrink: 0;
+    }
+
+    .trust-item i {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
     }
 }

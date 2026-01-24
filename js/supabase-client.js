@@ -1,5 +1,5 @@
 /**
- * Coast to Coast Journeys - Supabase Client
+ * C2C Journeys - Supabase Client
  * Handles all database operations and authentication
  */
 

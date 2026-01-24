@@ -1,5 +1,5 @@
 /**
- * Coast to Coast Journeys - Hotel API Service
+ * C2C Journeys - Hotel API Service
  * Connects frontend to Flask backend for hotel search and booking
  */
 

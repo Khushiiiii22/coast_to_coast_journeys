@@ -1,5 +1,5 @@
 """
-Coast to Coast Journeys - Supabase Service
+C2C Journeys - Supabase Service
 Handles all Supabase database operations
 """
 import os

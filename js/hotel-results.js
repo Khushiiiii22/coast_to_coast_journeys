@@ -1,5 +1,5 @@
 /**
- * Coast to Coast Journeys - Hotel Results Page
+ * C2C Journeys - Hotel Results Page
  * Handles hotel search results display and interactions
  */
 

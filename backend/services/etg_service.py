@@ -1,5 +1,5 @@
 """
-Coast to Coast Journeys - ETG API Service
+C2C Journeys - ETG API Service
 Handles all ETG/RateHawk API v3 operations for hotel bookings
 Updated to match ETG Sandbox API documentation (23 endpoints)
 """

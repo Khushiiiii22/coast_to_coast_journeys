@@ -1,5 +1,5 @@
 /**
- * Coast to Coast Journeys - Admin Panel JavaScript
+ * C2C Journeys - Admin Panel JavaScript
  */
 
 // ========================================

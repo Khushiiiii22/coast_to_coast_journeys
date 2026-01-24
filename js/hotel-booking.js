@@ -1,5 +1,5 @@
 /**
- * Coast to Coast Journeys - Hotel Booking Page
+ * C2C Journeys - Hotel Booking Page
  * Handles guest details and booking submission
  */
 

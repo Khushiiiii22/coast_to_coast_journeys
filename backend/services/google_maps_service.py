@@ -1,5 +1,5 @@
 """
-Coast to Coast Journeys - Google Maps Service
+C2C Journeys - Google Maps Service
 Handles Google Maps integration for hotel location and mapping
 """
 import os

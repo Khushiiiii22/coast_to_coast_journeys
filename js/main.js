@@ -1,5 +1,5 @@
 /**
- * Coast to Coast Journeys - Main JavaScript
+ * C2C Journeys - Main JavaScript
  * Handles all interactive functionality
  */
 
@@ -967,7 +967,7 @@ function init() {
     // Add loaded class for animations
     document.body.classList.add('loaded');
 
-    console.log('Coast to Coast Journeys - Website Loaded Successfully!');
+    console.log('C2C Journeys - Website Loaded Successfully!');
 }
 
 // Run when DOM is ready

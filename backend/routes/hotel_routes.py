@@ -1,5 +1,5 @@
 """
-Coast to Coast Journeys - Hotel Routes
+C2C Journeys - Hotel Routes
 API routes for hotel search and booking
 """
 from flask import Blueprint, request, jsonify

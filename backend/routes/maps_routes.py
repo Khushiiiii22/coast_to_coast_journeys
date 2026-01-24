@@ -1,5 +1,5 @@
 """
-Coast to Coast Journeys - Map Routes
+C2C Journeys - Map Routes
 API routes for Google Maps integration
 """
 from flask import Blueprint, request, jsonify

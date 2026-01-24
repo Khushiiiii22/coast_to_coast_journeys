@@ -1,5 +1,5 @@
 """
-Coast to Coast Journeys - Flask Backend Application
+C2C Journeys - Flask Backend Application
 Main entry point for the API server
 """
 import os
@@ -24,10 +24,13 @@ def create_app():
     """Application factory"""
     # Get parent directory for serving frontend static files
     parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    templates_folder = os.path.join(parent_dir, 'templates')
     
+    # Configure Flask without automatic static file serving
+    # We'll handle static files manually through routes
     app = Flask(__name__, 
-                static_folder=parent_dir,
-                static_url_path='')
+                static_folder=None,  # Disable automatic static file serving
+                template_folder=templates_folder)
     
     # Load configuration
     config_class = get_config()
@@ -92,6 +95,8 @@ def create_app():
     # Define directories
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     templates_dir = os.path.join(base_dir, 'templates')
+    print(f"📁 Templates directory: {templates_dir}")
+    print(f"📁 Templates exists: {os.path.exists(templates_dir)}")
     
     # Serve frontend pages
     @app.route('/')
@@ -104,12 +109,28 @@ def create_app():
     
     @app.route('/<path:filename>')
     def serve_static(filename):
-        # 1. Try to serve from templates if it's an HTML file or has no extension
+        print(f"🔍 Requesting: {filename}")
+        
+        # 1. Try to serve from templates if it's an HTML file or has no extension  
         if filename.endswith('.html') or '.' not in filename:
             target = filename if filename.endswith('.html') else f"{filename}.html"
+            print(f"📄 Trying to serve HTML: {target}")
+            print(f"📁 From directory: {templates_dir}")
+            
+            full_path = os.path.join(templates_dir, target)
+            print(f"🔎 Full path: {full_path}")
+            print(f"✓ Exists: {os.path.exists(full_path)}")
+            
             try:
-                return send_from_directory(templates_dir, target)
-            except:
+                # Check if it's in admin subfolder
+                if filename.startswith('admin/'):
+                    return send_from_directory(os.path.join(templates_dir, 'admin'), target.replace('admin/', ''))
+                else:
+                    result = send_from_directory(templates_dir, target)
+                    print(f"✅ Successfully served from templates")
+                    return result
+            except Exception as e:
+                print(f"❌ Error serving from templates: {e}")
                 pass # Fall through to next checks
         
         # 2. Try to serve from css, js, or assets folders
@@ -131,7 +152,7 @@ def create_app():
     def health_check():
         return jsonify({
             'status': 'healthy',
-            'service': 'Coast to Coast Journeys API',
+            'service': 'C2C Journeys API',
             'version': '1.0.0'
         })
     
@@ -139,7 +160,7 @@ def create_app():
     @app.route('/api', methods=['GET'])
     def api_info():
         return jsonify({
-            'name': 'Coast to Coast Journeys API',
+            'name': 'C2C Journeys API',
             'version': '1.0.0',
             'endpoints': {
                 'health': '/api/health',
@@ -187,7 +208,7 @@ app = create_app()
 
 
 if __name__ == '__main__':
-    print("🚀 Starting Coast to Coast Journeys API Server...")
+    print("🚀 Starting C2C Journeys API Server...")
     print(f"📍 Running on http://{Config.HOST}:{Config.PORT}")
     print(f"🔧 Debug mode: {Config.DEBUG}")
     print("\n📚 API Documentation:")

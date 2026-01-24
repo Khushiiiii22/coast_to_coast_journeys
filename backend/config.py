@@ -1,5 +1,5 @@
 """
-Coast to Coast Journeys - Configuration
+C2C Journeys - Configuration
 Handles all environment variables and configuration
 """
 import os

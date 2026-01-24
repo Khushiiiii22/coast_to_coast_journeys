@@ -1,5 +1,5 @@
 /**
- * Coast to Coast Journeys - Supabase Configuration
+ * C2C Journeys - Supabase Configuration
  * Handles database connection and authentication
  */
 
