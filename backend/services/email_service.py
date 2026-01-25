@@ -87,7 +87,33 @@ class EmailService:
         C2C Journeys Team
         """
         
-        return self.send_email(to_email, subject, body, html_body=invoice_html)
+        # Send email to customer
+        customer_email_sent = self.send_email(to_email, subject, body, html_body=invoice_html)
+        
+        # Send notification to sales team
+        self._send_sales_notification(booking_details)
+        
+        return customer_email_sent
+
+    def _send_sales_notification(self, booking_details):
+        """Send notification to sales team"""
+        sales_email = "sales@c2cjourneys.com"
+        subject = f"New Booking Alert - {booking_details.get('booking_id', 'N/A')}"
+        
+        body = f"""
+        New Booking Confirmed!
+        
+        Booking ID: {booking_details.get('booking_id', 'N/A')}
+        Customer: {booking_details.get('customer_name', 'N/A')}
+        Email: {booking_details.get('customer_email', 'N/A')}
+        Hotel: {booking_details.get('hotel_name', 'N/A')}
+        Check-in: {booking_details.get('checkin', 'N/A')}
+        Check-out: {booking_details.get('checkout', 'N/A')}
+        Amount: {booking_details.get('amount', 'N/A')} {booking_details.get('currency', 'INR')}
+        """
+        
+        print(f"📧 Sending sales notification to {sales_email}")
+        self.send_email(sales_email, subject, body)
 
     def _generate_invoice_html(self, booking):
         """Generate HTML invoice"""
