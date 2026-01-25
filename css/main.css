@@ -227,7 +227,10 @@ h6 {
 
 .logo img {
     height: 44px;
+    max-height: 44px;
     width: auto;
+    max-width: 120px;
+    object-fit: contain;
     border-radius: var(--radius-sm);
 }
 
@@ -922,6 +925,10 @@ h6 {
 
 .footer-logo img {
     height: 48px;
+    max-height: 48px;
+    width: auto;
+    max-width: 120px;
+    object-fit: contain;
     border-radius: var(--radius-sm);
 }
 

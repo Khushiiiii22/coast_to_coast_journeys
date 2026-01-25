@@ -4,6 +4,162 @@
  */
 
 /* ============================================
+   Navigation Styles for Hotel Pages
+   ============================================ */
+
+.main-nav {
+    background: white;
+}
+
+.main-nav .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.nav-content {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: 70px;
+    gap: 40px;
+}
+
+.nav-content .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.nav-content .logo img {
+    height: 44px;
+    width: auto;
+    max-width: 60px;
+    object-fit: contain;
+}
+
+.nav-content .logo .brand-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+}
+
+.nav-content .nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-content .nav-menu li {
+    list-style: none;
+}
+
+.nav-content .nav-link {
+    color: var(--gray-700);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.nav-content .nav-link:hover {
+    color: var(--primary-blue);
+    background: rgba(14, 100, 166, 0.08);
+}
+
+.nav-content .nav-link.active {
+    color: var(--primary-blue);
+    background: rgba(14, 100, 166, 0.1);
+}
+
+/* Nav Actions (Login button) */
+.nav-content .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.nav-content .nav-actions .btn {
+    padding: 8px 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.nav-content .nav-actions .btn-outline {
+    border: 2px solid var(--primary-blue);
+    color: var(--primary-blue);
+    background: transparent;
+}
+
+.nav-content .nav-actions .btn-outline:hover {
+    background: var(--primary-blue);
+    color: white;
+}
+
+.nav-content .mobile-menu-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.nav-content .mobile-menu-toggle span {
+    display: block;
+    width: 24px;
+    height: 3px;
+    background: var(--primary-blue);
+    border-radius: 2px;
+}
+
+/* Responsive Navigation */
+@media (max-width: 768px) {
+    .nav-content {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 15px 0;
+    }
+
+    .nav-content .nav-menu {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+        padding: 16px 0;
+        margin-top: 16px;
+        border-top: 1px solid var(--gray-200);
+        order: 10;
+    }
+
+    .nav-content .nav-menu.active {
+        display: flex;
+    }
+
+    .nav-content .nav-actions {
+        margin-left: auto;
+    }
+
+    .nav-content .mobile-menu-toggle {
+        display: flex;
+    }
+}
+
+/* ============================================
    Common Styles
    ============================================ */
 
@@ -15,12 +171,13 @@
     background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
 }
 
+
 /* ============================================
    Search Summary Bar
    ============================================ */
 
 .search-summary-bar {
-    background: linear-gradient(135deg, var(--primary-blue), var(--navy));
+    background: linear-gradient(135deg, #0e64a6 0%, #1a365d 100%);
     padding: 1.5rem 0;
     color: white;
 }
@@ -35,23 +192,26 @@
 
 .search-info h1 {
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: 700;
     margin-bottom: 0.25rem;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .search-info h1 span {
-    color: var(--accent-gold);
+    color: #fbbf24;
 }
 
 .search-info p {
-    font-size: 0.9rem;
-    opacity: 0.9;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.95);
 }
 
 .search-info .separator {
     margin: 0 0.5rem;
-    opacity: 0.5;
+    color: rgba(255, 255, 255, 0.7);
 }
+
 
 .modify-search-btn {
     background: rgba(255, 255, 255, 0.15);

@@ -4,6 +4,190 @@
    ======================================== */
 
 /* ========================================
+   Navigation Styles
+   ======================================== */
+.main-nav {
+    background: var(--white);
+}
+
+.main-nav .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.nav-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 70px;
+    gap: 40px;
+}
+
+.nav-content .hamburger-menu {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.nav-content .hamburger-menu span {
+    display: block;
+    width: 24px;
+    height: 3px;
+    background: var(--primary-blue);
+    border-radius: 2px;
+    transition: 0.3s ease;
+}
+
+.nav-content .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.nav-content .logo img {
+    height: 44px;
+    width: auto;
+    max-width: 60px;
+    object-fit: contain;
+}
+
+.nav-content .logo .brand-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+}
+
+.nav-content .nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-content .nav-menu li {
+    list-style: none;
+}
+
+.nav-content .nav-link {
+    color: var(--gray-700);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.nav-content .nav-link:hover {
+    color: var(--primary-blue);
+    background: rgba(14, 100, 166, 0.08);
+}
+
+.nav-content .nav-link.active {
+    color: var(--primary-blue);
+    background: rgba(14, 100, 166, 0.1);
+}
+
+/* Nav Actions (Login button) */
+.nav-content .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.nav-content .nav-actions .btn {
+    padding: 8px 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.nav-content .nav-actions .btn-outline {
+    border: 2px solid var(--primary-blue);
+    color: var(--primary-blue);
+    background: transparent;
+}
+
+.nav-content .nav-actions .btn-outline:hover {
+    background: var(--primary-blue);
+    color: white;
+}
+
+.nav-content .mobile-menu-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.nav-content .mobile-menu-toggle span {
+    display: block;
+    width: 24px;
+    height: 3px;
+    background: var(--primary-blue);
+    border-radius: 2px;
+}
+
+/* Responsive Navigation */
+@media (max-width: 768px) {
+    .nav-content {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 15px 0;
+    }
+
+    .nav-content .hamburger-menu {
+        display: flex;
+        order: -1;
+    }
+
+    .nav-content .logo {
+        flex: 1;
+    }
+
+    .nav-content .nav-menu {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+        padding: 16px 0;
+        margin-top: 16px;
+        border-top: 1px solid var(--gray-200);
+        order: 10;
+    }
+
+    .nav-content .nav-menu.active {
+        display: flex;
+    }
+
+    .nav-content .nav-actions {
+        margin-left: 0;
+        order: 9;
+    }
+
+    .nav-content .mobile-menu-toggle {
+        display: flex;
+    }
+}
+
+
+/* ========================================
    Page Content Base
    ======================================== */
 .page-content {
@@ -11,11 +195,12 @@
     min-height: 100vh;
 }
 
-/* Page Hero */
+
+/* Page Hero - Consistent across FAQs, Visa, Refund, Privacy, etc. */
 .page-hero {
-    background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+    background: linear-gradient(135deg, #0e64a6 0%, #1a365d 100%);
     padding: 80px 0 60px;
-    color: var(--white);
+    color: #ffffff;
     position: relative;
     overflow: hidden;
 }
@@ -37,29 +222,36 @@
     z-index: 1;
 }
 
+
 /* Breadcrumb */
 .breadcrumb {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 1.5rem;
-    font-size: 0.9rem;
-    opacity: 0.9;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .breadcrumb a {
-    color: var(--white);
-    transition: var(--transition-base);
+    color: #ffffff;
+    transition: 0.3s ease;
+    text-decoration: none;
 }
 
 .breadcrumb a:hover {
-    color: var(--accent-gold);
+    color: #fbbf24;
+}
+
+.breadcrumb span {
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .breadcrumb i {
     font-size: 0.7rem;
-    opacity: 0.7;
+    color: rgba(255, 255, 255, 0.7);
 }
+
 
 .page-hero h1 {
     font-size: 2.5rem;
@@ -68,17 +260,20 @@
     display: flex;
     align-items: center;
     gap: 1rem;
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .page-hero h1 i {
-    color: var(--accent-gold);
+    color: #fbbf24;
 }
 
 .page-hero p {
     font-size: 1.1rem;
-    opacity: 0.9;
+    color: rgba(255, 255, 255, 0.95);
     max-width: 600px;
 }
+
 
 /* Content Wrapper */
 .content-wrapper {
@@ -934,6 +1129,16 @@
     filter: brightness(0) invert(1) opacity(0.7);
 }
 
+/* Footer logo as direct img element */
+img.footer-logo {
+    max-height: 60px;
+    max-width: 150px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+
 .footer-disclaimer {
     background: rgba(0, 0, 0, 0.2);
     padding: 1rem 1.5rem;
@@ -964,6 +1169,25 @@
 .footer-contact i {
     color: var(--accent-gold);
     width: 16px;
+}
+
+/* Footer Bottom - Enhanced visibility */
+.footer-bottom {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+.footer-bottom p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+    margin: 0.5rem 0;
+}
+
+.footer-bottom p:first-child {
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
 }
 
 /* ========================================
