@@ -609,9 +609,43 @@
             }
         });
 
-        // Social Login Placeholder
-        function socialLogin(provider) {
-            alert(provider + ' login not configured in this demo');
+        // Social Login
+        async function socialLogin(provider) {
+            if (provider === 'google') {
+                const btn = document.querySelector('.google-btn');
+                const originalContent = btn.innerHTML;
+
+                // Show loading state
+                btn.innerHTML = '<span>Connecting...</span>';
+                btn.style.opacity = '0.7';
+                btn.style.pointerEvents = 'none';
+
+                try {
+                    const result = await SupabaseDB.signInWithGoogle();
+
+                    if (!result.success) {
+                        const errorMsg = result.error || 'Unknown error';
+                        if (errorMsg.includes("provider is not enabled") || errorMsg.includes("Unsupported provider")) {
+                            alert('Configuration Error: Google Sign-In is not enabled in the backend system. Please contact the administrator.');
+                        } else {
+                            alert('Google Sign In Failed: ' + errorMsg);
+                        }
+                        btn.innerHTML = originalContent;
+                        btn.style.opacity = '1';
+                        btn.style.pointerEvents = 'auto';
+                    }
+                    // If success, Supabase will handle the redirect
+
+                } catch (e) {
+                    console.error(e);
+                    alert('An unexpected error occurred during Google Sign In');
+                    btn.innerHTML = originalContent;
+                    btn.style.opacity = '1';
+                    btn.style.pointerEvents = 'auto';
+                }
+            } else {
+                alert(provider + ' login not configured in this demo');
+            }
         }
 
         // Init

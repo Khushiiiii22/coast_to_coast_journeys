@@ -87,6 +87,28 @@ async function signIn(email, password) {
     }
 }
 
+// Sign in with Google
+async function signInWithGoogle() {
+    try {
+        const { data, error } = await supabaseClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                queryParams: {
+                    access_type: 'offline',
+                    prompt: 'consent',
+                },
+                redirectTo: window.location.origin + '/auth.html'
+            }
+        });
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('Google sign in error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
 // Sign out
 async function signOut() {
     try {
@@ -945,6 +967,7 @@ window.SupabaseDB = {
     // Auth
     signUpCustomer,
     signIn,
+    signInWithGoogle,
     signOut,
     getCurrentUser,
     getSession,
