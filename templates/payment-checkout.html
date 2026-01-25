@@ -258,6 +258,25 @@
         </div>
     </div>
 
+    <!-- Footer -->
+    <footer class="footer" style="margin-top: 50px; background: #0f172a; color: white; padding: 40px 0 20px;">
+        <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px; text-align: center;">
+            <div class="footer-payment-icons"
+                style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; align-items: center;">
+                <span style="color: #9ca3af; font-size: 0.9rem;">Payment Partners:</span>
+                <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Razorpay"
+                    style="height: 24px; filter: brightness(0) invert(1) opacity(0.8);">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
+                    style="height: 24px; background: white; padding: 3px 6px; border-radius: 4px;">
+            </div>
+            <div class="footer-bottom">
+                <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">C2C Journeys is a customer-facing
+                    brand operated by Coast to Coast Journeys</p>
+                <p style="color: #94a3b8; font-size: 0.9rem;">&copy; 2026 C2C Journeys. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
     <!-- Razorpay Checkout Script -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <!-- PayPal SDK -->
@@ -265,12 +284,17 @@
         src="https://www.paypal.com/sdk/js?client-id=AWENm1iOqiuWw9I06eBvkfbGrFHrfy_z17v9luYkqW9WKaNtckFT_XaiMskICFNridYk_FepZBI0QErA&currency=USD"></script>
 
 
+    <!-- Supabase and Auth Guard -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/auth-guard.js"></script>
+
     <script>
         // Get booking details from sessionStorage
         const bookingData = JSON.parse(sessionStorage.getItem('ctc_booking_data') || '{}');
 
         // Populate booking details
-        function loadBookingDetails() {
+        async function loadBookingDetails() {
             if (!bookingData.hotel || !bookingData.rate) {
                 alert('No booking data found! Redirecting to home...');
                 window.location.href = 'index.html';
@@ -306,6 +330,23 @@
             bookingData.total = total;
             bookingData.base_price = basePrice;
             bookingData.booking_id = 'CTC-' + Date.now(); // Generate ID
+
+            // PRE-FILL USER DETAILS
+            if (typeof AuthGuard !== 'undefined' && window.supabase) {
+                const session = await AuthGuard.checkSession();
+                if (session && session.user) {
+                    const user = session.user;
+                    const meta = user.user_metadata || {};
+
+                    if (user.email) document.getElementById('email').value = user.email;
+                    if (meta.phone) document.getElementById('phone').value = meta.phone;
+                    if (meta.full_name) {
+                        const parts = meta.full_name.split(' ');
+                        document.getElementById('firstName').value = parts[0];
+                        document.getElementById('lastName').value = parts.slice(1).join(' ') || '';
+                    }
+                }
+            }
         }
 
         function formatDate(dateStr) {
@@ -341,6 +382,13 @@
                 last_name: lastName
             }];
 
+            // Get session user id if available
+            let userId = null;
+            if (typeof AuthGuard !== 'undefined') {
+                const session = await AuthGuard.checkSession();
+                if (session?.user) userId = session.user.id;
+            }
+
             const payload = {
                 book_hash: bookingData.rate.book_hash, // From RateHawk prebook/rates
                 guests: guests,
@@ -351,7 +399,8 @@
                 total_amount: bookingData.total,
                 currency: 'INR',
                 email: email,
-                phone: phone
+                phone: phone,
+                user_id: userId // Associate booking with user
             };
 
             try {

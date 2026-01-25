@@ -189,14 +189,26 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
+            <div class="footer-payment-icons"
+                style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; align-items: center;">
+                <span style="color: #9ca3af; font-size: 0.9rem;">Payment Partners:</span>
+                <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Razorpay"
+                    style="height: 24px; filter: brightness(0) invert(1) opacity(0.8);">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
+                    style="height: 24px; background: white; padding: 3px 6px; border-radius: 4px;">
+            </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 C2C Journeys. All rights reserved.</p>
+                <p>C2C Journeys is a customer-facing brand operated by Coast to Coast Journeys</p>
+                <p>&copy; 2026 C2C Journeys. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/auth-guard.js"></script>
+
     <script src="../js/hotel-api.js"></script>
     <script src="../js/hotel-details.js"></script>
 </body>

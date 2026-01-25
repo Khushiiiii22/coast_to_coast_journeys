@@ -406,10 +406,20 @@ function setupEventListeners() {
 /**
  * Proceed to booking
  */
-function proceedToBooking() {
+async function proceedToBooking() {
     if (!selectedRate) {
         showNotification('Please select a room first', 'warning');
         return;
+    }
+
+    // Auth check
+    if (typeof AuthGuard !== 'undefined') {
+        const isAuth = await AuthGuard.isAuthenticated();
+        if (!isAuth) {
+            AuthGuard.showLoginModal();
+            showNotification('Please login to proceed with booking', 'warning');
+            return;
+        }
     }
 
     // Save booking data

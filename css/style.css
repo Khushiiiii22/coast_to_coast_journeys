@@ -12,6 +12,9 @@
 :root {
     --primary: #2563eb;
     --primary-dark: #1e40af;
+    --primary-blue: #0e64a6;
+    --primary-light: #3b82f6;
+    --accent-orange: #f97316;
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
@@ -23,8 +26,11 @@
     --gray-500: #6b7280;
     --gray-700: #374151;
     --gray-900: #111827;
+    --radius-lg: 12px;
+    --radius: 8px;
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
 }
 
 body {

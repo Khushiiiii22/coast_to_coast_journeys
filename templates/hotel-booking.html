@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description"
-        content="Book Hotels - C2C Journeys. Search and book hotels at the best prices worldwide.">
+    <meta name="description" content="Book Hotels - C2C Journeys. Search and book hotels at the best prices worldwide.">
     <title>Book Hotels | C2C Journeys</title>
 
     <!-- Favicon -->
@@ -99,14 +98,12 @@
                             </div>
                         </div>
 
-                        <div class="form-field">
+                        <div class="form-field" style="position: relative;">
                             <label>Rooms & Guests</label>
-                            <div class="input-wrapper guests-dropdown" id="guestsDropdown"
-                                style="position: relative; cursor: pointer; display: flex; align-items: center; padding-left: 14px;">
-                                <i class="fas fa-users" style="margin-right: 12px; color: #666;"></i>
+                            <div class="input-wrapper guests-dropdown" id="guestsDropdown">
+                                <i class="fas fa-users"></i>
                                 <span class="guests-display" id="guestsDisplay">1 Room, 2 Guests</span>
-                                <i class="fas fa-chevron-down"
-                                    style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #666;"></i>
+                                <i class="fas fa-chevron-down"></i>
                             </div>
                             <div class="travelers-popup" id="guestsPopup">
                                 <div class="traveler-row">
@@ -508,7 +505,7 @@
                         <a href="tel:+918237216173" class="btn btn-white">
                             <i class="fas fa-phone"></i> +91 8237216173
                         </a>
-                        <a href="mailto:Support@coasttocoastjourneys.com" class="btn btn-outline"
+                        <a href="mailto:sales@c2cjourneys.com" class="btn btn-outline"
                             style="border-color: white; color: white;">
                             <i class="fas fa-envelope"></i> Email Support
                         </a>
@@ -532,6 +529,16 @@
                     <div class="trust-line">
                         <i class="fas fa-shield-alt"></i>
                         "Your trust is our responsibility."
+                    </div>
+                    <div class="payment-partners" style="margin-top: 15px;">
+                        <span style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #9ca3af;">Payment
+                            Partners:</span>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Razorpay"
+                                style="height: 20px; width: auto; filter: brightness(0) invert(1) opacity(0.8);">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
+                                style="height: 20px; width: auto; background: white; padding: 2px 5px; border-radius: 4px;">
+                        </div>
                     </div>
                 </div>
 
@@ -568,7 +575,7 @@
             </div>
 
             <div class="footer-bottom">
-                <p>C2C Journeys is operated under Coast to Coast Journeys</p>
+                <p>C2C Journeys is a customer-facing brand operated by Coast to Coast Journeys</p>
                 <p>&copy; 2026 C2C Journeys. All Rights Reserved.</p>
             </div>
         </div>
@@ -676,6 +683,10 @@
             window.location.href = `hotel-results.html?${params.toString()}`;
         });
     </script>
+    <!-- Supabase and Auth Guard -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/auth-guard.js"></script>
 </body>
 
 </html>

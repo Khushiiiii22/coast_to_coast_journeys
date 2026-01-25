@@ -1113,6 +1113,39 @@ h6 {
     box-shadow: 0 0 0 4px rgba(14, 100, 166, 0.1);
 }
 
+/* Guests Dropdown specific styles - override absolute positioning */
+.guests-dropdown.input-wrapper {
+    display: flex;
+    align-items: center;
+    padding: 14px 44px 14px 14px;
+    cursor: pointer;
+}
+
+.guests-dropdown.input-wrapper>i:first-child {
+    position: static;
+    transform: none;
+    margin-right: 10px;
+    flex-shrink: 0;
+    color: var(--primary);
+}
+
+.guests-dropdown.input-wrapper>.fa-chevron-down {
+    position: absolute;
+    right: 14px;
+    left: auto;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+.guests-dropdown .guests-display {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-primary);
+}
+
 /* Swap Button */
 .swap-btn {
     position: absolute;
@@ -2260,16 +2293,16 @@ h6 {
 
 .travelers-popup {
     position: absolute;
-    bottom: calc(100% + 8px);
     top: auto;
+    bottom: calc(100% + 8px);
     left: 0;
-    width: 300px;
-    /* Fixed width to ensure it fits content */
+    right: 0;
+    min-width: 300px;
     background: var(--white);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-2xl);
     padding: 20px;
-    z-index: 100;
+    z-index: 1000;
     opacity: 0;
     visibility: hidden;
     transform: translateY(10px);

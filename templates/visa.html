@@ -62,9 +62,21 @@
 
         .visa-types {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 1.5rem;
             margin: 2rem 0;
+        }
+
+        @media (max-width: 992px) {
+            .visa-types {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 576px) {
+            .visa-types {
+                grid-template-columns: 1fr;
+            }
         }
 
         .visa-type-card {
@@ -172,7 +184,8 @@
         }
 
         .submit-visa-btn {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            background: linear-gradient(135deg, #0e64a6, #0a4d8c);
+            /* Hardcoded branding blue */
             color: white;
             border: none;
             padding: 1rem 2.5rem;
@@ -182,14 +195,19 @@
             cursor: pointer;
             display: flex;
             align-items: center;
+            justify-content: center;
+            /* Center content */
             gap: 0.75rem;
             margin: 2rem auto 0;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(14, 100, 166, 0.3);
+            /* Add shadow for depth */
         }
 
         .submit-visa-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(14, 100, 166, 0.3);
+            box-shadow: 0 6px 20px rgba(14, 100, 166, 0.4);
+            background: linear-gradient(135deg, #0a4d8c, #083c6e);
         }
 
         .popular-destinations {
@@ -362,7 +380,7 @@
             <a href="index.html#contact" class="sidebar-link">
                 <i class="fas fa-headset"></i> 24/7 Support
             </a>
-            <a href="mailto:Support@coasttocoastjourneys.com" class="sidebar-link">
+            <a href="mailto:sales@c2cjourneys.com" class="sidebar-link">
                 <i class="fas fa-envelope"></i> Email Us
             </a>
             <a href="tel:+918237216173" class="sidebar-link">
@@ -395,7 +413,7 @@
                 <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"><i
                         class="fab fa-linkedin-in"></i></a>
             </div>
-            <p>C2C Journeys is operated under Coast to Coast Journeys</p>
+            <p>C2C Journeys is a customer-facing brand operated by Coast to Coast Journeys</p>
             <p>© 2026 C2C Journeys</p>
         </div>
     </aside>
@@ -652,7 +670,7 @@
                         <h3>Need Help with Visa Application?</h3>
                         <p>Our visa experts are available to assist you with any queries.</p>
                         <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
-                            <a href="mailto:Support@coasttocoastjourneys.com" class="btn btn-primary">
+                            <a href="mailto:sales@c2cjourneys.com" class="btn btn-primary">
                                 <i class="fas fa-envelope"></i> Email Support
                             </a>
                             <a href="tel:+918237216173" class="btn btn-outline-light">
@@ -681,9 +699,13 @@
                         the globe with the best prices and exceptional service.</p>
                     <p class="trust-line"><i class="fas fa-shield-alt"></i> "Your trust is our responsibility."</p>
                     <div class="payment-partners">
-                        <span>Payment Partner:</span>
-                        <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Razorpay"
-                            class="razorpay-logo">
+                        <span>Payment Partners:</span>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Razorpay"
+                                style="height: 20px; width: auto; filter: brightness(0) invert(1) opacity(0.8);">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
+                                style="height: 20px; width: auto; background: white; padding: 2px 5px; border-radius: 4px;">
+                        </div>
                     </div>
                 </div>
 
@@ -732,7 +754,7 @@
             </div>
 
             <div class="footer-bottom">
-                <p>C2C Journeys is operated under Coast to Coast Journeys</p>
+                <p>C2C Journeys is a customer-facing brand operated by Coast to Coast Journeys</p>
                 <p>&copy; 2026 C2C Journeys. All Rights Reserved.</p>
             </div>
         </div>
@@ -767,11 +789,98 @@
             this.classList.toggle('active');
         });
 
+        // Handle URL parameters for pre-filling
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const destination = urlParams.get('destination');
+            const citizenship = urlParams.get('citizenship');
+
+            if (destination || citizenship) {
+                // Scroll to form after a short delay to ensure rendering
+                setTimeout(() => {
+                    const formSection = document.querySelector('.visa-application-form');
+                    if (formSection) {
+                        formSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 500);
+
+                // Pre-fill fields
+                if (citizenship) {
+                    const natInput = document.getElementById('nationality');
+                    if (natInput) natInput.value = citizenship;
+                }
+
+                if (destination) {
+                    const destSelect = document.getElementById('destination');
+                    if (destSelect) {
+                        let matched = false;
+                        // Try exact match first
+                        for (let i = 0; i < destSelect.options.length; i++) {
+                            if (destSelect.options[i].value.toLowerCase() === destination.toLowerCase()) {
+                                destSelect.selectedIndex = i;
+                                matched = true;
+                                break;
+                            }
+                        }
+
+                        // If not found, select 'Other' and note it
+                        if (!matched) {
+                            for (let i = 0; i < destSelect.options.length; i++) {
+                                if (destSelect.options[i].value === 'Other') {
+                                    destSelect.selectedIndex = i;
+                                    break;
+                                }
+                            }
+                            const addInfo = document.getElementById('additionalInfo');
+                            if (addInfo) {
+                                addInfo.value = `Interested in Visa for: ${destination}\n` + addInfo.value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
         // Form submission handling
-        document.getElementById('visaApplicationForm').addEventListener('submit', function (e) {
+        document.getElementById('visaApplicationForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            alert('Thank you for your visa application inquiry! Our team will contact you within 24 hours.');
-            this.reset();
+
+            const btn = this.querySelector('.submit-visa-btn');
+            const originalContent = btn.innerHTML;
+
+            // Show loading state
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+            // Collect Form Data
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/api/visa/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Application Submitted Successfully! A confirmation email has been sent to our team.');
+                    this.reset();
+                } else {
+                    alert('Submission failed: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again later.');
+            } finally {
+                // Restore button
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
         });
     </script>
 </body>

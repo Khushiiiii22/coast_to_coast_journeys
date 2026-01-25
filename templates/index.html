@@ -250,7 +250,7 @@
             <a href="#contact" class="sidebar-link" id="sidebarSupport">
                 <i class="fas fa-headset"></i> 24/7 Support
             </a>
-            <a href="mailto:Support@coasttocoastjourneys.com" class="sidebar-link">
+            <a href="mailto:sales@c2cjourneys.com" class="sidebar-link">
                 <i class="fas fa-envelope"></i> Email Us
             </a>
             <a href="tel:+918237216173" class="sidebar-link">
@@ -286,7 +286,7 @@
                 <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"><i
                         class="fab fa-linkedin-in"></i></a>
             </div>
-            <p>C2C Journeys is operated under Coast to Coast Journeys</p>
+            <p>C2C Journeys is a customer-facing brand operated by Coast to Coast Journeys</p>
             <p>© 2026 C2C Journeys</p>
         </div>
     </aside>
@@ -413,6 +413,9 @@
                     </button>
                     <button class="search-tab" data-tab="hotels">
                         <i class="fas fa-hotel"></i> Hotels
+                    </button>
+                    <button class="search-tab" data-tab="visa">
+                        <i class="fas fa-passport"></i> Visa
                     </button>
                 </div>
 
@@ -595,6 +598,26 @@
                         </button>
                     </form>
                 </div>
+
+                <!-- Visa Search Form -->
+                <div id="visa-form" class="search-content hidden">
+                    <form class="search-form-improved" id="visaSearchForm">
+                        <div class="search-row">
+                            <div class="form-field-improved" style="flex: 1;">
+                                <label><i class="fas fa-passport"></i> I am a Citizen of</label>
+                                <input type="text" id="visaCitizenship" placeholder="e.g. India" value="India">
+                            </div>
+                            <div class="form-field-improved" style="flex: 1;">
+                                <label><i class="fas fa-map-marker-alt"></i> I want to go to</label>
+                                <input type="text" id="visaDestination" placeholder="Country name..." required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-search-main">
+                            <i class="fas fa-search"></i>
+                            Check Visa Requirements
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </section>
@@ -606,10 +629,10 @@
         <div class="container">
             <div class="features-grid">
                 <div class="feature-item">
-                    <div class="feature-icon-circle">
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <span>4.3 Rated</span>
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg"
+                        alt="Google"
+                        style="height: 28px; width: auto; background: white; padding: 4px; border-radius: 50%; margin-right: 10px;">
+                    <span>5 Star Rated</span>
                 </div>
                 <div class="feature-item">
                     <img src="https://www.flightsmojo.in/images/iata_color.png" alt="IATA Accredited"
@@ -617,6 +640,8 @@
                     <span>IATA Accredited Agent</span>
                 </div>
                 <div class="feature-item">
+                    <img src="https://www.flightsmojo.in/images/pci-dss-hor.png" alt="PCI DSS"
+                        style="height: 32px; width: auto; background: white; padding: 2px 6px; border-radius: 4px; margin-right: 10px;">
                     <span>100% Secure Payments</span>
                 </div>
                 <div class="feature-item">
@@ -1053,7 +1078,7 @@
                             <i class="fas fa-envelope"></i>
                         </div>
                         <h4>Email Us</h4>
-                        <p>Info@coasttocoastjourneys.com<br>Support@coasttocoastjourneys.com</p>
+                        <p>Info@coasttocoastjourneys.com<br>sales@c2cjourneys.com</p>
                     </div>
                 </div>
 
@@ -1097,6 +1122,16 @@
                     <div class="trust-line">
                         <i class="fas fa-shield-alt"></i>
                         "Your trust is our responsibility."
+                    </div>
+                    <div class="payment-partners" style="margin-top: 15px;">
+                        <span style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #9ca3af;">Payment
+                            Partners:</span>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Razorpay"
+                                style="height: 20px; width: auto; filter: brightness(0) invert(1) opacity(0.8);">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
+                                style="height: 20px; width: auto; background: white; padding: 2px 5px; border-radius: 4px;">
+                        </div>
                     </div>
                 </div>
 
@@ -1570,6 +1605,14 @@
             });
 
             window.location.href = `hotel-results.html?${params.toString()}`;
+        });
+
+        document.getElementById('visaSearchForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const destination = document.getElementById('visaDestination').value;
+            const citizenship = document.getElementById('visaCitizenship').value;
+            // Redirect to visa page with params
+            window.location.href = `visa.html?destination=${encodeURIComponent(destination)}&citizenship=${encodeURIComponent(citizenship)}`;
         });
 
         // Smooth scroll for anchor links
