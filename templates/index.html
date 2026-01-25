@@ -23,7 +23,204 @@
 
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="../css/main.css">
-</head>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+
+    <style>
+        /* Promo Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .promo-modal {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: scale(0.9);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+
+        .modal-overlay.active .promo-modal {
+            transform: scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10;
+            color: #64748b;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .modal-close:hover {
+            background: #fff;
+            color: #ef4444;
+            transform: rotate(90deg);
+        }
+
+        .promo-image {
+            width: 45%;
+            position: relative;
+        }
+
+        .promo-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .promo-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0));
+        }
+
+        .promo-content {
+            width: 55%;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .promo-badge {
+            display: inline-block;
+            background: #ecfdf5;
+            color: #059669;
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            align-self: flex-start;
+        }
+
+        .promo-modal h3 {
+            font-size: 2rem;
+            color: #1e293b;
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+
+        .promo-modal p {
+            color: #64748b;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .promo-features {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .promo-features li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            color: #334155;
+            font-weight: 500;
+        }
+
+        .promo-features li i {
+            color: #0e64a6;
+        }
+
+        .btn-promo-action {
+            background: linear-gradient(135deg, #0e64a6, #1a365d);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 12px;
+            text-decoration: none;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(14, 100, 166, 0.2);
+        }
+
+        .btn-promo-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(14, 100, 166, 0.3);
+        }
+
+        .btn-promo-secondary {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            padding: 10px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .btn-promo-secondary:hover {
+            color: #64748b;
+        }
+
+        @media (max-width: 768px) {
+            .promo-modal {
+                flex-direction: column;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            .promo-image {
+                width: 100%;
+                height: 200px;
+            }
+
+            .promo-content {
+                width: 100%;
+                padding: 30px 20px;
+            }
+
+            .promo-modal h3 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
 
 <body>
     <!-- Sidebar Menu -->
@@ -93,6 +290,29 @@
             <p>© 2026 C2C Journeys</p>
         </div>
     </aside>
+
+    <!-- Signup Promo Modal -->
+    <div class="modal-overlay" id="signupModal">
+        <div class="promo-modal">
+            <button class="modal-close" id="signupClose"><i class="fas fa-times"></i></button>
+            <div class="promo-image">
+                <img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                    alt="Travel">
+            </div>
+            <div class="promo-content">
+                <div class="promo-badge">Limited Time Offer</div>
+                <h3>Join the Club!</h3>
+                <p>Sign up now to unlock secret deals and save up to <strong>20% off</strong> your first booking.</p>
+                <ul class="promo-features">
+                    <li><i class="fas fa-check-circle"></i> Exclusive Member Rates</li>
+                    <li><i class="fas fa-check-circle"></i> Priority 24/7 Support</li>
+                    <li><i class="fas fa-check-circle"></i> Track Your Trips</li>
+                </ul>
+                <a href="auth.html?tab=signup" class="btn-promo-action">Create Free Account</a>
+                <button class="btn-promo-secondary" id="signupLater">Maybe Later</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Feedback Modal -->
     <div class="feedback-modal" id="feedbackModal">
@@ -1273,11 +1493,64 @@
                 class: cabinClass
             });
 
-            if (tripType === 'roundtrip' && returnDate) {
+            // One Way trip type check
+            if (tripType === 'oneway' && returnDate) {
+                // Don't append return date
+            } else if (tripType === 'roundtrip' && returnDate) {
                 params.append('return', returnDate);
             }
 
             window.location.href = `flight-results.html?${params.toString()}`;
+        });
+
+        // ========== Signup Promo Modal Logic ==========
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Delay check to ensure Supabase client is ready
+            setTimeout(async () => {
+                let isLoggedIn = false;
+
+                // Check if SupabaseDB is defined (from supabase-client.js)
+                if (typeof SupabaseDB !== 'undefined') {
+                    try {
+                        const user = await SupabaseDB.getCurrentUser();
+                        if (user) isLoggedIn = true;
+                    } catch (e) {
+                        console.log('User check failed', e);
+                    }
+                }
+
+                // If not logged in, maintainer simple logic
+                if (!isLoggedIn) {
+                    // Check if dismissed recently (24h)
+                    const dismissed = localStorage.getItem('signupModalDismissed');
+                    const now = new Date().getTime();
+
+                    if (!dismissed || (now - parseInt(dismissed) > 24 * 60 * 60 * 1000)) {
+                        // Show after 10 seconds of browsing
+                        setTimeout(() => {
+                            document.getElementById('signupModal').classList.add('active');
+                        }, 10000);
+                    }
+                }
+            }, 1000);
+
+            // Close handlers
+            const closeSignup = () => {
+                document.getElementById('signupModal').classList.remove('active');
+                localStorage.setItem('signupModalDismissed', new Date().getTime().toString());
+            };
+
+            const closeBtn = document.getElementById('signupClose');
+            const laterBtn = document.getElementById('signupLater');
+            const modalOverlay = document.getElementById('signupModal');
+
+            if (closeBtn) closeBtn.addEventListener('click', closeSignup);
+            if (laterBtn) laterBtn.addEventListener('click', closeSignup);
+            if (modalOverlay) {
+                modalOverlay.addEventListener('click', (e) => {
+                    if (e.target === modalOverlay) closeSignup();
+                });
+            }
         });
 
         document.getElementById('hotelSearchForm').addEventListener('submit', function (e) {

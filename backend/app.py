@@ -18,6 +18,7 @@ from routes.maps_routes import maps_bp
 from routes.flight_routes import flight_bp
 from routes.admin_routes import admin_bp
 from routes.payment_routes import payment_bp
+from routes.auth_routes import auth_bp
 
 
 def create_app():
@@ -58,6 +59,7 @@ def create_app():
     app.register_blueprint(flight_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(payment_bp)
+    app.register_blueprint(auth_bp)
     
     # Initialize admin service
     from services.admin_service import AdminService

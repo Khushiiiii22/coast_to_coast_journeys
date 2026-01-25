@@ -17,38 +17,36 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
  */
 
 // Sign up new customer
+// Sign up new customer
 async function signUpCustomer(email, password, fullName, phone = null) {
     try {
-        // Create auth user
-        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+        // Use backend API to create user with auto-confirmation
+        const response = await fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email,
+                password,
+                full_name: fullName,
+                phone
+            })
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to create account');
+        }
+
+        // Account created successfully (and confirmed). Now sign in.
+        const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
             email,
-            password,
-            options: {
-                data: {
-                    full_name: fullName,
-                    phone: phone,
-                    user_type: 'customer'
-                }
-            }
+            password
         });
 
         if (authError) throw authError;
-
-        // Create customer record
-        if (authData.user) {
-            const { error: customerError } = await supabaseClient
-                .from('customers')
-                .insert({
-                    user_id: authData.user.id,
-                    email: email,
-                    full_name: fullName,
-                    phone: phone
-                });
-
-            if (customerError) {
-                console.error('Customer record creation error:', customerError);
-            }
-        }
 
         return { success: true, data: authData };
     } catch (error) {
