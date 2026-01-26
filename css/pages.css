@@ -990,27 +990,28 @@
 
 /* Trust Banner */
 .trust-banner {
-    background: linear-gradient(135deg, var(--accent-orange), var(--accent-gold));
+    background: linear-gradient(135deg, #0e64a6 0%, #1a365d 100%);
     padding: 3rem;
-    border-radius: var(--radius-xl);
+    border-radius: 16px;
     text-align: center;
     margin: 3rem 0;
 }
 
 .trust-content i {
     font-size: 3rem;
-    color: var(--white);
+    color: #fbbf24;
     margin-bottom: 1rem;
 }
 
 .trust-content h3 {
     font-size: 1.75rem;
-    color: var(--white);
+    color: #ffffff;
     margin-bottom: 0.75rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .trust-content p {
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.95);
     font-size: 1.1rem;
     max-width: 600px;
     margin: 0 auto;

@@ -682,6 +682,30 @@
             // Redirect to results page
             window.location.href = `hotel-results.html?${params.toString()}`;
         });
+
+        // View Details button click handlers for static hotel cards
+        document.querySelectorAll('.hotel-card .btn-accent').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const card = this.closest('.hotel-card');
+                const hotelName = card.querySelector('.hotel-name').textContent;
+                const destination = document.getElementById('destination').value || 'Mumbai';
+                const checkIn = document.getElementById('checkIn').value;
+                const checkOut = document.getElementById('checkOut').value;
+
+                // Construct query parameters
+                const params = new URLSearchParams({
+                    destination: destination,
+                    checkin: checkIn,
+                    checkout: checkOut,
+                    rooms: guestsData.rooms,
+                    adults: guestsData.adults,
+                    children: guestsData.children
+                });
+
+                // Navigate to hotel results, which will show hotels for that destination
+                window.location.href = `hotel-results.html?${params.toString()}`;
+            });
+        });
     </script>
     <!-- Supabase and Auth Guard -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
