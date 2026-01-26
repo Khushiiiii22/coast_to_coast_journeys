@@ -406,7 +406,6 @@ h6 {
     position: relative;
     background: var(--primary-gradient);
     padding: 140px 0 100px;
-    overflow: hidden;
 }
 
 .hero::before {
@@ -2293,8 +2292,8 @@ h6 {
 
 .travelers-popup {
     position: absolute;
-    top: auto;
-    bottom: calc(100% + 8px);
+    top: calc(100% + 10px);
+    bottom: auto;
     left: 0;
     right: 0;
     min-width: 300px;
@@ -2302,11 +2301,17 @@ h6 {
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-2xl);
     padding: 20px;
-    z-index: 1000;
+    z-index: 10000;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(10px);
+    transform: translateY(-10px);
     transition: var(--transition);
+    max-height: 80vh;
+    /* Prevent overflowing viewport if too tall */
+    overflow-y: auto;
+    /* Allow scrolling if popup is too tall */
+    display: flex;
+    flex-direction: column;
 }
 
 .travelers-popup.active {
@@ -2391,27 +2396,42 @@ h6 {
     margin-bottom: 8px;
 }
 
-.class-selector select {
-    width: 100%;
-    padding: 10px 12px;
-    border: 2px solid var(--gray-200);
-    border-radius: var(--radius);
-    font-size: 0.95rem;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: var(--transition);
+.class-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
 }
 
-.class-selector select:focus {
-    outline: none;
-    border-color: var(--primary);
+.class-btn {
+    padding: 8px 12px;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    background: var(--white);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+}
+
+.class-btn:hover {
+    border-color: var(--gray-400);
+    background: var(--gray-50);
+}
+
+.class-btn.active {
+    background: var(--accent);
+    /* Orange/Red */
+    color: var(--white);
+    border-color: var(--accent);
 }
 
 .travelers-done {
     width: 100%;
     padding: 12px;
     margin-top: 16px;
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
     color: var(--white);
     border: none;
     border-radius: var(--radius);
@@ -2421,7 +2441,8 @@ h6 {
 }
 
 .travelers-done:hover {
-    background: var(--primary-dark);
+    box-shadow: var(--shadow-accent);
+    transform: translateY(-2px);
 }
 
 /* Trip Type Radio Buttons */
@@ -2453,7 +2474,7 @@ h6 {
 }
 
 .trip-option input[type="radio"]:checked+.radio-custom {
-    border-color: var(--primary);
+    border-color: var(--accent);
 }
 
 .trip-option input[type="radio"]:checked+.radio-custom::after {
@@ -2464,12 +2485,12 @@ h6 {
     transform: translate(-50%, -50%);
     width: 10px;
     height: 10px;
-    background: var(--primary);
+    background: var(--accent);
     border-radius: 50%;
 }
 
 .trip-option input[type="radio"]:checked~span:not(.radio-custom) {
-    color: var(--primary);
+    color: var(--accent);
 }
 
 /* Main Search Button */
@@ -2707,4 +2728,226 @@ h6 {
         display: block;
         margin-right: 0;
     }
+}
+
+/* =====================================================
+   MULTI-ROOM DROPDOWN STYLES
+   ===================================================== */
+.rooms-container {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+    padding-right: 4px;
+    /* Space for scrollbar */
+}
+
+/* Custom scrollbar for rooms container */
+.rooms-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.rooms-container::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: 3px;
+}
+
+.rooms-container::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
+    border-radius: 3px;
+}
+
+.room-block {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed var(--gray-300);
+}
+
+.room-block:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.room-header {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.room-action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--gray-200);
+    flex-shrink: 0;
+    /* Prevent shrinking */
+}
+
+.btn-add-room,
+.btn-remove-room {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+}
+
+.btn-add-room {
+    background: rgba(14, 100, 166, 0.1);
+    color: var(--primary);
+    border: 1px solid transparent;
+}
+
+.btn-add-room:hover {
+    background: rgba(14, 100, 166, 0.2);
+    border-color: rgba(14, 100, 166, 0.3);
+}
+
+.btn-remove-room {
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--danger);
+    border: 1px solid transparent;
+}
+
+.btn-remove-room:hover {
+    background: rgba(220, 53, 69, 0.2);
+    border-color: rgba(220, 53, 69, 0.3);
+}
+
+.child-ages-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--gray-50);
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-200);
+}
+
+.child-age-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.child-age-group label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.child-age-group select {
+    padding: 6px 8px;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    background: var(--white);
+    width: 100%;
+    cursor: pointer;
+}
+
+.child-age-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* =====================================================
+   CUSTOM DATE DISPLAY STYLES
+   ===================================================== */
+.input-wrapper {
+    position: relative;
+    /* Ensure valid positioning context */
+}
+
+/* Make input visible for border/click, but transparent text/bg */
+.date-input-hidden {
+    position: relative;
+    width: 100%;
+    color: transparent !important;
+    background: transparent !important;
+    z-index: 2;
+    cursor: pointer;
+}
+
+/* Hide native icon */
+.date-input-hidden::-webkit-calendar-picker-indicator {
+    background: transparent;
+    bottom: 0;
+    color: transparent;
+    cursor: pointer;
+    height: auto;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: auto;
+    opacity: 0;
+}
+
+/* Custom display content positioned behind the input */
+.date-display-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 36px;
+    padding-right: 4px;
+    /* Ensure some right padding */
+    /* Align with where text starts after icon */
+    pointer-events: none;
+    z-index: 1;
+}
+
+.date-main {
+    font-size: 0.85rem;
+    /* Reduced to fit better */
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+    text-transform: lowercase;
+    /* as requested "use small cases" */
+}
+
+.date-sub {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Ensure wrapper matches height */
+.search-form-grid .input-wrapper {
+    display: flex;
+    /* Flex context for input to stretch? */
+    align-items: center;
+    overflow: hidden;
+    /* Prevent spillover */
+}
+
+/* Icon positioning fix for this specific wrapper type */
+.input-wrapper i.fa-calendar-alt {
+    z-index: 3;
+    /* Above input to be visible */
+    pointer-events: none;
+}
+
+/* Disabled state */
+input:disabled+.date-display-content {
+    opacity: 0.5;
+    background: var(--light);
+    /* visual feedback for disabled */
+    border-radius: var(--radius);
 }

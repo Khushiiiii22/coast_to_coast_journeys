@@ -24,10 +24,15 @@ async function initHotelResults() {
             destination: urlParams.get('destination'),
             checkin: urlParams.get('checkin'),
             checkout: urlParams.get('checkout'),
-            rooms: parseInt(urlParams.get('rooms')) || 1,
+            rooms: parseRoomsParam(urlParams.get('rooms')),
             adults: parseInt(urlParams.get('adults')) || 2,
             children_ages: []
         };
+
+        // If rooms is array, update total adults
+        if (Array.isArray(params.rooms)) {
+            params.adults = params.rooms.reduce((sum, r) => sum + (r.adults || 0), 0);
+        }
         SearchSession.saveSearchParams(params);
 
         // Clear previous results to force new search
@@ -73,9 +78,38 @@ function updateSearchSummary(params) {
     const nights = HotelUtils.calculateNights(params.checkin, params.checkout);
     document.getElementById('nightsText').textContent = `${nights} Night${nights > 1 ? 's' : ''}`;
 
-    const adults = params.adults || 2;
-    const rooms = params.rooms || 1;
-    document.getElementById('guestsText').textContent = `${rooms} Room${rooms > 1 ? 's' : ''}, ${adults} Adult${adults > 1 ? 's' : ''}`;
+    let roomCount = 0;
+    let adultCount = 0;
+
+    if (Array.isArray(params.rooms)) {
+        roomCount = params.rooms.length;
+        adultCount = params.rooms.reduce((acc, r) => acc + (r.adults || 0), 0);
+        const childCount = params.rooms.reduce((acc, r) => acc + (r.children || 0), 0);
+        if (childCount > 0) {
+            // Optional: Display children count if needed, but for now stick to main text pattern or append it
+            // document.getElementById('guestsText').textContent += `, ${childCount} Child${childCount > 1 ? 'ren' : ''}`;
+            // Let's just include it in the main text logic if you wish, or stick to Adults as per existing code.
+            // The existing code only showed Adults. Let's make it comprehensive.
+            document.getElementById('guestsText').textContent = `${roomCount} Room${roomCount > 1 ? 's' : ''}, ${adultCount} Adult${adultCount > 1 ? 's' : ''}, ${childCount} Child${childCount !== 1 ? 'ren' : ''}`;
+            return;
+        }
+    } else {
+        roomCount = params.rooms || 1;
+        adultCount = params.adults || 2;
+    }
+
+    document.getElementById('guestsText').textContent = `${roomCount} Room${roomCount > 1 ? 's' : ''}, ${adultCount} Adult${adultCount > 1 ? 's' : ''}`;
+}
+
+function parseRoomsParam(param) {
+    if (!param) return 1;
+    try {
+        const parsed = JSON.parse(param);
+        if (Array.isArray(parsed)) return parsed;
+        return parseInt(param) || 1;
+    } catch (e) {
+        return parseInt(param) || 1;
+    }
 }
 
 /**

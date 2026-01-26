@@ -181,7 +181,11 @@
                             <label>Departure</label>
                             <div class="input-wrapper">
                                 <i class="fas fa-calendar-alt"></i>
-                                <input type="date" id="departDate" required>
+                                <input type="date" id="departDate" required class="date-input-hidden">
+                                <div class="date-display-content" id="departDateDisplay">
+                                    <span class="date-main">dd/mm/yy</span>
+                                    <span class="date-sub">Day</span>
+                                </div>
                             </div>
                         </div>
 
@@ -189,7 +193,11 @@
                             <label>Return</label>
                             <div class="input-wrapper">
                                 <i class="fas fa-calendar-alt"></i>
-                                <input type="date" id="returnDate" disabled>
+                                <input type="date" id="returnDate" disabled class="date-input-hidden">
+                                <div class="date-display-content" id="returnDateDisplay">
+                                    <span class="date-main">dd/mm/yy</span>
+                                    <span class="date-sub">Day</span>
+                                </div>
                             </div>
                         </div>
 
@@ -206,7 +214,7 @@
                                 <div class="traveler-row">
                                     <div class="traveler-info">
                                         <span class="traveler-type">Adults</span>
-                                        <span class="traveler-age">12+ years</span>
+                                        <span class="traveler-age">11+ Years</span>
                                     </div>
                                     <div class="traveler-counter">
                                         <button type="button" class="counter-btn minus" data-type="adults">-</button>
@@ -217,7 +225,7 @@
                                 <div class="traveler-row">
                                     <div class="traveler-info">
                                         <span class="traveler-type">Children</span>
-                                        <span class="traveler-age">2-11 years</span>
+                                        <span class="traveler-age">2 - 11 Years</span>
                                     </div>
                                     <div class="traveler-counter">
                                         <button type="button" class="counter-btn minus" data-type="children">-</button>
@@ -228,7 +236,7 @@
                                 <div class="traveler-row">
                                     <div class="traveler-info">
                                         <span class="traveler-type">Infants</span>
-                                        <span class="traveler-age">Under 2 years</span>
+                                        <span class="traveler-age">&lt; 2 Years</span>
                                     </div>
                                     <div class="traveler-counter">
                                         <button type="button" class="counter-btn minus" data-type="infants">-</button>
@@ -237,13 +245,16 @@
                                     </div>
                                 </div>
                                 <div class="class-selector">
-                                    <label>Cabin Class</label>
-                                    <select id="cabinClass">
-                                        <option value="economy">Economy</option>
-                                        <option value="premium">Premium Economy</option>
-                                        <option value="business">Business</option>
-                                        <option value="first">First Class</option>
-                                    </select>
+                                    <label>Travel Class</label>
+                                    <div class="class-options">
+                                        <button type="button" class="class-btn active"
+                                            data-value="economy">Economy</button>
+                                        <button type="button" class="class-btn" data-value="premium">Premium
+                                            Economy</button>
+                                        <button type="button" class="class-btn" data-value="business">Business</button>
+                                        <button type="button" class="class-btn" data-value="first">First</button>
+                                    </div>
+                                    <input type="hidden" id="cabinClass" value="economy">
                                 </div>
                                 <button type="button" class="travelers-done" id="travelersDone">Done</button>
                             </div>
@@ -496,6 +507,37 @@
         document.getElementById('departDate').min = today;
         document.getElementById('returnDate').min = today;
 
+        // ========== Custom Date Display Logic ==========
+        function updateDateDisplay(inputId, displayId) {
+            const input = document.getElementById(inputId);
+            const display = document.getElementById(displayId);
+            const dateVal = input.value;
+
+            if (!dateVal) {
+                // Keep default text
+                return;
+            }
+
+            const dateObj = new Date(dateVal);
+            const day = dateObj.getDate().toString().padStart(2, '0');
+            const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+            const yearFull = dateObj.getFullYear();
+            const yearShort = yearFull.toString().slice(-2);
+            const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const dayName = dayNames[dateObj.getDay()];
+
+            display.querySelector('.date-main').textContent = `${day}/${month}/${yearShort}`;
+            display.querySelector('.date-sub').textContent = dayName;
+        }
+
+        // Attach listeners
+        document.getElementById('departDate').addEventListener('change', () => updateDateDisplay('departDate', 'departDateDisplay'));
+        document.getElementById('returnDate').addEventListener('change', () => updateDateDisplay('returnDate', 'returnDateDisplay'));
+
+        // Init on load if values exist (e.g. browser autofill)
+        updateDateDisplay('departDate', 'departDateDisplay');
+        updateDateDisplay('returnDate', 'returnDateDisplay');
+
         // ========== Travelers Dropdown ==========
         const travelersData = { adults: 1, children: 0, infants: 0 };
         const travelersDropdown = document.getElementById('travelersDropdown');
@@ -553,7 +595,15 @@
             });
         });
 
-        document.getElementById('cabinClass').addEventListener('change', updateTravelersDisplay);
+        document.querySelectorAll('.class-btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation(); // Prevent closing the popup
+                document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('cabinClass').value = this.dataset.value;
+                updateTravelersDisplay();
+            });
+        });
 
         // Form submission
         document.getElementById('flightSearchForm').addEventListener('submit', function (e) {

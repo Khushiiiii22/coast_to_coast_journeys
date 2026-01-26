@@ -371,7 +371,7 @@
                         <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
                         <li><a href="hotel-booking.html" class="nav-link">Hotels</a></li>
                         <li><a href="visa.html" class="nav-link">Visa</a></li>
-                        <li><a href="#contact" class="nav-link">Support</a></li>
+                        <li><a href="#contact" class="nav-link">Contact</a></li>
                     </ul>
                 </nav>
 
@@ -469,7 +469,7 @@
                                     <div class="traveler-row">
                                         <div class="traveler-info">
                                             <span class="traveler-type">Adults</span>
-                                            <span class="traveler-age">12+ years</span>
+                                            <span class="traveler-age">11+ Years</span>
                                         </div>
                                         <div class="traveler-counter">
                                             <button type="button" class="counter-btn minus"
@@ -481,7 +481,7 @@
                                     <div class="traveler-row">
                                         <div class="traveler-info">
                                             <span class="traveler-type">Children</span>
-                                            <span class="traveler-age">2-11 years</span>
+                                            <span class="traveler-age">2 - 11 Years</span>
                                         </div>
                                         <div class="traveler-counter">
                                             <button type="button" class="counter-btn minus"
@@ -494,7 +494,7 @@
                                     <div class="traveler-row">
                                         <div class="traveler-info">
                                             <span class="traveler-type">Infants</span>
-                                            <span class="traveler-age">Under 2</span>
+                                            <span class="traveler-age">&lt; 2 Years</span>
                                         </div>
                                         <div class="traveler-counter">
                                             <button type="button" class="counter-btn minus"
@@ -505,13 +505,17 @@
                                         </div>
                                     </div>
                                     <div class="class-selector">
-                                        <label>Cabin Class</label>
-                                        <select id="cabinClass">
-                                            <option value="economy">Economy</option>
-                                            <option value="premium">Premium Economy</option>
-                                            <option value="business">Business</option>
-                                            <option value="first">First Class</option>
-                                        </select>
+                                        <label>Travel Class</label>
+                                        <div class="class-options">
+                                            <button type="button" class="class-btn active"
+                                                data-value="economy">Economy</button>
+                                            <button type="button" class="class-btn" data-value="premium">Premium
+                                                Economy</button>
+                                            <button type="button" class="class-btn"
+                                                data-value="business">Business</button>
+                                            <button type="button" class="class-btn" data-value="first">First</button>
+                                        </div>
+                                        <input type="hidden" id="cabinClass" value="economy">
                                     </div>
                                     <button type="button" class="travelers-done" id="travelersDone">Done</button>
                                 </div>
@@ -551,42 +555,14 @@
                                     <i class="fas fa-chevron-down"></i>
                                 </div>
                                 <div class="travelers-popup" id="guestsPopup">
-                                    <div class="traveler-row">
-                                        <div class="traveler-info">
-                                            <span class="traveler-type">Rooms</span>
-                                            <span class="traveler-age">Number of rooms</span>
-                                        </div>
-                                        <div class="traveler-counter">
-                                            <button type="button" class="counter-btn minus" data-type="rooms">-</button>
-                                            <span id="roomsCount">1</span>
-                                            <button type="button" class="counter-btn plus" data-type="rooms">+</button>
-                                        </div>
+                                    <div id="roomsContainer" class="rooms-container">
+                                        <!-- Dynamic Room Content -->
                                     </div>
-                                    <div class="traveler-row">
-                                        <div class="traveler-info">
-                                            <span class="traveler-type">Adults</span>
-                                            <span class="traveler-age">12+ years</span>
-                                        </div>
-                                        <div class="traveler-counter">
-                                            <button type="button" class="counter-btn minus"
-                                                data-type="hotelAdults">-</button>
-                                            <span id="hotelAdultsCount">2</span>
-                                            <button type="button" class="counter-btn plus"
-                                                data-type="hotelAdults">+</button>
-                                        </div>
-                                    </div>
-                                    <div class="traveler-row">
-                                        <div class="traveler-info">
-                                            <span class="traveler-type">Children</span>
-                                            <span class="traveler-age">0-11 years</span>
-                                        </div>
-                                        <div class="traveler-counter">
-                                            <button type="button" class="counter-btn minus"
-                                                data-type="hotelChildren">-</button>
-                                            <span id="hotelChildrenCount">0</span>
-                                            <button type="button" class="counter-btn plus"
-                                                data-type="hotelChildren">+</button>
-                                        </div>
+                                    <div class="room-action-buttons">
+                                        <button type="button" class="btn-add-room" id="addRoomBtn">Add Another
+                                            Room</button>
+                                        <button type="button" class="btn-remove-room" id="removeRoomBtn">Remove
+                                            Room</button>
                                     </div>
                                     <button type="button" class="travelers-done" id="guestsDone">Done</button>
                                 </div>
@@ -1445,17 +1421,32 @@
             });
         });
 
-        document.getElementById('cabinClass').addEventListener('change', updateTravelersDisplay);
+        document.querySelectorAll('.class-btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault(); // Prevent closing popup
+                e.stopPropagation();
+                document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('cabinClass').value = this.dataset.value;
+                updateTravelersDisplay();
+            });
+        });
 
         // ========== Guests Dropdown (Hotels) ==========
-        const guestsData = { rooms: 1, adults: 2, children: 0 };
+        // ========== Guests Dropdown (Hotels - Multi-room) ==========
+        let rooms = [{ adults: 2, children: 0, childAges: [] }];
         const guestsDropdown = document.getElementById('guestsDropdown');
         const guestsPopup = document.getElementById('guestsPopup');
         const guestsDisplay = document.getElementById('guestsDisplay');
         const guestsDone = document.getElementById('guestsDone');
+        const roomsContainer = document.getElementById('roomsContainer');
+        const addRoomBtn = document.getElementById('addRoomBtn');
+        const removeRoomBtn = document.getElementById('removeRoomBtn');
 
-        guestsDropdown.addEventListener('click', function () {
+        guestsDropdown.addEventListener('click', function (e) {
+            e.stopPropagation();
             guestsPopup.classList.toggle('active');
+            renderRooms();
         });
 
         guestsDone.addEventListener('click', function () {
@@ -1468,32 +1459,115 @@
             }
         });
 
-        function updateGuestsDisplay() {
-            const totalGuests = guestsData.adults + guestsData.children;
-            guestsDisplay.textContent = `${guestsData.rooms} Room${guestsData.rooms > 1 ? 's' : ''}, ${totalGuests} Guest${totalGuests > 1 ? 's' : ''}`;
-        }
+        // Add Room
+        addRoomBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (rooms.length < 8) {
+                rooms.push({ adults: 2, children: 0, childAges: [] });
+                renderRooms();
+            }
+        });
 
-        document.querySelectorAll('#guestsPopup .counter-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const type = this.dataset.type;
-                const isPlus = this.classList.contains('plus');
+        // Remove Room
+        removeRoomBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (rooms.length > 1) {
+                rooms.pop();
+                renderRooms();
+            }
+        });
 
-                if (isPlus) {
-                    if (type === 'rooms' && guestsData.rooms < 9) guestsData.rooms++;
-                    if (type === 'hotelAdults' && guestsData.adults < (guestsData.rooms * 4)) guestsData.adults++;
-                    if (type === 'hotelChildren' && guestsData.children < (guestsData.rooms * 4)) guestsData.children++;
-                } else {
-                    if (type === 'rooms' && guestsData.rooms > 1) guestsData.rooms--;
-                    if (type === 'hotelAdults' && guestsData.adults > 1) guestsData.adults--;
-                    if (type === 'hotelChildren' && guestsData.children > 0) guestsData.children--;
+        function renderRooms() {
+            let html = '';
+            rooms.forEach((room, index) => {
+                html += `
+                    <div class="room-block">
+                        <div class="room-header">Room ${index + 1}</div>
+                        <div class="traveler-row">
+                            <div class="traveler-info">
+                                <span class="traveler-type">Adults</span>
+                                <span class="traveler-age">12+ years</span>
+                            </div>
+                            <div class="traveler-counter">
+                                <button type="button" class="counter-btn minus" onclick="updateGuest(${index}, 'adults', -1)">-</button>
+                                <span>${room.adults}</span>
+                                <button type="button" class="counter-btn plus" onclick="updateGuest(${index}, 'adults', 1)">+</button>
+                            </div>
+                        </div>
+                        <div class="traveler-row">
+                            <div class="traveler-info">
+                                <span class="traveler-type">Children</span>
+                                <span class="traveler-age">0-11 years</span>
+                            </div>
+                            <div class="traveler-counter">
+                                <button type="button" class="counter-btn minus" onclick="updateGuest(${index}, 'children', -1)">-</button>
+                                <span>${room.children}</span>
+                                <button type="button" class="counter-btn plus" onclick="updateGuest(${index}, 'children', 1)">+</button>
+                            </div>
+                        </div>
+                `;
+
+                // Child Ages
+                if (room.children > 0) {
+                    html += `<div class="child-ages-container">`;
+                    for (let i = 0; i < room.children; i++) {
+                        html += `
+                            <div class="child-age-group">
+                                <label>Child ${i + 1} Age</label>
+                                <select onchange="updateChildAge(${index}, ${i}, this.value)" onclick="event.stopPropagation()">
+                                    <option value="" disabled ${!room.childAges[i] ? 'selected' : ''}>Age</option>
+                                    ${Array.from({ length: 12 }, (_, k) => `<option value="${k}" ${room.childAges[i] == k ? 'selected' : ''}>${k}</option>`).join('')}
+                                </select>
+                            </div>
+                        `;
+                    }
+                    html += `</div>`;
                 }
 
-                document.getElementById('roomsCount').textContent = guestsData.rooms;
-                document.getElementById('hotelAdultsCount').textContent = guestsData.adults;
-                document.getElementById('hotelChildrenCount').textContent = guestsData.children;
-                updateGuestsDisplay();
+                html += `</div>`; // End room-block
             });
-        });
+
+            roomsContainer.innerHTML = html;
+            updateButtons();
+            updateGuestsDisplay();
+        }
+
+        function updateButtons() {
+            removeRoomBtn.style.display = rooms.length > 1 ? 'inline-block' : 'none';
+        }
+
+        window.updateGuest = function (roomIndex, type, change) {
+            // Prevent bubbling
+            const room = rooms[roomIndex];
+            if (type === 'adults') {
+                const newValue = room.adults + change;
+                if (newValue >= 1 && newValue <= 8) room.adults = newValue;
+            } else if (type === 'children') {
+                const newValue = room.children + change;
+                if (newValue >= 0 && newValue <= 4) {
+                    room.children = newValue;
+                    if (change > 0) {
+                        room.childAges.push(null);
+                    } else {
+                        room.childAges.pop();
+                    }
+                }
+            }
+            renderRooms();
+        };
+
+        window.updateChildAge = function (roomIndex, childIndex, value) {
+            rooms[roomIndex].childAges[childIndex] = value;
+        };
+
+        function updateGuestsDisplay() {
+            const totalRooms = rooms.length;
+            const totalGuests = rooms.reduce((sum, room) => sum + room.adults + room.children, 0);
+            guestsDisplay.textContent = `${totalRooms} Room${totalRooms > 1 ? 's' : ''}, ${totalGuests} Guest${totalGuests > 1 ? 's' : ''}`;
+        }
+
+        // Initial Render
+        renderRooms();
 
         // ========== Swap Cities ==========
         document.getElementById('swapCitiesBtn').addEventListener('click', function () {
@@ -1599,9 +1673,7 @@
                 destination: destination,
                 checkin: checkIn,
                 checkout: checkOut,
-                rooms: guestsData.rooms,
-                adults: guestsData.adults,
-                children: guestsData.children
+                rooms: JSON.stringify(rooms)
             });
 
             window.location.href = `hotel-results.html?${params.toString()}`;
