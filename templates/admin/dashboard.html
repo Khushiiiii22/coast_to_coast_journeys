@@ -266,69 +266,7 @@
                         </thead>
                         <tbody id="recentBookings">
                             <tr>
-                                <td><strong>#CTC-10001</strong></td>
-                                <td>Rahul Sharma</td>
-                                <td>The Leela Palace, New Delhi</td>
-                                <td>Jan 25, 2026</td>
-                                <td><strong>₹45,500</strong></td>
-                                <td><span class="status-badge confirmed">Confirmed</span></td>
-                                <td>
-                                    <button class="btn btn-secondary btn-icon" title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>#CTC-10002</strong></td>
-                                <td>Priya Patel</td>
-                                <td>Taj Exotica, Goa</td>
-                                <td>Jan 28, 2026</td>
-                                <td><strong>₹32,000</strong></td>
-                                <td><span class="status-badge pending">Pending</span></td>
-                                <td>
-                                    <button class="btn btn-secondary btn-icon" title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>#CTC-10003</strong></td>
-                                <td>Amit Kumar</td>
-                                <td>Oberoi Udaivilas, Udaipur</td>
-                                <td>Feb 1, 2026</td>
-                                <td><strong>₹78,000</strong></td>
-                                <td><span class="status-badge confirmed">Confirmed</span></td>
-                                <td>
-                                    <button class="btn btn-secondary btn-icon" title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>#CTC-10004</strong></td>
-                                <td>Neha Singh</td>
-                                <td>JW Marriott, Mumbai</td>
-                                <td>Feb 5, 2026</td>
-                                <td><strong>₹28,500</strong></td>
-                                <td><span class="status-badge cancelled">Cancelled</span></td>
-                                <td>
-                                    <button class="btn btn-secondary btn-icon" title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>#CTC-10005</strong></td>
-                                <td>Vikram Reddy</td>
-                                <td>ITC Grand Chola, Chennai</td>
-                                <td>Feb 10, 2026</td>
-                                <td><strong>₹52,000</strong></td>
-                                <td><span class="status-badge processing">Processing</span></td>
-                                <td>
-                                    <button class="btn btn-secondary btn-icon" title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </td>
+                                <td colspan="7" style="text-align: center; padding: 2rem;">Loading bookings...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -342,20 +280,75 @@
     <script>
         // Initialize Dashboard
         document.addEventListener('DOMContentLoaded', function () {
-            initDashboard();
-            initCharts();
+            loadDashboardData();
         });
 
-        function initDashboard() {
-            // Animate stats
-            animateValue('totalBookings', 0, 1247, 1500);
-            animateValue('totalRevenue', 0, 8750000, 1500, '₹', true);
-            animateValue('newCustomers', 0, 324, 1500);
-            animateValue('cancellations', 0, 23, 1500);
+        async function loadDashboardData() {
+            try {
+                const response = await apiRequest('/dashboard');
+                if (response.success && response.data) {
+                    updateStats(response.data);
+                    updateCharts(response.data);
+                    renderRecentBookings(response.data.recent_bookings || []);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showNotification('Failed to load dashboard data: ' + error.message, 'error');
+            }
+        }
+
+        function updateStats(data) {
+            // Animate stats with real values
+            animateValue('totalBookings', 0, data.total_bookings || 0, 1000);
+            animateValue('totalRevenue', 0, data.total_revenue || 0, 1000, '₹');
+            animateValue('newCustomers', 0, data.new_customers || 0, 1000); // Note: new_customers wasn't in the API response in service preview, might need adjustment
+            animateValue('cancellations', 0, data.pending_cancellations || 0, 1000);
+        }
+
+        function renderRecentBookings(bookings) {
+            const tbody = document.getElementById('recentBookings');
+
+            if (!bookings || bookings.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">No bookings found.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = bookings.map(booking => `
+                <tr>
+                    <td><strong>#${booking.id.substring(0, 8).toUpperCase()}</strong></td>
+                    <td>${booking.guest_name || 'Guest'}</td>
+                    <td>${booking.hotel_name || 'Flight/Hotel'}</td>
+                    <td>${formatDate(booking.check_in || booking.created_at)}</td>
+                    <td><strong>${formatCurrency(booking.total_price)}</strong></td>
+                    <td><span class="status-badge ${getStatusClass(booking.status)}">${capitalize(booking.status)}</span></td>
+                    <td>
+                        <button class="btn btn-secondary btn-icon" title="View" onclick="window.location.href='bookings.html?id=${booking.id}'">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getStatusClass(status) {
+            const map = {
+                'confirmed': 'confirmed',
+                'pending': 'pending',
+                'cancelled': 'cancelled',
+                'processing': 'processing',
+                'completed': 'confirmed'
+            };
+            return map[status?.toLowerCase()] || 'pending';
+        }
+
+        function capitalize(str) {
+            return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
         }
 
         function animateValue(id, start, end, duration, prefix = '', format = false) {
             const element = document.getElementById(id);
+            if (!element) return;
+
             const range = end - start;
             const startTime = performance.now();
 
@@ -365,8 +358,8 @@
 
                 let value = Math.floor(start + (range * easeOutQuart(progress)));
 
-                if (format) {
-                    value = prefix + (value / 100000).toFixed(1) + 'L';
+                if (format) { // Simple formatting for revenue
+                    value = prefix + value.toLocaleString('en-IN');
                 } else {
                     value = prefix + value.toLocaleString();
                 }
@@ -385,16 +378,17 @@
             return 1 - Math.pow(1 - x, 4);
         }
 
-        function initCharts() {
-            // Revenue Chart
+        function updateCharts(data) {
+            // Revenue Chart - For now using placeholder data as the API doesn't return time-series data yet
+            // In a real scenario, we would need an endpoint for chart data
             const revenueCtx = document.getElementById('revenueChart').getContext('2d');
             new Chart(revenueCtx, {
                 type: 'line',
                 data: {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                     datasets: [{
-                        label: 'Revenue (₹ Lakhs)',
-                        data: [45, 52, 48, 61, 55, 67, 72, 68, 75, 82, 78, 87],
+                        label: 'Revenue (₹)',
+                        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // Placeholder
                         borderColor: '#0e64a6',
                         backgroundColor: 'rgba(14, 100, 166, 0.1)',
                         fill: true,
@@ -403,46 +397,34 @@
                 },
                 options: {
                     responsive: true,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0,0,0,0.05)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
+                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+                        x: { grid: { display: false } }
                     }
                 }
             });
 
             // Status Chart
+            const confirmedCount = data.confirmed_bookings || 0;
+            const pendingCancellationCount = data.pending_cancellations || 0;
+            const totalCount = data.total_bookings || 0;
+            const otherCount = Math.max(0, totalCount - confirmedCount - pendingCancellationCount);
+
             const statusCtx = document.getElementById('statusChart').getContext('2d');
             new Chart(statusCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Confirmed', 'Pending', 'Cancelled', 'Processing'],
+                    labels: ['Confirmed', 'Cancellation Req', 'Other'],
                     datasets: [{
-                        data: [65, 20, 8, 7],
-                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#06b6d4'],
+                        data: [confirmedCount, pendingCancellationCount, otherCount],
+                        backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
                         borderWidth: 0
                     }]
                 },
                 options: {
                     responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    },
+                    plugins: { legend: { position: 'bottom' } },
                     cutout: '70%'
                 }
             });

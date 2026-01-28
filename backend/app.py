@@ -144,6 +144,17 @@ def create_app():
                     return send_from_directory(base_dir, filename)
                 except:
                     pass
+
+        # Special handling for admin static files (css/js) which are in root/admin not templates/admin
+        if filename.startswith('admin/css/') or filename.startswith('admin/js/'):
+            try:
+                # remove 'admin/' prefix to find in admin subdirectory of base_dir
+                # actually send_from_directory(base_dir, filename) works if filename includes 'admin/...'
+                # providing the folder 'admin' exists in base_dir
+                return send_from_directory(base_dir, filename)
+            except Exception as e:
+                print(f"Error serving admin static: {e}")
+                pass
         
         # 3. Last fallback: try to serve from project root
         try:

@@ -280,7 +280,7 @@ function exportToCSV(data, filename) {
 // ========================================
 document.addEventListener('DOMContentLoaded', function () {
     // Check auth on page load
-    // checkAuth();
+    checkAuth();
 
     // Add animation keyframes
     const style = document.createElement('style');

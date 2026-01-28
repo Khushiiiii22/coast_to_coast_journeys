@@ -25,8 +25,8 @@ const AuthGuard = {
         }
 
         // Listen for auth state changes
-        if (window.supabase) {
-            window.supabase.auth.onAuthStateChange((event, session) => {
+        if (window.SupabaseDB && window.SupabaseDB.client) {
+            window.SupabaseDB.client.auth.onAuthStateChange((event, session) => {
                 if (event === 'SIGNED_IN') {
                     this.stopLoginTimer();
                     this.closeLoginModal();
@@ -43,8 +43,8 @@ const AuthGuard = {
      * Check if user is authenticated
      */
     isAuthenticated: async function () {
-        if (!window.supabase) return false;
-        const { data: { session } } = await window.supabase.auth.getSession();
+        if (!window.SupabaseDB || !window.SupabaseDB.client) return false;
+        const { data: { session } } = await window.SupabaseDB.client.auth.getSession();
         return !!session;
     },
 
@@ -52,9 +52,9 @@ const AuthGuard = {
      * Get current session
      */
     checkSession: async function () {
-        if (!window.supabase) return null;
+        if (!window.SupabaseDB || !window.SupabaseDB.client) return null;
         try {
-            const { data: { session } } = await window.supabase.auth.getSession();
+            const { data: { session } } = await window.SupabaseDB.client.auth.getSession();
             return session;
         } catch (e) {
             console.error('Session check failed', e);
