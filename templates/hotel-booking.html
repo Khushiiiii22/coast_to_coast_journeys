@@ -478,8 +478,8 @@
                     <h3>Need Help with Hotel Booking?</h3>
                     <p>Our travel experts are available 24×7 to assist you find the perfect stay.</p>
                     <div class="help-actions">
-                        <a href="tel:+918237216173" class="btn btn-white">
-                            <i class="fas fa-phone"></i> +91 8237216173
+                        <a href="tel:+919934547108" class="btn btn-white">
+                            <i class="fas fa-phone"></i> +91 99345 47108
                         </a>
                         <a href="mailto:sales@c2cjourneys.com" class="btn btn-outline"
                             style="border-color: white; color: white;">
@@ -614,7 +614,7 @@
         });
 
         // Add Room
-        addRoomBtn.addEventListener('click', function(e) {
+        addRoomBtn.addEventListener('click', function (e) {
             e.stopPropagation();
             if (rooms.length < 8) {
                 rooms.push({ adults: 2, children: 0, childAges: [] });
@@ -623,7 +623,7 @@
         });
 
         // Remove Room
-        removeRoomBtn.addEventListener('click', function(e) {
+        removeRoomBtn.addEventListener('click', function (e) {
             e.stopPropagation();
             if (rooms.length > 1) {
                 rooms.pop();
@@ -670,7 +670,7 @@
                                 <label>Child ${i + 1} Age</label>
                                 <select onchange="updateChildAge(${index}, ${i}, this.value)" onclick="event.stopPropagation()">
                                     <option value="" disabled ${!room.childAges[i] ? 'selected' : ''}>Age</option>
-                                    ${Array.from({length: 12}, (_, k) => `<option value="${k}" ${room.childAges[i] == k ? 'selected' : ''}>${k}</option>`).join('')}
+                                    ${Array.from({ length: 12 }, (_, k) => `<option value="${k}" ${room.childAges[i] == k ? 'selected' : ''}>${k}</option>`).join('')}
                                 </select>
                             </div>
                         `;
@@ -690,10 +690,10 @@
             removeRoomBtn.style.display = rooms.length > 1 ? 'inline-block' : 'none';
         }
 
-        window.updateGuest = function(roomIndex, type, change) {
+        window.updateGuest = function (roomIndex, type, change) {
             // Prevent bubbling if needed via event generally, but here called inline
             const room = rooms[roomIndex];
-             if (type === 'adults') {
+            if (type === 'adults') {
                 const newValue = room.adults + change;
                 if (newValue >= 1 && newValue <= 8) room.adults = newValue;
             } else if (type === 'children') {
@@ -711,7 +711,7 @@
             renderRooms();
         };
 
-        window.updateChildAge = function(roomIndex, childIndex, value) {
+        window.updateChildAge = function (roomIndex, childIndex, value) {
             rooms[roomIndex].childAges[childIndex] = value;
         };
 
@@ -720,7 +720,7 @@
             const totalGuests = rooms.reduce((sum, room) => sum + room.adults + room.children, 0);
             guestsDisplay.textContent = `${totalRooms} Room${totalRooms > 1 ? 's' : ''}, ${totalGuests} Guest${totalGuests > 1 ? 's' : ''}`;
         }
-        
+
         // Initial Render
         renderRooms();
 
@@ -770,6 +770,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-client.js"></script>
     <script src="../js/auth-guard.js"></script>
+    <!-- Floating WhatsApp Button -->
+    <a href="https://wa.me/919934547108" target="_blank" class="whatsapp-float" title="Chat on WhatsApp"
+        style="position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: block; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.3s;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp"
+            style="width: 60px; height: 60px; display: block; border-radius: 50%;">
+    </a>
 </body>
 
 </html>
