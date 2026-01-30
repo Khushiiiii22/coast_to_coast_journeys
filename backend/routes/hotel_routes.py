@@ -724,21 +724,90 @@ def create_booking():
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
         
+        book_hash = data['book_hash']
+        
+        # Check for demo/test/google bookings - skip ETG API for these
+        if book_hash.startswith('demo_') or book_hash.startswith('test_') or book_hash.startswith('google_'):
+            # Generate local booking ID for demo/test bookings
+            partner_order_id = etg_service.generate_partner_order_id()
+            
+            # Save demo booking to Supabase
+            booking_data = {
+                'partner_order_id': partner_order_id,
+                'user_id': data.get('user_id'),
+                'hotel_id': data.get('hotel_id', ''),
+                'hotel_name': data.get('hotel_name', ''),
+                'check_in': data.get('checkin'),
+                'check_out': data.get('checkout'),
+                'rooms': len(data['guests']),
+                'guests': data['guests'],
+                'total_amount': data.get('total_amount', 0),
+                'currency': data.get('currency', 'INR'),
+                'status': 'confirmed',  # Demo bookings are auto-confirmed
+                'booking_response': {'demo': True, 'message': 'Demo/Test booking created successfully'}
+            }
+            
+            db_result = supabase_service.create_booking(booking_data)
+            
+            return jsonify({
+                'success': True,
+                'partner_order_id': partner_order_id,
+                'booking_id': db_result.get('data', {}).get('id'),
+                'demo': True,
+                'message': 'Demo booking created successfully'
+            })
+        
+        # For real ETG bookings, call prebook first to validate the hash
+        print(f"📋 Calling prebook to validate hash: {book_hash[:50]}...")
+        prebook_result = etg_service.prebook(book_hash)
+        
+        if not prebook_result.get('success'):
+            error_msg = prebook_result.get('error', 'Unknown prebook error')
+            print(f"❌ Prebook failed: {error_msg}")
+            
+            # Return user-friendly error message
+            if '400' in str(error_msg) or 'Bad Request' in str(error_msg):
+                return jsonify({
+                    'success': False,
+                    'error': 'This room rate has expired or is no longer available. Please go back and select a different room.',
+                    'error_code': 'RATE_EXPIRED'
+                }), 400
+            
+            return jsonify({
+                'success': False,
+                'error': f'Rate validation failed: {error_msg}',
+                'error_code': 'PREBOOK_FAILED'
+            }), 400
+        
+        print(f"✅ Prebook successful, proceeding with booking...")
+        
         # Generate unique partner order ID
         partner_order_id = etg_service.generate_partner_order_id()
         
         # Get user IP
         user_ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
         
-        # Create booking in ETG
+        # Create booking in ETG using the validated hash
         etg_result = etg_service.create_booking(
-            book_hash=data['book_hash'],
+            book_hash=book_hash,
             partner_order_id=partner_order_id,
             guests=data['guests'],
             user_ip=user_ip
         )
         
         if not etg_result.get('success'):
+            error_msg = etg_result.get('error', 'Unknown booking error')
+            print(f"❌ ETG booking failed: {error_msg}")
+            
+            # Return user-friendly error message
+            if '400' in str(error_msg) or 'Bad Request' in str(error_msg):
+                return jsonify({
+                    'success': False,
+                    'error': 'Unable to create booking with the hotel. The room may no longer be available. Please try a different room or hotel.',
+                    'error_code': 'BOOKING_FAILED',
+                    'details': str(error_msg)
+                }), 400
+            
             return jsonify(etg_result), 400
         
         # Save booking to Supabase

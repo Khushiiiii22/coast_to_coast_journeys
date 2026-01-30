@@ -1835,9 +1835,12 @@ h6 {
 }
 
 .sidebar-header img {
-    width: 44px;
-    height: 44px;
+    width: 44px !important;
+    height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
     border-radius: var(--radius-sm);
+    object-fit: contain;
 }
 
 .sidebar-header span {

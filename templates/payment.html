@@ -401,6 +401,12 @@
                     <i class="fab fa-paypal"></i> Pay with PayPal
                 </button>
 
+                <button class="pay-button" id="testCardBtn"
+                    style="background: linear-gradient(135deg, #10b981, #059669); margin-top: 15px;"
+                    onclick="showTestCardForm()">
+                    <i class="fas fa-credit-card"></i> Pay with Credit/Debit Card (Test Mode)
+                </button>
+
                 <div class="secure-badge">
                     <i class="fas fa-shield-alt"></i>
                     100% Secure Payment
@@ -412,8 +418,268 @@
                         style="height: 24px; opacity: 0.6;">
                     <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg" alt="PayPal"
                         style="height: 24px; opacity: 0.6;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa"
+                        style="height: 18px; opacity: 0.6;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard"
+                        style="height: 24px; opacity: 0.6;">
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Test Card Payment Modal -->
+    <div id="testCardModal"
+        style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; overflow-y: auto;">
+        <div
+            style="max-width: 600px; margin: 50px auto; background: white; border-radius: 16px; box-shadow: 0 25px 50px rgba(0,0,0,0.2);">
+            <!-- Modal Header -->
+            <div
+                style="padding: 24px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div
+                        style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-credit-card" style="color: white; font-size: 20px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #1f2937;">PAYMENT DETAILS
+                        </h3>
+                        <p style="margin: 0; font-size: 0.85rem; color: #6b7280;">All card information is fully
+                            encrypted, secure and protected.</p>
+                    </div>
+                </div>
+                <button onclick="hideTestCardForm()"
+                    style="width: 36px; height: 36px; border: none; background: #f3f4f6; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-times" style="color: #6b7280;"></i>
+                </button>
+            </div>
+
+            <!-- Billing Details Section -->
+            <div style="padding: 24px; border-bottom: 1px solid #e5e7eb;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                    <div
+                        style="width: 40px; height: 40px; background: #e0f2fe; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-map-marker-alt" style="color: #0284c7;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; font-weight: 600;">BILLING DETAILS</h4>
+                        <p style="margin: 0; font-size: 0.8rem; color: #6b7280;">As per Bank records or credit card
+                            company</p>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 500;">Select
+                            Country<span style="color: #ef4444;">*</span></label>
+                        <select id="billingCountry"
+                            style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                            <option value="IN">India</option>
+                            <option value="US">United States</option>
+                            <option value="UK">United Kingdom</option>
+                            <option value="AE">United Arab Emirates</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 500;">Address<span
+                                style="color: #ef4444;">*</span></label>
+                        <input type="text" id="billingAddress" placeholder="Street Address"
+                            style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 500;">State/Province<span
+                                style="color: #ef4444;">*</span></label>
+                        <select id="billingState"
+                            style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                            <option value="">Select State</option>
+                            <option value="MH">Maharashtra</option>
+                            <option value="DL">Delhi</option>
+                            <option value="KA">Karnataka</option>
+                            <option value="TN">Tamil Nadu</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 500;">City
+                            Town<span style="color: #ef4444;">*</span></label>
+                        <input type="text" id="billingCity" placeholder="City"
+                            style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 500;">Postal
+                            Code<span style="color: #ef4444;">*</span></label>
+                        <input type="text" id="billingPostal" placeholder="Postal Code"
+                            style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Details Section -->
+            <div style="padding: 24px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                    <div
+                        style="width: 40px; height: 40px; background: #fef3c7; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-lock" style="color: #d97706;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; font-weight: 600;">PAYMENT DETAILS</h4>
+                        <p style="margin: 0; font-size: 0.8rem; color: #6b7280;">All card information is fully
+                            encrypted, secure and protected.</p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label style="font-size: 0.85rem; font-weight: 500;">Credit/Debit Card No<span
+                                style="color: #ef4444;">*</span></label>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <span style="font-size: 0.8rem; color: #6b7280;">Available payment methods</span>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa"
+                                style="height: 16px;">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg"
+                                alt="Mastercard" style="height: 20px;">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg"
+                                alt="Amex" style="height: 16px;">
+                        </div>
+                    </div>
+                    <input type="text" id="cardNumber" placeholder="4111 1111 1111 1111" maxlength="19"
+                        style="width: 100%; padding: 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1.05rem; letter-spacing: 1px;">
+                    <p style="margin: 6px 0 0; font-size: 0.75rem; color: #9ca3af;"><i class="fas fa-info-circle"></i>
+                        Use test card: 4111 1111 1111 1111</p>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 500;">Card
+                        holder's name<span style="color: #ef4444;">*</span></label>
+                    <input type="text" id="cardName" placeholder="Name as on card"
+                        style="width: 100%; padding: 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 16px; align-items: end;">
+                    <div>
+                        <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 500;">Exp.
+                            Month<span style="color: #ef4444;">*</span></label>
+                        <select id="expMonth"
+                            style="width: 100%; padding: 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                            <option value="">Select</option>
+                            <option value="01">01</option>
+                            <option value="02">02</option>
+                            <option value="03">03</option>
+                            <option value="04">04</option>
+                            <option value="05">05</option>
+                            <option value="06">06</option>
+                            <option value="07">07</option>
+                            <option value="08">08</option>
+                            <option value="09">09</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 500;">Exp.
+                            Year<span style="color: #ef4444;">*</span></label>
+                        <select id="expYear"
+                            style="width: 100%; padding: 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                            <option value="">Select</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                            <option value="2029">2029</option>
+                            <option value="2030">2030</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 500;">CVV<span
+                                style="color: #ef4444;">*</span></label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="password" id="cvv" placeholder="CVV" maxlength="4"
+                                style="width: 100px; padding: 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                            <div
+                                style="display: flex; align-items: center; gap: 6px; color: #6b7280; font-size: 0.8rem;">
+                                <i class="fas fa-credit-card" style="font-size: 20px;"></i>
+                                3 Digit number from your card
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Terms and Book Button -->
+                <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
+                    <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 12px;">
+                        <i class="fas fa-exclamation-circle" style="color: #f59e0b;"></i>
+                        Please be careful - Guest details must match your passport or photo ID
+                    </p>
+                    <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 20px;">
+                        By clicking, Book Now I agree that I have read and accepted C2C Journeys
+                        <a href="terms.html" style="color: #3b82f6;">Terms & Conditions</a> and
+                        <a href="privacy.html" style="color: #3b82f6;">Privacy Policy</a>
+                    </p>
+
+                    <button id="bookNowBtn" onclick="processTestCardPayment()"
+                        style="width: 100%; padding: 16px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: transform 0.2s;">
+                        <i class="fas fa-lock"></i> Book Now
+                    </button>
+
+                    <p style="text-align: center; margin-top: 12px; font-size: 0.8rem; color: #9ca3af;">
+                        <i class="fas fa-shield-alt"></i> Your payment details are secured via 256 Bit encryption
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Confirmation Modal -->
+    <div id="confirmationModal"
+        style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1001; overflow-y: auto;">
+        <div
+            style="max-width: 500px; margin: 100px auto; background: white; border-radius: 20px; text-align: center; padding: 40px; box-shadow: 0 25px 50px rgba(0,0,0,0.25);">
+            <div
+                style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+                <i class="fas fa-check" style="color: white; font-size: 36px;"></i>
+            </div>
+            <h2 style="margin: 0 0 12px; font-size: 1.75rem; color: #1f2937;">Booking Confirmed!</h2>
+            <p style="color: #6b7280; margin-bottom: 24px;">Your hotel booking has been successfully confirmed.</p>
+
+            <div
+                style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 2px solid #22c55e; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                <p style="font-size: 0.9rem; color: #166534; margin: 0 0 8px;">Your Booking Reference ID</p>
+                <p id="confirmRefId"
+                    style="font-size: 1.5rem; font-weight: 700; color: #15803d; margin: 0; letter-spacing: 2px;">
+                    C2C-XXXXX</p>
+            </div>
+
+            <div style="background: #fef3c7; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                <p style="margin: 0; color: #92400e; font-size: 0.95rem;">
+                    <i class="fas fa-phone-alt" style="margin-right: 8px;"></i>
+                    <strong>You will receive a call from us shortly</strong> to confirm your booking details and answer
+                    any questions.
+                </p>
+            </div>
+
+            <div
+                style="text-align: left; background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                <h4 style="margin: 0 0 12px; color: #374151;">Booking Details</h4>
+                <p style="margin: 0 0 8px; font-size: 0.9rem;"><strong>Hotel:</strong> <span
+                        id="confirmHotelName">-</span></p>
+                <p style="margin: 0 0 8px; font-size: 0.9rem;"><strong>Check-in:</strong> <span
+                        id="confirmCheckin">-</span></p>
+                <p style="margin: 0 0 8px; font-size: 0.9rem;"><strong>Check-out:</strong> <span
+                        id="confirmCheckout">-</span></p>
+                <p style="margin: 0; font-size: 0.9rem;"><strong>Total Paid:</strong> <span id="confirmAmount">-</span>
+                </p>
+            </div>
+
+            <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 20px;">
+                A confirmation email has been sent to <strong id="confirmEmail">-</strong>
+            </p>
+
+            <button onclick="window.location.href='index.html'"
+                style="padding: 14px 32px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer;">
+                <i class="fas fa-home" style="margin-right: 8px;"></i> Return to Home
+            </button>
         </div>
     </div>
 
@@ -754,6 +1020,116 @@
                 alert('Payment verification failed: ' + error.message);
             }
         }
+
+        // === TEST CARD PAYMENT FUNCTIONS ===
+
+        function showTestCardForm() {
+            document.getElementById('testCardModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+
+            // Pre-populate card holder name from guest info
+            const guest = bookingData.guest || {};
+            if (guest.firstName) {
+                document.getElementById('cardName').value = `${guest.firstName} ${guest.lastName || ''}`.trim();
+            }
+        }
+
+        function hideTestCardForm() {
+            document.getElementById('testCardModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function generateReferenceId() {
+            const timestamp = Date.now().toString(36).toUpperCase();
+            const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+            return `C2C-${timestamp.slice(-4)}${random}`;
+        }
+
+        async function processTestCardPayment() {
+            // Validate card form
+            const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+            const cardName = document.getElementById('cardName').value;
+            const expMonth = document.getElementById('expMonth').value;
+            const expYear = document.getElementById('expYear').value;
+            const cvv = document.getElementById('cvv').value;
+            const billingAddress = document.getElementById('billingAddress').value;
+            const billingCity = document.getElementById('billingCity').value;
+
+            if (!cardNumber || cardNumber.length < 15) {
+                alert('Please enter a valid card number');
+                return;
+            }
+            if (!cardName) {
+                alert('Please enter cardholder name');
+                return;
+            }
+            if (!expMonth || !expYear) {
+                alert('Please select card expiry date');
+                return;
+            }
+            if (!cvv || cvv.length < 3) {
+                alert('Please enter CVV');
+                return;
+            }
+
+            // Show processing state
+            const bookNowBtn = document.getElementById('bookNowBtn');
+            const originalText = bookNowBtn.innerHTML;
+            bookNowBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Payment...';
+            bookNowBtn.disabled = true;
+
+            try {
+                // Create booking in backend (mock mode)
+                const bookingId = await createBackendBooking();
+
+                // Simulate payment processing delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Generate unique reference ID
+                const referenceId = generateReferenceId();
+
+                // Store payment success info
+                sessionStorage.setItem('paymentSuccess', JSON.stringify({
+                    payment_id: `TEST_${referenceId}`,
+                    reference_id: referenceId,
+                    amount: bookingData.total,
+                    hotel: bookingData.hotel.name,
+                    payment_method: 'Test Card',
+                    test_mode: true
+                }));
+
+                // Hide card form
+                hideTestCardForm();
+
+                // Populate and show confirmation modal
+                document.getElementById('confirmRefId').textContent = referenceId;
+                document.getElementById('confirmHotelName').textContent = bookingData.hotel.name || '-';
+                document.getElementById('confirmCheckin').textContent = formatDate(bookingData.search_params.checkin);
+                document.getElementById('confirmCheckout').textContent = formatDate(bookingData.search_params.checkout);
+                document.getElementById('confirmAmount').textContent = `₹${bookingData.total.toLocaleString('en-IN')}`;
+                document.getElementById('confirmEmail').textContent = bookingData.guest?.email || bookingData.email || '-';
+
+                document.getElementById('confirmationModal').style.display = 'block';
+
+            } catch (error) {
+                console.error('Test payment error:', error);
+                alert('Booking failed: ' + error.message);
+                bookNowBtn.innerHTML = originalText;
+                bookNowBtn.disabled = false;
+            }
+        }
+
+        // Format card number with spaces
+        document.addEventListener('DOMContentLoaded', function () {
+            const cardInput = document.getElementById('cardNumber');
+            if (cardInput) {
+                cardInput.addEventListener('input', function (e) {
+                    let value = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
+                    let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
+                    e.target.value = formatted;
+                });
+            }
+        });
 
         // Load booking details on page load
         document.addEventListener('DOMContentLoaded', loadBookingDetails);

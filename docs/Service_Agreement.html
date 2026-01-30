@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Agreement - Coast to Coast Journeys</title>
+    <style>
+        :root {
+            --primary: #0f172a;
+            --secondary: #3b82f6;
+            --text: #334155;
+            --bg: #f8fafc;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            background: white;
+            margin: 0 auto;
+            padding: 60px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 24px;
+        }
+
+        .header p {
+            margin: 10px 0 0;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        h2 {
+            font-size: 18px;
+            color: var(--primary);
+            border-left: 4px solid var(--secondary);
+            padding-left: 12px;
+            margin-top: 30px;
+        }
+
+        p,
+        li {
+            font-size: 15px;
+        }
+
+        .clause {
+            margin-bottom: 25px;
+        }
+
+        .highlight {
+            background-color: #eff6ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .signature-section {
+            margin-top: 60px;
+            display: flex;
+            justify-content: space-between;
+            gap: 40px;
+        }
+
+        .signature-box {
+            flex: 1;
+        }
+
+        .sig-line {
+            border-bottom: 1px solid var(--primary);
+            margin: 40px 0 10px;
+            height: 20px;
+        }
+
+        .sig-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .sig-desc {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                border: none;
+                padding: 0;
+            }
+
+            .signature-section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>Professional Service Agreement</h1>
+            <p>Coast to Coast Journeys</p>
+        </div>
+
+        <div class="clause">
+            <p><strong>This Agreement</strong> is entered into as of <strong>January 28, 2026</strong>, between:</p>
+            <p><strong>CLIENT:</strong> Coast to Coast Journeys, represented by its Managing Director, <strong>Mr.
+                    Vishal Kumar</strong>.</p>
+            <p><strong>CONSULTANT:</strong> [Your Full Name/Company Name], (the "Contractor").</p>
+        </div>
+
+        <div class="clause">
+            <h2>1. Term of Engagement</h2>
+            <p>The term of this Agreement shall be for a period of <strong>three (3) months</strong>, commencing on
+                [Start Date] and ending on [End Date]. The Client agrees to retain the services of the Contractor for
+                this duration.</p>
+        </div>
+
+        <div class="clause">
+            <h2>2. Scope of Services</h2>
+            <p>The Contractor shall provide professional expertise and services related to [Insert Project Name/Type,
+                e.g., Web Application Development & Technical Consultation].</p>
+        </div>
+
+        <div class="clause">
+            <h2>3. Compensation & Payment</h2>
+            <p>In consideration for the services provided, the Client agrees to pay the Contractor a monthly fee of
+                [Insert Amount] for three consecutive months. Payments shall be made via [Bank Transfer/PayPal] within
+                [Number] days of invoice receipt.</p>
+        </div>
+
+        <div class="clause highlight">
+            <h2>4. Confidentiality & Non-Disclosure</h2>
+            <p>The Contractor acknowledges that in the course of engagement, they will have access to sensitive
+                information, proprietary tools, and <strong>Company Strategies</strong> of Coast to Coast Journeys.</p>
+            <p><strong>Strict Non-Disclosure:</strong> The Contractor shall not, during or after the term of this
+                Agreement, disclose any such confidential information, including but not limited to business strategies,
+                technical implementations, or client data, to any third party without express written consent from the
+                Managing Director.</p>
+        </div>
+
+        <div class="clause">
+            <h2>5. Intellectual Property</h2>
+            <p>All work product, code, documentation, and strategies developed by the Contractor during this 3-month
+                term shall be the exclusive property of Coast to Coast Journeys.</p>
+        </div>
+
+        <div class="clause">
+            <h2>6. Termination</h2>
+            <p>Either party may terminate this agreement with [Number] days' notice. However, payment for the full
+                committed 3-month period shall remain subject to the terms discussed for project completion.</p>
+        </div>
+
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="sig-line"></div>
+                <div class="sig-label">VISHAL KUMAR</div>
+                <div class="sig-desc">Managing Director, Coast to Coast Journeys</div>
+            </div>
+            <div class="signature-box">
+                <div class="sig-line"></div>
+                <div class="sig-label">[YOUR NAME]</div>
+                <div class="sig-desc">Contractor / Service Provider</div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

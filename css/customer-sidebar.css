@@ -54,10 +54,12 @@
 }
 
 .sidebar-logo img {
-    width: 42px;
-    height: 42px;
+    width: 42px !important;
+    height: 42px !important;
+    max-width: 42px !important;
+    max-height: 42px !important;
     border-radius: 10px;
-    object-fit: cover;
+    object-fit: contain;
 }
 
 .sidebar-logo-text {
