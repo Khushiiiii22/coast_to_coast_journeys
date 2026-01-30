@@ -352,7 +352,7 @@ function selectRate(rate, index) {
 
     // Redirect to checkout page (contact info + payment)
     setTimeout(() => {
-        window.location.href = 'payment-checkout.html';
+        window.location.href = 'guest-details.html';
     }, 800);
 }
 

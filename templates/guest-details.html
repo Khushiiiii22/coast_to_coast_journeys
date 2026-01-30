@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guest Details | C2C Journeys</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .checkout-container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .booking-summary {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .hotel-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .booking-details {
+            margin: 20px 0;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .price-summary {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 100px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .total-row {
+            border-top: 2px solid #0066cc;
+            border-bottom: none;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0066cc;
+        }
+
+        .proceed-button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #0066cc, #00509e);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .proceed-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 102, 204, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .price-summary {
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-plane"></i>
+                C2C Journeys
+            </a>
+        </div>
+    </nav>
+
+    <div class="checkout-container">
+        <!-- Booking Progress -->
+        <div
+            style="margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #f8fafc, #e2e8f0); border-radius: 12px;">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; max-width: 600px; margin: 0 auto;">
+                <div style="text-align: center; flex: 1;">
+                    <div
+                        style="width: 36px; height: 36px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; color: white;">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <span style="font-size: 0.75rem; color: #64748b;">Search</span>
+                </div>
+                <div style="flex: 0.5; height: 2px; background: #22c55e;"></div>
+                <div style="text-align: center; flex: 1;">
+                    <div
+                        style="width: 36px; height: 36px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; color: white;">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <span style="font-size: 0.75rem; color: #64748b;">Select Hotel</span>
+                </div>
+                <div style="flex: 0.5; height: 2px; background: #3b82f6;"></div>
+                <div style="text-align: center; flex: 1;">
+                    <div
+                        style="width: 36px; height: 36px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">
+                        <span style="font-weight: bold;">3</span>
+                    </div>
+                    <span style="font-size: 0.75rem; color: #3b82f6; font-weight: 600;">Guest Info</span>
+                </div>
+                <div style="flex: 0.5; height: 2px; background: #e2e8f0;"></div>
+                <div style="text-align: center; flex: 1;">
+                    <div
+                        style="width: 36px; height: 36px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; color: #94a3b8;">
+                        <span>4</span>
+                    </div>
+                    <span style="font-size: 0.75rem; color: #94a3b8;">Payment</span>
+                </div>
+            </div>
+        </div>
+
+        <h1><i class="fas fa-user-edit"></i> Enter Guest Details</h1>
+
+        <div class="checkout-grid">
+            <div class="left-column">
+                <!-- Contact Information -->
+                <div class="booking-summary" style="margin-bottom: 30px;">
+                    <h2><i class="fas fa-address-card" style="color: #3b82f6; margin-right: 10px;"></i>Contact
+                        Information
+                    </h2>
+                    <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">We will send your confirmation
+                        and notify you of any changes to your hotel booking status.</p>
+                    <form id="guestForm">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">First Name <span
+                                        style="color: #ef4444;">*</span></label>
+                                <input type="text" id="firstName" required class="form-control" placeholder="John"
+                                    style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; transition: border 0.2s;"
+                                    onfocus="this.style.borderColor='#3b82f6'"
+                                    onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Last Name <span
+                                        style="color: #ef4444;">*</span></label>
+                                <input type="text" id="lastName" required class="form-control" placeholder="Doe"
+                                    style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; transition: border 0.2s;"
+                                    onfocus="this.style.borderColor='#3b82f6'"
+                                    onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Email Address <span
+                                        style="color: #ef4444;">*</span></label>
+                                <input type="email" id="email" required class="form-control"
+                                    placeholder="john@example.com"
+                                    style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; transition: border 0.2s;"
+                                    onfocus="this.style.borderColor='#3b82f6'"
+                                    onblur="this.style.borderColor='#e2e8f0'">
+                                <small style="color: #64748b; font-size: 0.8rem;">Confirmation email will be sent
+                                    here</small>
+                            </div>
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Phone Number <span
+                                        style="color: #ef4444;">*</span></label>
+                                <input type="tel" id="phone" required class="form-control" placeholder="+91 98765 43210"
+                                    style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; transition: border 0.2s;"
+                                    onfocus="this.style.borderColor='#3b82f6'"
+                                    onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Special Requests <span
+                                    style="color: #64748b; font-weight: normal;">(Optional)</span></label>
+                            <textarea id="specialRequests" class="form-control"
+                                placeholder="E.g., Late check-in, high floor, twin beds, etc."
+                                style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; min-height: 80px; resize: vertical; transition: border 0.2s;"
+                                onfocus="this.style.borderColor='#3b82f6'"
+                                onblur="this.style.borderColor='#e2e8f0'"></textarea>
+                            <small style="color: #64748b; font-size: 0.8rem;">Special requests are subject to
+                                availability and cannot be guaranteed.</small>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Booking Summary -->
+                <div class="booking-summary">
+                    <h2>Booking Summary</h2>
+                    <img id="hotelImage" class="hotel-image" src="" alt="Hotel">
+
+                    <h3 id="hotelName">Loading...</h3>
+
+                    <div class="booking-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Check-in</span>
+                            <span class="detail-value" id="checkin">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Check-out</span>
+                            <span class="detail-value" id="checkout">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Nights</span>
+                            <span class="detail-value" id="nights">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Guests</span>
+                            <span class="detail-value" id="guests">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Room Type</span>
+                            <span class="detail-value" id="roomType">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Price Summary -->
+            <div class="price-summary">
+                <h2>Price Breakdown</h2>
+
+                <div class="price-row">
+                    <span>Room Rate</span>
+                    <span id="basePrice">₹0</span>
+                </div>
+                <div class="price-row">
+                    <span>Taxes & Fees</span>
+                    <span id="taxes">₹0</span>
+                </div>
+                <div class="price-row total-row">
+                    <span>Total Amount</span>
+                    <span id="totalAmount">₹0</span>
+                </div>
+
+                <button class="proceed-button" onclick="proceedToPayment()">
+                    Proceed to Payment <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+                </button>
+
+                <p style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #64748b;">
+                    <i class="fas fa-lock"></i> Your information is secure
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer" style="margin-top: 50px; background: #0f172a; color: white; padding: 40px 0 20px;">
+        <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px; text-align: center;">
+            <div class="footer-payment-icons"
+                style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; align-items: center;">
+                <span style="color: #9ca3af; font-size: 0.9rem;">Payment Partners:</span>
+                <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Razorpay"
+                    style="height: 24px; filter: brightness(0) invert(1) opacity(0.8);">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
+                    style="height: 24px; background: white; padding: 3px 6px; border-radius: 4px;">
+            </div>
+            <div class="footer-bottom">
+                <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">C2C Journeys is a customer-facing
+                    brand operated by Coast to Coast Journeys</p>
+                <p style="color: #94a3b8; font-size: 0.9rem;">&copy; 2026 C2C Journeys. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Supabase and Auth Guard -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/auth-guard.js"></script>
+
+    <script>
+        // Get booking details from sessionStorage
+        const bookingData = JSON.parse(sessionStorage.getItem('ctc_booking_data') || '{}');
+
+        // Populate booking details
+        async function loadBookingDetails() {
+            if (!bookingData.hotel || !bookingData.rate) {
+                alert('No booking data found! Redirecting to home...');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const hotel = bookingData.hotel;
+            const rate = bookingData.rate;
+            const searchParams = bookingData.search_params;
+
+            // Hotel details
+            document.getElementById('hotelName').textContent = hotel.name || 'Hotel';
+            const image = hotel.image || (hotel.images && hotel.images[0]) || 'https://via.placeholder.com/800x400?text=Hotel';
+            document.getElementById('hotelImage').src = image;
+
+            // Booking details
+            document.getElementById('checkin').textContent = formatDate(searchParams.checkin) || '-';
+            document.getElementById('checkout').textContent = formatDate(searchParams.checkout) || '-';
+            document.getElementById('nights').textContent = rate.nights || calculateNights(searchParams.checkin, searchParams.checkout);
+            document.getElementById('guests').textContent = `${searchParams.adults} Adults`;
+            document.getElementById('roomType').textContent = rate.room_name || 'Standard Room';
+
+            // Price breakdown
+            const basePrice = parseFloat(rate.total_price || (rate.price * (rate.nights || 1)) || 0);
+            const taxes = basePrice * 0.18; // 18% GST estimate
+            const total = basePrice + taxes;
+
+            document.getElementById('basePrice').textContent = `₹${basePrice.toLocaleString('en-IN')}`;
+            document.getElementById('taxes').textContent = `₹${taxes.toLocaleString('en-IN')}`;
+            document.getElementById('totalAmount').textContent = `₹${total.toLocaleString('en-IN')}`;
+
+            // Store for payment (not strictly needed here as we don't pay here, but good for consistency)
+            bookingData.total = total;
+            bookingData.base_price = basePrice;
+
+            // PRE-FILL USER DETAILS
+            if (typeof AuthGuard !== 'undefined' && window.supabase) {
+                const session = await AuthGuard.checkSession();
+                if (session && session.user) {
+                    const user = session.user;
+                    const meta = user.user_metadata || {};
+
+                    if (user.email) document.getElementById('email').value = user.email;
+                    if (meta.phone) document.getElementById('phone').value = meta.phone;
+                    if (meta.full_name) {
+                        const parts = meta.full_name.split(' ');
+                        document.getElementById('firstName').value = parts[0];
+                        document.getElementById('lastName').value = parts.slice(1).join(' ') || '';
+                    }
+                }
+            }
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function calculateNights(inDate, outDate) {
+            const start = new Date(inDate);
+            const end = new Date(outDate);
+            return Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24));
+        }
+
+        function proceedToPayment() {
+            // Validate form
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const specialRequests = document.getElementById('specialRequests').value;
+
+            if (!firstName || !lastName || !email || !phone) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            // Save details to booking data
+            bookingData.guest = {
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                phone: phone,
+                specialRequests: specialRequests
+            };
+
+            // Also store top-level for compat with old code if needed
+            bookingData.email = email;
+            bookingData.phone = phone;
+            bookingData.guestName = firstName + ' ' + lastName;
+
+            sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
+
+            // Redirect to payment
+            window.location.href = 'payment.html';
+        }
+
+        // Load booking details on page load
+        document.addEventListener('DOMContentLoaded', loadBookingDetails);
+    </script>
+</body>
+
+</html>
