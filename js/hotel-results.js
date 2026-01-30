@@ -124,7 +124,6 @@ async function performSearch(params) {
             await HotelAPI.healthCheck();
         } catch (e) {
             console.log('Backend server not reachable, using demo data');
-            showNotification('Backend server not available. Showing demo hotels.', 'warning');
             showDemoResults(params);
             return;
         }
@@ -133,42 +132,31 @@ async function performSearch(params) {
         const result = await HotelAPI.searchByDestination(params);
 
         if (result.success && result.data?.hotels?.length > 0) {
-            // Real API data received!
+            // Real API data received - display directly without popup
             SearchSession.saveSearchResults(result);
             displayResults(result);
 
-            // Show success notification based on data source
-            if (result.real_data) {
-                const hotelCount = result.hotels_count || result.data.hotels.length;
-                const location = result.location?.name || params.destination;
+            // Log source for debugging (no popup)
+            const hotelCount = result.hotels_count || result.data.hotels.length;
+            const location = result.location?.name || params.destination;
+            const source = result.source === 'ratehawk' ? 'RateHawk' : 'Google Places';
+            console.log(`✅ Found ${hotelCount} hotels in ${location} via ${source}`);
 
-                if (result.source === 'google_places') {
-                    // Google Places data - real hotels but need contact for booking
-                    showNotification(`Found ${hotelCount} real hotels in ${location}! (via Google Places)`, 'success');
-                } else {
-                    // RateHawk data - fully bookable
-                    showNotification(`Found ${hotelCount} bookable hotels in ${location}!`, 'success');
-                }
-            }
         } else if (result.success && (!result.data?.hotels || result.data.hotels.length === 0)) {
-            // API succeeded but no results
-            console.log('No hotels found from API');
-            showNotification('No hotels found for this destination.', 'warning');
+            // API succeeded but no results - show demo data silently
+            console.log('No hotels found from API, showing demo');
             showDemoResults(params);
         } else if (result.sandbox_mode) {
-            // Sandbox mode limitation
+            // Sandbox mode limitation - show demo data silently
             console.log('Destination not supported:', result.error);
-            showNotification(result.error || 'Could not find hotels for this destination.', 'warning');
             showDemoResults(params);
         } else {
-            // Other API error
+            // Other API error - show demo data
             console.log('API error:', result.error);
-            showNotification('Search encountered an issue. Showing demo hotels.', 'info');
             showDemoResults(params);
         }
     } catch (error) {
         console.error('Search error:', error);
-        showNotification('Search failed. Showing demo hotels.', 'info');
         showDemoResults(params);
     }
 }

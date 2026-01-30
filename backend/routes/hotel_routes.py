@@ -210,6 +210,7 @@ def search_by_destination():
         # SANDBOX SUPPORTED DESTINATIONS (Real hotel data available)
         'paris': {'latitude': 48.8566, 'longitude': 2.3522, 'region_id': 2734, 'name': 'Paris', 'sandbox': True},
         'dubai': {'latitude': 25.2048, 'longitude': 55.2708, 'region_id': 6053839, 'name': 'Dubai', 'sandbox': True},
+        'moscow': {'latitude': 55.7558, 'longitude': 37.6173, 'region_id': 2395, 'name': 'Moscow', 'sandbox': True},
         
         # INDIAN DESTINATIONS (Will need production API for real data)
         # These region IDs are for production API - sandbox will return empty
@@ -249,127 +250,161 @@ def search_by_destination():
         location_name = data['destination']
         is_sandbox_supported = False
         
-        # Step 1: Check if destination matches a known location
+        print(f"🔍 Hotel Search Request: {data['destination']}")
+        
+        # Step 1: Check if destination matches a known sandbox-supported location
         for key, loc_data in POPULAR_DESTINATIONS.items():
             if key in destination or destination in key:
                 region_id = loc_data.get('region_id')
                 location_name = loc_data['name']
                 is_sandbox_supported = loc_data.get('sandbox', False)
+                print(f"📍 Matched destination: {location_name}, Sandbox: {is_sandbox_supported}")
                 break
         
-        # Step 2: If not in predefined list, use ETG suggest API to find the region_id
-        if not region_id:
-            suggest_result = etg_service.suggest(data['destination'])
-            if suggest_result.get('success') and suggest_result.get('data'):
-                # ETG returns nested structure: data.data.regions
-                inner_data = suggest_result['data'].get('data', suggest_result['data'])
-                regions = inner_data.get('regions', [])
-                if regions:
-                    # Use the first matching region (means it's supported by the API!)
-                    region_id = regions[0].get('id')
-                    location_name = regions[0].get('name', data['destination'])
-                    is_sandbox_supported = True  # If ETG suggests it, it's supported
-        
-        # Step 3: If RateHawk can't find the region, use Google Places API
-        if not region_id:
-            # Fall back to Google Places for ANY destination
+        # Step 2: For non-sandbox destinations, skip RateHawk and go to Google directly
+        # This avoids unnecessary API calls that will return empty results
+        if region_id and not is_sandbox_supported:
+            print(f"⚠️ {location_name} is not sandbox-supported, using Google Places")
             google_hotels = search_hotels_via_google(data['destination'], data['checkin'], data['checkout'])
             
             if google_hotels:
-                return jsonify({
-                    'success': True,
-                    'data': {'hotels': google_hotels},
-                    'location': {'name': data['destination']},
-                    'hotels_count': len(google_hotels),
-                    'real_data': True,
-                    'source': 'google_places',
-                    'booking_note': 'These are real hotels from Google. For instant booking, contact our team.'
-                })
-            else:
-                return jsonify({
-                    'success': False,
-                    'error': f"Could not find hotels for '{data['destination']}'. Please try a different destination.",
-                    'sandbox_mode': True
-                }), 400
-        
-        guests = etg_service.format_guests_for_search(
-            adults=data['adults'],
-            children_ages=data.get('children_ages', [])
-        )
-        
-        # Search using region API
-        # SANDBOX FIX: Force USD and gb residency (sandbox doesn't support INR/in)
-        result = etg_service.search_by_region(
-            region_id=region_id,
-            checkin=data['checkin'],
-            checkout=data['checkout'],
-            guests=guests,
-            currency='USD',
-            residency='gb'
-        )
-        
-        # If RateHawk fails, fall back to Google Places API for real hotel data
-        if not result.get('success'):
-            # Use Google Maps Places API to get real hotels for ANY destination
-            google_hotels = search_hotels_via_google(data['destination'], data['checkin'], data['checkout'])
-            
-            if google_hotels:
+                print(f"✅ Found {len(google_hotels)} hotels via Google Places for {location_name}")
                 return jsonify({
                     'success': True,
                     'data': {'hotels': google_hotels},
                     'location': {'name': location_name},
                     'hotels_count': len(google_hotels),
                     'real_data': True,
-                    'source': 'google_places',
-                    'booking_note': 'These are real hotels from Google. For instant booking, contact our team.'
+                    'source': 'google_places'
                 })
-            else:
-                # Both RateHawk and Google failed
-                return jsonify({
-                    'success': False,
-                    'error': f"Could not find hotels for '{location_name}'. Please try a different destination.",
-                    'sandbox_mode': True,
-                    'supported_destinations': ['Paris', 'Moscow', 'Dubai']
-                }), 400
         
-        # Transform ETG response to frontend format
-        # ETG returns nested structure: data.data.hotels
-        if result.get('success') and result.get('data'):
-            inner_data = result['data'].get('data', result['data'])
-            etg_hotels = inner_data.get('hotels', [])
-            transformed_hotels = transform_etg_hotels(etg_hotels, location_name)
+        # Step 3: If sandbox-supported, try RateHawk first
+        if region_id and is_sandbox_supported:
+            print(f"🏨 Searching RateHawk for sandbox destination: {location_name}")
             
-            # Add ₹1 TEST hotel at the beginning for payment testing (only in dev mode)
-            import os
-            if os.getenv('FLASK_DEBUG', 'False').lower() == 'true':
-                test_hotel = {
-                    'id': 'test_payment_1_rupee',
-                    'name': '💳 PAYMENT TEST - ₹1 Only Hotel',
-                    'star_rating': 5,
-                    'guest_rating': 5.0,
-                    'review_count': 999,
-                    'address': f'{location_name} - Test Hotel for Razorpay/UPI Verification',
-                    'image': 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600',
-                    'price': 1,
-                    'original_price': 5000,
-                    'currency': 'INR',
-                    'amenities': ['wifi', 'pool', 'parking', 'restaurant', 'spa', 'gym'],
-                    'meal_plan': 'breakfast',
-                    'rates': [{
-                        'book_hash': 'test_hash_1_rupee',
-                        'room_name': 'Test Room - Razorpay Verification',
-                        'price': 1
-                    }],
-                    'discount': 99
-                }
-                transformed_hotels.insert(0, test_hotel)
+            guests = etg_service.format_guests_for_search(
+                adults=data['adults'],
+                children_ages=data.get('children_ages', [])
+            )
             
-            result['data'] = {'hotels': transformed_hotels}
-            result['location'] = {'name': location_name, 'region_id': region_id}
-            result['hotels_count'] = len(transformed_hotels)
-            result['real_data'] = True  # Flag to indicate real API data
+            # Search using region API with sandbox-compatible parameters
+            result = etg_service.search_by_region(
+                region_id=region_id,
+                checkin=data['checkin'],
+                checkout=data['checkout'],
+                guests=guests,
+                currency='USD',
+                residency='gb'
+            )
+            
+            # Check if RateHawk returned hotels
+            if result.get('success') and result.get('data'):
+                inner_data = result['data'].get('data', result['data'])
+                etg_hotels = inner_data.get('hotels', [])
+                
+                if etg_hotels and len(etg_hotels) > 0:
+                    print(f"✅ Found {len(etg_hotels)} hotels via RateHawk for {location_name}")
+                    transformed_hotels = transform_etg_hotels(etg_hotels, location_name)
+                    
+                    # Add ₹1 TEST hotel at the beginning for payment testing (only in dev mode)
+                    import os
+                    if os.getenv('FLASK_DEBUG', 'False').lower() == 'true':
+                        test_hotel = {
+                            'id': 'test_payment_1_rupee',
+                            'name': '💳 PAYMENT TEST - ₹1 Only Hotel',
+                            'star_rating': 5,
+                            'guest_rating': 5.0,
+                            'review_count': 999,
+                            'address': f'{location_name} - Test Hotel for Razorpay/UPI Verification',
+                            'image': 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600',
+                            'price': 1,
+                            'original_price': 5000,
+                            'currency': 'INR',
+                            'amenities': ['wifi', 'pool', 'parking', 'restaurant', 'spa', 'gym'],
+                            'meal_plan': 'breakfast',
+                            'rates': [{'book_hash': 'test_hash_1_rupee', 'room_name': 'Test Room - Razorpay Verification', 'price': 1}],
+                            'discount': 99
+                        }
+                        transformed_hotels.insert(0, test_hotel)
+                    
+                    return jsonify({
+                        'success': True,
+                        'data': {'hotels': transformed_hotels},
+                        'location': {'name': location_name, 'region_id': region_id},
+                        'hotels_count': len(transformed_hotels),
+                        'real_data': True,
+                        'source': 'ratehawk'
+                    })
+                else:
+                    print(f"⚠️ RateHawk returned 0 hotels for {location_name}, trying Google")
         
-        return jsonify(result)
+        # Step 4: If not in predefined list, try ETG suggest API to find the region
+        if not region_id:
+            print(f"🔎 Trying RateHawk suggest API for: {data['destination']}")
+            suggest_result = etg_service.suggest(data['destination'])
+            if suggest_result.get('success') and suggest_result.get('data'):
+                inner_data = suggest_result['data'].get('data', suggest_result['data'])
+                regions = inner_data.get('regions', [])
+                if regions:
+                    region_id = regions[0].get('id')
+                    location_name = regions[0].get('name', data['destination'])
+                    is_sandbox_supported = True
+                    print(f"✅ Found region via suggest API: {location_name} (ID: {region_id})")
+                    
+                    # Try searching with the found region
+                    guests = etg_service.format_guests_for_search(
+                        adults=data['adults'],
+                        children_ages=data.get('children_ages', [])
+                    )
+                    
+                    result = etg_service.search_by_region(
+                        region_id=region_id,
+                        checkin=data['checkin'],
+                        checkout=data['checkout'],
+                        guests=guests,
+                        currency='USD',
+                        residency='gb'
+                    )
+                    
+                    if result.get('success') and result.get('data'):
+                        search_data = result['data'].get('data', result['data'])
+                        etg_hotels = search_data.get('hotels', [])
+                        
+                        if etg_hotels and len(etg_hotels) > 0:
+                            print(f"✅ Found {len(etg_hotels)} hotels via RateHawk suggest")
+                            transformed_hotels = transform_etg_hotels(etg_hotels, location_name)
+                            return jsonify({
+                                'success': True,
+                                'data': {'hotels': transformed_hotels},
+                                'location': {'name': location_name, 'region_id': region_id},
+                                'hotels_count': len(transformed_hotels),
+                                'real_data': True,
+                                'source': 'ratehawk'
+                            })
+        
+        # Step 5: Final fallback to Google Places API
+        print(f"🌐 Falling back to Google Places for: {data['destination']}")
+        google_hotels = search_hotels_via_google(data['destination'], data['checkin'], data['checkout'])
+        
+        if google_hotels:
+            print(f"✅ Found {len(google_hotels)} hotels via Google Places")
+            return jsonify({
+                'success': True,
+                'data': {'hotels': google_hotels},
+                'location': {'name': location_name},
+                'hotels_count': len(google_hotels),
+                'real_data': True,
+                'source': 'google_places'
+            })
+        
+        # All methods failed
+        print(f"❌ No hotels found for {data['destination']}")
+        return jsonify({
+            'success': False,
+            'error': f"Could not find hotels for '{data['destination']}'. Please try Paris, Dubai, or Moscow for best results.",
+            'sandbox_mode': True,
+            'supported_destinations': ['Paris', 'Moscow', 'Dubai']
+        }), 400
     
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
