@@ -1103,6 +1103,10 @@ def send_booking_confirmation():
             return jsonify({'success': False, 'error': 'Missing required fields'}), 400
         
         from services.email_service import email_service
+        from flask import current_app
+        
+        # Initialize email service with Flask app config
+        email_service.init_app(current_app)
         
         email_details = {
             'booking_id': data.get('partner_order_id'),

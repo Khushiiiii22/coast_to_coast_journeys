@@ -1098,6 +1098,33 @@
                     test_mode: true
                 }));
 
+                // Send booking confirmation email
+                const guest = bookingData.guest || {};
+                const customerEmail = guest.email || bookingData.email;
+
+                if (customerEmail) {
+                    try {
+                        const emailResponse = await fetch('/api/hotels/booking/send-confirmation', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                partner_order_id: bookingData.partner_order_id || referenceId,
+                                email: customerEmail,
+                                hotel_name: bookingData.hotel.name,
+                                checkin: bookingData.search_params.checkin,
+                                checkout: bookingData.search_params.checkout,
+                                guests: `${guest.firstName || ''} ${guest.lastName || ''}`.trim() || 'Guest',
+                                total_amount: bookingData.total
+                            })
+                        });
+                        const emailResult = await emailResponse.json();
+                        console.log('Email confirmation:', emailResult);
+                    } catch (emailError) {
+                        console.error('Email send error:', emailError);
+                        // Don't block booking confirmation if email fails
+                    }
+                }
+
                 // Hide card form
                 hideTestCardForm();
 
