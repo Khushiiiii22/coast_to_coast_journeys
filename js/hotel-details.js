@@ -302,8 +302,8 @@ function createRateCard(rate, index) {
         </div>
         <p class="rate-description">${rate.room_description || ''}</p>
         <div class="rate-features">${featuresHtml}</div>
-        <button class="book-rate-btn" data-rate-index="${index}">
-            <i class="fas fa-bookmark"></i> Select Room
+        <button class="book-rate-btn" data-rate-index="${index}" style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+            Book Now
         </button>
     `;
 
@@ -315,7 +315,7 @@ function createRateCard(rate, index) {
 }
 
 /**
- * Select a rate
+ * Select a rate and proceed to booking
  */
 function selectRate(rate, index) {
     selectedRate = rate;
@@ -326,20 +326,9 @@ function selectRate(rate, index) {
     });
     document.querySelector(`.rate-card[data-rate-index="${index}"]`).classList.add('selected');
 
-    // Update booking sidebar
+    // Calculate total
     const nights = searchParams ? HotelUtils.calculateNights(searchParams.checkin, searchParams.checkout) : 1;
     const totalPrice = rate.price * nights;
-
-    document.getElementById('selectedRoomBox').classList.remove('hidden');
-    document.getElementById('selectedRoomName').textContent = rate.room_name;
-    document.getElementById('selectedMealPlan').textContent = HotelUtils.getMealPlanText(rate.meal_plan);
-
-    document.getElementById('bookingTotalBox').classList.remove('hidden');
-    document.getElementById('totalPrice').textContent = HotelUtils.formatPrice(totalPrice);
-
-    document.getElementById('selectRoomPrompt').classList.add('hidden');
-    document.getElementById('proceedToBookBtn').classList.remove('hidden');
-    document.getElementById('proceedToBookBtn').disabled = false;
 
     // Save selected rate
     SearchSession.saveSelectedRate({
@@ -348,7 +337,23 @@ function selectRate(rate, index) {
         nights: nights
     });
 
-    showNotification(`${rate.room_name} selected!`, 'success');
+    // Save booking data for checkout page
+    SearchSession.saveBookingData({
+        hotel: currentHotel,
+        rate: {
+            ...rate,
+            total_price: totalPrice,
+            nights: nights
+        },
+        search_params: searchParams
+    });
+
+    showNotification(`${rate.room_name} selected! Redirecting to checkout...`, 'success');
+
+    // Redirect to checkout page (contact info + payment)
+    setTimeout(() => {
+        window.location.href = 'payment-checkout.html';
+    }, 800);
 }
 
 /**

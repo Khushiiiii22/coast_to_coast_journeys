@@ -948,6 +948,131 @@ def cancel_booking():
 # USER BOOKINGS
 # ==========================================
 
+@hotel_bp.route('/booking/resend-email', methods=['POST'])
+def resend_booking_email():
+    """
+    Resend booking confirmation email
+    
+    Request Body:
+    {
+        "partner_order_id": "CTC-20260201-ABC123",
+        "email": "customer@email.com" (optional, uses stored email if not provided)
+    }
+    """
+    try:
+        data = request.get_json()
+        
+        if 'partner_order_id' not in data:
+            return jsonify({'success': False, 'error': 'Missing partner_order_id'}), 400
+        
+        partner_order_id = data['partner_order_id']
+        
+        # Get booking details from database
+        booking = supabase_service.get_booking_by_partner_order_id(partner_order_id)
+        
+        if not booking.get('success') or not booking.get('data'):
+            return jsonify({'success': False, 'error': 'Booking not found'}), 404
+        
+        booking_data = booking['data']
+        customer_email = data.get('email') or booking_data.get('customer_email')
+        
+        if not customer_email:
+            return jsonify({'success': False, 'error': 'No email address found for this booking'}), 400
+        
+        # Send confirmation email
+        from services.email_service import email_service
+        
+        email_details = {
+            'booking_id': partner_order_id,
+            'customer_name': booking_data.get('guest_name', 'Valued Customer'),
+            'customer_email': customer_email,
+            'hotel_name': booking_data.get('hotel_name', 'Hotel'),
+            'checkin': booking_data.get('check_in'),
+            'checkout': booking_data.get('check_out'),
+            'amount': booking_data.get('total_amount', 0),
+            'currency': booking_data.get('currency', 'INR')
+        }
+        
+        email_sent = email_service.send_booking_confirmation(customer_email, email_details)
+        
+        if email_sent:
+            return jsonify({
+                'success': True,
+                'message': 'Confirmation email sent successfully'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Failed to send email. Please check email configuration.'
+            }), 500
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@hotel_bp.route('/booking/send-confirmation', methods=['POST'])
+def send_booking_confirmation():
+    """
+    Send booking confirmation email for a new booking
+    Called from frontend after booking is confirmed
+    
+    Request Body:
+    {
+        "partner_order_id": "CTC-20260201-ABC123",
+        "email": "customer@email.com",
+        "hotel_name": "Hotel Name",
+        "checkin": "2026-02-01",
+        "checkout": "2026-02-05",
+        "guests": "John Doe, Jane Doe",
+        "total_amount": 5000
+    }
+    """
+    try:
+        data = request.get_json()
+        
+        if not data.get('partner_order_id') or not data.get('email'):
+            return jsonify({'success': False, 'error': 'Missing required fields'}), 400
+        
+        from services.email_service import email_service
+        
+        email_details = {
+            'booking_id': data.get('partner_order_id'),
+            'customer_name': data.get('guests', 'Valued Customer'),
+            'customer_email': data.get('email'),
+            'hotel_name': data.get('hotel_name', 'Hotel'),
+            'checkin': data.get('checkin'),
+            'checkout': data.get('checkout'),
+            'amount': data.get('total_amount', 0),
+            'currency': 'INR'
+        }
+        
+        print(f"📧 Sending booking confirmation to {data.get('email')}")
+        email_sent = email_service.send_booking_confirmation(data.get('email'), email_details)
+        
+        if email_sent:
+            return jsonify({
+                'success': True,
+                'message': 'Confirmation email sent successfully'
+            })
+        else:
+            # Email not configured, but don't fail the request
+            return jsonify({
+                'success': True,
+                'message': 'Booking confirmed (email service not configured)',
+                'email_sent': False
+            })
+    
+    except Exception as e:
+        print(f"❌ Email send error: {str(e)}")
+        # Don't fail if email fails
+        return jsonify({
+            'success': True,
+            'message': 'Booking confirmed (email error)',
+            'email_sent': False,
+            'error': str(e)
+        })
+
+
 @hotel_bp.route('/user/<user_id>/bookings', methods=['GET'])
 def get_user_bookings(user_id):
     """Get all bookings for a user"""

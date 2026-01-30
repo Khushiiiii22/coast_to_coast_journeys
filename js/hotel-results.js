@@ -310,25 +310,16 @@ function createHotelCard(hotel) {
                     <span class="current-price">${price}</span>
                     <span class="per-night">per night</span>
                 </div>
-                <button class="book-now-btn" data-hotel-id="${hotel.id}" style="background: linear-gradient(135deg, #28a745, #20c997); margin-right: 10px;">
-                    <i class="fas fa-check"></i> Book Now
-                </button>
-                <button class="view-deal-btn" data-hotel-id="${hotel.id}">
-                    View Deal <i class="fas fa-arrow-right"></i>
+                <button class="see-availability-btn" data-hotel-id="${hotel.id}" style="background: linear-gradient(135deg, #22c55e, #16a34a); padding: 12px 24px; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px;">
+                    See Availability <i class="fas fa-chevron-right"></i>
                 </button>
             </div>
             <p class="meal-plan"><i class="fas fa-utensils"></i> ${mealPlan}</p>
         </div>
     `;
 
-    // Add click event to book now button
-    card.querySelector('.book-now-btn').addEventListener('click', (e) => {
-        e.stopPropagation();
-        bookHotel(hotel);
-    });
-
-    // Add click event to view deal button
-    card.querySelector('.view-deal-btn').addEventListener('click', (e) => {
+    // Add click event to see availability button (goes to hotel details)
+    card.querySelector('.see-availability-btn').addEventListener('click', (e) => {
         e.stopPropagation();
         viewHotelDetails(hotel);
     });
@@ -395,10 +386,9 @@ function bookHotel(hotel) {
         search_params: searchParams
     });
 
-
-
-    // Redirect to payment checkout
-    window.location.href = 'payment-checkout.html';
+    // Redirect to hotel details page first (proper booking flow)
+    // User should: View Details → Select Room → Enter Guest Info → Payment
+    viewHotelDetails(hotel);
 }
 
 /**

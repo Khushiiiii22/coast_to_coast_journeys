@@ -309,11 +309,27 @@
 
                 <!-- Action Buttons -->
                 <div class="action-buttons">
-                    <a href="index.html" class="btn btn-primary">
+                    <a href="my-bookings.html" class="btn btn-primary">
+                        <i class="fas fa-suitcase"></i> View My Bookings
+                    </a>
+                    <a href="index.html" class="btn btn-outline">
                         <i class="fas fa-home"></i> Back to Home
                     </a>
                     <button class="btn btn-outline" onclick="window.print()">
-                        <i class="fas fa-print"></i> Print Confirmation
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                </div>
+
+                <!-- Cancel Option -->
+                <div id="cancelSection"
+                    style="margin-top: 1.5rem; padding: 1rem; background: #fef2f2; border-radius: 8px; display: none;">
+                    <p style="color: #991b1b; font-size: 0.9rem; margin-bottom: 0.75rem;">
+                        <i class="fas fa-info-circle"></i> Need to cancel? You can cancel this booking from your
+                        bookings page within 24 hours of check-in (cancellation charges may apply).
+                    </p>
+                    <button class="btn btn-outline" onclick="window.location.href='my-bookings.html'"
+                        style="border-color: #dc2626; color: #dc2626;">
+                        <i class="fas fa-times"></i> Cancel Booking
                     </button>
                 </div>
 
@@ -322,6 +338,15 @@
                     <i class="fas fa-envelope"></i>
                     A confirmation email has been sent to <strong id="confirmEmail">your email</strong>.
                     Please save this for your records.
+                </div>
+
+                <!-- Demo Notice -->
+                <div id="demoNotice"
+                    style="margin-top: 1rem; padding: 1rem; background: #fef3c7; border-radius: 8px; display: none;">
+                    <i class="fas fa-info-circle" style="color: #92400e; margin-right: 0.5rem;"></i>
+                    <span style="color: #92400e; font-size: 0.9rem;">
+                        This is a demo booking. For real bookings with payment, please contact our sales team.
+                    </span>
                 </div>
             </div>
         </div>
@@ -348,7 +373,7 @@
     <!-- Scripts -->
     <script src="../js/hotel-api.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', async function () {
             const bookingData = SearchSession.getBookingData();
 
             if (!bookingData || !bookingData.confirmation) {
@@ -360,7 +385,8 @@
             const { hotel, rate, search_params, confirmation, guests, email, total_amount } = bookingData;
 
             // Confirmation number
-            document.getElementById('confirmationNumber').textContent = confirmation.confirmation_number || confirmation.partner_order_id || 'CTCHOTEL' + Date.now();
+            const confirmationNumber = confirmation.confirmation_number || confirmation.partner_order_id || 'CTC-' + Date.now().toString().slice(-8);
+            document.getElementById('confirmationNumber').textContent = confirmationNumber;
 
             // Hotel info
             const hotelImage = hotel.images?.[0] || hotel.image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=200';
@@ -386,10 +412,87 @@
             // Email
             document.getElementById('confirmEmail').textContent = email || 'your email';
 
-            // Clear booking session after showing confirmation
-            // Keep for potential view later
-            // SearchSession.clear();
+            // Show cancel section for non-refundable rates
+            if (rate.cancellation !== 'non_refundable') {
+                document.getElementById('cancelSection').style.display = 'block';
+            }
+
+            // Show demo notice if it's a demo booking
+            if (confirmation.demo) {
+                document.getElementById('demoNotice').style.display = 'block';
+            }
+
+            // Save booking to local storage for My Bookings page
+            saveBookingToLocalStorage({
+                partner_order_id: confirmationNumber,
+                confirmation_number: confirmationNumber,
+                hotel_name: hotel.name,
+                hotel_image: hotelImage,
+                room_name: rate.room_name,
+                check_in: search_params.checkin,
+                check_out: search_params.checkout,
+                guests: guests,
+                total_amount: total_amount,
+                status: 'confirmed',
+                email: email,
+                created_at: new Date().toISOString(),
+                demo: confirmation.demo || false
+            });
+
+            // Send confirmation email (if not demo)
+            if (!confirmation.demo && email) {
+                try {
+                    await sendConfirmationEmail(confirmationNumber, email, {
+                        hotel_name: hotel.name,
+                        checkin: search_params.checkin,
+                        checkout: search_params.checkout,
+                        guests: guestNames,
+                        total_amount: total_amount
+                    });
+                    console.log('✅ Confirmation email sent');
+                } catch (e) {
+                    console.log('⚠️ Could not send confirmation email:', e);
+                }
+            }
         });
+
+        function saveBookingToLocalStorage(booking) {
+            try {
+                const bookings = JSON.parse(localStorage.getItem('c2c_bookings') || '[]');
+
+                // Check if booking already exists
+                const exists = bookings.find(b =>
+                    b.partner_order_id === booking.partner_order_id ||
+                    b.confirmation_number === booking.confirmation_number
+                );
+
+                if (!exists) {
+                    bookings.unshift(booking); // Add to beginning
+                    localStorage.setItem('c2c_bookings', JSON.stringify(bookings));
+                    console.log('✅ Booking saved to local storage');
+                }
+            } catch (e) {
+                console.error('Could not save booking:', e);
+            }
+        }
+
+        async function sendConfirmationEmail(orderId, email, details) {
+            try {
+                const response = await fetch('/api/hotels/booking/send-confirmation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        partner_order_id: orderId,
+                        email: email,
+                        ...details
+                    })
+                });
+                return await response.json();
+            } catch (e) {
+                console.error('Email send failed:', e);
+                throw e;
+            }
+        }
     </script>
 </body>
 
