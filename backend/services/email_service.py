@@ -12,9 +12,10 @@ class EmailService:
             self.init_app(app)
 
     def init_app(self, app):
-        self.smtp_server = app.config.get('MAIL_SERVER', 'smtp.office365.com')
-        self.smtp_port = int(app.config.get('MAIL_PORT', 587))
-        self.use_tls = app.config.get('MAIL_USE_TLS', True)
+        self.smtp_server = app.config.get('MAIL_SERVER', 'smtpout.secureserver.net')
+        self.smtp_port = int(app.config.get('MAIL_PORT', 465))
+        self.use_tls = app.config.get('MAIL_USE_TLS', False)
+        self.use_ssl = app.config.get('MAIL_USE_SSL', True)
         self.username = app.config.get('MAIL_USERNAME')
         self.password = app.config.get('MAIL_PASSWORD')
         self.default_sender = app.config.get('MAIL_DEFAULT_SENDER')
@@ -45,16 +46,23 @@ class EmailService:
                     part.add_header('Content-Disposition', 'attachment', filename=filename)
                     msg.attach(part)
 
-            # Connect to SMTP server
-            server = smtplib.SMTP(self.smtp_server, self.smtp_port)
+            # Connect to SMTP server (SSL or TLS)
+            if self.use_ssl:
+                # Use SSL (port 465)
+                server = smtplib.SMTP_SSL(self.smtp_server, self.smtp_port, timeout=30)
+            else:
+                # Use TLS (port 587)
+                server = smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=30)
+                if self.use_tls:
+                    server.starttls()
+            
             server.set_debuglevel(0)  # Set to 1 for debug output
-            
-            if self.use_tls:
-                server.starttls()
-            
             server.login(self.username, self.password)
             server.send_message(msg)
             server.quit()
+            
+            print(f"✅ Email sent to {to_email}")
+            return True
             
             print(f"✅ Email sent to {to_email}")
             return True
