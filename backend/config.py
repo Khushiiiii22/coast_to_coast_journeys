@@ -43,6 +43,15 @@ class Config:
     PAYPAL_CLIENT_SECRET = os.getenv('PAYPAL_CLIENT_SECRET')
     PAYPAL_MODE = os.getenv('PAYPAL_MODE', 'sandbox')
     
+    # Email/SMTP Configuration (GoDaddy)
+    MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtpout.secureserver.net')
+    MAIL_PORT = int(os.getenv('MAIL_PORT', 465))
+    MAIL_USE_TLS = os.getenv('MAIL_USE_TLS', 'False').lower() == 'true'
+    MAIL_USE_SSL = os.getenv('MAIL_USE_SSL', 'True').lower() == 'true'
+    MAIL_USERNAME = os.getenv('MAIL_USERNAME')
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER')
+    
     @classmethod
     def validate(cls):
         """Validate required configuration"""
