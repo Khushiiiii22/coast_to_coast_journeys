@@ -124,6 +124,7 @@ async function performSearch(params) {
             await HotelAPI.healthCheck();
         } catch (e) {
             console.log('Backend server not reachable, using demo data');
+            showNotification('Backend server not available. Showing demo hotels.', 'warning');
             showDemoResults(params);
             return;
         }
@@ -132,20 +133,42 @@ async function performSearch(params) {
         const result = await HotelAPI.searchByDestination(params);
 
         if (result.success && result.data?.hotels?.length > 0) {
+            // Real API data received!
             SearchSession.saveSearchResults(result);
             displayResults(result);
-        } else if (result.success) {
-            // API succeeded but no results - show demo data
-            console.log('No hotels found from API, using demo data');
+
+            // Show success notification based on data source
+            if (result.real_data) {
+                const hotelCount = result.hotels_count || result.data.hotels.length;
+                const location = result.location?.name || params.destination;
+
+                if (result.source === 'google_places') {
+                    // Google Places data - real hotels but need contact for booking
+                    showNotification(`Found ${hotelCount} real hotels in ${location}! (via Google Places)`, 'success');
+                } else {
+                    // RateHawk data - fully bookable
+                    showNotification(`Found ${hotelCount} bookable hotels in ${location}!`, 'success');
+                }
+            }
+        } else if (result.success && (!result.data?.hotels || result.data.hotels.length === 0)) {
+            // API succeeded but no results
+            console.log('No hotels found from API');
+            showNotification('No hotels found for this destination.', 'warning');
+            showDemoResults(params);
+        } else if (result.sandbox_mode) {
+            // Sandbox mode limitation
+            console.log('Destination not supported:', result.error);
+            showNotification(result.error || 'Could not find hotels for this destination.', 'warning');
             showDemoResults(params);
         } else {
-            // API returned an error - fall back to demo data for better UX
-            console.log('API error, using demo data:', result.error);
+            // Other API error
+            console.log('API error:', result.error);
+            showNotification('Search encountered an issue. Showing demo hotels.', 'info');
             showDemoResults(params);
         }
     } catch (error) {
         console.error('Search error:', error);
-        // Always fall back to demo data on any error
+        showNotification('Search failed. Showing demo hotels.', 'info');
         showDemoResults(params);
     }
 }
@@ -186,8 +209,7 @@ function showDemoResults(params) {
 
     SearchSession.saveSearchResults(result);
     displayResults(result);
-
-    showNotification('Showing demo hotels. Connect backend for real results.', 'info');
+    // Note: Notification is now handled by performSearch for better context
 }
 
 /**
