@@ -90,14 +90,54 @@ class EmailService:
         # Send email to customer
         customer_email_sent = self.send_email(to_email, subject, body, html_body=invoice_html)
         
-        # Send notification to sales team
-        self._send_sales_notification(booking_details)
+        # Send copy to owner (from .env MAIL_DEFAULT_SENDER)
+        self._send_owner_notification(to_email, booking_details)
         
         return customer_email_sent
 
+    def _send_owner_notification(self, guest_email, booking_details):
+        """Send booking notification to owner/admin (from MAIL_DEFAULT_SENDER in .env)"""
+        # Owner email is the default sender from .env
+        owner_email = self.default_sender
+        
+        if not owner_email:
+            print("⚠️ Owner email not configured. Skipping owner notification.")
+            return
+        
+        subject = f"🎉 New Booking - {booking_details.get('hotel_name')} | {booking_details.get('booking_id', 'N/A')}"
+        
+        body = f"""
+        New Booking Confirmed!
+        
+        ══════════════════════════════════════
+        BOOKING DETAILS
+        ══════════════════════════════════════
+        
+        Booking ID: {booking_details.get('booking_id', 'N/A')}
+        
+        GUEST INFORMATION:
+        • Name: {booking_details.get('customer_name', 'N/A')}
+        • Email: {guest_email}
+        
+        HOTEL DETAILS:
+        • Hotel: {booking_details.get('hotel_name', 'N/A')}
+        • Check-in: {booking_details.get('checkin', 'N/A')}
+        • Check-out: {booking_details.get('checkout', 'N/A')}
+        
+        PAYMENT:
+        • Amount: ₹{booking_details.get('amount', 'N/A')}
+        
+        ══════════════════════════════════════
+        
+        This is an automated notification from C2C Journeys.
+        """
+        
+        print(f"📧 Sending owner notification to {owner_email}")
+        self.send_email(owner_email, subject, body)
+
     def _send_sales_notification(self, booking_details):
         """Send notification to sales team"""
-        sales_email = "sales@c2cjourneys.com"
+        sales_email = self.default_sender  # Use owner email from .env
         subject = f"New Booking Alert - {booking_details.get('booking_id', 'N/A')}"
         
         body = f"""
