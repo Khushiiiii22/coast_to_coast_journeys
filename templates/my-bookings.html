@@ -487,6 +487,11 @@
         let currentCancelId = null;
 
         document.addEventListener('DOMContentLoaded', async function () {
+            // Initialize auth UI for header
+            if (typeof SupabaseDB !== 'undefined' && SupabaseDB.initAuthUI) {
+                SupabaseDB.initAuthUI();
+            }
+
             // Check if user is logged in
             const user = await checkAuth();
             if (!user) {
@@ -495,17 +500,13 @@
                 return;
             }
 
-            // Update auth button
-            document.getElementById('authBtn').innerHTML = '<i class="fas fa-user"></i> ' + (user.email?.split('@')[0] || 'Account');
-
             // Load bookings
             await loadBookings(user.id);
         });
 
         async function checkAuth() {
             try {
-                const { data: { user } } = await supabase.auth.getUser();
-                return user;
+                return await SupabaseDB.getCurrentUser();
             } catch (e) {
                 console.error('Auth check failed:', e);
                 return null;

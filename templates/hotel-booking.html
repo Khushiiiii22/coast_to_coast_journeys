@@ -769,6 +769,14 @@
     <!-- Supabase and Auth Guard -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-client.js"></script>
+    <script>
+        // Initialize auth state for header UI
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof SupabaseDB !== 'undefined' && SupabaseDB.initAuthUI) {
+                SupabaseDB.initAuthUI();
+            }
+        });
+    </script>
     <script src="../js/auth-guard.js"></script>
     <!-- Floating WhatsApp Button -->
     <a href="https://wa.me/919934547108" target="_blank" class="whatsapp-float" title="Chat on WhatsApp"

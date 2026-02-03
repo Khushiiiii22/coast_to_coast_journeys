@@ -90,6 +90,20 @@ async function signIn(email, password) {
 // Sign in with Google
 async function signInWithGoogle() {
     try {
+        // Determine the correct redirect URL based on environment
+        const currentOrigin = window.location.origin;
+        let redirectUrl = currentOrigin + '/templates/auth.html';
+
+        // If we're accessing from templates folder structure (local development)
+        if (window.location.pathname.includes('/templates/')) {
+            redirectUrl = currentOrigin + '/templates/auth.html';
+        } else {
+            // Production or root-level access
+            redirectUrl = currentOrigin + '/auth.html';
+        }
+
+        console.log('Google OAuth redirect URL:', redirectUrl);
+
         const { data, error } = await supabaseClient.auth.signInWithOAuth({
             provider: 'google',
             options: {
@@ -97,11 +111,18 @@ async function signInWithGoogle() {
                     access_type: 'offline',
                     prompt: 'consent',
                 },
-                redirectTo: window.location.origin + '/auth.html'
+                redirectTo: redirectUrl
             }
         });
 
-        if (error) throw error;
+        if (error) {
+            // Check for common configuration errors
+            if (error.message.includes('provider is not enabled') ||
+                error.message.includes('Unsupported provider')) {
+                throw new Error('Google Sign-In is not enabled. Please contact the administrator to configure Google OAuth in Supabase.');
+            }
+            throw error;
+        }
         return { success: true, data };
     } catch (error) {
         console.error('Google sign in error:', error);
@@ -166,8 +187,15 @@ async function isAdmin(userId = null) {
             .eq('is_active', true)
             .single();
 
+        // Handle errors gracefully (table might not exist or RLS policy issue)
+        if (error) {
+            console.log('Admin check skipped:', error.message);
+            return false;
+        }
+
         return !!data;
     } catch (error) {
+        console.log('Admin check error:', error.message);
         return false;
     }
 }
@@ -962,6 +990,189 @@ function onAuthStateChange(callback) {
     });
 }
 
+/**
+ * Get user profile info for UI display
+ * Returns name, email, and avatar URL for displaying in the header
+ */
+async function getUserProfileForUI() {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return null;
+
+        // Extract display name from user metadata (check multiple possible fields)
+        let displayName = user.user_metadata?.full_name ||
+            user.user_metadata?.name ||
+            user.user_metadata?.preferred_username ||
+            user.email?.split('@')[0] ||
+            'User';
+
+        // Get first name only for compact display
+        const firstName = displayName.split(' ')[0];
+
+        // Get avatar URL from various possible metadata fields
+        // Google OAuth stores it in different places depending on the setup
+        let avatarUrl = null;
+
+        // Check all possible avatar URL locations
+        if (user.user_metadata?.avatar_url) {
+            avatarUrl = user.user_metadata.avatar_url;
+        } else if (user.user_metadata?.picture) {
+            avatarUrl = user.user_metadata.picture;
+        } else if (user.identities && user.identities.length > 0) {
+            // Check identities for avatar
+            for (const identity of user.identities) {
+                if (identity.identity_data?.avatar_url) {
+                    avatarUrl = identity.identity_data.avatar_url;
+                    break;
+                }
+                if (identity.identity_data?.picture) {
+                    avatarUrl = identity.identity_data.picture;
+                    break;
+                }
+            }
+        }
+
+        // If no avatar found, generate one from initials
+        if (!avatarUrl) {
+            avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=056cb9&color=fff&size=96&font-size=0.4&bold=true`;
+        }
+
+        console.log('User profile loaded:', { displayName, firstName, avatarUrl, provider: user.app_metadata?.provider });
+
+        return {
+            id: user.id,
+            email: user.email,
+            fullName: displayName,
+            firstName: firstName,
+            avatarUrl: avatarUrl,
+            provider: user.app_metadata?.provider || 'email',
+            phone: user.user_metadata?.phone || user.phone || null,
+            createdAt: user.created_at
+        };
+    } catch (error) {
+        console.error('Error getting user profile:', error);
+        return null;
+    }
+}
+
+/**
+ * Initialize auth state for UI updates
+ * Call this on page load to update header with user info
+ */
+async function initAuthUI() {
+    const userProfile = await getUserProfileForUI();
+
+    if (userProfile) {
+        // User is logged in - update the header
+        updateHeaderForLoggedInUser(userProfile);
+    }
+
+    // Listen for auth state changes
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+        console.log('Auth state changed:', event);
+        if (event === 'SIGNED_IN' && session) {
+            const profile = await getUserProfileForUI();
+            if (profile) updateHeaderForLoggedInUser(profile);
+        } else if (event === 'SIGNED_OUT') {
+            updateHeaderForLoggedOutUser();
+        }
+    });
+}
+
+/**
+ * Update header UI when user is logged in
+ */
+function updateHeaderForLoggedInUser(userProfile) {
+    // Find the Sign In button in the header
+    const signInBtn = document.querySelector('.header-actions .btn-outline');
+    if (!signInBtn) return;
+
+    // Replace it with user profile dropdown
+    const headerActions = signInBtn.parentElement;
+
+    // Generate fallback avatar URL (always works)
+    const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(userProfile.fullName)}&background=056cb9&color=fff&size=96&font-size=0.4&bold=true`;
+
+    // Create user profile dropdown HTML
+    const userDropdownHTML = `
+        <div class="user-profile-dropdown" id="userProfileDropdown">
+            <button class="user-profile-btn" id="userProfileBtn">
+                <img src="${userProfile.avatarUrl}" 
+                     alt="${userProfile.firstName}" 
+                     class="user-avatar"
+                     onerror="this.onerror=null; this.src='${fallbackAvatar}';">
+                <span class="user-name">${userProfile.firstName}</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="user-dropdown-menu" id="userDropdownMenu">
+                <div class="user-dropdown-header">
+                    <img src="${userProfile.avatarUrl}" 
+                         alt="${userProfile.fullName}"
+                         onerror="this.onerror=null; this.src='${fallbackAvatar}';">
+                    <div class="user-dropdown-info">
+                        <span class="user-dropdown-name">${userProfile.fullName}</span>
+                        <span class="user-dropdown-email">${userProfile.email}</span>
+                    </div>
+                </div>
+                <div class="user-dropdown-divider"></div>
+                <a href="my-bookings.html" class="user-dropdown-item">
+                    <i class="fas fa-suitcase"></i> My Bookings
+                </a>
+                <a href="profile.html" class="user-dropdown-item">
+                    <i class="fas fa-user"></i> Profile Settings
+                </a>
+                <a href="wishlist.html" class="user-dropdown-item">
+                    <i class="fas fa-heart"></i> Wishlist
+                </a>
+                <div class="user-dropdown-divider"></div>
+                <button class="user-dropdown-item logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
+                </button>
+            </div>
+        </div>
+    `;
+
+    // Remove the old Sign In button and add user dropdown
+    signInBtn.remove();
+    headerActions.insertAdjacentHTML('beforeend', userDropdownHTML);
+
+    // Add event listeners for dropdown and logout
+    const profileBtn = document.getElementById('userProfileBtn');
+    const dropdownMenu = document.getElementById('userDropdownMenu');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    if (profileBtn && dropdownMenu) {
+        profileBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('active');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            dropdownMenu.classList.remove('active');
+        });
+    }
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            await signOut();
+            window.location.href = 'index.html';
+        });
+    }
+}
+
+/**
+ * Update header UI when user is logged out
+ */
+function updateHeaderForLoggedOutUser() {
+    const userDropdown = document.getElementById('userProfileDropdown');
+    if (userDropdown) {
+        const headerActions = userDropdown.parentElement;
+        userDropdown.remove();
+        headerActions.insertAdjacentHTML('beforeend', '<a href="auth.html" class="btn btn-outline">Sign In</a>');
+    }
+}
+
 // Export all functions for use
 window.SupabaseDB = {
     // Auth
@@ -976,6 +1187,10 @@ window.SupabaseDB = {
     getAdminDetails,
     getCustomerDetails,
     onAuthStateChange,
+    getUserProfileForUI,
+    initAuthUI,
+    updateHeaderForLoggedInUser,
+    updateHeaderForLoggedOutUser,
 
     // Hotel Bookings
     getHotelBookings,

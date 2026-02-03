@@ -1708,6 +1708,14 @@
             });
         });
     </script>
+    <script>
+        // Initialize auth state for header UI on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof SupabaseDB !== 'undefined' && SupabaseDB.initAuthUI) {
+                SupabaseDB.initAuthUI();
+            }
+        });
+    </script>
     <script src="../js/main.js"></script>
     <!-- Floating WhatsApp Button -->
     <a href="https://wa.me/919934547108" target="_blank" class="whatsapp-float" title="Chat on WhatsApp"

@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Profile Settings - C2C Journeys. Manage your account settings and preferences.">
+    <title>Profile Settings | C2C Journeys</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="../assets/images/c2c-logo.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        .profile-main {
+            padding: 6rem 0 4rem;
+            min-height: 80vh;
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .profile-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 20px;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .profile-avatar-container {
+            position: relative;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-avatar-edit {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 36px;
+            height: 36px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            border: 3px solid white;
+            transition: transform 0.2s;
+        }
+
+        .profile-avatar-edit:hover {
+            transform: scale(1.1);
+        }
+
+        .profile-info h1 {
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-info .email {
+            opacity: 0.9;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-info .member-since {
+            opacity: 0.7;
+            font-size: 0.85rem;
+        }
+
+        .profile-info .provider-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .profile-section {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 1.5rem;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .section-header h2 {
+            font-size: 1.1rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-body {
+            padding: 1.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(5, 108, 185, 0.1);
+        }
+
+        .form-group input:disabled {
+            background: #f1f5f9;
+            cursor: not-allowed;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-save {
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .btn-save:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #64748b;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background: #cbd5e1;
+        }
+
+        .danger-zone {
+            border: 2px solid #fecaca;
+            background: #fef2f2;
+        }
+
+        .danger-zone .section-header {
+            background: #fee2e2;
+            border-bottom-color: #fecaca;
+        }
+
+        .danger-zone .section-header h2 {
+            color: #dc2626;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .preference-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .preference-item:last-child {
+            border-bottom: none;
+        }
+
+        .preference-info h4 {
+            font-size: 1rem;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .preference-info p {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: .4s;
+            border-radius: 28px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked+.toggle-slider {
+            background-color: var(--primary);
+        }
+
+        .toggle-switch input:checked+.toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-overlay i {
+            font-size: 3rem;
+            color: var(--primary);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <i class="fas fa-spinner"></i>
+        <p>Loading your profile...</p>
+    </div>
+
+    <!-- Header -->
+    <header class="header scrolled" id="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
+                    <span class="logo-text">C2C Journeys</span>
+                </a>
+
+                <nav>
+                    <ul class="nav-menu" id="navMenu">
+                        <li><a href="index.html" class="nav-link">Home</a></li>
+                        <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
+                        <li><a href="hotel-booking.html" class="nav-link">Hotels</a></li>
+                        <li><a href="visa.html" class="nav-link">Visa</a></li>
+                        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                    </ul>
+                </nav>
+
+                <div class="header-actions">
+                    <a href="auth.html" class="btn btn-outline">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="profile-main">
+        <div class="container">
+            <div class="profile-container">
+                <!-- Profile Header -->
+                <div class="profile-header" id="profileHeader">
+                    <div class="profile-avatar-container">
+                        <img id="profileAvatar" class="profile-avatar"
+                            src="https://ui-avatars.com/api/?name=User&background=056cb9&color=fff&size=120"
+                            alt="Profile">
+                    </div>
+                    <div class="profile-info">
+                        <h1 id="profileName">Welcome!</h1>
+                        <p class="email" id="profileEmail">Loading...</p>
+                        <p class="member-since" id="profileMemberSince">Member since...</p>
+                        <span class="provider-badge" id="providerBadge">
+                            <i class="fas fa-envelope"></i> Email
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Personal Information -->
+                <div class="profile-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-user"></i> Personal Information</h2>
+                    </div>
+                    <div class="section-body">
+                        <form id="profileForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>First Name</label>
+                                    <input type="text" id="firstName" placeholder="Enter first name">
+                                </div>
+                                <div class="form-group">
+                                    <label>Last Name</label>
+                                    <input type="text" id="lastName" placeholder="Enter last name">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Email Address</label>
+                                    <input type="email" id="email" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label>Phone Number</label>
+                                    <input type="tel" id="phone" placeholder="+91 XXXXX XXXXX">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Date of Birth</label>
+                                    <input type="date" id="dob">
+                                </div>
+                                <div class="form-group">
+                                    <label>Gender</label>
+                                    <select id="gender">
+                                        <option value="">Select Gender</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
+                                        <option value="prefer_not">Prefer not to say</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn-cancel" onclick="resetForm()">Cancel</button>
+                                <button type="submit" class="btn-save">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Notification Preferences -->
+                <div class="profile-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-bell"></i> Notification Preferences</h2>
+                    </div>
+                    <div class="section-body">
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <h4>Email Notifications</h4>
+                                <p>Receive booking confirmations and updates via email</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="emailNotif" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <h4>Promotional Emails</h4>
+                                <p>Receive deals, offers and travel inspiration</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="promoNotif">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <h4>SMS Notifications</h4>
+                                <p>Receive booking updates via SMS</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="smsNotif">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security -->
+                <div class="profile-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-shield-alt"></i> Security</h2>
+                    </div>
+                    <div class="section-body">
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <h4>Change Password</h4>
+                                <p>Update your password to keep your account secure</p>
+                            </div>
+                            <button class="btn btn-outline" id="changePasswordBtn" onclick="changePassword()">
+                                Change Password
+                            </button>
+                        </div>
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <h4>Two-Factor Authentication</h4>
+                                <p>Add an extra layer of security to your account</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="twoFactorAuth">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Danger Zone -->
+                <div class="profile-section danger-zone">
+                    <div class="section-header">
+                        <h2><i class="fas fa-exclamation-triangle"></i> Danger Zone</h2>
+                    </div>
+                    <div class="section-body">
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <h4>Delete Account</h4>
+                                <p>Permanently delete your account and all associated data</p>
+                            </div>
+                            <button class="btn-danger" onclick="deleteAccount()">
+                                <i class="fas fa-trash"></i> Delete Account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 C2C Journeys. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script>
+        let currentUser = null;
+        let userProfile = null;
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            document.getElementById('loadingOverlay').classList.add('show');
+
+            // Initialize auth UI
+            if (typeof SupabaseDB !== 'undefined' && SupabaseDB.initAuthUI) {
+                SupabaseDB.initAuthUI();
+            }
+
+            // Check if user is logged in
+            currentUser = await SupabaseDB.getCurrentUser();
+            if (!currentUser) {
+                showNotification('Please login to access your profile', 'warning');
+                setTimeout(() => window.location.href = 'auth.html', 2000);
+                return;
+            }
+
+            // Get user profile
+            userProfile = await SupabaseDB.getUserProfileForUI();
+            if (userProfile) {
+                populateProfile(userProfile);
+            }
+
+            document.getElementById('loadingOverlay').classList.remove('show');
+        });
+
+        function populateProfile(profile) {
+            // Header - Add onerror handler for avatar fallback
+            const avatarImg = document.getElementById('profileAvatar');
+            const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.fullName)}&background=056cb9&color=fff&size=120&font-size=0.4&bold=true`;
+
+            avatarImg.onerror = function () {
+                this.onerror = null; // Prevent infinite loop
+                this.src = fallbackAvatar;
+            };
+            avatarImg.src = profile.avatarUrl;
+
+            document.getElementById('profileName').textContent = profile.fullName;
+            document.getElementById('profileEmail').textContent = profile.email;
+
+            // Member since
+            if (profile.createdAt) {
+                const date = new Date(profile.createdAt);
+                document.getElementById('profileMemberSince').textContent = 'Member since ' +
+                    date.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+            }
+
+            // Provider badge
+            const providerBadge = document.getElementById('providerBadge');
+            if (profile.provider === 'google') {
+                providerBadge.innerHTML = '<i class="fab fa-google"></i> Google';
+            } else {
+                providerBadge.innerHTML = '<i class="fas fa-envelope"></i> Email';
+            }
+
+            // Form fields
+            const nameParts = profile.fullName.split(' ');
+            document.getElementById('firstName').value = nameParts[0] || '';
+            document.getElementById('lastName').value = nameParts.slice(1).join(' ') || '';
+            document.getElementById('email').value = profile.email || '';
+            document.getElementById('phone').value = profile.phone || '';
+
+            // Load saved preferences from localStorage
+            const prefs = JSON.parse(localStorage.getItem('c2c_user_prefs') || '{}');
+            if (prefs.dob) document.getElementById('dob').value = prefs.dob;
+            if (prefs.gender) document.getElementById('gender').value = prefs.gender;
+            document.getElementById('emailNotif').checked = prefs.emailNotif !== false;
+            document.getElementById('promoNotif').checked = prefs.promoNotif === true;
+            document.getElementById('smsNotif').checked = prefs.smsNotif === true;
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const phone = document.getElementById('phone').value;
+            const dob = document.getElementById('dob').value;
+            const gender = document.getElementById('gender').value;
+
+            try {
+                // Update user metadata in Supabase
+                const { data, error } = await supabaseClient.auth.updateUser({
+                    data: {
+                        full_name: `${firstName} ${lastName}`.trim(),
+                        phone: phone
+                    }
+                });
+
+                if (error) throw error;
+
+                // Save preferences locally
+                const prefs = {
+                    dob: dob,
+                    gender: gender,
+                    emailNotif: document.getElementById('emailNotif').checked,
+                    promoNotif: document.getElementById('promoNotif').checked,
+                    smsNotif: document.getElementById('smsNotif').checked
+                };
+                localStorage.setItem('c2c_user_prefs', JSON.stringify(prefs));
+
+                showNotification('Profile updated successfully!', 'success');
+
+                // Update header name
+                document.getElementById('profileName').textContent = `${firstName} ${lastName}`.trim();
+
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showNotification('Failed to update profile. Please try again.', 'error');
+            }
+        });
+
+        function resetForm() {
+            if (userProfile) {
+                populateProfile(userProfile);
+            }
+        }
+
+        function changePassword() {
+            if (userProfile?.provider === 'google') {
+                showNotification('Password change is not available for Google accounts', 'warning');
+                return;
+            }
+
+            // Redirect to password reset
+            supabaseClient.auth.resetPasswordForEmail(currentUser.email, {
+                redirectTo: window.location.origin + '/templates/auth.html'
+            }).then(() => {
+                showNotification('Password reset email sent! Check your inbox.', 'success');
+            }).catch(error => {
+                showNotification('Failed to send password reset email', 'error');
+            });
+        }
+
+        function deleteAccount() {
+            if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                if (confirm('All your bookings and data will be permanently deleted. Continue?')) {
+                    showNotification('Account deletion request submitted. Please contact support.', 'info');
+                }
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+
+            const colors = {
+                success: 'linear-gradient(135deg, #10b981, #047857)',
+                error: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                warning: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                info: 'linear-gradient(135deg, #3b82f6, #2563eb)'
+            };
+
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-times-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas ${icons[type]}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: ${colors[type]};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                z-index: 9999;
+                animation: slideIn 0.3s ease;
+            `;
+
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 4000);
+        }
+    </script>
+</body>
+
+</html>

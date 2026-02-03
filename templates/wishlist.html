@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="My Wishlist - C2C Journeys. Save your favorite hotels and flights for later.">
+    <title>My Wishlist | C2C Journeys</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="../assets/images/c2c-logo.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        .wishlist-main {
+            padding: 6rem 0 4rem;
+            min-height: 80vh;
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .wishlist-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .page-title i {
+            color: #ef4444;
+        }
+
+        .wishlist-count {
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .wishlist-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            background: white;
+            padding: 0.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .wishlist-tab {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .wishlist-tab:hover {
+            background: #f1f5f9;
+            color: var(--primary);
+        }
+
+        .wishlist-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .wishlist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .wishlist-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .wishlist-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .wishlist-image {
+            position: relative;
+            height: 180px;
+            overflow: hidden;
+        }
+
+        .wishlist-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .wishlist-card:hover .wishlist-image img {
+            transform: scale(1.05);
+        }
+
+        .wishlist-remove {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 36px;
+            height: 36px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .wishlist-remove i {
+            color: #ef4444;
+            font-size: 1rem;
+        }
+
+        .wishlist-remove:hover {
+            background: #ef4444;
+            transform: scale(1.1);
+        }
+
+        .wishlist-remove:hover i {
+            color: white;
+        }
+
+        .wishlist-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 6px 12px;
+            background: var(--primary);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        .wishlist-content {
+            padding: 1.25rem;
+        }
+
+        .wishlist-type {
+            font-size: 0.75rem;
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .wishlist-content h3 {
+            font-size: 1.1rem;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .wishlist-location {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .wishlist-location i {
+            color: var(--primary);
+        }
+
+        .wishlist-rating {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .wishlist-rating i {
+            color: #fbbf24;
+            font-size: 0.85rem;
+        }
+
+        .wishlist-rating span {
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-left: 4px;
+        }
+
+        .wishlist-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .wishlist-price {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .wishlist-price span {
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: #64748b;
+        }
+
+        .btn-book {
+            background: var(--accent);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-book:hover {
+            background: var(--accent-dark);
+            transform: translateY(-2px);
+        }
+
+        .empty-wishlist {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .empty-wishlist .icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        .empty-wishlist .icon i {
+            font-size: 2.5rem;
+            color: #ef4444;
+        }
+
+        .empty-wishlist h3 {
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-wishlist p {
+            color: #64748b;
+            margin-bottom: 1.5rem;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .loading-state i {
+            font-size: 3rem;
+            color: var(--primary);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .wishlist-tabs {
+                width: 100%;
+                overflow-x: auto;
+            }
+
+            .wishlist-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header scrolled" id="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
+                    <span class="logo-text">C2C Journeys</span>
+                </a>
+
+                <nav>
+                    <ul class="nav-menu" id="navMenu">
+                        <li><a href="index.html" class="nav-link">Home</a></li>
+                        <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
+                        <li><a href="hotel-booking.html" class="nav-link">Hotels</a></li>
+                        <li><a href="visa.html" class="nav-link">Visa</a></li>
+                        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                    </ul>
+                </nav>
+
+                <div class="header-actions">
+                    <a href="auth.html" class="btn btn-outline">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="wishlist-main">
+        <div class="container">
+            <div class="wishlist-container">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <i class="fas fa-heart"></i>
+                        My Wishlist
+                    </h1>
+                    <span class="wishlist-count" id="wishlistCount">0 items</span>
+                </div>
+
+                <!-- Tabs -->
+                <div class="wishlist-tabs">
+                    <button class="wishlist-tab active" data-type="all">
+                        <i class="fas fa-th"></i> All
+                    </button>
+                    <button class="wishlist-tab" data-type="hotel">
+                        <i class="fas fa-hotel"></i> Hotels
+                    </button>
+                    <button class="wishlist-tab" data-type="flight">
+                        <i class="fas fa-plane"></i> Flights
+                    </button>
+                </div>
+
+                <!-- Loading State -->
+                <div class="loading-state" id="loadingState">
+                    <i class="fas fa-spinner"></i>
+                    <p>Loading your wishlist...</p>
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-wishlist" id="emptyState" style="display: none;">
+                    <div class="icon">
+                        <i class="fas fa-heart-crack"></i>
+                    </div>
+                    <h3>Your Wishlist is Empty</h3>
+                    <p>Start exploring and save your favorite hotels and flights to your wishlist for easy access later!
+                    </p>
+                    <a href="hotel-booking.html" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Explore Hotels
+                    </a>
+                </div>
+
+                <!-- Wishlist Grid -->
+                <div class="wishlist-grid" id="wishlistGrid" style="display: none;"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 C2C Journeys. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script>
+        let wishlistItems = [];
+        let currentFilter = 'all';
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Initialize auth UI
+            if (typeof SupabaseDB !== 'undefined' && SupabaseDB.initAuthUI) {
+                SupabaseDB.initAuthUI();
+            }
+
+            // Check if user is logged in
+            const user = await SupabaseDB.getCurrentUser();
+            if (!user) {
+                showNotification('Please login to view your wishlist', 'warning');
+                setTimeout(() => window.location.href = 'auth.html', 2000);
+                return;
+            }
+
+            // Load wishlist
+            loadWishlist();
+
+            // Tab switching
+            document.querySelectorAll('.wishlist-tab').forEach(tab => {
+                tab.addEventListener('click', function () {
+                    document.querySelectorAll('.wishlist-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.type;
+                    renderWishlist();
+                });
+            });
+        });
+
+        function loadWishlist() {
+            // Load from localStorage
+            wishlistItems = JSON.parse(localStorage.getItem('c2c_wishlist') || '[]');
+
+            // If empty, add some sample items for demo
+            if (wishlistItems.length === 0) {
+                // Demo data - in production this would come from Supabase
+                wishlistItems = [
+                    {
+                        id: 'hotel_1',
+                        type: 'hotel',
+                        name: 'The Taj Mahal Palace',
+                        location: 'Colaba, Mumbai',
+                        image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400',
+                        rating: 4.8,
+                        price: 15999,
+                        badge: 'Luxury',
+                        addedAt: new Date().toISOString()
+                    },
+                    {
+                        id: 'hotel_2',
+                        type: 'hotel',
+                        name: 'The Oberoi Udaivilas',
+                        location: 'Udaipur, Rajasthan',
+                        image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400',
+                        rating: 4.9,
+                        price: 25999,
+                        badge: '5 Star',
+                        addedAt: new Date().toISOString()
+                    },
+                    {
+                        id: 'flight_1',
+                        type: 'flight',
+                        name: 'Delhi to Dubai',
+                        location: 'IndiGo • Non-stop • 3h 30m',
+                        image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400',
+                        rating: 4.5,
+                        price: 12500,
+                        badge: 'Best Price',
+                        addedAt: new Date().toISOString()
+                    }
+                ];
+                localStorage.setItem('c2c_wishlist', JSON.stringify(wishlistItems));
+            }
+
+            renderWishlist();
+        }
+
+        function renderWishlist() {
+            document.getElementById('loadingState').style.display = 'none';
+
+            const filteredItems = currentFilter === 'all'
+                ? wishlistItems
+                : wishlistItems.filter(item => item.type === currentFilter);
+
+            // Update count
+            document.getElementById('wishlistCount').textContent =
+                `${filteredItems.length} item${filteredItems.length !== 1 ? 's' : ''}`;
+
+            if (filteredItems.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                document.getElementById('wishlistGrid').style.display = 'none';
+            } else {
+                document.getElementById('emptyState').style.display = 'none';
+                document.getElementById('wishlistGrid').style.display = 'grid';
+
+                const grid = document.getElementById('wishlistGrid');
+                grid.innerHTML = filteredItems.map(item => createWishlistCard(item)).join('');
+            }
+        }
+
+        function createWishlistCard(item) {
+            const stars = '★'.repeat(Math.floor(item.rating)) + (item.rating % 1 >= 0.5 ? '½' : '');
+
+            return `
+                <div class="wishlist-card" data-id="${item.id}">
+                    <div class="wishlist-image">
+                        <img src="${item.image}" alt="${item.name}">
+                        ${item.badge ? `<span class="wishlist-badge">${item.badge}</span>` : ''}
+                        <button class="wishlist-remove" onclick="removeFromWishlist('${item.id}')">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="wishlist-content">
+                        <span class="wishlist-type">
+                            <i class="fas fa-${item.type === 'hotel' ? 'hotel' : 'plane'}"></i>
+                            ${item.type === 'hotel' ? 'Hotel' : 'Flight'}
+                        </span>
+                        <h3>${item.name}</h3>
+                        <p class="wishlist-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            ${item.location}
+                        </p>
+                        <div class="wishlist-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star${item.rating >= 4.5 ? '' : '-half-alt'}"></i>
+                            <span>${item.rating} rating</span>
+                        </div>
+                        <div class="wishlist-footer">
+                            <div class="wishlist-price">
+                                ₹${item.price.toLocaleString('en-IN')}
+                                <span>/ ${item.type === 'hotel' ? 'night' : 'person'}</span>
+                            </div>
+                            <button class="btn-book" onclick="bookNow('${item.id}', '${item.type}')">
+                                Book Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function removeFromWishlist(itemId) {
+            const index = wishlistItems.findIndex(item => item.id === itemId);
+            if (index > -1) {
+                wishlistItems.splice(index, 1);
+                localStorage.setItem('c2c_wishlist', JSON.stringify(wishlistItems));
+                renderWishlist();
+                showNotification('Removed from wishlist', 'success');
+            }
+        }
+
+        function bookNow(itemId, type) {
+            if (type === 'hotel') {
+                window.location.href = 'hotel-booking.html';
+            } else {
+                window.location.href = 'flight-booking.html';
+            }
+        }
+
+        // Global function to add items to wishlist (can be called from other pages)
+        window.addToWishlist = function (item) {
+            const existing = wishlistItems.find(i => i.id === item.id);
+            if (!existing) {
+                wishlistItems.push({
+                    ...item,
+                    addedAt: new Date().toISOString()
+                });
+                localStorage.setItem('c2c_wishlist', JSON.stringify(wishlistItems));
+                showNotification('Added to wishlist!', 'success');
+            } else {
+                showNotification('Already in wishlist', 'info');
+            }
+        };
+
+        function showNotification(message, type = 'info') {
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+
+            const colors = {
+                success: 'linear-gradient(135deg, #10b981, #047857)',
+                error: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                warning: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                info: 'linear-gradient(135deg, #3b82f6, #2563eb)'
+            };
+
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-times-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas ${icons[type]}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: ${colors[type]};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                z-index: 9999;
+                animation: slideIn 0.3s ease;
+            `;
+
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 4000);
+        }
+    </script>
+</body>
+
+</html>
