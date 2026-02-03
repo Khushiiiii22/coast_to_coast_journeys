@@ -1101,28 +1101,41 @@
                 // Send booking confirmation email
                 const guest = bookingData.guest || {};
                 const customerEmail = guest.email || bookingData.email;
+                
+                console.log('📧 Email Debug:', {
+                    guest: guest,
+                    customerEmail: customerEmail,
+                    bookingDataEmail: bookingData.email,
+                    guestEmail: guest.email
+                });
 
                 if (customerEmail) {
                     try {
+                        console.log('📤 Sending email to:', customerEmail);
+                        const emailPayload = {
+                            partner_order_id: bookingData.partner_order_id || referenceId,
+                            email: customerEmail,
+                            hotel_name: bookingData.hotel.name,
+                            checkin: bookingData.search_params.checkin,
+                            checkout: bookingData.search_params.checkout,
+                            guests: `${guest.firstName || ''} ${guest.lastName || ''}`.trim() || 'Guest',
+                            total_amount: bookingData.total
+                        };
+                        console.log('📦 Email payload:', emailPayload);
+                        
                         const emailResponse = await fetch('/api/hotels/booking/send-confirmation', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                partner_order_id: bookingData.partner_order_id || referenceId,
-                                email: customerEmail,
-                                hotel_name: bookingData.hotel.name,
-                                checkin: bookingData.search_params.checkin,
-                                checkout: bookingData.search_params.checkout,
-                                guests: `${guest.firstName || ''} ${guest.lastName || ''}`.trim() || 'Guest',
-                                total_amount: bookingData.total
-                            })
+                            body: JSON.stringify(emailPayload)
                         });
                         const emailResult = await emailResponse.json();
-                        console.log('Email confirmation:', emailResult);
+                        console.log('✅ Email API response:', emailResult);
                     } catch (emailError) {
-                        console.error('Email send error:', emailError);
+                        console.error('❌ Email send error:', emailError);
                         // Don't block booking confirmation if email fails
                     }
+                } else {
+                    console.warn('⚠️ No customer email found - skipping email send');
                 }
 
                 // Hide card form

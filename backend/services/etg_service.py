@@ -10,10 +10,33 @@ from typing import Optional, List, Dict, Any
 import uuid
 import sys
 import os
+import json
+import logging
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config import Config
+
+# Setup detailed ETG API logging
+etg_logger = logging.getLogger('etg_api')
+etg_logger.setLevel(logging.DEBUG)
+
+# Create logs directory if it doesn't exist
+log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'logs')
+os.makedirs(log_dir, exist_ok=True)
+
+# File handler for ETG API logs
+log_file = os.path.join(log_dir, 'etg_api_logs.json')
+file_handler = logging.FileHandler(log_file)
+file_handler.setLevel(logging.DEBUG)
+etg_logger.addHandler(file_handler)
+
+# Console handler for immediate feedback
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_formatter = logging.Formatter('%(asctime)s - ETG API - %(levelname)s - %(message)s')
+console_handler.setFormatter(console_formatter)
+etg_logger.addHandler(console_handler)
 
 
 class ETGApiService:
@@ -42,8 +65,29 @@ class ETGApiService:
         encoded = base64.b64encode(credentials.encode()).decode()
         return f"Basic {encoded}"
     
+    def _log_api_call(self, endpoint: str, request_data: dict, response_data: dict, status_code: int, duration_ms: float):
+        """Log detailed API call information for debugging"""
+        log_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "endpoint": endpoint,
+            "url": f"{self.base_url}{endpoint}",
+            "request": request_data,
+            "response": response_data,
+            "status_code": status_code,
+            "duration_ms": round(duration_ms, 2)
+        }
+        
+        # Write to log file as JSON line
+        with open(log_file, 'a') as f:
+            f.write(json.dumps(log_entry, indent=2, default=str) + "\n---\n")
+        
+        # Console output
+        print(f"📝 ETG API LOG: {endpoint} | Status: {status_code} | Duration: {duration_ms:.0f}ms")
+        
+        return log_entry
+    
     def _make_request(self, endpoint: str, data: dict = None, method: str = "POST") -> dict:
-        """Make a request to ETG API"""
+        """Make a request to ETG API with detailed logging"""
         url = f"{self.base_url}{endpoint}"
         
         headers = {
@@ -51,26 +95,47 @@ class ETGApiService:
             "Content-Type": "application/json"
         }
         
+        start_time = datetime.now()
+        
         try:
+            print(f"🔄 ETG API Request: {method} {endpoint}")
+            print(f"📤 Request Data: {json.dumps(data, indent=2, default=str) if data else 'None'}")
+            
             if method == "GET":
                 response = requests.get(url, headers=headers, timeout=30)
             else:
                 response = requests.post(url, json=data or {}, headers=headers, timeout=30)
             
+            duration_ms = (datetime.now() - start_time).total_seconds() * 1000
+            
+            response_json = response.json() if response.content else {}
+            
+            # Log the API call
+            self._log_api_call(endpoint, data or {}, response_json, response.status_code, duration_ms)
+            
+            print(f"📥 Response Status: {response.status_code}")
+            
             response.raise_for_status()
             return {
                 "success": True,
-                "data": response.json(),
+                "data": response_json,
                 "status_code": response.status_code
             }
         except requests.exceptions.Timeout:
+            duration_ms = (datetime.now() - start_time).total_seconds() * 1000
+            self._log_api_call(endpoint, data or {}, {"error": "Timeout"}, 408, duration_ms)
             return {"success": False, "error": "Request timeout", "status_code": 408}
         except requests.exceptions.HTTPError as e:
+            duration_ms = (datetime.now() - start_time).total_seconds() * 1000
             error_response = None
             try:
                 error_response = e.response.json() if e.response else None
             except:
                 error_response = e.response.text if e.response else None
+            
+            self._log_api_call(endpoint, data or {}, error_response or {"error": str(e)}, 
+                             e.response.status_code if e.response else 500, duration_ms)
+            
             return {
                 "success": False,
                 "error": str(e),
@@ -78,6 +143,8 @@ class ETGApiService:
                 "response": error_response
             }
         except Exception as e:
+            duration_ms = (datetime.now() - start_time).total_seconds() * 1000
+            self._log_api_call(endpoint, data or {}, {"error": str(e)}, 500, duration_ms)
             return {"success": False, "error": str(e), "status_code": 500}
     
     # ==========================================
