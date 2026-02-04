@@ -34,6 +34,11 @@ def debug_email_test():
         use_ssl = current_app.config.get('MAIL_USE_SSL', True)
         resend_api_key = current_app.config.get('RESEND_API_KEY')
         
+        # Check os.environ directly for deeper diagnosis
+        import os as os_lib
+        env_resend_key = os_lib.getenv('RESEND_API_KEY')
+        env_resend_masked = f"{env_resend_key[:5]}...{env_resend_key[-5:]}" if env_resend_key else "None"
+        
         results = {
             "config": {
                 "server": server,
@@ -41,7 +46,9 @@ def debug_email_test():
                 "username": username,
                 "password_configured": bool(password),
                 "ssl": use_ssl,
-                "resend_api_key_configured": bool(resend_api_key)
+                "resend_api_key_configured_in_flask": bool(resend_api_key),
+                "resend_api_key_found_in_os_environ": bool(env_resend_key),
+                "os_environ_key_masked": env_resend_masked
             },
             "steps": []
         }
