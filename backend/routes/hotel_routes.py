@@ -12,6 +12,102 @@ hotel_bp = Blueprint('hotels', __name__, url_prefix='/api/hotels')
 
 
 # ==========================================
+# DEBUG ENDPOINT (Temporary)
+# ==========================================
+
+@hotel_bp.route('/debug/email-test', methods=['GET'])
+def debug_email_test():
+    """Test email configuration and connectivity"""
+    try:
+        from flask import current_app
+        import smtplib
+        import socket
+        import ssl
+        
+        # Get config
+        server = current_app.config.get('MAIL_SERVER')
+        port = int(current_app.config.get('MAIL_PORT', 465))
+        username = current_app.config.get('MAIL_USERNAME')
+        # Mask password
+        password = current_app.config.get('MAIL_PASSWORD')
+        password_masked = f"{password[:2]}...{password[-2:]}" if password else "None"
+        use_ssl = current_app.config.get('MAIL_USE_SSL', True)
+        
+        results = {
+            "config": {
+                "server": server,
+                "port": port,
+                "username": username,
+                "password_configured": bool(password),
+                "ssl": use_ssl
+            },
+            "steps": []
+        }
+        
+        # Step 1: DNS Resolution
+        try:
+            results['steps'].append(f"Resolving {server}...")
+            ip = socket.gethostbyname(server)
+            results['steps'].append(f"✅ Resolved to {ip}")
+        except Exception as e:
+            results['steps'].append(f"❌ DNS Resolution failed: {str(e)}")
+            return jsonify(results), 500
+            
+        # Step 2: Connection
+        try:
+            results['steps'].append(f"Connecting to {server}:{port}...")
+            # Create a socket connection first to test reachability
+            sock = socket.create_connection((server, port), timeout=10)
+            results['steps'].append("✅ TCP Connection successful")
+            sock.close()
+        except Exception as e:
+            results['steps'].append(f"❌ Connection failed: {str(e)}")
+            return jsonify(results), 500
+
+        # Step 3: SMTP Handshake
+        try:
+            results['steps'].append("Starting SMTP session...")
+            
+            if use_ssl:
+                results['steps'].append("Using SMTP_SSL...")
+                smtp = smtplib.SMTP_SSL(server, port, timeout=10)
+            else:
+                results['steps'].append("Using SMTP (TLS)...")
+                smtp = smtplib.SMTP(server, port, timeout=10)
+                smtp.starttls()
+            
+            results['steps'].append("✅ SMTP Connected & Hello received")
+            
+            # Step 4: Login
+            results['steps'].append(f"Attempting login as {username}...")
+            smtp.login(username, password)
+            results['steps'].append("✅ Login successful")
+            
+            smtp.quit()
+            
+            return jsonify({
+                "success": True, 
+                "message": "Email system is fully operational!",
+                "debug_info": results
+            })
+            
+        except smtplib.SMTPAuthenticationError as e:
+             results['steps'].append(f"❌ Authentication Failed: {str(e)}")
+             results['steps'].append("👉 Check your MAIL_USERNAME and MAIL_PASSWORD")
+        except Exception as e:
+            results['steps'].append(f"❌ SMTP Error: {str(e)}")
+            
+        return jsonify({
+            "success": False,
+            "error": "SMTP Test Failed",
+            "debug_info": results
+        }), 500
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ==========================================
 # SUGGEST/AUTOCOMPLETE ENDPOINT
 # ==========================================
 
