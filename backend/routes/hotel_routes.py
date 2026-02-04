@@ -1146,6 +1146,10 @@ def resend_booking_email():
         
         # Send confirmation email
         from services.email_service import email_service
+        from flask import current_app
+        
+        # Initialize email service with Flask app config (required for credentials)
+        email_service.init_app(current_app)
         
         email_details = {
             'booking_id': partner_order_id,

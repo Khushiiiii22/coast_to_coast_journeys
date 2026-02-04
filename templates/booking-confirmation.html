@@ -439,9 +439,10 @@
                 demo: confirmation.demo || false
             });
 
-            // Send confirmation email (if not demo)
-            if (!confirmation.demo && email) {
+            // Send confirmation email for ALL bookings (including demo)
+            if (email) {
                 try {
+                    console.log('📧 Sending confirmation email to:', email);
                     await sendConfirmationEmail(confirmationNumber, email, {
                         hotel_name: hotel.name,
                         checkin: search_params.checkin,
@@ -449,10 +450,12 @@
                         guests: guestNames,
                         total_amount: total_amount
                     });
-                    console.log('✅ Confirmation email sent');
+                    console.log('✅ Confirmation email sent successfully');
                 } catch (e) {
-                    console.log('⚠️ Could not send confirmation email:', e);
+                    console.error('⚠️ Could not send confirmation email:', e);
                 }
+            } else {
+                console.warn('⚠️ No email address provided, skipping confirmation email');
             }
         });
 
