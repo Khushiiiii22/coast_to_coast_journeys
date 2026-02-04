@@ -13,9 +13,10 @@ class EmailService:
 
     def init_app(self, app):
         self.smtp_server = app.config.get('MAIL_SERVER', 'smtpout.secureserver.net')
-        self.smtp_port = int(app.config.get('MAIL_PORT', 465))
-        self.use_tls = app.config.get('MAIL_USE_TLS', False)
-        self.use_ssl = app.config.get('MAIL_USE_SSL', True)
+        # Use Port 587 by default for cloud hosting to avoid Port 465 blocking
+        self.smtp_port = int(app.config.get('MAIL_PORT', 587))
+        self.use_tls = app.config.get('MAIL_USE_TLS', True)
+        self.use_ssl = app.config.get('MAIL_USE_SSL', False)
         self.username = app.config.get('MAIL_USERNAME')
         self.password = app.config.get('MAIL_PASSWORD')
         self.default_sender = app.config.get('MAIL_DEFAULT_SENDER')
