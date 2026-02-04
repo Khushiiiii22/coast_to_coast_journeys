@@ -20,6 +20,15 @@ class EmailService:
         self.password = app.config.get('MAIL_PASSWORD')
         self.default_sender = app.config.get('MAIL_DEFAULT_SENDER')
         
+        # Log email configuration status for debugging
+        if self.username and self.password:
+            print(f"✅ Email service configured: {self.smtp_server}:{self.smtp_port} (SSL={self.use_ssl})")
+            print(f"   📧 Sender: {self.default_sender}")
+        else:
+            print(f"⚠️  Email service NOT configured - missing MAIL_USERNAME or MAIL_PASSWORD")
+            print(f"   Set these in Render Environment Variables:")
+            print(f"   MAIL_SERVER, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD, MAIL_DEFAULT_SENDER")
+        
     def send_email(self, to_email, subject, body, html_body=None, attachments=None):
         """Send an email"""
         if not self.username or not self.password:
