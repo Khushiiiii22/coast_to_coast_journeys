@@ -1,17 +1,24 @@
 
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.application import MIMEApplication
+import resend
 import os
 from datetime import datetime
 
 class EmailService:
+    """
+    Email Service using Resend API (HTTPS-based)
+    
+    Resend sends emails over HTTPS (Port 443), which works on Render
+    unlike traditional SMTP which uses blocked ports (25, 465, 587).
+    """
+    
     def __init__(self, app=None):
+        self.api_key = None
+        self.default_sender = None
         if app:
             self.init_app(app)
 
     def init_app(self, app):
+<<<<<<< HEAD
         self.smtp_server = app.config.get('MAIL_SERVER', 'smtpout.secureserver.net')
         # Use Port 587 by default for cloud hosting to avoid Port 465 blocking
         self.smtp_port = int(app.config.get('MAIL_PORT', 587))
@@ -42,44 +49,64 @@ class EmailService:
         # Fallback to SMTP
         if not self.username or not self.password:
             print("⚠️ Email credentials not configured. Skipping email.")
+=======
+        # Resend API Configuration
+        self.api_key = app.config.get('RESEND_API_KEY') or os.getenv('RESEND_API_KEY')
+        self.default_sender = app.config.get('MAIL_DEFAULT_SENDER') or os.getenv('MAIL_DEFAULT_SENDER', 'onboarding@resend.dev')
+        
+        # Set the API key for resend
+        if self.api_key:
+            resend.api_key = self.api_key
+            print(f"✅ Email service configured with Resend API")
+            print(f"   📧 Sender: {self.default_sender}")
+        else:
+            print(f"⚠️  Email service NOT configured - missing RESEND_API_KEY")
+            print(f"   Set RESEND_API_KEY in Render Environment Variables")
+            print(f"   Get your API key from: https://resend.com/api-keys")
+        
+    def send_email(self, to_email, subject, body, html_body=None, attachments=None):
+        """Send an email using Resend API (HTTPS)"""
+        if not self.api_key:
+            print("⚠️ Resend API key not configured. Skipping email.")
+            print("   Set RESEND_API_KEY environment variable")
+>>>>>>> 0a7885b (resend)
             return False
 
         try:
-            msg = MIMEMultipart()
-            msg['From'] = self.default_sender
-            msg['To'] = to_email
-            msg['Subject'] = subject
-
-            # Add plain text body
-            msg.attach(MIMEText(body, 'plain'))
-
+            # Ensure API key is set
+            resend.api_key = self.api_key
+            
+            # Build the email params
+            params = {
+                "from": self.default_sender,
+                "to": [to_email] if isinstance(to_email, str) else to_email,
+                "subject": subject,
+                "text": body
+            }
+            
             # Add HTML body if provided
             if html_body:
-                msg.attach(MIMEText(html_body, 'html'))
-
-            # Add attachments
+                params["html"] = html_body
+            
+            # Add attachments if provided
             if attachments:
+                attachment_list = []
+                import base64
                 for filename, content in attachments.items():
-                    part = MIMEApplication(content)
-                    part.add_header('Content-Disposition', 'attachment', filename=filename)
-                    msg.attach(part)
-
-            # Connect to SMTP server (SSL or TLS)
-            if self.use_ssl:
-                # Use SSL (port 465)
-                server = smtplib.SMTP_SSL(self.smtp_server, self.smtp_port, timeout=30)
-            else:
-                # Use TLS (port 587)
-                server = smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=30)
-                if self.use_tls:
-                    server.starttls()
+                    attachment_list.append({
+                        "filename": filename,
+                        "content": base64.b64encode(content).decode('utf-8')
+                    })
+                params["attachments"] = attachment_list
             
-            server.set_debuglevel(0)  # Set to 1 for debug output
-            server.login(self.username, self.password)
-            server.send_message(msg)
-            server.quit()
+            # Send the email
+            result = resend.Emails.send(params)
             
+<<<<<<< HEAD
             print(f"✅ SMTP Email sent to {to_email}")
+=======
+            print(f"✅ Email sent to {to_email} (ID: {result.get('id', 'N/A')})")
+>>>>>>> 0a7885b (resend)
             return True
             
         except Exception as e:
@@ -128,20 +155,20 @@ class EmailService:
         invoice_html = self._generate_invoice_html(booking_details)
         
         body = f"""
-        Dear {booking_details.get('customer_name', 'Customer')},
+Dear {booking_details.get('customer_name', 'Customer')},
 
-        Thank you for booking with C2C Journeys!
-        
-        Your booking for {booking_details.get('hotel_name')} has been confirmed.
-        
-        Check-in: {booking_details.get('checkin')}
-        Check-out: {booking_details.get('checkout')}
-        Total Amount: {booking_details.get('amount')} {booking_details.get('currency', 'INR')}
-        
-        Your invoice is attached below.
-        
-        Safe Travels,
-        C2C Journeys Team
+Thank you for booking with C2C Journeys!
+
+Your booking for {booking_details.get('hotel_name')} has been confirmed.
+
+Check-in: {booking_details.get('checkin')}
+Check-out: {booking_details.get('checkout')}
+Total Amount: {booking_details.get('amount')} {booking_details.get('currency', 'INR')}
+
+Your invoice is attached below.
+
+Safe Travels,
+C2C Journeys Team
         """
         
         # Send email to customer
@@ -153,8 +180,7 @@ class EmailService:
         return customer_email_sent
 
     def _send_owner_notification(self, guest_email, booking_details):
-        """Send booking notification to owner/admin (from MAIL_DEFAULT_SENDER in .env)"""
-        # Owner email is the default sender from .env
+        """Send booking notification to owner/admin"""
         owner_email = self.default_sender
         
         if not owner_email:
@@ -164,29 +190,29 @@ class EmailService:
         subject = f"🎉 New Booking - {booking_details.get('hotel_name')} | {booking_details.get('booking_id', 'N/A')}"
         
         body = f"""
-        New Booking Confirmed!
-        
-        ══════════════════════════════════════
-        BOOKING DETAILS
-        ══════════════════════════════════════
-        
-        Booking ID: {booking_details.get('booking_id', 'N/A')}
-        
-        GUEST INFORMATION:
-        • Name: {booking_details.get('customer_name', 'N/A')}
-        • Email: {guest_email}
-        
-        HOTEL DETAILS:
-        • Hotel: {booking_details.get('hotel_name', 'N/A')}
-        • Check-in: {booking_details.get('checkin', 'N/A')}
-        • Check-out: {booking_details.get('checkout', 'N/A')}
-        
-        PAYMENT:
-        • Amount: ₹{booking_details.get('amount', 'N/A')}
-        
-        ══════════════════════════════════════
-        
-        This is an automated notification from C2C Journeys.
+New Booking Confirmed!
+
+══════════════════════════════════════
+BOOKING DETAILS
+══════════════════════════════════════
+
+Booking ID: {booking_details.get('booking_id', 'N/A')}
+
+GUEST INFORMATION:
+• Name: {booking_details.get('customer_name', 'N/A')}
+• Email: {guest_email}
+
+HOTEL DETAILS:
+• Hotel: {booking_details.get('hotel_name', 'N/A')}
+• Check-in: {booking_details.get('checkin', 'N/A')}
+• Check-out: {booking_details.get('checkout', 'N/A')}
+
+PAYMENT:
+• Amount: ₹{booking_details.get('amount', 'N/A')}
+
+══════════════════════════════════════
+
+This is an automated notification from C2C Journeys.
         """
         
         print(f"📧 Sending owner notification to {owner_email}")
@@ -194,19 +220,19 @@ class EmailService:
 
     def _send_sales_notification(self, booking_details):
         """Send notification to sales team"""
-        sales_email = self.default_sender  # Use owner email from .env
+        sales_email = self.default_sender
         subject = f"New Booking Alert - {booking_details.get('booking_id', 'N/A')}"
         
         body = f"""
-        New Booking Confirmed!
-        
-        Booking ID: {booking_details.get('booking_id', 'N/A')}
-        Customer: {booking_details.get('customer_name', 'N/A')}
-        Email: {booking_details.get('customer_email', 'N/A')}
-        Hotel: {booking_details.get('hotel_name', 'N/A')}
-        Check-in: {booking_details.get('checkin', 'N/A')}
-        Check-out: {booking_details.get('checkout', 'N/A')}
-        Amount: {booking_details.get('amount', 'N/A')} {booking_details.get('currency', 'INR')}
+New Booking Confirmed!
+
+Booking ID: {booking_details.get('booking_id', 'N/A')}
+Customer: {booking_details.get('customer_name', 'N/A')}
+Email: {booking_details.get('customer_email', 'N/A')}
+Hotel: {booking_details.get('hotel_name', 'N/A')}
+Check-in: {booking_details.get('checkin', 'N/A')}
+Check-out: {booking_details.get('checkout', 'N/A')}
+Amount: {booking_details.get('amount', 'N/A')} {booking_details.get('currency', 'INR')}
         """
         
         print(f"📧 Sending sales notification to {sales_email}")
