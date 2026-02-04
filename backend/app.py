@@ -96,6 +96,10 @@ def create_app():
     else:
         print("⚠️  Warning: PayPal credentials not found in .env")
     
+    # Initialize Email service
+    from services.email_service import email_service
+    email_service.init_app(app)
+    
     # Define directories
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     templates_dir = os.path.join(base_dir, 'templates')
