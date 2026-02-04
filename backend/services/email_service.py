@@ -1,4 +1,3 @@
-
 import resend
 import os
 from datetime import datetime
@@ -18,38 +17,6 @@ class EmailService:
             self.init_app(app)
 
     def init_app(self, app):
-<<<<<<< HEAD
-        self.smtp_server = app.config.get('MAIL_SERVER', 'smtpout.secureserver.net')
-        # Use Port 587 by default for cloud hosting to avoid Port 465 blocking
-        self.smtp_port = int(app.config.get('MAIL_PORT', 587))
-        self.use_tls = app.config.get('MAIL_USE_TLS', True)
-        self.use_ssl = app.config.get('MAIL_USE_SSL', False)
-        self.username = app.config.get('MAIL_USERNAME')
-        self.password = app.config.get('MAIL_PASSWORD')
-        self.default_sender = app.config.get('MAIL_DEFAULT_SENDER')
-        self.resend_api_key = app.config.get('RESEND_API_KEY')
-        
-        # Log email configuration status for debugging
-        if self.resend_api_key:
-            print(f"✅ Email service configured: Resend API")
-            print(f"   📧 Sender: {self.default_sender}")
-        elif self.username and self.password:
-            print(f"✅ Email service configured: SMTP {self.smtp_server}:{self.smtp_port} (SSL={self.use_ssl})")
-            print(f"   📧 Sender: {self.default_sender}")
-        else:
-            print(f"⚠️  Email service NOT configured - missing MAIL_USERNAME or RESEND_API_KEY")
-            print(f"   Set RESEND_API_KEY in Render Environment Variables for production.")
-        
-    def send_email(self, to_email, subject, body, html_body=None, attachments=None):
-        """Send an email"""
-        # Try Resend API first
-        if self.resend_api_key:
-            return self._send_with_resend(to_email, subject, body, html_body, attachments)
-            
-        # Fallback to SMTP
-        if not self.username or not self.password:
-            print("⚠️ Email credentials not configured. Skipping email.")
-=======
         # Resend API Configuration
         self.api_key = app.config.get('RESEND_API_KEY') or os.getenv('RESEND_API_KEY')
         self.default_sender = app.config.get('MAIL_DEFAULT_SENDER') or os.getenv('MAIL_DEFAULT_SENDER', 'onboarding@resend.dev')
@@ -69,7 +36,6 @@ class EmailService:
         if not self.api_key:
             print("⚠️ Resend API key not configured. Skipping email.")
             print("   Set RESEND_API_KEY environment variable")
->>>>>>> 0a7885b (resend)
             return False
 
         try:
@@ -102,49 +68,11 @@ class EmailService:
             # Send the email
             result = resend.Emails.send(params)
             
-<<<<<<< HEAD
-            print(f"✅ SMTP Email sent to {to_email}")
-=======
             print(f"✅ Email sent to {to_email} (ID: {result.get('id', 'N/A')})")
->>>>>>> 0a7885b (resend)
             return True
             
         except Exception as e:
-            print(f"❌ Failed to send SMTP email: {str(e)}")
-            return False
-
-    def _send_with_resend(self, to_email, subject, body, html_body=None, attachments=None):
-        """Send an email using Resend API"""
-        try:
-            import resend
-            resend.api_key = self.resend_api_key
-            
-            params = {
-                "from": f"C2C Journeys <{self.default_sender}>",
-                "to": to_email,
-                "subject": subject,
-                "text": body,
-            }
-            
-            if html_body:
-                params["html"] = html_body
-                
-            if attachments:
-                resend_attachments = []
-                for filename, content in attachments.items():
-                    import base64
-                    resend_attachments.append({
-                        "filename": filename,
-                        "content": base64.b64encode(content).decode()
-                    })
-                params["attachments"] = resend_attachments
-                
-            r = resend.Emails.send(params)
-            print(f"✅ Resend API Email sent to {to_email} (ID: {r.get('id')})")
-            return True
-        except Exception as e:
-            print(f"❌ Failed to send Resend API email: {str(e)}")
-            # If Resend fails, we don't fallback to SMTP here to avoid confusing timeouts
+            print(f"❌ Failed to send email: {str(e)}")
             return False
 
     def send_booking_confirmation(self, to_email, booking_details):
