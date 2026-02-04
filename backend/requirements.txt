@@ -28,3 +28,4 @@ razorpay>=1.4.0
 
 # Production server
 gunicorn==21.2.0
+resend>=0.8.0
