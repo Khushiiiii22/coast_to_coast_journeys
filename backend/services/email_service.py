@@ -19,7 +19,13 @@ class EmailService:
     def init_app(self, app):
         # Resend API Configuration
         self.api_key = app.config.get('RESEND_API_KEY') or os.getenv('RESEND_API_KEY')
-        self.default_sender = app.config.get('MAIL_DEFAULT_SENDER') or os.getenv('MAIL_DEFAULT_SENDER', 'onboarding@resend.dev')
+        
+        # Force the testing domain for Resend to ensure delivery without domain verification
+        # The user can change this later once they verify their domain in Resend dashboard
+        if self.api_key:
+            self.default_sender = 'onboarding@resend.dev'
+        else:
+            self.default_sender = app.config.get('MAIL_DEFAULT_SENDER') or os.getenv('MAIL_DEFAULT_SENDER')
         
         # Set the API key for resend
         if self.api_key:
