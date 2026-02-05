@@ -59,12 +59,20 @@ def debug_email_test():
                 results['steps'].append("Testing Resend API connectivity...")
                 import resend
                 resend.api_key = resend_api_key
-                # Just try to list emails or something simple to check API key
-                # Note: list() might be restricted depending on key permissions, 
-                # but it's a good reachability test.
-                results['steps'].append("✅ Resend API key configured")
+                
+                # ATTEMPT A REAL TEST SEND
+                results['steps'].append(f"Attempting test email via Resend to {username}...")
+                test_send = resend.Emails.send({
+                    "from": f"C2C Debug <onboarding@resend.dev>",
+                    "to": username,
+                    "subject": "C2C Journeys - Email Test",
+                    "text": "This is a test email from your Render deployment to verify the Resend API."
+                })
+                results['steps'].append(f"✅ Resend API Test Sent (ID: {test_send.get('id')})")
+                results['steps'].append("👉 Note: Using 'onboarding@resend.dev' works for testing even if your domain isn't verified.")
             except Exception as e:
-                results['steps'].append(f"⚠️ Resend API check failed: {str(e)}")
+                results['steps'].append(f"❌ Resend API Test Failed: {str(e)}")
+                results['steps'].append("👉 Common cause: Invalid API key or unverified domain/email.")
         
         # Step 1: DNS Resolution
         try:
