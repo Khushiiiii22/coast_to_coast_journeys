@@ -47,6 +47,17 @@ class ETGApiService:
         self.base_url = Config.ETG_API_BASE_URL.rstrip('/')
         self.key_id = Config.ETG_API_KEY_ID
         self.key_secret = Config.ETG_API_KEY_SECRET
+        
+        # Configure Proxy for Static IP (RateHawk Whitelist)
+        self.proxy_url = Config.PROXY_URL
+        self.proxies = None
+        if self.proxy_url:
+            self.proxies = {
+                "http": self.proxy_url,
+                "https": self.proxy_url
+            }
+            print(f"✅ Static IP Proxy configured")
+        
         self._validate_credentials()
     
     def _validate_credentials(self):
@@ -102,9 +113,9 @@ class ETGApiService:
             print(f"📤 Request Data: {json.dumps(data, indent=2, default=str) if data else 'None'}")
             
             if method == "GET":
-                response = requests.get(url, headers=headers, timeout=30)
+                response = requests.get(url, headers=headers, proxies=self.proxies, timeout=30)
             else:
-                response = requests.post(url, json=data or {}, headers=headers, timeout=30)
+                response = requests.post(url, json=data or {}, headers=headers, proxies=self.proxies, timeout=30)
             
             duration_ms = (datetime.now() - start_time).total_seconds() * 1000
             
