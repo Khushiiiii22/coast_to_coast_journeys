@@ -431,7 +431,7 @@ def search_by_destination():
                 checkout=data['checkout'],
                 guests=guests,
                 currency='USD',
-                residency='gb'
+                residency=data.get('residency', 'gb')  # Use user selected residency
             )
             
             # Check if RateHawk returned hotels
@@ -575,6 +575,9 @@ def transform_etg_hotels(etg_hotels, destination):
             payment_types = rate.get('payment_options', {}).get('payment_types', [])
             for pt in payment_types:
                 amount = float(pt.get('amount', 0))
+                # Apply 15% Commission
+                amount = amount * 1.15
+                
                 if lowest_price == 0 or amount < lowest_price:
                     lowest_price = amount
                     best_rate = rate
@@ -594,8 +597,8 @@ def transform_etg_hotels(etg_hotels, destination):
             'review_count': 50 + (idx * 23) % 500,  # Demo review count
             'address': destination.title(),
             'image': hotel_images[idx % len(hotel_images)],
-            'price': lowest_price,
-            'original_price': lowest_price * 1.15 if lowest_price > 0 else 0,  # 15% discount shown
+            'price': round(lowest_price, 2),
+            'original_price': round(lowest_price * 1.25, 2),  # Fake higher price
             'currency': 'USD',
             'amenities': extract_amenities(rates),
             'meal_plan': meal_plan,
@@ -604,7 +607,7 @@ def transform_etg_hotels(etg_hotels, destination):
                 {
                     'book_hash': rate.get('match_hash', ''),
                     'room_name': rate.get('room_name', rate.get('room_data_trans', {}).get('main_name', 'Standard Room')),
-                    'price': float(rate.get('payment_options', {}).get('payment_types', [{}])[0].get('amount', 0)),
+                    'price': round(float(rate.get('payment_options', {}).get('payment_types', [{}])[0].get('amount', 0)) * 1.15, 2),
                     'meal': rate.get('meal', 'nomeal')
                 }
                 for rate in rates[:3]  # Limit to 3 rates per hotel
@@ -799,6 +802,762 @@ def get_hotel_info(hotel_id):
     
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@hotel_bp.route('/policies/<hotel_id>', methods=['GET'])
+def get_hotel_policies(hotel_id):
+    """
+    Get hotel policies from static data
+    Returns metapolicy_extra_info and metapolicy_struct fields
+    
+    IMPORTANT: policy_struct is deprecated and should be ignored (per RateHawk)
+    """
+    try:
+        # Fetch static hotel data
+        result = etg_service.get_hotel_static(hotel_id)
+        
+        if not result.get('success'):
+            return jsonify({
+                'success': False,
+                'error': result.get('error', 'Failed to fetch hotel static data')
+            }), 400
+        
+        hotel_data = result.get('data', {})
+        if isinstance(hotel_data, dict) and hotel_data.get('data'):
+            hotel_data = hotel_data['data']
+        
+        # Extract policy information
+        # NOTE: policy_struct is deprecated - we only use metapolicy_struct and metapolicy_extra_info
+        policies = {
+            'metapolicy_struct': hotel_data.get('metapolicy_struct', {}),
+            'metapolicy_extra_info': hotel_data.get('metapolicy_extra_info', {}),
+            # Additional useful info
+            'check_in_time': hotel_data.get('check_in_time'),
+            'check_out_time': hotel_data.get('check_out_time'),
+        }
+        
+        # Format policies for frontend display
+        formatted_policies = format_hotel_policies(policies)
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'raw_policies': policies,
+                'formatted_policies': formatted_policies
+            }
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+def format_hotel_policies(policies):
+    """
+    Format raw policy data into user-friendly display format
+    
+    metapolicy_struct contains structured policy information like:
+    - check_in, check_out times
+    - add_fee (extra beds, cots, etc.)
+    - children policies
+    - pets policies
+    - shuttle services
+    - deposit requirements
+    - internet policies
+    - parking policies
+    
+    metapolicy_extra_info contains additional policy text
+    """
+    formatted = {
+        'check_in_out': [],
+        'children': [],
+        'pets': [],
+        'payments': [],
+        'internet': [],
+        'parking': [],
+        'meals': [],
+        'extra_beds': [],
+        'other': []
+    }
+    
+    metapolicy = policies.get('metapolicy_struct', {})
+    extra_info = policies.get('metapolicy_extra_info', {})
+    
+    # Check-in/Check-out times
+    if policies.get('check_in_time'):
+        formatted['check_in_out'].append({
+            'icon': 'fa-sign-in-alt',
+            'label': 'Check-in Time',
+            'value': policies['check_in_time']
+        })
+    if policies.get('check_out_time'):
+        formatted['check_in_out'].append({
+            'icon': 'fa-sign-out-alt',
+            'label': 'Check-out Time',
+            'value': policies['check_out_time']
+        })
+    
+    # Process metapolicy_struct
+    if metapolicy:
+        # Children policies
+        children_policy = metapolicy.get('children')
+        if children_policy:
+            if isinstance(children_policy, list):
+                for item in children_policy:
+                    formatted['children'].append({
+                        'icon': 'fa-child',
+                        'label': 'Children Policy',
+                        'value': item.get('text', str(item))
+                    })
+            elif isinstance(children_policy, dict):
+                for key, value in children_policy.items():
+                    formatted['children'].append({
+                        'icon': 'fa-child',
+                        'label': f'Children - {key.replace("_", " ").title()}',
+                        'value': str(value)
+                    })
+        
+        # Pets policy
+        pets_policy = metapolicy.get('pets')
+        if pets_policy:
+            if isinstance(pets_policy, list):
+                for item in pets_policy:
+                    formatted['pets'].append({
+                        'icon': 'fa-paw',
+                        'label': 'Pets Policy',
+                        'value': item.get('text', str(item))
+                    })
+            elif isinstance(pets_policy, dict):
+                allowed = pets_policy.get('pets_allowed', pets_policy.get('allowed'))
+                if allowed is not None:
+                    formatted['pets'].append({
+                        'icon': 'fa-paw',
+                        'label': 'Pets',
+                        'value': 'Pets Allowed' if allowed else 'No Pets Allowed'
+                    })
+                if pets_policy.get('fee'):
+                    formatted['pets'].append({
+                        'icon': 'fa-money-bill',
+                        'label': 'Pet Fee',
+                        'value': str(pets_policy.get('fee'))
+                    })
+            elif isinstance(pets_policy, str):
+                formatted['pets'].append({
+                    'icon': 'fa-paw',
+                    'label': 'Pets Policy',
+                    'value': pets_policy
+                })
+        
+        # Internet policy
+        internet_policy = metapolicy.get('internet')
+        if internet_policy:
+            if isinstance(internet_policy, list):
+                for item in internet_policy:
+                    formatted['internet'].append({
+                        'icon': 'fa-wifi',
+                        'label': 'Internet',
+                        'value': item.get('text', str(item))
+                    })
+            elif isinstance(internet_policy, dict):
+                for key, value in internet_policy.items():
+                    formatted['internet'].append({
+                        'icon': 'fa-wifi',
+                        'label': f'Internet - {key.replace("_", " ").title()}',
+                        'value': str(value)
+                    })
+        
+        # Parking policy
+        parking_policy = metapolicy.get('parking')
+        if parking_policy:
+            if isinstance(parking_policy, list):
+                for item in parking_policy:
+                    formatted['parking'].append({
+                        'icon': 'fa-parking',
+                        'label': 'Parking',
+                        'value': item.get('text', str(item))
+                    })
+            elif isinstance(parking_policy, dict):
+                for key, value in parking_policy.items():
+                    formatted['parking'].append({
+                        'icon': 'fa-parking',
+                        'label': f'Parking - {key.replace("_", " ").title()}',
+                        'value': str(value)
+                    })
+        
+        # Deposit/Payment policies
+        deposit = metapolicy.get('deposit')
+        if deposit:
+            if isinstance(deposit, list):
+                for item in deposit:
+                    formatted['payments'].append({
+                        'icon': 'fa-credit-card',
+                        'label': 'Deposit',
+                        'value': item.get('text', str(item))
+                    })
+            elif isinstance(deposit, dict):
+                formatted['payments'].append({
+                    'icon': 'fa-credit-card',
+                    'label': 'Deposit Required',
+                    'value': f"Amount: {deposit.get('amount', 'Varies')}"
+                })
+        
+        # Extra beds/cots
+        add_fee = metapolicy.get('add_fee')
+        if add_fee:
+            if isinstance(add_fee, list):
+                for item in add_fee:
+                    formatted['extra_beds'].append({
+                        'icon': 'fa-bed',
+                        'label': 'Extra Bed/Cot',
+                        'value': item.get('text', str(item))
+                    })
+            elif isinstance(add_fee, dict):
+                for key, value in add_fee.items():
+                    formatted['extra_beds'].append({
+                        'icon': 'fa-bed',
+                        'label': f'{key.replace("_", " ").title()}',
+                        'value': str(value)
+                    })
+    
+    # Process metapolicy_extra_info (additional text-based policies)
+    if extra_info:
+        if isinstance(extra_info, dict):
+            for category, info in extra_info.items():
+                if info:
+                    # Map to appropriate category or put in 'other'
+                    target_category = 'other'
+                    icon = 'fa-info-circle'
+                    
+                    if 'child' in category.lower():
+                        target_category = 'children'
+                        icon = 'fa-child'
+                    elif 'pet' in category.lower():
+                        target_category = 'pets'
+                        icon = 'fa-paw'
+                    elif 'internet' in category.lower() or 'wifi' in category.lower():
+                        target_category = 'internet'
+                        icon = 'fa-wifi'
+                    elif 'parking' in category.lower():
+                        target_category = 'parking'
+                        icon = 'fa-parking'
+                    elif 'payment' in category.lower() or 'deposit' in category.lower():
+                        target_category = 'payments'
+                        icon = 'fa-credit-card'
+                    elif 'meal' in category.lower() or 'breakfast' in category.lower():
+                        target_category = 'meals'
+                        icon = 'fa-utensils'
+                    
+                    if isinstance(info, list):
+                        for item in info:
+                            formatted[target_category].append({
+                                'icon': icon,
+                                'label': category.replace('_', ' ').title(),
+                                'value': str(item)
+                            })
+                    else:
+                        formatted[target_category].append({
+                            'icon': icon,
+                            'label': category.replace('_', ' ').title(),
+                            'value': str(info)
+                        })
+    
+    return formatted
+
+
+# ==========================================
+# ROOM GROUPS ENDPOINT (ETG Room Static Data)
+# ==========================================
+
+@hotel_bp.route('/room-groups/<hotel_id>', methods=['GET'])
+def get_room_groups(hotel_id):
+    """
+    Get room groups from hotel static data for matching with rates
+    
+    This endpoint fetches room static data and returns room groups
+    with images and amenities that can be matched to rates using
+    the rg_ext.rg parameter.
+    
+    Matching Process:
+    - Rate's rg_ext.rg (room group hash) -> room_groups[].rg_hash
+    """
+    try:
+        # Fetch hotel static data
+        result = etg_service.get_hotel_static(hotel_id)
+        
+        if not result.get('success'):
+            return jsonify({
+                'success': False,
+                'error': result.get('error', 'Failed to fetch hotel static data')
+            }), 400
+        
+        hotel_data = result.get('data', {})
+        if isinstance(hotel_data, dict) and hotel_data.get('data'):
+            hotel_data = hotel_data['data']
+        
+        # Extract room groups
+        room_groups = hotel_data.get('room_groups', [])
+        
+        # Format room groups for frontend use
+        formatted_room_groups = format_room_groups(room_groups)
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'room_groups': formatted_room_groups,
+                'hotel_id': hotel_id
+            }
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@hotel_bp.route('/details-enriched', methods=['POST'])
+def get_enriched_hotel_details():
+    """
+    Get hotel details with rates enriched with room static data
+    
+    This endpoint:
+    1. Fetches hotel rates from /search/hp/
+    2. Fetches hotel static data
+    3. Matches rates with room groups using rg_ext.rg <-> room_groups[].rg_hash
+    4. Returns enriched rates with room images and amenities
+    """
+    try:
+        data = request.get_json()
+        
+        required = ['hotel_id', 'checkin', 'checkout', 'adults']
+        for field in required:
+            if field not in data:
+                return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
+        
+        guests = etg_service.format_guests_for_search(
+            adults=data['adults'],
+            children_ages=data.get('children_ages', [])
+        )
+        
+        # 1. Fetch hotel rates
+        rates_result = etg_service.get_hotel_page(
+            hotel_id=data['hotel_id'],
+            checkin=data['checkin'],
+            checkout=data['checkout'],
+            guests=guests,
+            currency=data.get('currency', 'USD')
+        )
+        
+        if not rates_result.get('success'):
+            return jsonify(rates_result)
+        
+        # 2. Fetch hotel static data for room groups
+        static_result = etg_service.get_hotel_static(data['hotel_id'])
+        
+        room_groups = {}
+        if static_result.get('success'):
+            static_data = static_result.get('data', {})
+            if isinstance(static_data, dict) and static_data.get('data'):
+                static_data = static_data['data']
+            
+            # Build room groups lookup by rg_hash
+            for rg in static_data.get('room_groups', []):
+                rg_hash = rg.get('rg_hash')
+                if rg_hash:
+                    room_groups[rg_hash] = {
+                        'name': rg.get('name', rg.get('room_name', '')),
+                        'name_struct': rg.get('name_struct', {}),
+                        'images': rg.get('images', []),
+                        'room_amenities': rg.get('room_amenities', []),
+                        'rg_hash': rg_hash
+                    }
+        
+        # 3. Enrich rates with room group data
+        rates_data = rates_result.get('data', {})
+        if isinstance(rates_data, dict) and rates_data.get('data'):
+            rates_data = rates_data['data']
+        
+        hotels = rates_data.get('hotels', [])
+        enriched_hotels = []
+        
+        for hotel in hotels:
+            enriched_rates = []
+            for rate in hotel.get('rates', []):
+                enriched_rate = enrich_rate_with_room_data(rate, room_groups)
+                enriched_rates.append(enriched_rate)
+            
+            hotel['rates'] = enriched_rates
+            enriched_hotels.append(hotel)
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'hotels': enriched_hotels,
+                'room_groups_count': len(room_groups)
+            }
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+def format_room_groups(room_groups):
+    """
+    Format room groups for frontend consumption
+    
+    Room groups contain:
+    - rg_hash: Unique identifier to match with rate's rg_ext.rg
+    - name: Room group name
+    - images: Array of room images
+    - room_amenities: Array of amenity codes
+    """
+    formatted = []
+    
+    for rg in room_groups:
+        formatted_rg = {
+            'rg_hash': rg.get('rg_hash', ''),
+            'name': rg.get('name', rg.get('room_name', 'Room')),
+            'name_struct': rg.get('name_struct', {}),
+            'images': [],
+            'amenities': [],
+            'bed_type': rg.get('name_struct', {}).get('bedding_type', ''),
+            'bathroom': rg.get('name_struct', {}).get('bathroom', ''),
+            'quality': rg.get('name_struct', {}).get('quality', ''),
+        }
+        
+        # Process images
+        for img in rg.get('images', []):
+            if isinstance(img, str):
+                formatted_rg['images'].append(img)
+            elif isinstance(img, dict):
+                # Handle different image format
+                img_url = img.get('url', img.get('src', ''))
+                if img_url:
+                    formatted_rg['images'].append(img_url)
+        
+        # Process amenities
+        amenity_labels = {
+            'air-conditioning': 'Air Conditioning',
+            'wi-fi': 'Free WiFi',
+            'tv': 'Television',
+            'minibar': 'Minibar',
+            'safe': 'In-room Safe',
+            'hairdryer': 'Hair Dryer',
+            'bathtub': 'Bathtub',
+            'shower': 'Shower',
+            'balcony': 'Balcony',
+            'sea-view': 'Sea View',
+            'city-view': 'City View',
+            'garden-view': 'Garden View',
+            'pool-view': 'Pool View',
+            'mountain-view': 'Mountain View',
+            'kitchen': 'Kitchen',
+            'kitchenette': 'Kitchenette',
+            'coffee-maker': 'Coffee Maker',
+            'iron': 'Iron',
+            'desk': 'Work Desk',
+            'sofa': 'Sofa',
+            'wardrobe': 'Wardrobe',
+            'telephone': 'Telephone',
+        }
+        
+        for amenity in rg.get('room_amenities', []):
+            if isinstance(amenity, str):
+                label = amenity_labels.get(amenity.lower(), amenity.replace('-', ' ').replace('_', ' ').title())
+                formatted_rg['amenities'].append({
+                    'code': amenity,
+                    'label': label
+                })
+            elif isinstance(amenity, dict):
+                formatted_rg['amenities'].append({
+                    'code': amenity.get('code', ''),
+                    'label': amenity.get('name', amenity.get('label', ''))
+                })
+        
+        formatted.append(formatted_rg)
+    
+    return formatted
+
+
+# Commission markup (Net price + Commission = Sales price)
+COMMISSION_PERCENT = 15
+
+def enrich_rate_with_room_data(rate, room_groups):
+    """
+    Enrich a rate with room static data by matching rg_ext.rg with room group hash
+    Also extracts tax data for proper display to customers
+    
+    Matching parameter: rg_ext.rg <-> room_groups[rg_hash]
+    
+    Tax handling:
+    - tax_data.taxes contains all taxes
+    - included_by_supplier: true = already in price
+    - included_by_supplier: false = must be shown separately (paid at check-in)
+    """
+    enriched_rate = dict(rate)
+    
+    # Calculate Price with Commission
+    # ETG returns NET price. We must add our markup.
+    try:
+        net_price = float(rate.get('payment_options', {}).get('payment_types', [{}])[0].get('amount', 0))
+        sales_price = net_price * (1 + COMMISSION_PERCENT / 100)
+        enriched_rate['price'] = round(sales_price, 2)
+        enriched_rate['net_price'] = net_price  # Keep original for reference
+        
+        # Calculate original price (fake higher price for discount display)
+        enriched_rate['original_price'] = round(sales_price * 1.25, 2)
+    except Exception:
+        enriched_rate['price'] = 0
+    
+    # Get rg_ext from rate (contains room group matching info)
+    rg_ext = rate.get('rg_ext', {})
+    rg_hash = rg_ext.get('rg')  # This is the room group hash for matching
+    
+    # Try to find matching room group
+    room_data = room_groups.get(rg_hash, {})
+    
+    if room_data:
+        # Add enriched room data
+        enriched_rate['room_static'] = {
+            'matched': True,
+            'rg_hash': rg_hash,
+            'room_name': room_data.get('name', ''),
+            'images': room_data.get('images', [])[:5],  # Limit to 5 images
+            'amenities': room_data.get('room_amenities', [])[:10]  # Limit to 10 amenities
+        }
+    else:
+        # No match found - use rate's own data
+        enriched_rate['room_static'] = {
+            'matched': False,
+            'rg_hash': rg_hash,
+            'room_name': rate.get('room_name', rate.get('room_data_trans', {}).get('main_name', 'Room')),
+            'images': [],
+            'amenities': []
+        }
+    
+    # Extract tax data
+    # ETG API sends tax_data.taxes array with each tax having:
+    # - name: tax name (e.g., "city_tax", "vat", "electricity_fee")
+    # - included_by_supplier: boolean (false = must be paid at check-in)
+    # - amount: tax amount as string
+    # - currency_code: currency of the tax
+    tax_data = rate.get('tax_data', {})
+    taxes = tax_data.get('taxes', [])
+    
+    # Separate included and non-included taxes
+    included_taxes = []
+    non_included_taxes = []
+    
+    for tax in taxes:
+        tax_info = {
+            'name': tax.get('name', 'Tax'),
+            'amount': tax.get('amount', '0'),
+            'currency_code': tax.get('currency_code', 'USD'),
+            'included_by_supplier': tax.get('included_by_supplier', True)
+        }
+        
+        # Format tax name for display
+        tax_info['display_name'] = format_tax_name(tax_info['name'])
+        
+        if tax.get('included_by_supplier', True):
+            included_taxes.append(tax_info)
+        else:
+            non_included_taxes.append(tax_info)
+    
+    # Add tax information to enriched rate
+    enriched_rate['tax_info'] = {
+        'included_taxes': included_taxes,
+        'non_included_taxes': non_included_taxes,
+        'has_non_included_taxes': len(non_included_taxes) > 0
+    }
+    
+    # Extract cancellation policies
+    # ETG API sends cancellation_penalties with:
+    # - free_cancellation_before: timestamp for free cancellation deadline (UTC+0)
+    # - policies: array of cancellation tiers with penalties
+    cancellation_penalties = rate.get('cancellation_penalties', {})
+    free_cancellation_before = cancellation_penalties.get('free_cancellation_before')
+    policies = cancellation_penalties.get('policies', [])
+    
+    # Format cancellation info for frontend
+    cancellation_info = extract_cancellation_info(free_cancellation_before, policies)
+    enriched_rate['cancellation_info'] = cancellation_info
+    
+    # Extract Meal Data (New RateHawk Requirement)
+    # Replaces outdated 'meal' field
+    meal_data = rate.get('meal_data', {})
+    enriched_rate['meal_info'] = process_meal_data(meal_data)
+    
+    return enriched_rate
+
+
+def process_meal_data(meal_data):
+    """
+    Process ETG meal_data structure
+    
+    Parameters:
+    - meal_data: dict containing:
+        - value: meal type code (e.g., "breakfast-buffet")
+        - has_breakfast: boolean
+        - no_child_meal: boolean (true if child meal is NOT included)
+        
+    Returns formatted meal info
+    """
+    meal_code = meal_data.get('value', 'nomeal')
+    has_breakfast = meal_data.get('has_breakfast', False)
+    no_child_meal = meal_data.get('no_child_meal', False)
+    
+    # Meal Code Mapping
+    meal_labels = {
+        'all-inclusive': 'All Inclusive',
+        'breakfast': 'Breakfast Included',
+        'breakfast-buffet': 'Breakfast Buffet',
+        'continental-breakfast': 'Continental Breakfast',
+        'dinner': 'Dinner Included',
+        'full-board': 'Full Board (B, L, D)',
+        'half-board': 'Half Board (Breakfast + 1 Meal)',
+        'lunch': 'Lunch Included',
+        'nomeal': 'Room Only (No Meal)',
+        'some-meal': 'Meal Plan Included', # Generic fallback
+        'english-breakfast': 'English Breakfast',
+        'american-breakfast': 'American Breakfast',
+        'asian-breakfast': 'Asian Breakfast',
+        'chinese-breakfast': 'Chinese Breakfast',
+        'israeli-breakfast': 'Israeli Breakfast',
+        'japanese-breakfast': 'Japanese Breakfast',
+        'scandinavian-breakfast': 'Scandinavian Breakfast',
+        'scottish-breakfast': 'Scottish Breakfast',
+        'breakfast-for-1': 'Breakfast for 1 Guest',
+        'breakfast-for-2': 'Breakfast for 2 Guests',
+        'super-all-inclusive': 'Super All Inclusive',
+        'soft-all-inclusive': 'Soft All Inclusive',
+        'ultra-all-inclusive': 'Ultra All Inclusive',
+        'half-board-lunch': 'Half Board (Breakfast + Lunch)',
+        'half-board-dinner': 'Half Board (Breakfast + Dinner)'
+    }
+    
+    display_name = meal_labels.get(meal_code, meal_code.replace('-', ' ').title())
+    
+    return {
+        'code': meal_code,
+        'display_name': display_name,
+        'has_breakfast': has_breakfast,
+        'no_child_meal': no_child_meal,
+        'includes_child': not no_child_meal
+    }
+
+
+def extract_cancellation_info(free_cancellation_before, policies):
+    """
+    Extract and format cancellation policy information
+    
+    Parameters:
+    - free_cancellation_before: ISO timestamp for free cancellation deadline (UTC+0)
+      - null means no free cancellation (non-refundable)
+    - policies: array of cancellation tiers
+    
+    Returns formatted cancellation info for frontend display
+    """
+    cancellation_info = {
+        'is_free_cancellation': free_cancellation_before is not None,
+        'free_cancellation_before': free_cancellation_before,
+        'free_cancellation_formatted': None,
+        'policies': [],
+        'summary': 'Non-refundable'
+    }
+    
+    if free_cancellation_before:
+        # Parse and format the deadline
+        try:
+            # Format: "2025-10-21T08:59:00"
+            from datetime import datetime
+            deadline = datetime.fromisoformat(free_cancellation_before.replace('Z', ''))
+            
+            # Format for display
+            cancellation_info['free_cancellation_formatted'] = {
+                'date': deadline.strftime('%d %b %Y'),  # e.g., "21 Oct 2025"
+                'time': deadline.strftime('%H:%M'),     # e.g., "08:59"
+                'datetime': deadline.strftime('%d %b %Y, %H:%M UTC'),  # Full format
+                'iso': free_cancellation_before
+            }
+            
+            cancellation_info['summary'] = f"Free cancellation until {deadline.strftime('%d %b %Y, %H:%M')} UTC"
+        except Exception:
+            # If parsing fails, use raw value
+            cancellation_info['free_cancellation_formatted'] = {
+                'date': free_cancellation_before,
+                'time': '',
+                'datetime': free_cancellation_before,
+                'iso': free_cancellation_before
+            }
+            cancellation_info['summary'] = f"Free cancellation until {free_cancellation_before} UTC"
+    
+    # Process cancellation policies (tiers)
+    for policy in policies:
+        start_at = policy.get('start_at')
+        end_at = policy.get('end_at')
+        amount_show = policy.get('amount_show', '0')
+        amount_charge = policy.get('amount_charge', '0')
+        
+        # Determine policy type
+        if start_at is None and float(amount_show) == 0:
+            # Free cancellation period
+            policy_type = 'free'
+        elif end_at is None:
+            # Full penalty (no refund)
+            policy_type = 'full_penalty'
+        else:
+            # Partial penalty
+            policy_type = 'partial_penalty'
+        
+        formatted_policy = {
+            'type': policy_type,
+            'start_at': start_at,
+            'end_at': end_at,
+            'penalty_amount': amount_show,
+            'penalty_amount_internal': amount_charge
+        }
+        
+        # Format dates for display
+        if start_at:
+            try:
+                from datetime import datetime
+                start = datetime.fromisoformat(start_at.replace('Z', ''))
+                formatted_policy['start_formatted'] = start.strftime('%d %b %Y, %H:%M UTC')
+            except:
+                formatted_policy['start_formatted'] = start_at
+        
+        if end_at:
+            try:
+                from datetime import datetime
+                end = datetime.fromisoformat(end_at.replace('Z', ''))
+                formatted_policy['end_formatted'] = end.strftime('%d %b %Y, %H:%M UTC')
+            except:
+                formatted_policy['end_formatted'] = end_at
+        
+        cancellation_info['policies'].append(formatted_policy)
+    
+    return cancellation_info
+
+
+def format_tax_name(tax_name):
+    """
+    Format tax name for user-friendly display
+    
+    Examples:
+    - city_tax -> City Tax
+    - vat -> VAT
+    - electricity_fee -> Electricity Fee
+    - resort_fee -> Resort Fee
+    """
+    # Handle common abbreviations
+    abbreviations = {
+        'vat': 'VAT',
+        'gst': 'GST',
+        'tds': 'TDS',
+    }
+    
+    if tax_name.lower() in abbreviations:
+        return abbreviations[tax_name.lower()]
+    
+    # Convert snake_case to Title Case
+    return tax_name.replace('_', ' ').replace('-', ' ').title()
 
 
 # ==========================================

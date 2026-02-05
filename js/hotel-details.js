@@ -55,6 +55,8 @@ async function initHotelDetails() {
 
 /**
  * Fetch hotel details from API
+ * Uses enriched endpoint that matches rates with room static data
+ * Matching: rate's rg_ext.rg <-> room_groups[].rg_hash
  */
 async function fetchHotelDetails() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -75,7 +77,27 @@ async function fetchHotelDetails() {
             return;
         }
 
-        // Fetch hotel details
+        // Try enriched endpoint first (includes room images and amenities from static data)
+        try {
+            const enrichedResult = await HotelAPI.getEnrichedHotelDetails({
+                hotel_id: hotelId,
+                checkin: searchParams?.checkin || getDefaultCheckin(),
+                checkout: searchParams?.checkout || getDefaultCheckout(),
+                adults: searchParams?.adults || 2
+            });
+
+            if (enrichedResult.success && enrichedResult.data?.hotels?.length > 0) {
+                currentHotel = enrichedResult.data.hotels[0];
+                currentHotel.room_groups_matched = enrichedResult.data.room_groups_count || 0;
+                displayHotelDetails(currentHotel);
+                console.log(`✅ Loaded hotel with ${enrichedResult.data.room_groups_count} room groups matched`);
+                return;
+            }
+        } catch (enrichedError) {
+            console.log('Enriched endpoint not available, falling back to standard endpoint');
+        }
+
+        // Fallback to standard hotel details endpoint
         const result = await HotelAPI.getHotelDetails({
             hotel_id: hotelId,
             checkin: searchParams?.checkin || getDefaultCheckin(),
@@ -207,6 +229,9 @@ function displayHotelDetails(hotel) {
     // Amenities
     displayAmenities(hotel.amenities || []);
 
+    // Fetch and display hotel policies (metapolicy_struct & metapolicy_extra_info)
+    fetchHotelPolicies(hotel.id || hotel.hid);
+
     // Rates
     displayRates(hotel.rates || []);
 
@@ -248,6 +273,87 @@ function displayAmenities(amenities) {
 }
 
 /**
+ * Fetch hotel policies from RateHawk static data
+ * Uses metapolicy_struct and metapolicy_extra_info (NOT deprecated policy_struct)
+ */
+async function fetchHotelPolicies(hotelId) {
+    const loadingEl = document.getElementById('policiesLoading');
+    const contentEl = document.getElementById('policiesContent');
+    const errorEl = document.getElementById('policiesError');
+
+    if (!hotelId || hotelId.startsWith('google_') || hotelId.startsWith('demo_') || hotelId.startsWith('test_')) {
+        // Hide policies section for non-RateHawk hotels
+        loadingEl?.classList.add('hidden');
+        errorEl?.classList.remove('hidden');
+        return;
+    }
+
+    try {
+        const result = await HotelAPI.getHotelPolicies(hotelId);
+
+        if (result.success && result.data) {
+            loadingEl?.classList.add('hidden');
+            contentEl?.classList.remove('hidden');
+            displayHotelPolicies(result.data.formatted_policies);
+        } else {
+            loadingEl?.classList.add('hidden');
+            errorEl?.classList.remove('hidden');
+        }
+    } catch (error) {
+        console.log('Could not fetch hotel policies:', error);
+        loadingEl?.classList.add('hidden');
+        errorEl?.classList.remove('hidden');
+    }
+}
+
+/**
+ * Display formatted hotel policies
+ */
+function displayHotelPolicies(policies) {
+    const sections = {
+        'check_in_out': 'policyCheckInOut',
+        'children': 'policyChildren',
+        'pets': 'policyPets',
+        'internet': 'policyInternet',
+        'parking': 'policyParking',
+        'payments': 'policyPayments',
+        'extra_beds': 'policyExtraBeds',
+        'meals': 'policyMeals',
+        'other': 'policyOther'
+    };
+
+    let hasAnyPolicies = false;
+
+    for (const [key, elementId] of Object.entries(sections)) {
+        const sectionEl = document.getElementById(elementId);
+        const itemsEl = sectionEl?.querySelector('.policy-items');
+        const policyItems = policies[key] || [];
+
+        if (policyItems.length > 0) {
+            hasAnyPolicies = true;
+            sectionEl?.classList.remove('hidden');
+
+            itemsEl.innerHTML = policyItems.map(item => `
+                <div class="policy-item">
+                    <i class="fas ${item.icon}"></i>
+                    <div class="policy-item-content">
+                        <span class="policy-label">${item.label}:</span>
+                        <span class="policy-value">${item.value}</span>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            sectionEl?.classList.add('hidden');
+        }
+    }
+
+    if (!hasAnyPolicies) {
+        document.getElementById('policiesContent')?.classList.add('hidden');
+        document.getElementById('policiesError')?.classList.remove('hidden');
+    }
+}
+
+/**
  * Display room rates
  */
 function displayRates(rates) {
@@ -267,6 +373,13 @@ function displayRates(rates) {
 
 /**
  * Create rate card element
+ * Includes room images and amenities from ETG static data if available
+ * Matching: rate's rg_ext.rg <-> room_groups[].rg_hash
+ * 
+ * Tax handling:
+ * - Non-included taxes (included_by_supplier: false) are displayed separately
+ * - These taxes must be paid directly at check-in
+ * - Each tax is shown in its original currency (currency_code)
  */
 function createRateCard(rate, index) {
     const card = document.createElement('div');
@@ -275,7 +388,35 @@ function createRateCard(rate, index) {
 
     const price = HotelUtils.formatPrice(rate.price);
     const originalPrice = rate.original_price ? HotelUtils.formatPrice(rate.original_price) : null;
-    const mealPlan = HotelUtils.getMealPlanText(rate.meal_plan);
+
+    // Meal Plan Logic (ETG 'meal_data')
+    const mealInfo = rate.meal_info || {};
+    let mealPlanHtml = '';
+
+    if (mealInfo.display_name) {
+        mealPlanHtml = `<p class="rate-meal-plan"><i class="fas fa-utensils"></i> ${mealInfo.display_name}</p>`;
+
+        // Check if child meal is NOT included when children are present
+        // Check searchParams first, then fallback to current url params if needed
+        const hasChildren = searchParams && (
+            (searchParams.children_ages && searchParams.children_ages.length > 0) ||
+            (Array.isArray(searchParams.rooms) && searchParams.rooms.some(r => r.children > 0))
+        );
+
+        if (hasChildren && mealInfo.no_child_meal) {
+            mealPlanHtml += `
+                <div class="child-meal-warning">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Meals NOT included for children</span>
+                </div>
+            `;
+        }
+    } else {
+        // Fallback for old data
+        const mealText = HotelUtils.getMealPlanText(rate.meal_plan || rate.meal);
+        mealPlanHtml = `<p class="rate-meal-plan"><i class="fas fa-utensils"></i> ${mealText}</p>`;
+    }
+
     const nights = searchParams ? HotelUtils.calculateNights(searchParams.checkin, searchParams.checkout) : 1;
     const totalPrice = HotelUtils.formatPrice(rate.price * nights);
 
@@ -283,28 +424,227 @@ function createRateCard(rate, index) {
         `<span class="rate-feature"><i class="fas fa-check"></i> ${f}</span>`
     ).join('');
 
-    const cancellationBadge = rate.cancellation === 'free'
-        ? '<span class="cancellation-badge free"><i class="fas fa-check-circle"></i> Free Cancellation</span>'
-        : '<span class="cancellation-badge non-refund"><i class="fas fa-info-circle"></i> Non-refundable</span>';
+    // Build cancellation badge with deadline from ETG API
+    // free_cancellation_before contains the UTC+0 timestamp for free cancellation deadline
+    const cancellationInfo = rate.cancellation_info || {};
+    let cancellationBadge = '';
+    let cancellationDetailsHtml = '';
+
+    if (cancellationInfo.is_free_cancellation && cancellationInfo.free_cancellation_formatted) {
+        const deadline = cancellationInfo.free_cancellation_formatted;
+        cancellationBadge = `
+            <span class="cancellation-badge free">
+                <i class="fas fa-check-circle"></i> Free Cancellation
+            </span>
+        `;
+
+        // Build detailed cancellation policy timeline
+        const policies = cancellationInfo.policies || [];
+        let policyTimelineHtml = '';
+
+        if (policies.length > 0) {
+            const policyItems = policies.map(policy => {
+                let icon, label, dateRange, penaltyText, tierClass;
+
+                if (policy.type === 'free') {
+                    icon = 'fa-check-circle';
+                    label = 'Free cancellation';
+                    tierClass = 'tier-free';
+                    dateRange = policy.end_formatted ? `Until ${policy.end_formatted}` : 'Before deadline';
+                    penaltyText = 'No penalty';
+                } else if (policy.type === 'partial_penalty') {
+                    icon = 'fa-exclamation-circle';
+                    label = 'Partial penalty';
+                    tierClass = 'tier-partial';
+                    dateRange = policy.start_formatted ? `From ${policy.start_formatted}` : '';
+                    const amount = parseFloat(policy.penalty_amount || 0).toFixed(2);
+                    penaltyText = `Penalty: $${amount}`;
+                } else if (policy.type === 'full_penalty') {
+                    icon = 'fa-times-circle';
+                    label = 'Full penalty (No refund)';
+                    tierClass = 'tier-full';
+                    dateRange = policy.start_formatted ? `From ${policy.start_formatted}` : 'After deadline';
+                    const amount = parseFloat(policy.penalty_amount || 0).toFixed(2);
+                    penaltyText = `Penalty: $${amount}`;
+                } else {
+                    return '';
+                }
+
+                return `
+                    <div class="policy-tier ${tierClass}">
+                        <div class="tier-icon"><i class="fas ${icon}"></i></div>
+                        <div class="tier-content">
+                            <span class="tier-label">${label}</span>
+                            <span class="tier-date">${dateRange}</span>
+                            ${policy.type !== 'free' ? `<span class="tier-penalty">${penaltyText}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            policyTimelineHtml = `
+                <div class="cancellation-policy-details">
+                    <button class="policy-toggle" onclick="this.parentElement.classList.toggle('expanded')">
+                        <i class="fas fa-chevron-down"></i> View cancellation policy details
+                    </button>
+                    <div class="policy-timeline">
+                        <div class="timeline-header">
+                            <i class="fas fa-calendar-alt"></i> Cancellation Policy Timeline (UTC)
+                        </div>
+                        ${policyItems}
+                    </div>
+                </div>
+            `;
+        }
+
+        cancellationDetailsHtml = `
+            <div class="cancellation-deadline">
+                <i class="fas fa-clock"></i>
+                <span>Cancel free until <strong>${deadline.datetime}</strong></span>
+            </div>
+            ${policyTimelineHtml}
+        `;
+    } else if (rate.cancellation === 'free') {
+        // Fallback for old data without cancellation_info
+        cancellationBadge = '<span class="cancellation-badge free"><i class="fas fa-check-circle"></i> Free Cancellation</span>';
+    } else {
+        cancellationBadge = '<span class="cancellation-badge non-refund"><i class="fas fa-ban"></i> Non-refundable</span>';
+        // Show non-refundable policy info
+        cancellationDetailsHtml = `
+            <div class="non-refundable-notice">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>This rate is non-refundable. Full charges apply if cancelled.</span>
+            </div>
+        `;
+    }
+
+    // Get room static data (images and amenities from ETG static data)
+    const roomStatic = rate.room_static || {};
+    const roomImages = roomStatic.images || [];
+    const roomAmenities = roomStatic.amenities || [];
+    const isMatched = roomStatic.matched || false;
+
+    // Build room image gallery HTML
+    let roomImageHtml = '';
+    if (roomImages.length > 0) {
+        const mainImage = roomImages[0];
+        const thumbnails = roomImages.slice(1, 4);
+        roomImageHtml = `
+            <div class="room-image-gallery">
+                <div class="room-main-image" style="background-image: url('${mainImage}');">
+                    ${thumbnails.length > 0 ? `<span class="image-count"><i class="fas fa-images"></i> ${roomImages.length}</span>` : ''}
+                </div>
+                ${thumbnails.length > 0 ? `
+                    <div class="room-thumbnails">
+                        ${thumbnails.map(img => `<div class="room-thumb" style="background-image: url('${img}');"></div>`).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    // Build room amenities HTML from static data
+    let roomAmenitiesHtml = '';
+    if (roomAmenities.length > 0) {
+        const amenityIcons = {
+            'wi-fi': 'fa-wifi',
+            'wifi': 'fa-wifi',
+            'air-conditioning': 'fa-snowflake',
+            'air_conditioning': 'fa-snowflake',
+            'tv': 'fa-tv',
+            'television': 'fa-tv',
+            'minibar': 'fa-wine-bottle',
+            'safe': 'fa-lock',
+            'hairdryer': 'fa-wind',
+            'bathtub': 'fa-bath',
+            'shower': 'fa-shower',
+            'balcony': 'fa-door-open',
+            'sea-view': 'fa-water',
+            'city-view': 'fa-city',
+            'kitchen': 'fa-utensils',
+            'coffee-maker': 'fa-coffee',
+            'iron': 'fa-tshirt',
+            'desk': 'fa-desk'
+        };
+
+        const displayAmenities = roomAmenities.slice(0, 6).map(amenity => {
+            const code = typeof amenity === 'string' ? amenity : (amenity.code || '');
+            const label = typeof amenity === 'string'
+                ? amenity.replace(/-/g, ' ').replace(/_/g, ' ')
+                : (amenity.label || amenity.name || code);
+            const icon = amenityIcons[code.toLowerCase()] || 'fa-check';
+            return `<span class="room-amenity"><i class="fas ${icon}"></i> ${label}</span>`;
+        }).join('');
+
+        roomAmenitiesHtml = `
+            <div class="room-amenities-list">
+                ${displayAmenities}
+                ${roomAmenities.length > 6 ? `<span class="more-amenities">+${roomAmenities.length - 6} more</span>` : ''}
+            </div>
+        `;
+    }
+
+    // Build non-included taxes HTML
+    // These are taxes that must be paid directly at check-in (included_by_supplier: false)
+    let taxesHtml = '';
+    const taxInfo = rate.tax_info || {};
+    const nonIncludedTaxes = taxInfo.non_included_taxes || [];
+
+    if (nonIncludedTaxes.length > 0) {
+        const taxItems = nonIncludedTaxes.map(tax => {
+            const amount = parseFloat(tax.amount || 0).toFixed(2);
+            const currency = tax.currency_code || 'USD';
+            const displayName = tax.display_name || tax.name || 'Tax';
+            return `
+                <div class="tax-item">
+                    <span class="tax-name">${displayName}</span>
+                    <span class="tax-amount">${currency} ${amount}</span>
+                </div>
+            `;
+        }).join('');
+
+        taxesHtml = `
+            <div class="non-included-taxes-section">
+                <div class="taxes-header">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Additional Taxes & Fees (payable at check-in)</span>
+                </div>
+                <div class="taxes-list">
+                    ${taxItems}
+                </div>
+                <p class="taxes-note">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    These charges are not included in the booking price and must be paid directly at the hotel upon check-in.
+                </p>
+            </div>
+        `;
+    }
 
     card.innerHTML = `
-        <div class="rate-card-header">
-            <div class="rate-info">
-                <h3 class="rate-room-name">${rate.room_name}</h3>
-                <p class="rate-meal-plan"><i class="fas fa-utensils"></i> ${mealPlan}</p>
-                ${cancellationBadge}
+        ${roomImageHtml}
+        <div class="rate-card-content">
+            <div class="rate-card-header">
+                <div class="rate-info">
+                    <h3 class="rate-room-name">${rate.room_name || roomStatic.room_name || 'Room'}</h3>
+                    ${mealPlanHtml}
+                    ${cancellationBadge}
+                    ${cancellationDetailsHtml}
+                    ${isMatched ? '<span class="static-data-badge"><i class="fas fa-image"></i> Room photos available</span>' : ''}
+                </div>
+                <div class="rate-price">
+                    ${originalPrice ? `<span class="original-price">${originalPrice}</span>` : ''}
+                    <span class="rate-per-night">${price} <small>/night</small></span>
+                    <span class="rate-total">${totalPrice} <small>total</small></span>
+                </div>
             </div>
-            <div class="rate-price">
-                ${originalPrice ? `<span class="original-price">${originalPrice}</span>` : ''}
-                <span class="rate-per-night">${price} <small>/night</small></span>
-                <span class="rate-total">${totalPrice} <small>total</small></span>
-            </div>
+            ${roomAmenitiesHtml}
+            ${taxesHtml}
+            <p class="rate-description">${rate.room_description || ''}</p>
+            <div class="rate-features">${featuresHtml}</div>
+            <button class="book-rate-btn" data-rate-index="${index}" style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                Book Now
+            </button>
         </div>
-        <p class="rate-description">${rate.room_description || ''}</p>
-        <div class="rate-features">${featuresHtml}</div>
-        <button class="book-rate-btn" data-rate-index="${index}" style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
-            Book Now
-        </button>
     `;
 
     card.querySelector('.book-rate-btn').addEventListener('click', () => {

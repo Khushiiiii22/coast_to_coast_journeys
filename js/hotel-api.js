@@ -72,6 +72,7 @@ const HotelAPI = {
      * @param {number} params.adults - Number of adults
      * @param {Array} params.children_ages - Ages of children (optional)
      * @param {number} params.radius - Search radius in meters (optional)
+     * @param {string} params.residency - Guest citizenship/residency code (e.g., "in", "gb")
      */
     async searchByDestination(params) {
         return this.request('/hotels/search/destination', {
@@ -83,7 +84,8 @@ const HotelAPI = {
                 adults: params.adults || 2,
                 children_ages: params.children_ages || [],
                 radius: params.radius || 10000,
-                currency: params.currency || 'USD'
+                currency: params.currency || 'USD',
+                residency: params.residency || 'in'  // ETG/RateHawk residency parameter
             })
         });
     },
@@ -150,6 +152,41 @@ const HotelAPI = {
      */
     async getHotelInfo(hotelId) {
         return this.request(`/hotels/info/${hotelId}`);
+    },
+
+    /**
+     * Get hotel policies (metapolicy_struct and metapolicy_extra_info)
+     * IMPORTANT: policy_struct is deprecated and ignored per RateHawk
+     */
+    async getHotelPolicies(hotelId) {
+        return this.request(`/hotels/policies/${hotelId}`);
+    },
+
+    /**
+     * Get room groups from hotel static data
+     * Used for matching rates with room images and amenities
+     * Matching: rate's rg_ext.rg <-> room_groups[].rg_hash
+     */
+    async getRoomGroups(hotelId) {
+        return this.request(`/hotels/room-groups/${hotelId}`);
+    },
+
+    /**
+     * Get hotel details with rates enriched with room static data
+     * Auto-matches rates with room groups using rg_ext.rg
+     */
+    async getEnrichedHotelDetails(params) {
+        return this.request('/hotels/details-enriched', {
+            method: 'POST',
+            body: JSON.stringify({
+                hotel_id: params.hotel_id,
+                checkin: params.checkin,
+                checkout: params.checkout,
+                adults: params.adults || 2,
+                children_ages: params.children_ages || [],
+                currency: params.currency || 'USD'
+            })
+        });
     },
 
     // ==========================================

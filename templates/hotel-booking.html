@@ -72,7 +72,7 @@
             <!-- Hotel Search Box -->
             <div class="booking-search-container">
                 <form id="hotelSearchForm">
-                    <div class="search-form-grid" style="grid-template-columns: 2fr 1fr 1fr 1fr auto;">
+                    <div class="search-form-grid" style="grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;">
                         <div class="form-field">
                             <label>Destination</label>
                             <div class="input-wrapper">
@@ -115,6 +115,70 @@
                                         Room</button>
                                 </div>
                                 <button type="button" class="travelers-done" id="guestsDone">Done</button>
+                            </div>
+                        </div>
+
+                        <!-- Guest Citizenship/Residency (Important for ETG/RateHawk pricing) -->
+                        <div class="form-field">
+                            <label>Guest Nationality <small style="color:#64748b;">(affects pricing)</small></label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-globe"></i>
+                                <select id="guestNationality" class="nationality-select" required>
+                                    <option value="" disabled>Select Country</option>
+                                    <option value="in" selected>🇮🇳 India</option>
+                                    <option value="us">🇺🇸 United States</option>
+                                    <option value="gb">🇬🇧 United Kingdom</option>
+                                    <option value="ae">🇦🇪 UAE</option>
+                                    <option value="sa">🇸🇦 Saudi Arabia</option>
+                                    <option value="sg">🇸🇬 Singapore</option>
+                                    <option value="au">🇦🇺 Australia</option>
+                                    <option value="ca">🇨🇦 Canada</option>
+                                    <option value="de">🇩🇪 Germany</option>
+                                    <option value="fr">🇫🇷 France</option>
+                                    <option value="it">🇮🇹 Italy</option>
+                                    <option value="es">🇪🇸 Spain</option>
+                                    <option value="nl">🇳🇱 Netherlands</option>
+                                    <option value="ch">🇨🇭 Switzerland</option>
+                                    <option value="jp">🇯🇵 Japan</option>
+                                    <option value="kr">🇰🇷 South Korea</option>
+                                    <option value="cn">🇨🇳 China</option>
+                                    <option value="hk">🇭🇰 Hong Kong</option>
+                                    <option value="th">🇹🇭 Thailand</option>
+                                    <option value="my">🇲🇾 Malaysia</option>
+                                    <option value="id">🇮🇩 Indonesia</option>
+                                    <option value="ph">🇵🇭 Philippines</option>
+                                    <option value="vn">🇻🇳 Vietnam</option>
+                                    <option value="za">🇿🇦 South Africa</option>
+                                    <option value="ng">🇳🇬 Nigeria</option>
+                                    <option value="ke">🇰🇪 Kenya</option>
+                                    <option value="eg">🇪🇬 Egypt</option>
+                                    <option value="br">🇧🇷 Brazil</option>
+                                    <option value="mx">🇲🇽 Mexico</option>
+                                    <option value="ar">🇦🇷 Argentina</option>
+                                    <option value="ru">🇷🇺 Russia</option>
+                                    <option value="tr">🇹🇷 Turkey</option>
+                                    <option value="pk">🇵🇰 Pakistan</option>
+                                    <option value="bd">🇧🇩 Bangladesh</option>
+                                    <option value="lk">🇱🇰 Sri Lanka</option>
+                                    <option value="np">🇳🇵 Nepal</option>
+                                    <option value="nz">🇳🇿 New Zealand</option>
+                                    <option value="ie">🇮🇪 Ireland</option>
+                                    <option value="se">🇸🇪 Sweden</option>
+                                    <option value="no">🇳🇴 Norway</option>
+                                    <option value="dk">🇩🇰 Denmark</option>
+                                    <option value="fi">🇫🇮 Finland</option>
+                                    <option value="pl">🇵🇱 Poland</option>
+                                    <option value="at">🇦🇹 Austria</option>
+                                    <option value="be">🇧🇪 Belgium</option>
+                                    <option value="pt">🇵🇹 Portugal</option>
+                                    <option value="gr">🇬🇷 Greece</option>
+                                    <option value="cz">🇨🇿 Czech Republic</option>
+                                    <option value="il">🇮🇱 Israel</option>
+                                    <option value="qa">🇶🇦 Qatar</option>
+                                    <option value="kw">🇰🇼 Kuwait</option>
+                                    <option value="bh">🇧🇭 Bahrain</option>
+                                    <option value="om">🇴🇲 Oman</option>
+                                </select>
                             </div>
                         </div>
 
@@ -588,6 +652,12 @@
         });
 
         // ========== Guests Dropdown (Multi-room) ==========
+        // ETG/RateHawk limits per room:
+        // - Max adults: 6
+        // - Max children: 4
+        // - Max total guests: 10
+        // - Adult age: 18+
+        // - Child age: 0-17
         let rooms = [{ adults: 2, children: 0, childAges: [] }];
         const guestsDropdown = document.getElementById('guestsDropdown');
         const guestsPopup = document.getElementById('guestsPopup');
@@ -634,34 +704,39 @@
         function renderRooms() {
             let html = '';
             rooms.forEach((room, index) => {
+                const totalGuests = room.adults + room.children;
+                const canAddAdult = room.adults < 6 && totalGuests < 10;
+                const canAddChild = room.children < 4 && totalGuests < 10;
+
                 html += `
                     <div class="room-block">
                         <div class="room-header">Room ${index + 1}</div>
                         <div class="traveler-row">
                             <div class="traveler-info">
                                 <span class="traveler-type">Adults</span>
-                                <span class="traveler-age">12+ years</span>
+                                <span class="traveler-age">18+ years</span>
                             </div>
                             <div class="traveler-counter">
-                                <button type="button" class="counter-btn minus" onclick="updateGuest(${index}, 'adults', -1)">-</button>
+                                <button type="button" class="counter-btn minus" onclick="updateGuest(${index}, 'adults', -1)" ${room.adults <= 1 ? 'disabled' : ''}>-</button>
                                 <span>${room.adults}</span>
-                                <button type="button" class="counter-btn plus" onclick="updateGuest(${index}, 'adults', 1)">+</button>
+                                <button type="button" class="counter-btn plus" onclick="updateGuest(${index}, 'adults', 1)" ${!canAddAdult ? 'disabled' : ''}>+</button>
                             </div>
                         </div>
                         <div class="traveler-row">
                             <div class="traveler-info">
                                 <span class="traveler-type">Children</span>
-                                <span class="traveler-age">0-11 years</span>
+                                <span class="traveler-age">0-17 years</span>
                             </div>
                             <div class="traveler-counter">
-                                <button type="button" class="counter-btn minus" onclick="updateGuest(${index}, 'children', -1)">-</button>
+                                <button type="button" class="counter-btn minus" onclick="updateGuest(${index}, 'children', -1)" ${room.children <= 0 ? 'disabled' : ''}>-</button>
                                 <span>${room.children}</span>
-                                <button type="button" class="counter-btn plus" onclick="updateGuest(${index}, 'children', 1)">+</button>
+                                <button type="button" class="counter-btn plus" onclick="updateGuest(${index}, 'children', 1)" ${!canAddChild ? 'disabled' : ''}>+</button>
                             </div>
                         </div>
+                        ${totalGuests >= 10 ? '<div class="room-limit-warning"><i class="fas fa-info-circle"></i> Maximum 10 guests per room</div>' : ''}
                 `;
 
-                // Child Ages
+                // Child Ages (0-17 years)
                 if (room.children > 0) {
                     html += `<div class="child-ages-container">`;
                     for (let i = 0; i < room.children; i++) {
@@ -669,8 +744,8 @@
                             <div class="child-age-group">
                                 <label>Child ${i + 1} Age</label>
                                 <select onchange="updateChildAge(${index}, ${i}, this.value)" onclick="event.stopPropagation()">
-                                    <option value="" disabled ${!room.childAges[i] ? 'selected' : ''}>Age</option>
-                                    ${Array.from({ length: 12 }, (_, k) => `<option value="${k}" ${room.childAges[i] == k ? 'selected' : ''}>${k}</option>`).join('')}
+                                    <option value="" disabled ${!room.childAges[i] && room.childAges[i] !== 0 ? 'selected' : ''}>Age</option>
+                                    ${Array.from({ length: 18 }, (_, k) => `<option value="${k}" ${room.childAges[i] == k ? 'selected' : ''}>${k} year${k !== 1 ? 's' : ''}</option>`).join('')}
                                 </select>
                             </div>
                         `;
@@ -691,14 +766,19 @@
         }
 
         window.updateGuest = function (roomIndex, type, change) {
-            // Prevent bubbling if needed via event generally, but here called inline
             const room = rooms[roomIndex];
+            const totalGuests = room.adults + room.children;
+
             if (type === 'adults') {
                 const newValue = room.adults + change;
-                if (newValue >= 1 && newValue <= 8) room.adults = newValue;
+                // ETG limits: max 6 adults, min 1 adult, max 10 total guests
+                if (newValue >= 1 && newValue <= 6 && (newValue + room.children) <= 10) {
+                    room.adults = newValue;
+                }
             } else if (type === 'children') {
                 const newValue = room.children + change;
-                if (newValue >= 0 && newValue <= 4) {
+                // ETG limits: max 4 children, min 0 children, max 10 total guests
+                if (newValue >= 0 && newValue <= 4 && (room.adults + newValue) <= 10) {
                     room.children = newValue;
                     // Adjust child ages array
                     if (change > 0) {
@@ -712,7 +792,7 @@
         };
 
         window.updateChildAge = function (roomIndex, childIndex, value) {
-            rooms[roomIndex].childAges[childIndex] = value;
+            rooms[roomIndex].childAges[childIndex] = parseInt(value);
         };
 
         function updateGuestsDisplay() {
@@ -731,13 +811,15 @@
             const destination = document.getElementById('destination').value;
             const checkIn = document.getElementById('checkIn').value;
             const checkOut = document.getElementById('checkOut').value;
+            const nationality = document.getElementById('guestNationality').value;
 
             // Construct query parameters
             const params = new URLSearchParams({
                 destination: destination,
                 checkin: checkIn,
                 checkout: checkOut,
-                rooms: JSON.stringify(rooms)
+                rooms: JSON.stringify(rooms),
+                residency: nationality  // ETG/RateHawk residency parameter
             });
 
             // Redirect to results page

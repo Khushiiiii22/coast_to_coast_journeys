@@ -26,7 +26,8 @@ async function initHotelResults() {
             checkout: urlParams.get('checkout'),
             rooms: parseRoomsParam(urlParams.get('rooms')),
             adults: parseInt(urlParams.get('adults')) || 2,
-            children_ages: []
+            children_ages: [],
+            residency: urlParams.get('residency') || 'in'  // ETG/RateHawk residency parameter
         };
 
         // If rooms is array, update total adults

@@ -3047,6 +3047,41 @@ h6 {
     border-color: var(--primary);
 }
 
+/* Room Guest Limit Warning */
+.room-limit-warning {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    margin-top: 12px;
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.1));
+    border: 1px solid rgba(255, 152, 0, 0.3);
+    border-radius: var(--radius);
+    font-size: 0.8rem;
+    color: #b45309;
+    font-weight: 500;
+}
+
+.room-limit-warning i {
+    color: #f59e0b;
+}
+
+/* Disabled counter button state */
+.counter-btn:disabled,
+.counter-btn[disabled] {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+    border-color: var(--gray-300);
+    color: var(--gray-400);
+}
+
+.counter-btn:disabled:hover,
+.counter-btn[disabled]:hover {
+    background: var(--white);
+    color: var(--gray-400);
+}
+
 /* =====================================================
    CUSTOM DATE DISPLAY STYLES
    ===================================================== */
