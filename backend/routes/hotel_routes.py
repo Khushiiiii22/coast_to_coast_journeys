@@ -12,7 +12,7 @@ hotel_bp = Blueprint('hotels', __name__, url_prefix='/api/hotels')
 
 
 # ==========================================
-# DEBUG ENDPOINT (Temporary)
+# DEBUG ENDPOINT (Temporary) - v1.3
 # ==========================================
 
 @hotel_bp.route('/debug/email-test', methods=['GET'])

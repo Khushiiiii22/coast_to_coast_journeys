@@ -31,7 +31,7 @@ def create_app():
     # Configure Flask without automatic static file serving
     # We'll handle static files manually through routes
     app = Flask(__name__, 
-                static_folder=None,  # Disable automatic static file serving
+                static_folder=None,
                 template_folder=templates_folder)
     
     # Load configuration
@@ -99,6 +99,7 @@ def create_app():
     # Initialize Email service
     from services.email_service import email_service
     email_service.init_app(app)
+    print(f"🔑 Resend API Key loaded: {bool(app.config.get('RESEND_API_KEY'))}")
     
     # Define directories
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
