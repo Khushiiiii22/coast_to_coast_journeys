@@ -262,7 +262,7 @@ class ETGApiService:
         currency: str = "USD",
         residency: str = "gb",
         language: str = "en",
-        limit: int = 2500
+        limit: int = 500
     ) -> dict:
         """
         Endpoint 10: Search by geo coordinates
@@ -278,7 +278,9 @@ class ETGApiService:
             "longitude": longitude,
             "radius": radius,
             "currency": currency,
-            "limit": limit
+            "limit": limit,
+            "page_size": limit,
+            "rows": limit
         }
         return self._make_request("/search/serp/geo/", data)
     
@@ -291,7 +293,7 @@ class ETGApiService:
         currency: str = "USD",
         residency: str = "gb",
         language: str = "en",
-        limit: int = 2500
+        limit: int = 500
     ) -> dict:
         """
         Endpoint 11: Search by region
@@ -305,7 +307,9 @@ class ETGApiService:
             "guests": guests,
             "region_id": region_id,
             "currency": currency,
-            "limit": limit
+            "limit": limit,
+            "page_size": limit,
+            "rows": limit
         }
         return self._make_request("/search/serp/region/", data)
     
