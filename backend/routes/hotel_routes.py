@@ -2068,21 +2068,35 @@ def send_booking_confirmation():
             'currency': 'INR'
         }
         
-        print(f"📧 Sending booking confirmation to {data.get('email')}")
-        email_sent = email_service.send_booking_confirmation(data.get('email'), email_details)
+        print(f"📧 Sending booking confirmation to {data.get('email')} (Async)")
         
-        if email_sent:
-            return jsonify({
-                'success': True,
-                'message': 'Confirmation email sent successfully'
-            })
-        else:
-            # Email not configured, but don't fail the request
-            return jsonify({
-                'success': True,
-                'message': 'Booking confirmed (email service not configured)',
-                'email_sent': False
-            })
+        # Define async email function
+        def send_async_email(app, email, details):
+            with app.app_context():
+                try:
+                    email_service.init_app(app)
+                    email_service.send_booking_confirmation(email, details)
+                    print(f"✅ Async email sent to {email}")
+                except Exception as e:
+                    print(f"❌ Async email failed: {str(e)}")
+
+        # Start thread
+        import threading
+        # We need to pass the real app object, current_app is a proxy
+        # _get_current_object() returns the actual app instance
+        email_thread = threading.Thread(
+            target=send_async_email, 
+            args=(current_app._get_current_object(), data.get('email'), email_details)
+        )
+        email_thread.start()
+        
+        # Return success immediately
+        return jsonify({
+            'success': True,
+            'message': 'Booking confirmed (email queued)',
+            'email_sent': True 
+        })
+
     
     except Exception as e:
         print(f"❌ Email send error: {str(e)}")
