@@ -194,10 +194,19 @@
                         </div>
 
                         <!-- Location Map -->
-                        <div class="hotel-info-card">
-                            <h2><i class="fas fa-map"></i> Location</h2>
-                            <div class="hotel-map" id="hotelMap">
-                                <img id="mapImage" src="" alt="Hotel Location" style="width:100%; border-radius: 12px;">
+                        <div class="hotel-info-card" id="locationSection" style="margin-top: 30px;">
+                            <h2
+                                style="font-size: 1.5rem; font-weight: 700; color: #0f172a; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+                                <i class="fas fa-map-marked-alt" style="color: #0e64a6;"></i> Location & Surroundings
+                            </h2>
+                            <div class="hotel-map" id="hotelMap"
+                                style="height: 400px; background: #f8fafc; border-radius: 16px; position: relative; border: 1px solid #e2e8f0; overflow: hidden;">
+                                <!-- Map iframe will be inserted here by JS -->
+                                <div class="loading-state"
+                                    style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.8); gap: 15px;">
+                                    <i class="fas fa-spinner fa-spin fa-2x" style="color: #0e64a6;"></i>
+                                    <span style="color: #64748b; font-weight: 500;">Loading interactive map...</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -206,45 +215,63 @@
                     <div class="booking-sidebar">
                         <div class="booking-card" id="bookingCard">
                             <h3>Booking Summary</h3>
-                            <div class="booking-dates">
-                                <div class="booking-date-item">
-                                    <span class="date-label">Check-in</span>
-                                    <span class="date-value" id="summaryCheckin">-</span>
+                            <div class="booking-summary-content">
+                                <div class="booking-dates">
+                                    <div class="booking-date-item">
+                                        <span class="date-label">Check-in</span>
+                                        <span class="date-value" id="summaryCheckin">-</span>
+                                    </div>
+                                    <div class="booking-date-item">
+                                        <span class="date-label">Check-out</span>
+                                        <span class="date-value" id="summaryCheckout">-</span>
+                                    </div>
                                 </div>
-                                <div class="booking-date-item">
-                                    <span class="date-label">Check-out</span>
-                                    <span class="date-value" id="summaryCheckout">-</span>
+                                <div class="booking-info">
+                                    <div class="booking-summary-item">
+                                        <span>Nights</span>
+                                        <span id="summaryNights">-</span>
+                                    </div>
+                                    <div class="booking-summary-item">
+                                        <span>Rooms</span>
+                                        <span id="summaryRooms">-</span>
+                                    </div>
+                                    <div class="booking-summary-item">
+                                        <span>Guests</span>
+                                        <span id="summaryGuests">-</span>
+                                    </div>
                                 </div>
+                                <div class="selected-room hidden" id="selectedRoomBox">
+                                    <h4>Selected Room</h4>
+                                    <p id="selectedRoomName">-</p>
+                                    <p id="selectedMealPlan">-</p>
+                                </div>
+                                <div class="booking-total hidden" id="bookingTotalBox">
+                                    <span>Total Price</span>
+                                    <span id="totalPrice">₹0</span>
+                                </div>
+                                <button class="confirm-booking-btn hidden" id="proceedToBookBtn" disabled>
+                                    <i class="fas fa-lock"></i> Proceed to Book
+                                </button>
+                                <p class="select-room-prompt" id="selectRoomPrompt">
+                                    <i class="fas fa-hand-pointer"></i> Select a room to proceed
+                                </p>
                             </div>
-                            <div class="booking-info">
-                                <div class="booking-summary-item">
-                                    <span>Nights</span>
-                                    <span id="summaryNights">-</span>
-                                </div>
-                                <div class="booking-summary-item">
-                                    <span>Rooms</span>
-                                    <span id="summaryRooms">-</span>
-                                </div>
-                                <div class="booking-summary-item">
-                                    <span>Guests</span>
-                                    <span id="summaryGuests">-</span>
-                                </div>
-                            </div>
-                            <div class="selected-room hidden" id="selectedRoomBox">
-                                <h4>Selected Room</h4>
-                                <p id="selectedRoomName">-</p>
-                                <p id="selectedMealPlan">-</p>
-                            </div>
-                            <div class="booking-total hidden" id="bookingTotalBox">
-                                <span>Total Price</span>
-                                <span id="totalPrice">₹0</span>
-                            </div>
-                            <button class="confirm-booking-btn hidden" id="proceedToBookBtn" disabled>
-                                <i class="fas fa-lock"></i> Proceed to Book
-                            </button>
-                            <p class="select-room-prompt" id="selectRoomPrompt">
-                                <i class="fas fa-hand-pointer"></i> Select a room to proceed
-                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Trust Badge -->
+                    <div class="booking-card"
+                        style="margin-top: 1.5rem; padding: 1.5rem; text-align: center; border: 1px dashed #cbd5e1; box-shadow: none;">
+                        <div style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">
+                            <i class="fas fa-shield-alt" style="color: #22c55e; font-size: 1.25rem;"></i>
+                            <span style="font-weight: 600; color: var(--navy); margin-left: 5px;">Secure Payments</span>
+                        </div>
+                        <div
+                            style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; opacity: 0.6; font-size: 1.5rem;">
+                            <i class="fab fa-cc-visa"></i>
+                            <i class="fab fa-cc-mastercard"></i>
+                            <i class="fab fa-cc-paypal"></i>
+                            <i class="fab fa-cc-amex"></i>
                         </div>
                     </div>
                 </div>

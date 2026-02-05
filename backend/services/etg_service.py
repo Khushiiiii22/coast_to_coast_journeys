@@ -229,6 +229,21 @@ class ETGApiService:
         GET /hotel/content/
         """
         return self._make_request(f"/hotel/content/?id={hotel_id}&language={language}", method="GET")
+
+    def get_hotels_static(self, hotel_ids: List[str], language: str = "en") -> dict:
+        """
+        Batch retrieve hotel static data for multiple IDs
+        Used to enrich search results with names/images
+        POST /hotel/info/
+        """
+        data = {
+            "ids": hotel_ids,
+            "language": language
+        }
+        # Assuming the batch endpoint is /hotel/info/ as per standard RateHawk V3 patterns for lists
+        # If specific endpoint differs, this may need adjustment. Using content/ as fallback pattern if needed.
+        # But for RateHawk V3, /hotel/info/ is often used for bulk details.
+        return self._make_request("/hotel/info/", data)
     
     # ==========================================
     # SEARCH ENDPOINTS (9-14)

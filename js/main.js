@@ -11,6 +11,7 @@ const DOM = {
     header: document.getElementById('header'),
     mobileMenuToggle: document.getElementById('mobileMenuToggle'),
     navMenu: document.getElementById('navMenu'),
+    currencySelect: document.getElementById('currencySelect'),
 
     // Slider
     heroSlides: document.querySelectorAll('.hero-slider .slide'),
@@ -363,7 +364,8 @@ async function handleHotelSearch(e) {
         rooms: rooms,
         adults: adults,
         children_ages: childrenAges,
-        currency: 'USD'  // Sandbox requires USD
+        children_ages: childrenAges,
+        currency: DOM.currencySelect ? DOM.currencySelect.value : 'INR'
     };
 
     // Validate
@@ -640,9 +642,32 @@ function closeDropdowns(e) {
 }
 
 // ========================================
+// Initialize Currency
+// ========================================
+function initCurrency() {
+    if (DOM.currencySelect) {
+        // Load saved currency
+        const savedCurrency = localStorage.getItem('ctc_currency');
+        if (savedCurrency) {
+            DOM.currencySelect.value = savedCurrency;
+        }
+
+        // Save on change
+        DOM.currencySelect.addEventListener('change', function () {
+            localStorage.setItem('ctc_currency', this.value);
+            // Optional: Reload page if on results page to refresh prices
+            // window.location.reload(); 
+        });
+    }
+}
+
+// ========================================
 // Initialize Event Listeners
 // ========================================
 function initEventListeners() {
+    // Currency
+    initCurrency();
+
     // Scroll
     window.addEventListener('scroll', handleScroll);
 

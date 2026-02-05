@@ -83,7 +83,9 @@ async function fetchHotelDetails() {
                 hotel_id: hotelId,
                 checkin: searchParams?.checkin || getDefaultCheckin(),
                 checkout: searchParams?.checkout || getDefaultCheckout(),
-                adults: searchParams?.adults || 2
+                adults: searchParams?.adults || 2,
+                children_ages: searchParams?.children_ages || [],
+                currency: searchParams?.currency || localStorage.getItem('ctc_currency') || 'INR'
             });
 
             if (enrichedResult.success && enrichedResult.data?.hotels?.length > 0) {
@@ -94,7 +96,7 @@ async function fetchHotelDetails() {
                 return;
             }
         } catch (enrichedError) {
-            console.log('Enriched endpoint not available, falling back to standard endpoint');
+            console.log('Enriched endpoint error:', enrichedError);
         }
 
         // Fallback to standard hotel details endpoint
@@ -458,14 +460,16 @@ function createRateCard(rate, index) {
                     tierClass = 'tier-partial';
                     dateRange = policy.start_formatted ? `From ${policy.start_formatted}` : '';
                     const amount = parseFloat(policy.penalty_amount || 0).toFixed(2);
-                    penaltyText = `Penalty: $${amount}`;
+                    const currency = cancellationInfo.currency_code || 'USD';
+                    penaltyText = `Penalty: ${currency} ${amount}`;
                 } else if (policy.type === 'full_penalty') {
                     icon = 'fa-times-circle';
                     label = 'Full penalty (No refund)';
                     tierClass = 'tier-full';
                     dateRange = policy.start_formatted ? `From ${policy.start_formatted}` : 'After deadline';
                     const amount = parseFloat(policy.penalty_amount || 0).toFixed(2);
-                    penaltyText = `Penalty: $${amount}`;
+                    const currency = cancellationInfo.currency_code || 'USD';
+                    penaltyText = `Penalty: ${currency} ${amount}`;
                 } else {
                     return '';
                 }
@@ -622,28 +626,37 @@ function createRateCard(rate, index) {
 
     card.innerHTML = `
         ${roomImageHtml}
-        <div class="rate-card-content">
-            <div class="rate-card-header">
-                <div class="rate-info">
-                    <h3 class="rate-room-name">${rate.room_name || roomStatic.room_name || 'Room'}</h3>
-                    ${mealPlanHtml}
+        <div class="rate-card-content" style="display: grid; grid-template-columns: 1fr 240px; gap: 30px; padding: 25px;">
+            <div class="rate-main-info" style="border-right: 1px solid #e2e8f0; padding-right: 30px;">
+                <h3 class="rate-room-name" style="font-size: 1.4rem; font-weight: 700; margin-bottom: 12px; color: #0f172a;">${rate.room_name || roomStatic.room_name || 'Room'}</h3>
+                
+                <div class="rate-badges" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;">
                     ${cancellationBadge}
-                    ${cancellationDetailsHtml}
+                    ${mealPlanHtml}
                     ${isMatched ? '<span class="static-data-badge"><i class="fas fa-image"></i> Room photos available</span>' : ''}
                 </div>
-                <div class="rate-price">
-                    ${originalPrice ? `<span class="original-price">${originalPrice}</span>` : ''}
-                    <span class="rate-per-night">${price} <small>/night</small></span>
-                    <span class="rate-total">${totalPrice} <small>total</small></span>
+
+                ${roomAmenitiesHtml}
+                
+                <div class="rate-policies" style="margin-top: 20px;">
+                    ${cancellationDetailsHtml}
                 </div>
+                
+                ${taxesHtml}
             </div>
-            ${roomAmenitiesHtml}
-            ${taxesHtml}
-            <p class="rate-description">${rate.room_description || ''}</p>
-            <div class="rate-features">${featuresHtml}</div>
-            <button class="book-rate-btn" data-rate-index="${index}" style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
-                Book Now
-            </button>
+
+            <div class="rate-price-action" style="display: flex; flex-direction: column; justify-content: center; align-items: flex-end; text-align: right;">
+                <div class="price-display" style="margin-bottom: 20px;">
+                    ${originalPrice ? `<div class="original-price" style="font-size: 0.9rem; color: #94a3b8; text-decoration: line-through; margin-bottom: 4px;">${originalPrice} /night</div>` : ''}
+                    <div class="rate-per-night" style="font-size: 1rem; color: #64748b; font-weight: 500;">${price} <small>/night</small></div>
+                    <div class="rate-total" style="font-size: 1.8rem; font-weight: 800; color: #0e64a6; line-height: 1.2; margin-top: 5px;">${totalPrice} <small style="font-size: 0.9rem; font-weight: 600; color: #64748b;">total</small></div>
+                    <div style="font-size: 0.8rem; color: #64748b;">Includes taxes & fees</div>
+                </div>
+
+                <button class="book-rate-btn" data-rate-index="${index}" style="width: 100%; max-width: 200px; background: linear-gradient(135deg, #0e64a6, #1a365d); color: white; border: none; padding: 14px 20px; border-radius: 10px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(14, 100, 166, 0.2);">
+                    Book This Room <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
         </div>
     `;
 
@@ -706,8 +719,22 @@ function updateBookingSummary() {
 
         const nights = HotelUtils.calculateNights(searchParams.checkin, searchParams.checkout);
         document.getElementById('summaryNights').textContent = nights;
-        document.getElementById('summaryRooms').textContent = searchParams.rooms || 1;
-        document.getElementById('summaryGuests').textContent = (searchParams.adults || 2) + (searchParams.children_ages?.length || 0);
+
+        // Fix [object Object] bug - handle different rooms param formats
+        let roomsCount = 1;
+        if (Array.isArray(searchParams.rooms)) {
+            roomsCount = searchParams.rooms.length;
+        } else if (typeof searchParams.rooms === 'number') {
+            roomsCount = searchParams.rooms;
+        } else if (typeof searchParams.rooms === 'object' && searchParams.rooms !== null) {
+            // If it's the ETG guests structure, it might be an array inside some key
+            roomsCount = searchParams.rooms.length || 1;
+        }
+        document.getElementById('summaryRooms').textContent = roomsCount;
+
+        const adults = parseInt(searchParams.adults || 2);
+        const children = searchParams.children_ages ? searchParams.children_ages.length : 0;
+        document.getElementById('summaryGuests').textContent = `${adults + children} (${adults} Adult, ${children} Child)`;
     }
 }
 
@@ -715,24 +742,28 @@ function updateBookingSummary() {
  * Display map
  */
 function displayMap(lat, lng) {
-    const mapUrl = HotelAPI.getStaticMapUrl(lat, lng, 15, '600x300');
+    const hotelMap = document.getElementById('hotelMap');
+    if (!hotelMap) return;
 
-    // If Google Maps not configured, use OpenStreetMap embed
-    const mapImg = document.getElementById('mapImage');
-    if (mapUrl) {
-        mapImg.src = mapUrl;
-    } else {
-        // Fallback to OpenStreetMap
-        document.getElementById('hotelMap').innerHTML = `
-            <iframe 
-                width="100%" 
-                height="300" 
-                frameborder="0" 
-                style="border-radius: 12px;"
-                src="https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.01},${lat - 0.01},${lng + 0.01},${lat + 0.01}&marker=${lat},${lng}&layers=M"
-            ></iframe>
-        `;
-    }
+    // Use OpenStreetMap directly for reliability (RateHawk/Google APIs often require keys/config)
+    // This ensures the location image is ALWAYS visible
+    hotelMap.innerHTML = `
+        <iframe 
+            width="100%" 
+            height="300" 
+            frameborder="0" 
+            scrolling="no" 
+            marginheight="0" 
+            marginwidth="0" 
+            style="border-radius: 12px; border: 1px solid #e2e8f0; width: 100%;"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(lng) - 0.005},${parseFloat(lat) - 0.005},${parseFloat(lng) + 0.005},${parseFloat(lat) + 0.005}&layer=mapnik&marker=${lat},${lng}"
+        ></iframe>
+        <div style="margin-top: 10px; text-align: center;">
+            <a href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" target="_blank" class="btn btn-outline btn-sm" style="font-size: 0.8rem; padding: 5px 15px;">
+                <i class="fas fa-external-link-alt"></i> View on Google Maps
+            </a>
+        </div>
+    `;
 }
 
 /**

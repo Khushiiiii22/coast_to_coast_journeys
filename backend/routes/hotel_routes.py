@@ -6,7 +6,9 @@ from flask import Blueprint, request, jsonify
 from services.etg_service import etg_service
 from services.supabase_service import supabase_service
 from services.google_maps_service import google_maps_service
+from datetime import datetime
 import time
+from routes.cancellation_helper import format_cancellation_policies
 
 hotel_bp = Blueprint('hotels', __name__, url_prefix='/api/hotels')
 
@@ -474,13 +476,14 @@ def search_by_destination():
             )
             
             # Search using region API with sandbox-compatible parameters
+            target_currency = data.get('currency', 'INR')
             result = etg_service.search_by_region(
                 region_id=region_id,
                 checkin=data['checkin'],
                 checkout=data['checkout'],
                 guests=guests,
-                currency='USD',
-                residency=data.get('residency', 'gb')  # Use user selected residency
+                currency=target_currency, # Request user's currency (API might still return USD)
+                residency=data.get('residency', 'gb')
             )
             
             # Check if RateHawk returned hotels
@@ -490,28 +493,63 @@ def search_by_destination():
                 
                 if etg_hotels and len(etg_hotels) > 0:
                     print(f"✅ Found {len(etg_hotels)} hotels via RateHawk for {location_name}")
-                    transformed_hotels = transform_etg_hotels(etg_hotels, location_name)
+                    
+                    # FETCH STATIC CONTENT (Names, Images) for these hotels
+                    hotel_ids = [h.get('id') for h in etg_hotels if h.get('id')]
+                    static_hotel_map = {}
+                    
+                    if hotel_ids:
+                        chunk_size = 50
+                        for i in range(0, len(hotel_ids), chunk_size):
+                            chunk = hotel_ids[i:i + chunk_size]
+                            try:
+                                # Batch fetch static content in chunks
+                                static_resp = etg_service.get_hotels_static(chunk)
+                                
+                                if static_resp.get('success'):
+                                    inner_data = static_resp.get('data', {}).get('data', {})
+                                    
+                                    # Handle RateHawk response variants
+                                    data_list = []
+                                    if isinstance(inner_data, dict) and 'hotels' in inner_data:
+                                        data_list = inner_data['hotels']
+                                    elif isinstance(inner_data, list):
+                                        data_list = inner_data
+                                        
+                                    if data_list:
+                                        for h_info in data_list:
+                                            if isinstance(h_info, dict) and h_info.get('id'):
+                                                static_hotel_map[h_info['id']] = h_info
+                                    elif isinstance(inner_data, dict):
+                                        static_hotel_map.update(inner_data)
+                                        
+                            except Exception as e:
+                                print(f"⚠️ Failed to fetch static chunk {i}: {e}")
+                                continue
+                    
+                    # Pass target_currency to transform function for conversion if needed
+                    transformed_hotels = transform_etg_hotels(etg_hotels, location_name, static_hotel_map, target_currency)
                     
                     # Add ₹1 TEST hotel at the beginning for payment testing (only in dev mode)
                     import os
-                    if os.getenv('FLASK_DEBUG', 'False').lower() == 'true':
-                        test_hotel = {
-                            'id': 'test_payment_1_rupee',
-                            'name': '💳 PAYMENT TEST - ₹1 Only Hotel',
-                            'star_rating': 5,
-                            'guest_rating': 5.0,
-                            'review_count': 999,
-                            'address': f'{location_name} - Test Hotel for Razorpay/UPI Verification',
-                            'image': 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600',
-                            'price': 1,
-                            'original_price': 5000,
-                            'currency': 'INR',
-                            'amenities': ['wifi', 'pool', 'parking', 'restaurant', 'spa', 'gym'],
-                            'meal_plan': 'breakfast',
-                            'rates': [{'book_hash': 'test_hash_1_rupee', 'room_name': 'Test Room - Razorpay Verification', 'price': 1}],
-                            'discount': 99
-                        }
-                        transformed_hotels.insert(0, test_hotel)
+                    # if os.getenv('FLASK_DEBUG', 'False').lower() == 'true':
+                    #     test_hotel = {
+                    #         'id': 'test_payment_1_rupee',
+                    #         'name': '💳 PAYMENT TEST - ₹1 Only Hotel',
+                    #         'star_rating': 5,
+                    #         'guest_rating': 5.0,
+                    #         'review_count': 999,
+                    #         'address': f'{location_name} - Test Hotel for Razorpay/UPI Verification',
+                    #         'image': 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600',
+                    #         'price': 1,
+                    #         'original_price': 5000,
+                    #         'currency': 'INR',
+                    #         'amenities': ['wifi', 'pool', 'parking', 'restaurant', 'spa', 'gym'],
+                    #         'meal_plan': 'breakfast',
+                    #         'rates': [{'book_hash': 'test_hash_1_rupee', 'room_name': 'Test Room - Razorpay Verification', 'price': 1}],
+                    #         'discount': 99
+                    #     }
+                    #     transformed_hotels.insert(0, test_hotel)
                     
                     return jsonify({
                         'success': True,
@@ -596,9 +634,19 @@ def search_by_destination():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-def transform_etg_hotels(etg_hotels, destination):
+def transform_etg_hotels(etg_hotels, destination, static_data=None, target_currency='INR'):
     """Transform ETG hotel response to frontend format"""
     transformed = []
+    if static_data is None:
+        static_data = {}
+    
+    # Simple fixed conversion rates (Fallback if API doesn't do it)
+    # RateHawk Sandbox often forces USD regardless of request
+    CONVERSION_RATES = {
+        'USD_TO_INR': 86.5,
+        'EUR_TO_INR': 92.0,
+        'GBP_TO_INR': 108.0
+    }
     
     # Sample hotel images for demo
     hotel_images = [
@@ -607,24 +655,39 @@ def transform_etg_hotels(etg_hotels, destination):
         'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=600',
         'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600',
         'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=600',
-        'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=600',
-        'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=600',
-        'https://images.unsplash.com/photo-1549294413-26f195471c9e?w=600',
     ]
     
     for idx, hotel in enumerate(etg_hotels):
+        hotel_id = hotel.get('id')
+        static_info = static_data.get(hotel_id, {})
+        
         rates = hotel.get('rates', [])
         
         # Get lowest price from rates
         lowest_price = 0
         best_rate = None
         meal_plan = 'nomeal'
+        currency = 'USD' # Default
         
         for rate in rates:
             payment_types = rate.get('payment_options', {}).get('payment_types', [])
+            rate_currency = rate.get('payment_options', {}).get('currency_code', 'USD')
+            
             for pt in payment_types:
                 amount = float(pt.get('amount', 0))
-                # Apply 15% Commission
+                
+                # Check for currency mismatch and convert if needed
+                # E.g. User wants INR, API returned USD
+                if target_currency == 'INR' and rate_currency == 'USD':
+                    amount = amount * CONVERSION_RATES['USD_TO_INR']
+                    currency = 'INR'
+                elif target_currency == 'INR' and rate_currency == 'EUR':
+                    amount = amount * CONVERSION_RATES['EUR_TO_INR']
+                    currency = 'INR'
+                else:
+                    currency = rate_currency # Trust API
+                
+                # Apply 15% Commission (on top of converted price)
                 amount = amount * 1.15
                 
                 if lowest_price == 0 or amount < lowest_price:
@@ -632,23 +695,50 @@ def transform_etg_hotels(etg_hotels, destination):
                     best_rate = rate
                     meal_plan = rate.get('meal', 'nomeal')
         
-        # Extract star rating from rg_ext
+        # Extract star rating
         rg_ext = rates[0].get('rg_ext', {}) if rates else {}
-        star_rating = rg_ext.get('class', 3)
+        star_rating = static_info.get('star_rating') or rg_ext.get('class', 3)
         
+        # Use Static Data for Name/Image/Address if available
+        # Fallback to search result data, then to safe defaults
+        hotel_name = static_info.get('name') or hotel.get('name') or (f"Hotel {hotel_id}" if hotel_id else "Unknown Hotel")
+        
+        # Clean up hotel name (RateHawk sometimes returns snake_case slugs as names)
+        if hotel_name and '_' in hotel_name:
+            hotel_name = hotel_name.replace('_', ' ').replace('  ', ' ').title()
+        
+        # Image logic
+        image_url = None
+        if static_info.get('images'):
+            img_list = static_info['images']
+            if img_list and isinstance(img_list[0], str):
+                image_url = img_list[0].replace('{size}', '640x480')
+            elif img_list and isinstance(img_list[0], dict):
+                 image_url = img_list[0].get('url', '').replace('{size}', '640x480')
+        
+        if not image_url:
+             # Fallback to search response images
+             if hotel.get('images'):
+                 image_url = hotel['images'][0] if isinstance(hotel['images'][0], str) else hotel['images'][0].get('url')
+        
+        if not image_url:
+             image_url = hotel_images[idx % len(hotel_images)]
+
         # Create transformed hotel object
         transformed_hotel = {
-            'id': hotel.get('id', f'hotel_{idx}'),
+            'id': hotel_id or f'hotel_{idx}',
             'hid': hotel.get('hid'),
-            'name': hotel.get('name', best_rate.get('room_name', 'Hotel') if best_rate else 'Hotel'),
-            'star_rating': star_rating if star_rating else 4,
-            'guest_rating': round(3.5 + (star_rating or 3) * 0.3, 1),  # Estimated rating
-            'review_count': 50 + (idx * 23) % 500,  # Demo review count
-            'address': destination.title(),
-            'image': hotel_images[idx % len(hotel_images)],
+            'name': hotel_name,
+            'star_rating': star_rating,
+            'guest_rating': round(3.5 + (star_rating or 3) * 0.3, 1),
+            'review_count': 50 + (idx * 23) % 500,
+            'address': static_info.get('address') or destination.title(),
+            'latitude': static_info.get('latitude') or hotel.get('latitude'),
+            'longitude': static_info.get('longitude') or hotel.get('longitude'),
+            'image': image_url,
             'price': round(lowest_price, 2),
-            'original_price': round(lowest_price * 1.25, 2),  # Fake higher price
-            'currency': 'USD',
+            'original_price': round(lowest_price * 1.25, 2),
+            'currency': currency, # Use real currency from API
             'amenities': extract_amenities(rates),
             'meal_plan': meal_plan,
             'discount': 15,
@@ -657,7 +747,8 @@ def transform_etg_hotels(etg_hotels, destination):
                     'book_hash': rate.get('match_hash', ''),
                     'room_name': rate.get('room_name', rate.get('room_data_trans', {}).get('main_name', 'Standard Room')),
                     'price': round(float(rate.get('payment_options', {}).get('payment_types', [{}])[0].get('amount', 0)) * 1.15, 2),
-                    'meal': rate.get('meal', 'nomeal')
+                    'meal': rate.get('meal', 'nomeal'),
+                    'cancellation_info': format_cancellation_policies(rate)
                 }
                 for rate in rates[:3]  # Limit to 3 rates per hotel
             ] if rates else []
@@ -820,6 +911,21 @@ def get_hotel_details():
             guests=guests,
             currency=data.get('currency', 'INR')
         )
+        
+        # Inject cancellation policies
+        if result.get('success') and result.get('data'):
+            try:
+                # Handle potential wrapper (data.data) or direct (data)
+                resp_data = result['data']
+                hotels_data = resp_data.get('data', resp_data) if isinstance(resp_data, dict) else resp_data
+                
+                # If it's the valid structure
+                if isinstance(hotels_data, dict) and 'hotels' in hotels_data:
+                    for hotel in hotels_data['hotels']:
+                        for rate in hotel.get('rates', []):
+                            rate['cancellation_info'] = format_cancellation_policies(rate)
+            except Exception as e:
+                print(f"⚠️ Error injecting cancellation policies: {e}")
         
         return jsonify(result)
     
@@ -1232,6 +1338,14 @@ def get_enriched_hotel_details():
                 enriched_rates.append(enriched_rate)
             
             hotel['rates'] = enriched_rates
+            
+            # Ensure latitude/longitude are present (fetch from static data if missing in rates response)
+            if 'latitude' not in hotel and static_result.get('success'):
+                static_info = static_result.get('data', {}).get('data', {})
+                if static_info:
+                    hotel['latitude'] = static_info.get('latitude')
+                    hotel['longitude'] = static_info.get('longitude')
+                    
             enriched_hotels.append(hotel)
         
         return jsonify({
@@ -1425,7 +1539,8 @@ def enrich_rate_with_room_data(rate, room_groups):
     policies = cancellation_penalties.get('policies', [])
     
     # Format cancellation info for frontend
-    cancellation_info = extract_cancellation_info(free_cancellation_before, policies)
+    currency_code = rate.get('payment_options', {}).get('currency_code', 'USD')
+    cancellation_info = extract_cancellation_info(free_cancellation_before, policies, currency_code)
     enriched_rate['cancellation_info'] = cancellation_info
     
     # Extract Meal Data (New RateHawk Requirement)
@@ -1492,23 +1607,22 @@ def process_meal_data(meal_data):
     }
 
 
-def extract_cancellation_info(free_cancellation_before, policies):
+def extract_cancellation_info(free_cancellation_before, policies, currency_code='USD'):
     """
     Extract and format cancellation policy information
     
     Parameters:
     - free_cancellation_before: ISO timestamp for free cancellation deadline (UTC+0)
-      - null means no free cancellation (non-refundable)
     - policies: array of cancellation tiers
-    
-    Returns formatted cancellation info for frontend display
+    - currency_code: currency for penalty display
     """
     cancellation_info = {
         'is_free_cancellation': free_cancellation_before is not None,
         'free_cancellation_before': free_cancellation_before,
         'free_cancellation_formatted': None,
         'policies': [],
-        'summary': 'Non-refundable'
+        'summary': 'Non-refundable',
+        'currency_code': currency_code
     }
     
     if free_cancellation_before:
@@ -1522,20 +1636,20 @@ def extract_cancellation_info(free_cancellation_before, policies):
             cancellation_info['free_cancellation_formatted'] = {
                 'date': deadline.strftime('%d %b %Y'),  # e.g., "21 Oct 2025"
                 'time': deadline.strftime('%H:%M'),     # e.g., "08:59"
-                'datetime': deadline.strftime('%d %b %Y, %H:%M UTC'),  # Full format
+                'datetime': deadline.strftime('%d %b %Y, %H:%M (UTC+0)'),  # Requested format
                 'iso': free_cancellation_before
             }
             
-            cancellation_info['summary'] = f"Free cancellation until {deadline.strftime('%d %b %Y, %H:%M')} UTC"
+            cancellation_info['summary'] = f"Free cancellation until {deadline.strftime('%d %b %Y, %H:%M')} (UTC+0)"
         except Exception:
             # If parsing fails, use raw value
             cancellation_info['free_cancellation_formatted'] = {
                 'date': free_cancellation_before,
                 'time': '',
-                'datetime': free_cancellation_before,
+                'datetime': f"{free_cancellation_before} (UTC+0)",
                 'iso': free_cancellation_before
             }
-            cancellation_info['summary'] = f"Free cancellation until {free_cancellation_before} UTC"
+            cancellation_info['summary'] = f"Free cancellation until {free_cancellation_before} (UTC+0)"
     
     # Process cancellation policies (tiers)
     for policy in policies:
@@ -1568,7 +1682,7 @@ def extract_cancellation_info(free_cancellation_before, policies):
             try:
                 from datetime import datetime
                 start = datetime.fromisoformat(start_at.replace('Z', ''))
-                formatted_policy['start_formatted'] = start.strftime('%d %b %Y, %H:%M UTC')
+                formatted_policy['start_formatted'] = start.strftime('%d %b %Y, %H:%M (UTC+0)')
             except:
                 formatted_policy['start_formatted'] = start_at
         
@@ -1576,7 +1690,7 @@ def extract_cancellation_info(free_cancellation_before, policies):
             try:
                 from datetime import datetime
                 end = datetime.fromisoformat(end_at.replace('Z', ''))
-                formatted_policy['end_formatted'] = end.strftime('%d %b %Y, %H:%M UTC')
+                formatted_policy['end_formatted'] = end.strftime('%d %b %Y, %H:%M (UTC+0)')
             except:
                 formatted_policy['end_formatted'] = end_at
         

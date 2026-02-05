@@ -2,7 +2,7 @@
 C2C Journeys - Map Routes
 API routes for Google Maps integration
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, redirect
 from services.google_maps_service import google_maps_service
 
 maps_bp = Blueprint('maps', __name__, url_prefix='/api/maps')
@@ -171,7 +171,7 @@ def get_static_map():
         )
         
         if url:
-            return jsonify({'success': True, 'url': url})
+            return redirect(url)
         else:
             return jsonify({'success': False, 'error': 'Google Maps not configured'}), 400
     

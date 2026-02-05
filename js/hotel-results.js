@@ -58,6 +58,9 @@ async function initHotelResults() {
     // Setup event listeners
     setupEventListeners();
 
+    // Initialize Currency Selector
+    initCurrency();
+
     // Check for cached results first
     const cachedResults = SearchSession.getSearchResults();
     if (cachedResults && cachedResults.hotels) {
@@ -140,8 +143,27 @@ async function performSearch(params) {
             // Log source for debugging (no popup)
             const hotelCount = result.hotels_count || result.data.hotels.length;
             const location = result.location?.name || params.destination;
-            const source = result.source === 'ratehawk' ? 'RateHawk' : 'Google Places';
+            const source = result.source;
+            const isRateHawk = result.source === 'ratehawk';
+
             console.log(`✅ Found ${hotelCount} hotels in ${location} via ${source}`);
+
+            // Show verification badge if from RateHawk
+            if (isRateHawk) {
+                showNotification(`Verified Listings | ${hotelCount} Hotels from Global Partners loaded.`, 'success');
+
+                // Add a small badge to the results header
+                const resultsHeader = document.querySelector('.results-header h1');
+                if (resultsHeader && !resultsHeader.querySelector('.verified-badge')) {
+                    const badge = document.createElement('span');
+                    badge.className = 'verified-badge';
+                    badge.innerHTML = '<i class="fas fa-check-circle"></i> Partner Verified';
+                    badge.style.cssText = 'font-size: 0.5em; background: #e0f2fe; color: #0284c7; padding: 4px 8px; border-radius: 20px; vertical-align: middle; margin-left: 10px; font-weight: 500; letter-spacing: 0.5px;';
+                    resultsHeader.appendChild(badge);
+                }
+            } else if (result.source === 'google_places') {
+                showNotification(`Showing ${hotelCount} hotels from Google Places`, 'info');
+            }
 
         } else if (result.success && (!result.data?.hotels || result.data.hotels.length === 0)) {
             // API succeeded but no results - show demo data silently
@@ -272,8 +294,8 @@ function createHotelCard(hotel) {
     card.dataset.hotelId = hotel.id;
 
     const stars = HotelUtils.generateStars(hotel.star_rating || 4);
-    const price = HotelUtils.formatPrice(hotel.price || hotel.rates?.[0]?.price || 0);
-    const originalPrice = hotel.original_price ? HotelUtils.formatPrice(hotel.original_price) : null;
+    const price = HotelUtils.formatPrice(hotel.price || hotel.rates?.[0]?.price || 0, hotel.currency);
+    const originalPrice = hotel.original_price ? HotelUtils.formatPrice(hotel.original_price, hotel.currency) : null;
     const mealPlan = HotelUtils.getMealPlanText(hotel.meal_plan);
 
     const amenitiesHtml = (hotel.amenities || []).slice(0, 4).map(a => {
@@ -498,6 +520,9 @@ function setupEventListeners() {
 
     // Load more
     document.getElementById('loadMoreBtn').addEventListener('click', loadMoreHotels);
+
+    // Init Currency
+    initCurrency();
 }
 
 /**
@@ -671,4 +696,36 @@ function showNotification(message, type = 'info') {
     });
 
     setTimeout(() => notification.remove(), 5000);
+}
+
+/**
+ * Initialize Currency Selector
+ */
+function initCurrency() {
+    const currencySelect = document.getElementById('currencySelect');
+    if (currencySelect) {
+        // Load saved currency or default to INR
+        const savedCurrency = localStorage.getItem('ctc_currency') || 'INR';
+        currencySelect.value = savedCurrency;
+
+        // Listen for changes
+        currencySelect.addEventListener('change', async function () {
+            const newCurrency = this.value;
+            localStorage.setItem('ctc_currency', newCurrency);
+
+            // Show feedback
+            showNotification(`Switching currency to ${newCurrency}...`, 'info');
+
+            // Update search params
+            const params = SearchSession.getSearchParams();
+            if (params) {
+                params.currency = newCurrency;
+                SearchSession.saveSearchParams(params);
+                SearchSession.remove(SearchSession.KEYS.SEARCH_RESULTS); // Clear cache controls
+
+                // Trigger new search with new currency
+                await performSearch(params);
+            }
+        });
+    }
 }
