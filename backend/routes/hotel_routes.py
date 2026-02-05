@@ -148,6 +148,55 @@ def debug_email_test():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@hotel_bp.route('/debug/ip-check', methods=['GET'])
+def debug_ip_check():
+    """Check outgoing IP address (to verify Proxy/Static IP)"""
+    try:
+        import requests
+        from flask import current_app
+        
+        # Get proxy config
+        proxy_url = current_app.config.get('PROXY_URL')
+        proxies = None
+        if proxy_url:
+            proxies = {
+                "http": proxy_url,
+                "https": proxy_url
+            }
+        
+        results = {
+            "proxy_configured": bool(proxy_url),
+            "proxy_url_masked": f"{proxy_url[:10]}..." if proxy_url else "None",
+            "ip_check": {}
+        }
+        
+        # 1. Check Direct IP (Render's Dynamic IP)
+        try:
+            direct_resp = requests.get('https://api.ipify.org?format=json', timeout=5)
+            results['ip_check']['direct_ip'] = direct_resp.json().get('ip')
+        except Exception as e:
+            results['ip_check']['direct_ip_error'] = str(e)
+            
+        # 2. Check Proxy IP (The Static IP for RateHawk)
+        if proxies:
+            try:
+                proxy_resp = requests.get('https://api.ipify.org?format=json', proxies=proxies, timeout=10)
+                results['ip_check']['proxy_ip'] = proxy_resp.json().get('ip')
+                results['ip_check']['status'] = "✅ Proxy Working"
+                results['message'] = "Give this PROXY IP to RateHawk for whitelisting."
+            except Exception as e:
+                results['ip_check']['proxy_error'] = str(e)
+                results['ip_check']['status'] = "❌ Proxy Failed"
+        else:
+            results['ip_check']['status'] = "⚠️ No Proxy Configured"
+            results['message'] = "Please add QuotaGuard Static or Fixie add-on in Render."
+            
+        return jsonify(results)
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 # ==========================================
 # SUGGEST/AUTOCOMPLETE ENDPOINT
 # ==========================================
