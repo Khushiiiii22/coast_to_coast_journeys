@@ -1,3 +1,5 @@
+from datetime import datetime
+
 def format_cancellation_policies(rate):
     """
     Parse and format cancellation policies from rate data
@@ -8,6 +10,7 @@ def format_cancellation_policies(rate):
         'free_cancellation_formatted': None,
         'policies': []
     }
+
     
     # Safely get payment options and penalties
     payment_options = rate.get('payment_options', {})

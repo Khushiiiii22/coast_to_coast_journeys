@@ -44,6 +44,7 @@ class Config:
     PAYPAL_MODE = os.getenv('PAYPAL_MODE', 'sandbox')
     
     # Email/SMTP Configuration (GoDaddy)
+    CORPORATE_EMAIL = os.getenv('CORPORATE_EMAIL', 'bookings@coasttocoast.com')
     MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtpout.secureserver.net')
     MAIL_PORT = int(os.getenv('MAIL_PORT', 465))
     MAIL_USE_TLS = os.getenv('MAIL_USE_TLS', 'False').lower() == 'true'

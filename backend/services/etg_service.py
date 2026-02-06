@@ -430,7 +430,13 @@ class ETGApiService:
             "partner_order_id": partner_order_id,
             "payment_type": {"type": payment_type},
             "user_ip": user_ip,
-            "rooms": [{"guests": guests}]
+            "rooms": [{"guests": guests}],
+            "user": {
+                "email": Config.CORPORATE_EMAIL,
+                "phone": "0000000000",  # Placeholder required by some APIs
+                "first_name": "C2C",
+                "last_name": "Bookings"
+            }
         }
         return self._make_request("/hotel/order/booking/form/", data)
     

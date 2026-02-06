@@ -439,6 +439,28 @@
                 demo: confirmation.demo || false
             });
 
+            // Post-Booking: Retrieve latest booking details from API
+            // We wait 3 seconds to ensure the order is fully processed on the supplier side
+            if (!confirmation.demo) {
+                setTimeout(async () => {
+                    try {
+                        console.log('🔄 Verifying booking details with backend (Retrieve Booking)...');
+                        const result = await HotelAPI.getBookingInfo(bookingData.confirmation.partner_order_id);
+
+                        if (result.success && result.data) {
+                            console.log('✅ Retrieved latest booking details:', result.data);
+                            // If status changed or new info available, we could update UI here
+                            // For now, valid response confirms success.
+                        } else {
+                            console.warn('⚠️ Retrieve bookings returned empty response. Keeping session data.');
+                            // Logic: If blank, assume polling/sync delay, show existing confirmation.
+                        }
+                    } catch (e) {
+                        console.error('Failed to retrieve booking info:', e);
+                    }
+                }, 3000);
+            }
+
             // Send confirmation email for ALL bookings (including demo)
             if (email) {
                 try {

@@ -1,0 +1,1324 @@
+/**
+ * Hotel Details Page - Expedia Style
+ * Premium design matching Expedia's hotel details layout
+ */
+
+/* ============================================
+   Back Navigation
+   ============================================ */
+
+.back-navigation {
+    padding: 16px 0;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.back-navigation .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.back-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #1e40af;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.back-link:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: white;
+    border: 1px solid #d1d5db;
+    padding: 10px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    background: #f3f4f6;
+    border-color: #1e40af;
+    color: #1e40af;
+}
+
+.action-btn i {
+    font-size: 1rem;
+}
+
+/* ============================================
+   Photo Gallery Grid (Expedia Style)
+   ============================================ */
+
+.photo-gallery-section {
+    margin-bottom: 0;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: 55% 45%;
+    gap: 4px;
+    border-radius: 16px;
+    overflow: hidden;
+    height: 420px;
+    cursor: pointer;
+}
+
+.gallery-main-image {
+    background-size: cover;
+    background-position: center;
+    height: 100%;
+    position: relative;
+    transition: filter 0.3s;
+    background-color: #e5e7eb;
+}
+
+.gallery-main-image:hover {
+    filter: brightness(0.95);
+}
+
+.gallery-side-images {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 4px;
+    height: 100%;
+}
+
+.gallery-side-image {
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    transition: filter 0.3s;
+    background-color: #d1d5db;
+}
+
+.gallery-side-image:hover {
+    filter: brightness(0.95);
+}
+
+/* Empty image placeholder */
+.gallery-side-image:empty,
+.gallery-side-image[style*="undefined"] {
+    background: linear-gradient(135deg, #e5e7eb 0%, #9ca3af 100%);
+}
+
+.photo-count-overlay {
+    position: relative;
+    background: linear-gradient(135deg, #374151 0%, #1f2937 100%) !important;
+}
+
+.photo-count-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.photo-count-badge {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    color: white;
+    gap: 8px;
+}
+
+.photo-count-badge i {
+    font-size: 2.5rem;
+    opacity: 0.9;
+}
+
+.photo-count-badge span {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* Responsive Gallery */
+@media (max-width: 768px) {
+    .gallery-grid {
+        grid-template-columns: 1fr;
+        max-height: 300px;
+    }
+
+    .gallery-main-image {
+        min-height: 300px;
+    }
+
+    .gallery-side-images {
+        display: none;
+    }
+}
+
+/* ============================================
+   Tab Navigation (Expedia Style)
+   ============================================ */
+
+.tab-navigation-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #e5e7eb;
+    background: white;
+    position: sticky;
+    top: 70px;
+    z-index: 100;
+    margin: 0 -20px;
+    padding: 16px 20px;
+}
+
+.hotel-tabs {
+    display: flex;
+    gap: 0;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 12px 20px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+}
+
+.tab-btn:hover {
+    color: #1e40af;
+}
+
+.tab-btn.active {
+    color: #1e40af;
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -16px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #1e40af;
+    border-radius: 3px 3px 0 0;
+}
+
+.reserve-btn {
+    background: #1e40af;
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.reserve-btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+}
+
+/* ============================================
+   Hotel Info Section
+   ============================================ */
+
+.hotel-info-section {
+    padding: 32px 0;
+}
+
+.hotel-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 40px;
+}
+
+@media (max-width: 992px) {
+    .hotel-info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Property Badges */
+.property-badges {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.vip-badge {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #1f2937;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.vip-badge i {
+    font-size: 0.7rem;
+}
+
+.property-type {
+    background: #f3f4f6;
+    color: #6b7280;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Hotel Title */
+.hotel-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+
+/* Star Rating */
+.hotel-stars-row {
+    margin-bottom: 16px;
+}
+
+.hotel-stars-row .hotel-stars {
+    color: #1e40af;
+    font-size: 1rem;
+}
+
+/* Rating Section */
+.rating-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.rating-badge-large {
+    background: linear-gradient(135deg, #059669, #047857);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.rating-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.rating-info .rating-label {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.rating-info .review-link {
+    color: #1e40af;
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+.rating-info .review-link:hover {
+    text-decoration: underline;
+}
+
+/* Description */
+.hotel-main-info .hotel-description {
+    color: #4b5563;
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 28px;
+}
+
+/* Key Amenities */
+.key-amenities h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.key-amenities h3 i {
+    color: #1e40af;
+}
+
+.key-amenities .amenities-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.key-amenities .amenity-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #f9fafb;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #374151;
+}
+
+.key-amenities .amenity-item i {
+    color: #1e40af;
+    width: 20px;
+    text-align: center;
+}
+
+/* ============================================
+   Map Preview Section (Expedia Style)
+   ============================================ */
+
+.map-preview-section {
+    background: #f9fafb;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+}
+
+.map-preview-section h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.map-preview-section h3 i {
+    color: #1e40af;
+}
+
+.map-preview {
+    height: 200px;
+    background: #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.map-preview iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.location-info {
+    margin-bottom: 16px;
+}
+
+.location-info .hotel-address {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: #374151;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.location-info .hotel-address i {
+    color: #ef4444;
+    margin-top: 2px;
+}
+
+.nearby-places {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 16px;
+}
+
+.nearby-place {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 0.85rem;
+}
+
+.nearby-place .place-name {
+    color: #374151;
+}
+
+.nearby-place .place-distance {
+    color: #6b7280;
+}
+
+/* ============================================
+   Rooms Section (Expedia Style)
+   ============================================ */
+
+.rooms-section {
+    padding: 40px 0;
+    border-top: 1px solid #e5e7eb;
+}
+
+.rooms-header {
+    margin-bottom: 24px;
+}
+
+.rooms-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rooms-header h2 i {
+    color: #1e40af;
+}
+
+.rooms-subtitle {
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+
+.rooms-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Room Card (Expedia Style) */
+.rate-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.rate-card:hover {
+    border-color: #1e40af;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+.rate-card.selected {
+    border: 2px solid #1e40af;
+    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+}
+
+/* Room Image Gallery */
+.room-image-gallery {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px;
+    max-height: 200px;
+    overflow: hidden;
+}
+
+.room-main-image {
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.room-main-image .image-count {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.room-thumbnails {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100px;
+}
+
+.room-thumb {
+    height: 64px;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.room-thumb:hover {
+    opacity: 0.8;
+}
+
+/* Room Card Content */
+.rate-card-content {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 24px;
+    padding: 24px;
+}
+
+@media (max-width: 768px) {
+    .rate-card-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Room Main Info */
+.rate-main-info {
+    padding-right: 24px;
+    border-right: 1px solid #e5e7eb;
+}
+
+@media (max-width: 768px) {
+    .rate-main-info {
+        border-right: none;
+        padding-right: 0;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 20px;
+    }
+}
+
+.rate-room-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 12px;
+}
+
+/* Rate Badges */
+.rate-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.cancellation-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.cancellation-badge.free {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.cancellation-badge.non-refund {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.rate-meal-plan {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #f0f9ff;
+    color: #0369a1;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+.rate-meal-plan i {
+    font-size: 0.8rem;
+}
+
+.static-data-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #f3f4f6;
+    color: #6b7280;
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+
+/* Room Amenities */
+.room-amenities-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.room-amenity {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: #374151;
+}
+
+.room-amenity i {
+    color: #1e40af;
+    font-size: 0.75rem;
+}
+
+.more-amenities {
+    padding: 6px 10px;
+    background: #e5e7eb;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+/* Cancellation Details */
+.cancellation-deadline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #f0fdf4;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #166534;
+    margin-bottom: 12px;
+}
+
+.cancellation-deadline i {
+    color: #22c55e;
+}
+
+.cancellation-policy-details {
+    margin-top: 12px;
+}
+
+.policy-toggle {
+    background: none;
+    border: none;
+    color: #1e40af;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+}
+
+.policy-toggle:hover {
+    text-decoration: underline;
+}
+
+.policy-toggle i {
+    transition: transform 0.3s;
+}
+
+.cancellation-policy-details.expanded .policy-toggle i {
+    transform: rotate(180deg);
+}
+
+.policy-timeline {
+    display: none;
+    margin-top: 12px;
+    padding: 16px;
+    background: #f9fafb;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.cancellation-policy-details.expanded .policy-timeline {
+    display: block;
+}
+
+.timeline-header {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.policy-tier {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.policy-tier:last-child {
+    border-bottom: none;
+}
+
+.tier-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.tier-free .tier-icon {
+    background: #dcfce7;
+    color: #22c55e;
+}
+
+.tier-partial .tier-icon {
+    background: #fef3c7;
+    color: #f59e0b;
+}
+
+.tier-full .tier-icon {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.tier-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tier-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.tier-date {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+.tier-penalty {
+    font-size: 0.8rem;
+    color: #dc2626;
+    font-weight: 500;
+}
+
+/* Non-refundable notice */
+.non-refundable-notice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #fef3c7;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #92400e;
+}
+
+.non-refundable-notice i {
+    color: #f59e0b;
+}
+
+/* No Child meal warning */
+.no-child-meal-warning {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border-left: 4px solid #f59e0b;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.85rem;
+    color: #92400e;
+    margin: 8px 0 12px 0;
+}
+
+.no-child-meal-warning i {
+    color: #f59e0b;
+    font-size: 1rem;
+}
+
+/* Taxes Section */
+.non-included-taxes-section {
+    margin-top: 16px;
+    padding: 16px;
+    background: #fefce8;
+    border-radius: 10px;
+    border: 1px solid #fef08a;
+}
+
+.taxes-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #854d0e;
+    margin-bottom: 12px;
+}
+
+.taxes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tax-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #713f12;
+}
+
+.taxes-note {
+    margin-top: 12px;
+    font-size: 0.8rem;
+    color: #92400e;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+/* Rate Price Action */
+.rate-price-action {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    text-align: right;
+}
+
+.price-display {
+    margin-bottom: 20px;
+}
+
+.price-display .original-price {
+    font-size: 0.9rem;
+    color: #9ca3af;
+    text-decoration: line-through;
+    margin-bottom: 4px;
+}
+
+.price-display .rate-per-night {
+    font-size: 0.95rem;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.price-display .rate-total {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e40af;
+    line-height: 1.2;
+}
+
+.price-display .rate-total small {
+    font-size: 0.9rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.book-rate-btn {
+    width: 100%;
+    max-width: 200px;
+    background: linear-gradient(135deg, #1e40af, #1e3a8a);
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.book-rate-btn:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(30, 64, 175, 0.3);
+}
+
+/* ============================================
+   Policies Section (Expedia Style)
+   ============================================ */
+
+.policies-section {
+    padding: 40px 0;
+    border-top: 1px solid #e5e7eb;
+}
+
+.policies-section h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.policies-section h2 i {
+    color: #1e40af;
+}
+
+.policies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.policy-card {
+    display: flex;
+    gap: 16px;
+    padding: 20px;
+    background: #f9fafb;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.policy-card .policy-icon {
+    width: 44px;
+    height: 44px;
+    background: #dbeafe;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.policy-card .policy-icon i {
+    color: #1e40af;
+    font-size: 1.1rem;
+}
+
+.policy-card .policy-content h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+}
+
+.policy-card .policy-items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.policy-card .policy-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #4b5563;
+    line-height: 1.5;
+}
+
+.policy-card .policy-item i {
+    color: #22c55e;
+    margin-top: 3px;
+    font-size: 0.75rem;
+}
+
+.policies-loading,
+.policies-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 40px;
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+
+.policies-loading i {
+    color: #1e40af;
+}
+
+/* ============================================
+   Photo Modal
+   ============================================ */
+
+.photo-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.photo-modal.hidden {
+    display: none;
+}
+
+.photo-modal-content {
+    width: 100%;
+    max-width: 1200px;
+    padding: 20px;
+}
+
+.close-modal {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.close-modal:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.photo-modal-main {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.photo-modal-main img {
+    max-width: 100%;
+    max-height: 70vh;
+    border-radius: 12px;
+}
+
+.photo-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.photo-nav:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.photo-nav.prev {
+    left: 20px;
+}
+
+.photo-nav.next {
+    right: 20px;
+}
+
+.photo-modal-thumbnails {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    overflow-x: auto;
+    padding: 10px 0;
+}
+
+.modal-thumb {
+    width: 80px;
+    height: 60px;
+    border-radius: 6px;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+}
+
+.modal-thumb:hover,
+.modal-thumb.active {
+    opacity: 1;
+}
+
+.photo-counter {
+    text-align: center;
+    color: white;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+/* ============================================
+   Sticky Booking Bar (Mobile)
+   ============================================ */
+
+.sticky-booking-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 12px 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .sticky-booking-bar {
+        display: block;
+    }
+}
+
+.sticky-booking-bar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sticky-price-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.sticky-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.sticky-per-night {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+.sticky-reserve-btn {
+    background: #1e40af;
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ============================================
+   About Section
+   ============================================ */
+
+.about-section {
+    padding: 40px 0;
+    border-top: 1px solid #e5e7eb;
+}
+
+.about-section h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.about-section h2 i {
+    color: #1e40af;
+}
+
+.about-content {
+    color: #4b5563;
+    font-size: 1rem;
+    line-height: 1.8;
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+
+@media (max-width: 768px) {
+    .tab-navigation-section {
+        overflow-x: auto;
+        margin: 0 -20px;
+        padding: 12px 20px;
+    }
+
+    .hotel-tabs {
+        flex-shrink: 0;
+    }
+
+    .tab-btn {
+        padding: 10px 14px;
+        font-size: 0.9rem;
+    }
+
+    .hotel-title {
+        font-size: 1.5rem;
+    }
+
+    .key-amenities .amenities-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .policies-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .rate-price-action {
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .book-rate-btn {
+        max-width: 100%;
+    }
+}
+
+/* ============================================
+   Hidden Utility
+   ============================================ */
+
+.hidden {
+    display: none !important;
+}

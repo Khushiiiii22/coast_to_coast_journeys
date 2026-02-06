@@ -648,8 +648,37 @@ def transform_etg_hotels(etg_hotels, destination, static_data=None, target_curre
         'GBP_TO_INR': 108.0
     }
     
-    # Sample hotel images for demo
-    hotel_images = [
+    # ETG Meal type mappings (official from RateHawk)
+    MEAL_TYPE_DISPLAY = {
+        'all-inclusive': 'All Inclusive',
+        'breakfast': 'Breakfast Included',
+        'breakfast-buffet': 'Breakfast Buffet',
+        'continental-breakfast': 'Continental Breakfast',
+        'dinner': 'Dinner Included',
+        'full-board': 'Full Board (All Meals)',
+        'half-board': 'Half Board (Breakfast & Dinner)',
+        'half-board-lunch': 'Half Board (Breakfast & Lunch)',
+        'half-board-dinner': 'Half Board (Breakfast & Dinner)',
+        'lunch': 'Lunch Included',
+        'nomeal': 'Room Only (No Meals)',
+        'some-meal': 'Some Meals Included',
+        'english-breakfast': 'English Breakfast',
+        'american-breakfast': 'American Breakfast',
+        'asian-breakfast': 'Asian Breakfast',
+        'chinese-breakfast': 'Chinese Breakfast',
+        'israeli-breakfast': 'Israeli Breakfast',
+        'japanese-breakfast': 'Japanese Breakfast',
+        'scandinavian-breakfast': 'Scandinavian Breakfast',
+        'scottish-breakfast': 'Scottish Breakfast',
+        'breakfast-for-1': 'Breakfast for 1 Guest',
+        'breakfast-for-2': 'Breakfast for 2 Guests',
+        'super-all-inclusive': 'Super All Inclusive',
+        'soft-all-inclusive': 'Soft All Inclusive',
+        'ultra-all-inclusive': 'Ultra All Inclusive',
+    }
+    
+    # Sample hotel images for demo ONLY when API returns no images
+    fallback_hotel_images = [
         'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600',
         'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600',
         'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=600',
@@ -666,12 +695,15 @@ def transform_etg_hotels(etg_hotels, destination, static_data=None, target_curre
         # Get lowest price from rates
         lowest_price = 0
         best_rate = None
-        meal_plan = 'nomeal'
+        meal_data_info = None
         currency = 'USD' # Default
         
         for rate in rates:
             payment_types = rate.get('payment_options', {}).get('payment_types', [])
             rate_currency = rate.get('payment_options', {}).get('currency_code', 'USD')
+            
+            # Get meal_data (preferred over deprecated 'meal' field)
+            rate_meal_data = rate.get('meal_data')
             
             for pt in payment_types:
                 amount = float(pt.get('amount', 0))
@@ -693,7 +725,7 @@ def transform_etg_hotels(etg_hotels, destination, static_data=None, target_curre
                 if lowest_price == 0 or amount < lowest_price:
                     lowest_price = amount
                     best_rate = rate
-                    meal_plan = rate.get('meal', 'nomeal')
+                    meal_data_info = rate_meal_data
         
         # Extract star rating
         rg_ext = rates[0].get('rg_ext', {}) if rates else {}
@@ -707,23 +739,51 @@ def transform_etg_hotels(etg_hotels, destination, static_data=None, target_curre
         if hotel_name and '_' in hotel_name:
             hotel_name = hotel_name.replace('_', ' ').replace('  ', ' ').title()
         
-        # Image logic
+        # Image logic - prioritize API images
         image_url = None
+        all_images = []
+        
+        # 1. Try static data images first (highest quality source)
         if static_info.get('images'):
             img_list = static_info['images']
-            if img_list and isinstance(img_list[0], str):
-                image_url = img_list[0].replace('{size}', '640x480')
-            elif img_list and isinstance(img_list[0], dict):
-                 image_url = img_list[0].get('url', '').replace('{size}', '640x480')
+            for img in img_list:
+                if isinstance(img, str):
+                    processed_url = img.replace('{size}', '640x480')
+                    all_images.append(processed_url)
+                elif isinstance(img, dict) and img.get('url'):
+                    processed_url = img['url'].replace('{size}', '640x480')
+                    all_images.append(processed_url)
         
-        if not image_url:
-             # Fallback to search response images
-             if hotel.get('images'):
-                 image_url = hotel['images'][0] if isinstance(hotel['images'][0], str) else hotel['images'][0].get('url')
+        # 2. Try search response images
+        if not all_images and hotel.get('images'):
+            for img in hotel['images']:
+                if isinstance(img, str):
+                    all_images.append(img.replace('{size}', '640x480'))
+                elif isinstance(img, dict) and img.get('url'):
+                    all_images.append(img['url'].replace('{size}', '640x480'))
         
-        if not image_url:
-             image_url = hotel_images[idx % len(hotel_images)]
+        # 3. Use fallback only as last resort
+        if not all_images:
+            all_images = [fallback_hotel_images[idx % len(fallback_hotel_images)]]
+        
+        image_url = all_images[0] if all_images else fallback_hotel_images[0]
 
+        # Format meal display from meal_data
+        best_meal_display = 'Room Only'
+        best_meal_value = 'nomeal'
+        no_child_meal = False
+        has_breakfast = False
+        
+        if meal_data_info:
+            best_meal_value = meal_data_info.get('value', 'nomeal')
+            best_meal_display = MEAL_TYPE_DISPLAY.get(best_meal_value, best_meal_value.replace('-', ' ').title())
+            no_child_meal = meal_data_info.get('no_child_meal', False)
+            has_breakfast = meal_data_info.get('has_breakfast', False)
+        elif best_rate:
+            # Fallback to deprecated meal field
+            best_meal_value = best_rate.get('meal', 'nomeal')
+            best_meal_display = MEAL_TYPE_DISPLAY.get(best_meal_value, best_meal_value.replace('-', ' ').title())
+        
         # Create transformed hotel object
         transformed_hotel = {
             'id': hotel_id or f'hotel_{idx}',
@@ -736,27 +796,77 @@ def transform_etg_hotels(etg_hotels, destination, static_data=None, target_curre
             'latitude': static_info.get('latitude') or hotel.get('latitude'),
             'longitude': static_info.get('longitude') or hotel.get('longitude'),
             'image': image_url,
+            'images': all_images,  # Include all images for gallery
             'price': round(lowest_price, 2),
             'original_price': round(lowest_price * 1.25, 2),
             'currency': currency, # Use real currency from API
             'amenities': extract_amenities(rates),
-            'meal_plan': meal_plan,
+            'meal_plan': best_meal_value,
+            'meal_info': {
+                'value': best_meal_value,
+                'display_name': best_meal_display,
+                'has_breakfast': has_breakfast,
+                'no_child_meal': no_child_meal
+            },
             'discount': 15,
-            'rates': [
-                {
-                    'book_hash': rate.get('match_hash', ''),
-                    'room_name': rate.get('room_name', rate.get('room_data_trans', {}).get('main_name', 'Standard Room')),
-                    'price': round(float(rate.get('payment_options', {}).get('payment_types', [{}])[0].get('amount', 0)) * 1.15, 2),
-                    'meal': rate.get('meal', 'nomeal'),
-                    'cancellation_info': format_cancellation_policies(rate)
-                }
-                for rate in rates[:3]  # Limit to 3 rates per hotel
-            ] if rates else []
+            'rates': transform_rates(rates, target_currency, CONVERSION_RATES, MEAL_TYPE_DISPLAY)
         }
         
         transformed.append(transformed_hotel)
     
     return transformed
+
+
+def transform_rates(rates, target_currency, conversion_rates, meal_display_map):
+    """Transform rate data with proper meal_data and cancellation info"""
+    transformed_rates = []
+    
+    for rate in rates[:5]:  # Limit to 5 rates per hotel
+        payment_options = rate.get('payment_options', {})
+        payment_types = payment_options.get('payment_types', [{}])
+        rate_currency = payment_options.get('currency_code', 'USD')
+        
+        amount = float(payment_types[0].get('amount', 0)) if payment_types else 0
+        
+        # Currency conversion
+        if target_currency == 'INR' and rate_currency == 'USD':
+            amount = amount * conversion_rates['USD_TO_INR']
+        elif target_currency == 'INR' and rate_currency == 'EUR':
+            amount = amount * conversion_rates['EUR_TO_INR']
+        
+        # Apply commission
+        amount = amount * 1.15
+        
+        # Get meal_data (preferred)
+        meal_data = rate.get('meal_data', {})
+        meal_value = meal_data.get('value', rate.get('meal', 'nomeal')) if meal_data else rate.get('meal', 'nomeal')
+        meal_display = meal_display_map.get(meal_value, meal_value.replace('-', ' ').title())
+        no_child_meal = meal_data.get('no_child_meal', False) if meal_data else False
+        
+        # Get room details
+        room_data = rate.get('room_data_trans', {})
+        room_name = room_data.get('main_name') or rate.get('room_name', 'Standard Room')
+        
+        transformed_rate = {
+            'book_hash': rate.get('match_hash', ''),
+            'room_name': room_name,
+            'price': round(amount, 2),
+            'currency': target_currency,
+            'meal': meal_value,
+            'meal_info': {
+                'value': meal_value,
+                'display_name': meal_display,
+                'has_breakfast': meal_data.get('has_breakfast', False) if meal_data else False,
+                'no_child_meal': no_child_meal
+            },
+            'cancellation_info': format_cancellation_policies(rate)
+        }
+        
+        transformed_rates.append(transformed_rate)
+    
+    return transformed_rates
+
+
 
 
 def extract_amenities(rates):

@@ -17,6 +17,9 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    <!-- Leaflet CSS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/hotel-booking.css">
@@ -74,22 +77,52 @@
 
     <!-- Main Content -->
     <main class="hotel-results-main">
-        <!-- Search Summary Bar -->
-        <section class="search-summary-bar">
+        <!-- Search Bar Section - Expedia Style -->
+        <section class="expedia-search-bar">
             <div class="container">
-                <div class="search-summary">
-                    <div class="search-info">
-                        <h1 id="searchTitle">Hotels in <span id="destinationText">Loading...</span></h1>
-                        <p id="searchDates">
-                            <span id="checkinText"></span> - <span id="checkoutText"></span>
-                            <span class="separator">|</span>
-                            <span id="nightsText"></span>
-                            <span class="separator">|</span>
-                            <span id="guestsText"></span>
-                        </p>
+                <div class="search-bar-container">
+                    <div class="search-input-group" id="destinationGroup">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div class="search-input-content">
+                            <span class="input-label">Where to?</span>
+                            <span class="input-value" id="searchDestination">Loading...</span>
+                        </div>
                     </div>
-                    <button class="modify-search-btn" id="modifySearchBtn">
-                        <i class="fas fa-edit"></i> Modify Search
+                    <div class="search-divider"></div>
+                    <div class="search-input-group" id="datesGroup">
+                        <i class="fas fa-calendar-alt"></i>
+                        <div class="search-input-content">
+                            <span class="input-label">Dates</span>
+                            <span class="input-value" id="searchDates">Select dates</span>
+                        </div>
+                    </div>
+                    <div class="search-divider"></div>
+                    <div class="search-input-group" id="travelersGroup">
+                        <i class="fas fa-user-friends"></i>
+                        <div class="search-input-content">
+                            <span class="input-label">Travelers</span>
+                            <span class="input-value" id="searchTravelers">2 travelers, 1 room</span>
+                        </div>
+                    </div>
+                    <button class="search-btn" id="searchBtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab Navigation -->
+        <section class="tab-navigation">
+            <div class="container">
+                <div class="tabs-container">
+                    <button class="tab-btn active" data-tab="all">
+                        <i class="fas fa-building"></i> All stays
+                    </button>
+                    <button class="tab-btn" data-tab="hotels">
+                        <i class="fas fa-hotel"></i> Hotels
+                    </button>
+                    <button class="tab-btn" data-tab="homes">
+                        <i class="fas fa-home"></i> Homes
                     </button>
                 </div>
             </div>
@@ -99,114 +132,213 @@
         <section class="results-section">
             <div class="container">
                 <div class="results-layout">
-                    <!-- Filters Sidebar -->
+                    <!-- Filters Sidebar - Expedia Style -->
                     <aside class="filters-sidebar" id="filtersSidebar">
-                        <div class="filters-header">
-                            <h3><i class="fas fa-filter"></i> Filters</h3>
-                            <button class="clear-filters" id="clearFilters">Clear All</button>
-                        </div>
-
-                        <!-- Price Range Filter -->
-                        <div class="filter-group">
-                            <h4>Price Range</h4>
-                            <div class="price-range">
-                                <input type="range" id="priceRange" min="0" max="50000" value="50000" step="1000">
-                                <div class="price-labels">
-                                    <span>₹0</span>
-                                    <span id="maxPriceLabel">₹50,000+</span>
+                        <!-- Map Preview -->
+                        <div class="map-preview-card" id="mapPreviewCard">
+                            <div class="map-preview" id="mapPreview">
+                                <div class="map-loading">
+                                    <i class="fas fa-map-marked-alt"></i>
                                 </div>
                             </div>
+                            <button class="view-map-btn" id="viewMapBtn">
+                                <i class="fas fa-map"></i> View in a map
+                            </button>
                         </div>
 
-                        <!-- Star Rating Filter -->
-                        <div class="filter-group">
-                            <h4>Star Rating</h4>
-                            <div class="star-filters">
-                                <label class="star-filter">
-                                    <input type="checkbox" value="5" checked>
-                                    <span class="stars">★★★★★</span>
-                                </label>
-                                <label class="star-filter">
-                                    <input type="checkbox" value="4" checked>
-                                    <span class="stars">★★★★☆</span>
-                                </label>
-                                <label class="star-filter">
-                                    <input type="checkbox" value="3" checked>
-                                    <span class="stars">★★★☆☆</span>
-                                </label>
-                                <label class="star-filter">
-                                    <input type="checkbox" value="2">
-                                    <span class="stars">★★☆☆☆</span>
-                                </label>
+                        <!-- Compare Properties Toggle -->
+                        <div class="compare-toggle-card">
+                            <div class="compare-content">
+                                <span class="compare-label">Compare properties</span>
+                                <p class="compare-desc">Get a side-by-side view of up to 5 properties.</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="compareToggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <!-- Search by Property Name -->
+                        <div class="search-property-card">
+                            <h4>Search by property name</h4>
+                            <div class="property-search-input">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="propertySearch" placeholder="e.g. Marriott">
                             </div>
                         </div>
 
-                        <!-- Amenities Filter -->
-                        <div class="filter-group">
-                            <h4>Amenities</h4>
-                            <div class="amenities-filters">
-                                <label class="amenity-filter">
-                                    <input type="checkbox" value="wifi">
-                                    <span><i class="fas fa-wifi"></i> Free WiFi</span>
-                                </label>
-                                <label class="amenity-filter">
-                                    <input type="checkbox" value="pool">
-                                    <span><i class="fas fa-swimming-pool"></i> Pool</span>
-                                </label>
-                                <label class="amenity-filter">
-                                    <input type="checkbox" value="parking">
-                                    <span><i class="fas fa-parking"></i> Parking</span>
-                                </label>
-                                <label class="amenity-filter">
-                                    <input type="checkbox" value="spa">
-                                    <span><i class="fas fa-spa"></i> Spa</span>
-                                </label>
-                                <label class="amenity-filter">
-                                    <input type="checkbox" value="restaurant">
-                                    <span><i class="fas fa-utensils"></i> Restaurant</span>
-                                </label>
-                                <label class="amenity-filter">
-                                    <input type="checkbox" value="gym">
-                                    <span><i class="fas fa-dumbbell"></i> Gym</span>
-                                </label>
+                        <!-- Filters -->
+                        <div class="filters-card">
+                            <div class="filters-header">
+                                <h3><i class="fas fa-filter"></i> Filter by</h3>
+                                <button class="clear-filters" id="clearFilters">Clear All</button>
                             </div>
-                        </div>
 
-                        <!-- Meal Plan Filter -->
-                        <div class="filter-group">
-                            <h4>Meal Plan</h4>
-                            <div class="meal-filters">
-                                <label class="meal-filter">
-                                    <input type="checkbox" value="breakfast">
-                                    <span>Breakfast Included</span>
-                                </label>
-                                <label class="meal-filter">
-                                    <input type="checkbox" value="halfboard">
-                                    <span>Half Board</span>
-                                </label>
-                                <label class="meal-filter">
-                                    <input type="checkbox" value="fullboard">
-                                    <span>Full Board</span>
-                                </label>
+                            <!-- Popular Filters -->
+                            <div class="filter-group">
+                                <h4>Popular filters</h4>
+                                <div class="filter-options">
+                                    <label class="filter-checkbox">
+                                        <input type="checkbox" value="city_center">
+                                        <span class="checkmark"></span>
+                                        <span class="filter-label">City Center</span>
+                                        <span class="filter-count">(150)</span>
+                                    </label>
+                                    <label class="filter-checkbox">
+                                        <input type="checkbox" value="hotel">
+                                        <span class="checkmark"></span>
+                                        <span class="filter-label">Hotel</span>
+                                        <span class="filter-count">(200)</span>
+                                    </label>
+                                    <label class="filter-checkbox">
+                                        <input type="checkbox" value="breakfast">
+                                        <span class="checkmark"></span>
+                                        <span class="filter-label">Breakfast included</span>
+                                        <span class="filter-count">(120)</span>
+                                    </label>
+                                    <label class="filter-checkbox">
+                                        <input type="checkbox" value="free_cancellation">
+                                        <span class="checkmark"></span>
+                                        <span class="filter-label">Free cancellation</span>
+                                        <span class="filter-count">(180)</span>
+                                    </label>
+                                    <label class="filter-checkbox">
+                                        <input type="checkbox" value="pool">
+                                        <span class="checkmark"></span>
+                                        <span class="filter-label">Pool</span>
+                                        <span class="filter-count">(85)</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Price Range Filter -->
+                            <div class="filter-group">
+                                <h4>Price per night</h4>
+                                <div class="price-range-slider">
+                                    <div class="price-histogram" id="priceHistogram">
+                                        <!-- Price distribution bars will be generated here -->
+                                    </div>
+                                    <input type="range" id="priceRange" min="0" max="50000" value="50000" step="500">
+                                    <div class="price-labels">
+                                        <span>₹0</span>
+                                        <span id="maxPriceLabel">₹50,000+</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Guest Rating Filter -->
+                            <div class="filter-group">
+                                <h4>Guest rating</h4>
+                                <div class="rating-pills">
+                                    <button class="rating-pill" data-rating="any">Any</button>
+                                    <button class="rating-pill active" data-rating="4.5">Wonderful 4.5+</button>
+                                    <button class="rating-pill" data-rating="4">Very good 4+</button>
+                                    <button class="rating-pill" data-rating="3.5">Good 3.5+</button>
+                                </div>
+                            </div>
+
+                            <!-- Star Rating Filter -->
+                            <div class="filter-group">
+                                <h4>Star Rating</h4>
+                                <div class="star-filters">
+                                    <label class="star-filter">
+                                        <input type="checkbox" value="5" checked>
+                                        <span class="stars">★★★★★</span>
+                                    </label>
+                                    <label class="star-filter">
+                                        <input type="checkbox" value="4" checked>
+                                        <span class="stars">★★★★☆</span>
+                                    </label>
+                                    <label class="star-filter">
+                                        <input type="checkbox" value="3" checked>
+                                        <span class="stars">★★★☆☆</span>
+                                    </label>
+                                    <label class="star-filter">
+                                        <input type="checkbox" value="2">
+                                        <span class="stars">★★☆☆☆</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Amenities Filter -->
+                            <div class="filter-group">
+                                <h4>Amenities</h4>
+                                <div class="amenities-filters">
+                                    <label class="amenity-filter">
+                                        <input type="checkbox" value="wifi">
+                                        <span><i class="fas fa-wifi"></i> Free WiFi</span>
+                                    </label>
+                                    <label class="amenity-filter">
+                                        <input type="checkbox" value="pool">
+                                        <span><i class="fas fa-swimming-pool"></i> Pool</span>
+                                    </label>
+                                    <label class="amenity-filter">
+                                        <input type="checkbox" value="parking">
+                                        <span><i class="fas fa-parking"></i> Parking</span>
+                                    </label>
+                                    <label class="amenity-filter">
+                                        <input type="checkbox" value="spa">
+                                        <span><i class="fas fa-spa"></i> Spa</span>
+                                    </label>
+                                    <label class="amenity-filter">
+                                        <input type="checkbox" value="restaurant">
+                                        <span><i class="fas fa-utensils"></i> Restaurant</span>
+                                    </label>
+                                    <label class="amenity-filter">
+                                        <input type="checkbox" value="gym">
+                                        <span><i class="fas fa-dumbbell"></i> Gym</span>
+                                    </label>
+                                    <label class="amenity-filter">
+                                        <input type="checkbox" value="ac">
+                                        <span><i class="fas fa-snowflake"></i> Air conditioning</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Meal Plan Filter -->
+                            <div class="filter-group">
+                                <h4>Meal Plan</h4>
+                                <div class="meal-filters">
+                                    <label class="meal-filter">
+                                        <input type="checkbox" value="breakfast">
+                                        <span>Breakfast Included</span>
+                                    </label>
+                                    <label class="meal-filter">
+                                        <input type="checkbox" value="halfboard">
+                                        <span>Half Board</span>
+                                    </label>
+                                    <label class="meal-filter">
+                                        <input type="checkbox" value="fullboard">
+                                        <span>Full Board</span>
+                                    </label>
+                                    <label class="meal-filter">
+                                        <input type="checkbox" value="allinclusive">
+                                        <span>All Inclusive</span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </aside>
 
                     <!-- Results Grid -->
                     <div class="results-content">
-                        <!-- Sort Bar -->
-                        <div class="sort-bar">
-                            <div class="results-count">
-                                <span id="resultsCount">0</span> hotels found
+                        <!-- Results Header -->
+                        <div class="results-header-bar">
+                            <div class="results-info">
+                                <span id="resultsCount">0</span> properties
+                                <button class="how-sort-works" id="howSortWorks">
+                                    <i class="fas fa-info-circle"></i> How our sort order works
+                                </button>
                             </div>
-                            <div class="sort-options">
+                            <div class="sort-dropdown">
                                 <label>Sort by:</label>
                                 <select id="sortSelect">
-                                    <option value="recommended">Recommended</option>
+                                    <option value="recommended">Recommended for you</option>
                                     <option value="price_low">Price: Low to High</option>
                                     <option value="price_high">Price: High to Low</option>
                                     <option value="rating">Guest Rating</option>
                                     <option value="stars">Star Rating</option>
+                                    <option value="distance">Distance from center</option>
                                 </select>
                             </div>
                         </div>
@@ -235,8 +367,8 @@
                             <button class="btn btn-primary" id="modifySearchBtn2">Modify Search</button>
                         </div>
 
-                        <!-- Hotels Grid -->
-                        <div class="hotels-grid hidden" id="hotelsGrid">
+                        <!-- Hotels List - Expedia Style Cards -->
+                        <div class="hotels-list hidden" id="hotelsList">
                             <!-- Hotel cards will be dynamically inserted here -->
                         </div>
 
@@ -251,6 +383,28 @@
             </div>
         </section>
     </main>
+
+    <!-- Map Modal -->
+    <div class="map-modal" id="mapModal">
+        <div class="map-modal-header">
+            <h2><i class="fas fa-map-marked-alt"></i> Hotels on Map</h2>
+            <button class="close-map-modal" id="closeMapModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="map-modal-content">
+            <div class="map-filters">
+                <button class="map-filter-pill active">All hotels</button>
+                <button class="map-filter-pill">5 Star</button>
+                <button class="map-filter-pill">4 Star</button>
+                <button class="map-filter-pill">Pool</button>
+                <button class="map-filter-pill">Free WiFi</button>
+            </div>
+            <div class="map-container" id="fullMapContainer">
+                <!-- Leaflet map will be initialized here -->
+            </div>
+        </div>
+    </div>
 
     <!-- Modify Search Modal -->
     <div class="modal" id="modifySearchModal">
@@ -294,6 +448,51 @@
                             <option value="6">6 Adults</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label>Children <small style="color:#64748b">(0-17)</small></label>
+                        <select id="modifyChildren">
+                            <option value="0" selected>0 Children</option>
+                            <option value="1">1 Child</option>
+                            <option value="2">2 Children</option>
+                            <option value="3">3 Children</option>
+                            <option value="4">4 Children</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Child Ages Container -->
+                <div id="modifyChildAgesContainer" class="form-group"
+                    style="display: none; background: #f8fafc; padding: 10px; border-radius: 8px;">
+                    <label style="margin-bottom: 8px; display: block;">Child Ages</label>
+                    <div class="child-ages-grid"
+                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px;">
+                        <!-- Ages will be injected here via JS -->
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Citizenship / Residency <small style="color:#64748b">(affects pricing)</small></label>
+                    <select id="modifyResidency">
+                        <option value="in">🇮🇳 India</option>
+                        <option value="us">🇺🇸 United States</option>
+                        <option value="gb">🇬🇧 United Kingdom</option>
+                        <option value="ae">🇦🇪 UAE</option>
+                        <option value="au">🇦🇺 Australia</option>
+                        <option value="ca">🇨🇦 Canada</option>
+                        <option value="de">🇩🇪 Germany</option>
+                        <option value="fr">🇫🇷 France</option>
+                        <option value="it">🇮🇹 Italy</option>
+                        <option value="jp">🇯🇵 Japan</option>
+                        <option value="sg">🇸🇬 Singapore</option>
+                        <option value="za">🇿🇦 South Africa</option>
+                        <option value="ru">🇷🇺 Russia</option>
+                        <option value="cn">🇨🇳 China</option>
+                        <option value="br">🇧🇷 Brazil</option>
+                        <option value="mx">🇲🇽 Mexico</option>
+                        <option value="sa">🇸🇦 Saudi Arabia</option>
+                        <option value="ng">🇳🇬 Nigeria</option>
+                        <option value="pk">🇵🇰 Pakistan</option>
+                        <option value="bd">🇧🇩 Bangladesh</option>
+                    </select>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">
                     <i class="fas fa-search"></i> Search Hotels
@@ -333,6 +532,9 @@
         });
     </script>
     <script src="../js/auth-guard.js"></script>
+
+    <!-- Leaflet JS for Map -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <!-- Hotel API (defines SearchSession, HotelUtils, HotelAPI) -->
     <script src="../js/hotel-api.js"></script>

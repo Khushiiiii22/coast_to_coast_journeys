@@ -20,6 +20,7 @@
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/hotel-booking.css">
+    <link rel="stylesheet" href="../css/hotel-details-expedia.css">
 </head>
 
 <body class="hotel-details-page">
@@ -42,6 +43,16 @@
                     </ul>
 
                     <div class="nav-actions">
+                        <!-- Currency Selector -->
+                        <div class="currency-selector-wrapper">
+                            <select id="currencySelect" class="currency-dropdown">
+                                <option value="INR">🇮🇳 INR</option>
+                                <option value="USD">🇺🇸 USD</option>
+                                <option value="EUR">🇪🇺 EUR</option>
+                                <option value="GBP">🇬🇧 GBP</option>
+                                <option value="AED">🇦🇪 AED</option>
+                            </select>
+                        </div>
                         <a href="javascript:history.back()" class="btn btn-outline" style="margin-right: 10px;">
                             <i class="fas fa-arrow-left"></i> Back
                         </a>
@@ -63,221 +74,301 @@
 
     <!-- Main Content -->
     <main class="hotel-details-main">
-        <!-- Breadcrumb -->
-        <section class="breadcrumb-section">
+        <!-- Back Navigation (like Expedia) -->
+        <section class="back-navigation">
             <div class="container">
-                <nav class="breadcrumb">
-                    <a href="index.html">Home</a>
-                    <i class="fas fa-chevron-right"></i>
-                    <a href="hotel-results.html">Hotels</a>
-                    <i class="fas fa-chevron-right"></i>
-                    <span id="hotelNameBreadcrumb">Loading...</span>
-                </nav>
+                <a href="javascript:history.back()" class="back-link">
+                    <i class="fas fa-arrow-left"></i> See all properties
+                </a>
+                <div class="action-buttons">
+                    <button class="action-btn" id="shareBtn">
+                        <i class="fas fa-share-alt"></i> Share
+                    </button>
+                    <button class="action-btn" id="saveBtn">
+                        <i class="far fa-heart"></i> Save
+                    </button>
+                </div>
             </div>
         </section>
 
-        <div class="container">
-            <!-- Loading State -->
-            <div class="loading-state" id="loadingState">
-                <div class="loading-spinner">
-                    <i class="fas fa-spinner fa-spin"></i>
-                </div>
-                <p>Loading hotel details...</p>
+        <!-- Loading State -->
+        <div class="loading-state" id="loadingState">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
             </div>
+            <p>Loading hotel details...</p>
+        </div>
 
-            <!-- Hotel Content -->
-            <div class="hotel-details-content hidden" id="hotelContent">
-                <div class="hotel-details-grid">
-                    <!-- Left Column -->
-                    <div class="hotel-details-left">
-                        <!-- Gallery -->
-                        <div class="hotel-gallery">
-                            <div class="gallery-main" id="galleryMain"></div>
-                            <div class="gallery-thumbs" id="galleryThumbs"></div>
+        <!-- Hotel Content -->
+        <div class="hotel-details-content hidden" id="hotelContent">
+            <div class="container">
+                <!-- Photo Gallery Grid (Expedia Style) -->
+                <section class="photo-gallery-section" id="photoGallery">
+                    <div class="gallery-grid">
+                        <div class="gallery-main-image" id="galleryMainImage">
+                            <!-- Main large image -->
                         </div>
-
-                        <!-- Hotel Info -->
-                        <div class="hotel-info-card">
-                            <div class="hotel-stars" id="hotelStars"></div>
-                            <h1 id="hotelName">Hotel Name</h1>
-                            <p class="hotel-address" id="hotelAddress">
-                                <i class="fas fa-map-marker-alt"></i> <span>Loading address...</span>
-                            </p>
-                            <div class="hotel-rating-large">
-                                <span class="rating-badge" id="hotelRating">4.5</span>
-                                <span class="rating-label" id="ratingLabel">Excellent</span>
-                                <span class="review-count" id="reviewCount">(0 reviews)</span>
-                            </div>
-                            <p class="hotel-description" id="hotelDescription"></p>
-                        </div>
-
-                        <!-- Amenities -->
-                        <div class="hotel-info-card">
-                            <h2><i class="fas fa-concierge-bell"></i> Amenities</h2>
-                            <div class="amenities-grid" id="amenitiesGrid">
-                                <!-- Amenities will be inserted here -->
-                            </div>
-                        </div>
-
-                        <!-- Hotel Policies (RateHawk Compliance) -->
-                        <div class="hotel-info-card" id="hotelPoliciesCard">
-                            <h2><i class="fas fa-clipboard-list"></i> Hotel Policies & Important Information</h2>
-                            <div id="policiesLoading" class="policies-loading">
-                                <i class="fas fa-spinner fa-spin"></i> Loading policies...
-                            </div>
-                            <div id="policiesContent" class="policies-content hidden">
-                                <!-- Check-in/Check-out -->
-                                <div class="policy-section" id="policyCheckInOut">
-                                    <h3><i class="fas fa-clock"></i> Check-in & Check-out</h3>
-                                    <div class="policy-items"></div>
-                                </div>
-
-                                <!-- Children Policy -->
-                                <div class="policy-section" id="policyChildren">
-                                    <h3><i class="fas fa-child"></i> Children Policy</h3>
-                                    <div class="policy-items"></div>
-                                </div>
-
-                                <!-- Pets Policy -->
-                                <div class="policy-section" id="policyPets">
-                                    <h3><i class="fas fa-paw"></i> Pets Policy</h3>
-                                    <div class="policy-items"></div>
-                                </div>
-
-                                <!-- Internet -->
-                                <div class="policy-section" id="policyInternet">
-                                    <h3><i class="fas fa-wifi"></i> Internet</h3>
-                                    <div class="policy-items"></div>
-                                </div>
-
-                                <!-- Parking -->
-                                <div class="policy-section" id="policyParking">
-                                    <h3><i class="fas fa-parking"></i> Parking</h3>
-                                    <div class="policy-items"></div>
-                                </div>
-
-                                <!-- Payments/Deposit -->
-                                <div class="policy-section" id="policyPayments">
-                                    <h3><i class="fas fa-credit-card"></i> Payment & Deposit</h3>
-                                    <div class="policy-items"></div>
-                                </div>
-
-                                <!-- Extra Beds -->
-                                <div class="policy-section" id="policyExtraBeds">
-                                    <h3><i class="fas fa-bed"></i> Extra Beds & Cots</h3>
-                                    <div class="policy-items"></div>
-                                </div>
-
-                                <!-- Meals -->
-                                <div class="policy-section" id="policyMeals">
-                                    <h3><i class="fas fa-utensils"></i> Meals</h3>
-                                    <div class="policy-items"></div>
-                                </div>
-
-                                <!-- Other Policies -->
-                                <div class="policy-section" id="policyOther">
-                                    <h3><i class="fas fa-info-circle"></i> Other Information</h3>
-                                    <div class="policy-items"></div>
-                                </div>
-                            </div>
-                            <div id="policiesError" class="policies-error hidden">
-                                <i class="fas fa-info-circle"></i> Policy information not available for this hotel.
-                            </div>
-                        </div>
-
-                        <!-- Room Rates -->
-                        <div class="room-rates-section">
-                            <h2><i class="fas fa-bed"></i> Available Rooms</h2>
-                            <div class="rates-list" id="ratesList">
-                                <!-- Rates will be inserted here -->
-                            </div>
-                        </div>
-
-                        <!-- Location Map -->
-                        <div class="hotel-info-card" id="locationSection" style="margin-top: 30px;">
-                            <h2
-                                style="font-size: 1.5rem; font-weight: 700; color: #0f172a; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
-                                <i class="fas fa-map-marked-alt" style="color: #0e64a6;"></i> Location & Surroundings
-                            </h2>
-                            <div class="hotel-map" id="hotelMap"
-                                style="height: 400px; background: #f8fafc; border-radius: 16px; position: relative; border: 1px solid #e2e8f0; overflow: hidden;">
-                                <!-- Map iframe will be inserted here by JS -->
-                                <div class="loading-state"
-                                    style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.8); gap: 15px;">
-                                    <i class="fas fa-spinner fa-spin fa-2x" style="color: #0e64a6;"></i>
-                                    <span style="color: #64748b; font-weight: 500;">Loading interactive map...</span>
+                        <div class="gallery-side-images">
+                            <div class="gallery-side-image" id="sideImage1"></div>
+                            <div class="gallery-side-image" id="sideImage2"></div>
+                            <div class="gallery-side-image" id="sideImage3"></div>
+                            <div class="gallery-side-image photo-count-overlay" id="sideImage4">
+                                <div class="photo-count-badge">
+                                    <i class="fas fa-images"></i>
+                                    <span id="photoCount">100+</span>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </section>
 
-                    <!-- Right Column - Booking Card -->
-                    <div class="booking-sidebar">
-                        <div class="booking-card" id="bookingCard">
-                            <h3>Booking Summary</h3>
-                            <div class="booking-summary-content">
-                                <div class="booking-dates">
-                                    <div class="booking-date-item">
-                                        <span class="date-label">Check-in</span>
-                                        <span class="date-value" id="summaryCheckin">-</span>
-                                    </div>
-                                    <div class="booking-date-item">
-                                        <span class="date-label">Check-out</span>
-                                        <span class="date-value" id="summaryCheckout">-</span>
-                                    </div>
+                <!-- Tab Navigation (Expedia Style) -->
+                <section class="tab-navigation-section">
+                    <nav class="hotel-tabs">
+                        <button class="tab-btn active" data-tab="overview">Overview</button>
+                        <button class="tab-btn" data-tab="about">About</button>
+                        <button class="tab-btn" data-tab="rooms">Rooms</button>
+                        <button class="tab-btn" data-tab="policies">Policies</button>
+                    </nav>
+                    <button class="reserve-btn" id="quickReserveBtn">
+                        Reserve
+                    </button>
+                </section>
+
+                <!-- Hotel Info Section -->
+                <section class="hotel-info-section" id="overviewSection">
+                    <div class="hotel-info-grid">
+                        <!-- Left: Hotel Details -->
+                        <div class="hotel-main-info">
+                            <!-- Property Type Badge -->
+                            <div class="property-badges">
+                                <span class="vip-badge" id="vipBadge">
+                                    <i class="fas fa-crown"></i> VIP Access
+                                </span>
+                                <span class="property-type" id="propertyType">Hotel</span>
+                            </div>
+
+                            <!-- Hotel Name -->
+                            <h1 class="hotel-title" id="hotelName">Hotel Name</h1>
+
+                            <!-- Star Rating -->
+                            <div class="hotel-stars-row">
+                                <div class="hotel-stars" id="hotelStars"></div>
+                            </div>
+
+                            <!-- Rating Badge -->
+                            <div class="rating-section">
+                                <div class="rating-badge-large" id="hotelRating">8.6</div>
+                                <div class="rating-info">
+                                    <span class="rating-label" id="ratingLabel">Excellent</span>
+                                    <a href="#reviews" class="review-link" id="reviewCount">See all 643 reviews</a>
                                 </div>
-                                <div class="booking-info">
-                                    <div class="booking-summary-item">
-                                        <span>Nights</span>
-                                        <span id="summaryNights">-</span>
-                                    </div>
-                                    <div class="booking-summary-item">
-                                        <span>Rooms</span>
-                                        <span id="summaryRooms">-</span>
-                                    </div>
-                                    <div class="booking-summary-item">
-                                        <span>Guests</span>
-                                        <span id="summaryGuests">-</span>
-                                    </div>
-                                </div>
-                                <div class="selected-room hidden" id="selectedRoomBox">
-                                    <h4>Selected Room</h4>
-                                    <p id="selectedRoomName">-</p>
-                                    <p id="selectedMealPlan">-</p>
-                                </div>
-                                <div class="booking-total hidden" id="bookingTotalBox">
-                                    <span>Total Price</span>
-                                    <span id="totalPrice">₹0</span>
-                                </div>
-                                <button class="confirm-booking-btn hidden" id="proceedToBookBtn" disabled>
-                                    <i class="fas fa-lock"></i> Proceed to Book
-                                </button>
-                                <p class="select-room-prompt" id="selectRoomPrompt">
-                                    <i class="fas fa-hand-pointer"></i> Select a room to proceed
+                            </div>
+
+                            <!-- Description -->
+                            <p class="hotel-description" id="hotelDescription">
+                                Experience exceptional comfort at this stunning property...
+                            </p>
+
+                            <!-- Key Amenities -->
+                            <div class="key-amenities" id="keyAmenities">
+                                <h3><i class="fas fa-concierge-bell"></i> Popular amenities</h3>
+                                <div class="amenities-grid" id="amenitiesGrid"></div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Map Preview -->
+                        <div class="map-preview-section">
+                            <h3><i class="fas fa-map-marked-alt"></i> Explore the area</h3>
+                            <div class="map-preview" id="mapPreview">
+                                <!-- Map will be inserted here -->
+                            </div>
+                            <div class="location-info">
+                                <p class="hotel-address" id="hotelAddress">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Loading address...</span>
                                 </p>
                             </div>
+                            <div class="nearby-places" id="nearbyPlaces">
+                                <!-- Nearby places will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Room Selection Section (Expedia Style) -->
+                <section class="rooms-section" id="roomsSection">
+                    <div class="rooms-header">
+                        <h2><i class="fas fa-bed"></i> Choose your room</h2>
+                        <p class="rooms-subtitle">
+                            <span id="roomsNightsInfo">2 nights</span> · <span id="roomsGuestsInfo">2 adults</span>
+                        </p>
+                    </div>
+
+                    <div class="rooms-list" id="ratesList">
+                        <!-- Room cards will be inserted here -->
+                    </div>
+                </section>
+
+                <!-- About Section -->
+                <section class="about-section hidden" id="aboutSection">
+                    <h2><i class="fas fa-info-circle"></i> About this property</h2>
+                    <div class="about-content" id="aboutContent">
+                        <!-- About content will be inserted here -->
+                    </div>
+                </section>
+
+                <!-- Policies Section (Expedia Style) -->
+                <section class="policies-section" id="policiesSection">
+                    <h2><i class="fas fa-clipboard-list"></i> Policies</h2>
+
+                    <div class="policies-grid">
+                        <!-- Check-in/Check-out -->
+                        <div class="policy-card" id="policyCheckInOut">
+                            <div class="policy-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="policy-content">
+                                <h4>Check-in & Check-out</h4>
+                                <div class="policy-items"></div>
+                            </div>
+                        </div>
+
+                        <!-- Children Policy -->
+                        <div class="policy-card" id="policyChildren">
+                            <div class="policy-icon">
+                                <i class="fas fa-child"></i>
+                            </div>
+                            <div class="policy-content">
+                                <h4>Children & extra beds</h4>
+                                <div class="policy-items"></div>
+                            </div>
+                        </div>
+
+                        <!-- Pets Policy -->
+                        <div class="policy-card" id="policyPets">
+                            <div class="policy-icon">
+                                <i class="fas fa-paw"></i>
+                            </div>
+                            <div class="policy-content">
+                                <h4>Pets</h4>
+                                <div class="policy-items"></div>
+                            </div>
+                        </div>
+
+                        <!-- Payment -->
+                        <div class="policy-card" id="policyPayments">
+                            <div class="policy-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div class="policy-content">
+                                <h4>Payment options</h4>
+                                <div class="policy-items"></div>
+                            </div>
+                        </div>
+
+                        <!-- Internet -->
+                        <div class="policy-card" id="policyInternet">
+                            <div class="policy-icon">
+                                <i class="fas fa-wifi"></i>
+                            </div>
+                            <div class="policy-content">
+                                <h4>Internet</h4>
+                                <div class="policy-items"></div>
+                            </div>
+                        </div>
+
+                        <!-- Parking -->
+                        <div class="policy-card" id="policyParking">
+                            <div class="policy-icon">
+                                <i class="fas fa-parking"></i>
+                            </div>
+                            <div class="policy-content">
+                                <h4>Parking</h4>
+                                <div class="policy-items"></div>
+                            </div>
+                        </div>
+
+                        <!-- Meals -->
+                        <div class="policy-card" id="policyMeals">
+                            <div class="policy-icon">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                            <div class="policy-content">
+                                <h4>Food & Beverages</h4>
+                                <div class="policy-items"></div>
+                            </div>
+                        </div>
+
+                        <!-- Extra Beds -->
+                        <div class="policy-card" id="policyExtraBeds">
+                            <div class="policy-icon">
+                                <i class="fas fa-bed"></i>
+                            </div>
+                            <div class="policy-content">
+                                <h4>Extra Beds & Cots</h4>
+                                <div class="policy-items"></div>
+                            </div>
+                        </div>
+
+                        <!-- Other -->
+                        <div class="policy-card" id="policyOther">
+                            <div class="policy-icon">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div class="policy-content">
+                                <h4>Other information</h4>
+                                <div class="policy-items"></div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Trust Badge -->
-                    <div class="booking-card"
-                        style="margin-top: 1.5rem; padding: 1.5rem; text-align: center; border: 1px dashed #cbd5e1; box-shadow: none;">
-                        <div style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">
-                            <i class="fas fa-shield-alt" style="color: #22c55e; font-size: 1.25rem;"></i>
-                            <span style="font-weight: 600; color: var(--navy); margin-left: 5px;">Secure Payments</span>
-                        </div>
-                        <div
-                            style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; opacity: 0.6; font-size: 1.5rem;">
-                            <i class="fab fa-cc-visa"></i>
-                            <i class="fab fa-cc-mastercard"></i>
-                            <i class="fab fa-cc-paypal"></i>
-                            <i class="fab fa-cc-amex"></i>
-                        </div>
+                    <!-- Loading/Error States -->
+                    <div id="policiesLoading" class="policies-loading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading policies...
                     </div>
+                    <div id="policiesError" class="policies-error hidden">
+                        <i class="fas fa-info-circle"></i> Policy information not available for this hotel.
+                    </div>
+                </section>
+
+
+            </div>
+        </div>
+
+        <!-- Full Screen Photo Gallery Modal -->
+        <div class="photo-modal hidden" id="photoModal">
+            <div class="photo-modal-content">
+                <button class="close-modal" id="closePhotoModal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="photo-modal-main">
+                    <button class="photo-nav prev" id="photoPrev"><i class="fas fa-chevron-left"></i></button>
+                    <img src="" alt="Hotel Photo" id="modalMainImage">
+                    <button class="photo-nav next" id="photoNext"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                <div class="photo-modal-thumbnails" id="modalThumbnails">
+                    <!-- Thumbnails will be inserted here -->
+                </div>
+                <div class="photo-counter">
+                    <span id="currentPhotoNum">1</span> / <span id="totalPhotoNum">10</span>
                 </div>
             </div>
         </div>
     </main>
+
+    <!-- Sticky Footer Booking Bar (Mobile) -->
+    <div class="sticky-booking-bar" id="stickyBookingBar">
+        <div class="container">
+            <div class="sticky-price-info">
+                <span class="sticky-price" id="stickyPrice">₹15,717</span>
+                <span class="sticky-per-night">per night</span>
+            </div>
+            <button class="sticky-reserve-btn" id="stickyReserveBtn">
+                Reserve
+            </button>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -305,6 +396,20 @@
         document.addEventListener('DOMContentLoaded', function () {
             if (typeof SupabaseDB !== 'undefined' && SupabaseDB.initAuthUI) {
                 SupabaseDB.initAuthUI();
+            }
+
+            // Currency selector initialization
+            const currencySelect = document.getElementById('currencySelect');
+            const savedCurrency = localStorage.getItem('ctc_currency') || 'INR';
+            if (currencySelect) {
+                currencySelect.value = savedCurrency;
+                currencySelect.addEventListener('change', function () {
+                    localStorage.setItem('ctc_currency', this.value);
+                    // Trigger price re-render
+                    if (typeof displayRates === 'function' && typeof currentHotel !== 'undefined' && currentHotel) {
+                        displayRates(currentHotel.rates || []);
+                    }
+                });
             }
         });
     </script>

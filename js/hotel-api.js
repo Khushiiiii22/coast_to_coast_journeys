@@ -382,18 +382,57 @@ const SearchSession = {
  * Format utilities
  */
 const HotelUtils = {
+    // Currency conversion rates (base: INR)
+    conversionRates: {
+        'INR': 1,
+        'USD': 0.012,
+        'EUR': 0.011,
+        'GBP': 0.0095,
+        'AED': 0.044
+    },
+
     /**
-     * Format price with currency
+     * Get user's selected currency
      */
-    formatPrice(amount, currency = 'INR') {
+    getSelectedCurrency() {
+        return localStorage.getItem('ctc_currency') || 'INR';
+    },
+
+    /**
+     * Convert amount between currencies
+     */
+    convertCurrency(amount, fromCurrency, toCurrency) {
+        if (fromCurrency === toCurrency) return amount;
+
+        // First convert to INR (base), then to target
+        const toINR = amount / (this.conversionRates[fromCurrency] || 1);
+        const converted = toINR * (this.conversionRates[toCurrency] || 1);
+        return Math.round(converted);
+    },
+
+    /**
+     * Format price with currency - uses user's selected currency
+     */
+    formatPrice(amount, originalCurrency = 'INR') {
         const symbols = {
             'INR': '₹',
             'USD': '$',
             'EUR': '€',
-            'GBP': '£'
+            'GBP': '£',
+            'AED': 'AED '
         };
-        const symbol = symbols[currency] || currency + ' ';
-        return `${symbol}${amount.toLocaleString('en-IN')}`;
+
+        // Get user's selected currency
+        const displayCurrency = this.getSelectedCurrency();
+
+        // Convert if needed
+        const convertedAmount = this.convertCurrency(amount, originalCurrency, displayCurrency);
+
+        const symbol = symbols[displayCurrency] || displayCurrency + ' ';
+
+        // Use appropriate locale for formatting
+        const locale = displayCurrency === 'INR' ? 'en-IN' : 'en-US';
+        return `${symbol}${convertedAmount.toLocaleString(locale)}`;
     },
 
     /**
