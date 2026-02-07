@@ -2292,34 +2292,35 @@ def send_booking_confirmation():
             'currency': 'INR'
         }
         
-        print(f"📧 Sending booking confirmation to {data.get('email')} (Async)")
+        print(f"📧 Sending booking confirmation to {data.get('email')}")
         
-        # Define async email function
-        def send_async_email(app, email, details):
-            with app.app_context():
-                try:
-                    email_service.init_app(app)
-                    email_service.send_booking_confirmation(email, details)
-                    print(f"✅ Async email sent to {email}")
-                except Exception as e:
-                    print(f"❌ Async email failed: {str(e)}")
-
-        # Start thread
-        import threading
-        # We need to pass the real app object, current_app is a proxy
-        # _get_current_object() returns the actual app instance
-        email_thread = threading.Thread(
-            target=send_async_email, 
-            args=(current_app._get_current_object(), data.get('email'), email_details)
-        )
-        email_thread.start()
-        
-        # Return success immediately
-        return jsonify({
-            'success': True,
-            'message': 'Booking confirmed (email queued)',
-            'email_sent': True 
-        })
+        # Send email SYNCHRONOUSLY to ensure it works on Render
+        # (Threading was silently failing on Gunicorn workers)
+        try:
+            email_sent = email_service.send_booking_confirmation(data.get('email'), email_details)
+            
+            if email_sent:
+                print(f"✅ Email sent successfully to {data.get('email')}")
+                return jsonify({
+                    'success': True,
+                    'message': 'Booking confirmed and email sent',
+                    'email_sent': True 
+                })
+            else:
+                print(f"⚠️ Email send returned False for {data.get('email')}")
+                return jsonify({
+                    'success': True,
+                    'message': 'Booking confirmed (email failed)',
+                    'email_sent': False
+                })
+        except Exception as email_error:
+            print(f"❌ Email send exception: {str(email_error)}")
+            return jsonify({
+                'success': True,
+                'message': 'Booking confirmed (email error)',
+                'email_sent': False,
+                'email_error': str(email_error)
+            })
 
     
     except Exception as e:
