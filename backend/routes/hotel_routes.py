@@ -14,137 +14,77 @@ hotel_bp = Blueprint('hotels', __name__, url_prefix='/api/hotels')
 
 
 # ==========================================
-# DEBUG ENDPOINT (Temporary) - v1.3
+# DEBUG ENDPOINT (Temporary) - v2.0 SendGrid
 # ==========================================
 
 @hotel_bp.route('/debug/email-test', methods=['GET'])
 def debug_email_test():
-    """Test email configuration and connectivity"""
+    """Test SendGrid email configuration"""
     try:
         from flask import current_app
-        import smtplib
-        import socket
-        import ssl
-        
-        # Get config
-        server = current_app.config.get('MAIL_SERVER')
-        port = int(current_app.config.get('MAIL_PORT', 465))
-        username = current_app.config.get('MAIL_USERNAME')
-        # Mask password
-        password = current_app.config.get('MAIL_PASSWORD')
-        password_masked = f"{password[:2]}...{password[-2:]}" if password else "None"
-        use_ssl = current_app.config.get('MAIL_USE_SSL', True)
-        resend_api_key = current_app.config.get('RESEND_API_KEY')
-        
-        # Check os.environ directly for deeper diagnosis
         import os as os_lib
-        env_resend_key = os_lib.getenv('RESEND_API_KEY')
-        env_resend_masked = f"{env_resend_key[:5]}...{env_resend_key[-5:]}" if env_resend_key else "None"
+        
+        # Check SendGrid config
+        sendgrid_key = current_app.config.get('SENDGRID_API_KEY') or os_lib.getenv('SENDGRID_API_KEY')
+        mail_sender = current_app.config.get('MAIL_DEFAULT_SENDER') or os_lib.getenv('MAIL_DEFAULT_SENDER', 'noreply@c2cjourneys.com')
         
         results = {
             "config": {
-                "server": server,
-                "port": port,
-                "username": username,
-                "password_configured": bool(password),
-                "ssl": use_ssl,
-                "resend_api_key_configured_in_flask": bool(resend_api_key),
-                "resend_api_key_found_in_os_environ": bool(env_resend_key),
-                "os_environ_key_masked": env_resend_masked
+                "sendgrid_api_key_configured": bool(sendgrid_key),
+                "sendgrid_key_masked": f"{sendgrid_key[:10]}...{sendgrid_key[-5:]}" if sendgrid_key else "None",
+                "mail_sender": mail_sender
             },
             "steps": []
         }
-
-        # Step 0: Test Resend API if configured
-        if resend_api_key:
-            try:
-                results['steps'].append("Testing Resend API connectivity...")
-                import resend
-                resend.api_key = resend_api_key
-                
-                # ATTEMPT A REAL TEST SEND
-                results['steps'].append(f"Attempting test email via Resend to {username}...")
-                test_send = resend.Emails.send({
-                    "from": f"C2C Debug <onboarding@resend.dev>",
-                    "to": username,
-                    "subject": "C2C Journeys - Email Test",
-                    "text": "This is a test email from your Render deployment to verify the Resend API."
-                })
-                results['steps'].append(f"✅ Resend API Test Sent (ID: {test_send.get('id')})")
-                results['steps'].append("👉 Note: Using 'onboarding@resend.dev' works for testing even if your domain isn't verified.")
-            except Exception as e:
-                results['steps'].append(f"❌ Resend API Test Failed: {str(e)}")
-                results['steps'].append("👉 Common cause: Invalid API key or unverified domain/email.")
         
-        # Step 1: DNS Resolution
-        try:
-            results['steps'].append(f"Resolving {server}...")
-            ip = socket.gethostbyname(server)
-            results['steps'].append(f"✅ Resolved to {ip}")
-        except Exception as e:
-            results['steps'].append(f"❌ DNS Resolution failed: {str(e)}")
-            # Don't return yet if Resend is configured, as SMTP might just be a fallback
-            if not resend_api_key:
-                return jsonify(results), 500
-            
-        # Step 2: Connection
-        try:
-            results['steps'].append(f"Connecting to {server}:{port}...")
-            # Create a socket connection first to test reachability
-            sock = socket.create_connection((server, port), timeout=10)
-            results['steps'].append("✅ TCP Connection successful")
-            sock.close()
-        except Exception as e:
-            results['steps'].append(f"❌ Connection failed: {str(e)}")
-            if not resend_api_key:
-                return jsonify(results), 500
-
-        # Step 3: SMTP Handshake
-        try:
-            results['steps'].append("Starting SMTP session...")
-            
-            if use_ssl:
-                results['steps'].append("Using SMTP_SSL...")
-                smtp = smtplib.SMTP_SSL(server, port, timeout=10)
-            else:
-                results['steps'].append("Using SMTP (TLS)...")
-                smtp = smtplib.SMTP(server, port, timeout=10)
-                smtp.starttls()
-            
-            results['steps'].append("✅ SMTP Connected & Hello received")
-            
-            # Step 4: Login
-            results['steps'].append(f"Attempting login as {username}...")
-            smtp.login(username, password)
-            results['steps'].append("✅ Login successful")
-            
-            smtp.quit()
-            
+        if not sendgrid_key:
+            results['steps'].append("❌ SENDGRID_API_KEY not configured")
+            results['steps'].append("👉 Add SENDGRID_API_KEY in Render Environment Variables")
             return jsonify({
-                "success": True, 
-                "message": "Email system is fully operational!",
+                "success": False,
+                "error": "SendGrid not configured",
                 "debug_info": results
-            })
+            }), 500
+        
+        # Test SendGrid
+        results['steps'].append("✅ SendGrid API Key found")
+        results['steps'].append(f"📧 Sender: {mail_sender}")
+        
+        # Try to send a test email
+        try:
+            from sendgrid import SendGridAPIClient
+            from sendgrid.helpers.mail import Mail
             
-        except smtplib.SMTPAuthenticationError as e:
-             results['steps'].append(f"❌ Authentication Failed: {str(e)}")
-             results['steps'].append("👉 Check your MAIL_USERNAME and MAIL_PASSWORD")
-        except Exception as e:
-            results['steps'].append(f"❌ SMTP Error: {str(e)}")
+            results['steps'].append("Testing SendGrid API connectivity...")
             
-        # If we got here, maybe Resend worked but SMTP failed
-        if resend_api_key and "Resend API key configured" in str(results['steps']):
+            # Send test email to owner
+            test_email = "khushikumari62406@gmail.com"
+            message = Mail(
+                from_email=mail_sender,
+                to_emails=test_email,
+                subject="C2C Journeys - SendGrid Test",
+                plain_text_content="This is a test email from your Render deployment."
+            )
+            
+            sg = SendGridAPIClient(sendgrid_key)
+            response = sg.send(message)
+            
+            results['steps'].append(f"✅ Test email sent! Status: {response.status_code}")
+            results['steps'].append(f"📫 Sent to: {test_email}")
+            
             return jsonify({
                 "success": True,
-                "message": "Email system operational via Resend API (SMTP failed but it's a fallback)",
+                "message": "SendGrid is working!",
                 "debug_info": results
             })
-
-        return jsonify({
-            "success": False,
-            "error": "Email Test Failed",
-            "debug_info": results
-        }), 500
+            
+        except Exception as e:
+            results['steps'].append(f"❌ SendGrid error: {str(e)}")
+            return jsonify({
+                "success": False,
+                "error": str(e),
+                "debug_info": results
+            }), 500
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
