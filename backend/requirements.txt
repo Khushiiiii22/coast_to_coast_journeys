@@ -31,3 +31,4 @@ gunicorn==21.2.0
 
 # Email API (works on Render - uses HTTPS instead of blocked SMTP ports)
 resend>=2.0.0
+sendgrid>=6.9.0

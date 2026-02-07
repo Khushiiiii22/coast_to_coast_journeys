@@ -1,14 +1,19 @@
-import resend
+"""
+Email Service using SendGrid API (HTTPS-based)
+
+SendGrid sends emails over HTTPS (Port 443), which works on Render
+unlike traditional SMTP which uses blocked ports (25, 465, 587).
+"""
 import os
 from datetime import datetime
 
+# SendGrid library
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, Email, To, Content, HtmlContent
+
+
 class EmailService:
-    """
-    Email Service using Resend API (HTTPS-based)
-    
-    Resend sends emails over HTTPS (Port 443), which works on Render
-    unlike traditional SMTP which uses blocked ports (25, 465, 587).
-    """
+    """Email Service using SendGrid API"""
     
     def __init__(self, app=None):
         self.api_key = None
@@ -17,65 +22,42 @@ class EmailService:
             self.init_app(app)
 
     def init_app(self, app):
-        # Resend API Configuration
-        self.api_key = app.config.get('RESEND_API_KEY') or os.getenv('RESEND_API_KEY')
+        # SendGrid API Configuration
+        self.api_key = app.config.get('SENDGRID_API_KEY') or os.getenv('SENDGRID_API_KEY')
+        self.default_sender = app.config.get('MAIL_DEFAULT_SENDER') or os.getenv('MAIL_DEFAULT_SENDER', 'noreply@c2cjourneys.com')
         
-        # Force the testing domain for Resend to ensure delivery without domain verification
-        # The user can change this later once they verify their domain in Resend dashboard
         if self.api_key:
-            self.default_sender = 'onboarding@resend.dev'
-        else:
-            self.default_sender = app.config.get('MAIL_DEFAULT_SENDER') or os.getenv('MAIL_DEFAULT_SENDER')
-        
-        # Set the API key for resend
-        if self.api_key:
-            resend.api_key = self.api_key
-            print(f"✅ Email service configured with Resend API")
+            print(f"✅ Email service configured with SendGrid API")
             print(f"   📧 Sender: {self.default_sender}")
         else:
-            print(f"⚠️  Email service NOT configured - missing RESEND_API_KEY")
-            print(f"   Set RESEND_API_KEY in Render Environment Variables")
-            print(f"   Get your API key from: https://resend.com/api-keys")
+            print(f"⚠️  Email service NOT configured - missing SENDGRID_API_KEY")
+            print(f"   Set SENDGRID_API_KEY in Render Environment Variables")
         
     def send_email(self, to_email, subject, body, html_body=None, attachments=None):
-        """Send an email using Resend API (HTTPS)"""
+        """Send an email using SendGrid API (HTTPS)"""
         if not self.api_key:
-            print("⚠️ Resend API key not configured. Skipping email.")
-            print("   Set RESEND_API_KEY environment variable")
+            print("⚠️ SendGrid API key not configured. Skipping email.")
             return False
 
         try:
-            # Ensure API key is set
-            resend.api_key = self.api_key
-            
-            # Build the email params
-            params = {
-                "from": self.default_sender,
-                "to": [to_email] if isinstance(to_email, str) else to_email,
-                "subject": subject,
-                "text": body
-            }
+            # Create the email message
+            message = Mail(
+                from_email=self.default_sender,
+                to_emails=to_email,
+                subject=subject,
+                plain_text_content=body
+            )
             
             # Add HTML body if provided
             if html_body:
-                params["html"] = html_body
-            
-            # Add attachments if provided
-            if attachments:
-                attachment_list = []
-                import base64
-                for filename, content in attachments.items():
-                    attachment_list.append({
-                        "filename": filename,
-                        "content": base64.b64encode(content).decode('utf-8')
-                    })
-                params["attachments"] = attachment_list
+                message.html_content = html_body
             
             # Send the email
-            result = resend.Emails.send(params)
+            sg = SendGridAPIClient(self.api_key)
+            response = sg.send(message)
             
-            print(f"✅ Email sent to {to_email} (ID: {result.get('id', 'N/A')})")
-            return True
+            print(f"✅ Email sent to {to_email} (Status: {response.status_code})")
+            return response.status_code in [200, 201, 202]
             
         except Exception as e:
             print(f"❌ Failed to send email: {str(e)}")
@@ -108,18 +90,14 @@ C2C Journeys Team
         # Send email to customer
         customer_email_sent = self.send_email(to_email, subject, body, html_body=invoice_html)
         
-        # Send copy to owner (from .env MAIL_DEFAULT_SENDER)
+        # Send copy to owner
         self._send_owner_notification(to_email, booking_details)
         
         return customer_email_sent
 
     def _send_owner_notification(self, guest_email, booking_details):
         """Send booking notification to owner/admin"""
-        owner_email = self.default_sender
-        
-        if not owner_email:
-            print("⚠️ Owner email not configured. Skipping owner notification.")
-            return
+        owner_email = os.getenv('OWNER_EMAIL', 'khushikumari62406@gmail.com')
         
         subject = f"🎉 New Booking - {booking_details.get('hotel_name')} | {booking_details.get('booking_id', 'N/A')}"
         
@@ -152,26 +130,6 @@ This is an automated notification from C2C Journeys.
         print(f"📧 Sending owner notification to {owner_email}")
         self.send_email(owner_email, subject, body)
 
-    def _send_sales_notification(self, booking_details):
-        """Send notification to sales team"""
-        sales_email = self.default_sender
-        subject = f"New Booking Alert - {booking_details.get('booking_id', 'N/A')}"
-        
-        body = f"""
-New Booking Confirmed!
-
-Booking ID: {booking_details.get('booking_id', 'N/A')}
-Customer: {booking_details.get('customer_name', 'N/A')}
-Email: {booking_details.get('customer_email', 'N/A')}
-Hotel: {booking_details.get('hotel_name', 'N/A')}
-Check-in: {booking_details.get('checkin', 'N/A')}
-Check-out: {booking_details.get('checkout', 'N/A')}
-Amount: {booking_details.get('amount', 'N/A')} {booking_details.get('currency', 'INR')}
-        """
-        
-        print(f"📧 Sending sales notification to {sales_email}")
-        self.send_email(sales_email, subject, body)
-
     def _generate_invoice_html(self, booking):
         """Generate HTML invoice"""
         date_str = datetime.now().strftime("%d %B %Y")
@@ -201,7 +159,7 @@ Amount: {booking_details.get('amount', 'N/A')} {booking_details.get('currency', 
                         <p>Date: {date_str}</p>
                     </div>
                     <div class="company-details">
-                        <p>123 Travel Lane<br>Mumbai, India<br>support@coasttocoastjourneys.com</p>
+                        <p>123 Travel Lane<br>Mumbai, India<br>support@c2cjourneys.com</p>
                     </div>
                 </div>
                 
