@@ -718,6 +718,41 @@ function displayRates(rates) {
 }
 
 /**
+ * Build tax display HTML for rate card
+ * Shows non-included taxes that must be paid at check-in (RateHawk requirement)
+ */
+function buildTaxDisplayHtml(rate) {
+    const taxInfo = rate.tax_info || {};
+    const nonIncludedTaxes = taxInfo.non_included_taxes || [];
+
+    if (nonIncludedTaxes.length > 0) {
+        // There are taxes to be paid at check-in
+        const taxItems = nonIncludedTaxes.map(tax => {
+            const amount = parseFloat(tax.amount || 0);
+            const currency = tax.currency_code || 'USD';
+            const displayName = tax.display_name || tax.name || 'Tax';
+            return `<div class="tax-item"><span>${displayName}</span><span>${currency} ${amount.toFixed(2)}</span></div>`;
+        }).join('');
+
+        return `
+            <div style="font-size: 0.75rem; color: #6b7280;">Includes taxes & fees</div>
+            <div class="non-included-taxes-notice">
+                <div class="taxes-header">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Additional fees payable at property:</span>
+                </div>
+                <div class="taxes-list">
+                    ${taxItems}
+                </div>
+                <div class="taxes-note">These taxes are not included in the price and must be paid at check-in.</div>
+            </div>
+        `;
+    } else {
+        return '<div style="font-size: 0.75rem; color: #6b7280;">Includes taxes & fees</div>';
+    }
+}
+
+/**
  * Create rate card element (Expedia Style)
  */
 function createRateCard(rate, index) {
@@ -767,7 +802,7 @@ function createRateCard(rate, index) {
         cancellationDetailsHtml = `
             <div class="cancellation-deadline">
                 <i class="fas fa-clock"></i>
-                <span>Cancel free until <strong>${deadline.datetime}</strong></span>
+                <span>Cancel free until <strong>${deadline.datetime}</strong> <small style="color:#64748b;">(UTC+0)</small></span>
             </div>
         `;
 
@@ -899,7 +934,7 @@ function createRateCard(rate, index) {
                     ${originalPrice ? `<div class="original-price">${originalPrice} /night</div>` : ''}
                     <div class="rate-per-night">${price} <small>/night</small></div>
                     <div class="rate-total">${totalPrice} <small>total</small></div>
-                    <div style="font-size: 0.75rem; color: #6b7280;">Includes taxes & fees</div>
+                    ${buildTaxDisplayHtml(rate)}
                 </div>
 
                 <button class="book-rate-btn" data-rate-index="${index}">

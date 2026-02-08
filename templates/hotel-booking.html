@@ -22,6 +22,165 @@
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/hotel-booking.css">
+
+    <!-- Location Autocomplete Styles -->
+    <style>
+        /* Destination Autocomplete */
+        .destination-autocomplete {
+            position: relative;
+        }
+
+        .clear-destination {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clear-destination:hover {
+            color: #111827;
+        }
+
+        /* Location Dropdown */
+        .location-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            margin-top: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .location-dropdown.active {
+            display: block;
+        }
+
+        .dropdown-loading {
+            padding: 20px;
+            text-align: center;
+            color: #6b7280;
+            display: none;
+        }
+
+        .dropdown-loading.active {
+            display: block;
+        }
+
+        .dropdown-empty {
+            padding: 30px 20px;
+            text-align: center;
+            color: #6b7280;
+        }
+
+        .dropdown-empty i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+            color: #d1d5db;
+        }
+
+        /* Location Item */
+        .location-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .location-item:last-child {
+            border-bottom: none;
+        }
+
+        .location-item:hover {
+            background: #f8fafc;
+        }
+
+        .location-item.highlighted {
+            background: #eff6ff;
+        }
+
+        .location-icon {
+            width: 40px;
+            height: 40px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .location-icon i {
+            font-size: 1.1rem;
+            color: #1e40af;
+        }
+
+        .location-icon.city i {
+            color: #1e40af;
+        }
+
+        .location-icon.airport i {
+            color: #0891b2;
+        }
+
+        .location-icon.landmark i {
+            color: #dc2626;
+        }
+
+        .location-icon.hotel i {
+            color: #7c3aed;
+        }
+
+        .location-icon.area i {
+            color: #059669;
+        }
+
+        .location-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .location-name {
+            font-weight: 600;
+            color: #111827;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+
+        .location-country {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        /* Popular destinations header */
+        .dropdown-header {
+            padding: 12px 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+    </style>
 </head>
 
 <body>
@@ -74,12 +233,28 @@
             <div class="booking-search-container">
                 <form id="hotelSearchForm">
                     <div class="search-form-grid hotel-search-grid">
-                        <div class="form-field">
+                        <div class="form-field" style="position: relative;">
                             <label>Destination</label>
-                            <div class="input-wrapper">
+                            <div class="input-wrapper destination-autocomplete">
                                 <i class="fas fa-map-marker-alt"></i>
-                                <input type="text" id="destination" placeholder="City, Hotel, or Area" value="Mumbai"
-                                    required>
+                                <input type="text" id="destination" placeholder="Where to?" autocomplete="off" required>
+                                <button type="button" class="clear-destination" id="clearDestination"
+                                    style="display: none;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <!-- Autocomplete Dropdown -->
+                            <div class="location-dropdown" id="locationDropdown">
+                                <div class="dropdown-loading" id="dropdownLoading">
+                                    <i class="fas fa-spinner fa-spin"></i> Searching...
+                                </div>
+                                <div class="dropdown-results" id="dropdownResults">
+                                    <!-- Results will be populated dynamically -->
+                                </div>
+                                <div class="dropdown-empty" id="dropdownEmpty" style="display: none;">
+                                    <i class="fas fa-search"></i>
+                                    <span>No locations found</span>
+                                </div>
                             </div>
                         </div>
 
@@ -629,6 +804,241 @@
             this.classList.toggle('active');
             document.getElementById('navMenu').classList.toggle('active');
         });
+
+        // ========== DESTINATION AUTOCOMPLETE (Expedia Style) ==========
+        const destinationInput = document.getElementById('destination');
+        const locationDropdown = document.getElementById('locationDropdown');
+        const dropdownResults = document.getElementById('dropdownResults');
+        const dropdownLoading = document.getElementById('dropdownLoading');
+        const dropdownEmpty = document.getElementById('dropdownEmpty');
+        const clearBtn = document.getElementById('clearDestination');
+
+        let searchTimeout = null;
+        let selectedLocationData = null;
+        let highlightedIndex = -1;
+
+        // Popular destinations (fallback when no search)
+        const popularDestinations = [
+            { name: 'Mumbai', country: 'India', type: 'city' },
+            { name: 'Delhi', country: 'India', type: 'city' },
+            { name: 'Dubai', country: 'UAE', type: 'city' },
+            { name: 'Paris', country: 'France', type: 'city' },
+            { name: 'London', country: 'United Kingdom', type: 'city' },
+            { name: 'Singapore', country: 'Singapore', type: 'city' },
+            { name: 'New York', country: 'United States', type: 'city' },
+            { name: 'Bangkok', country: 'Thailand', type: 'city' }
+        ];
+
+        // Show dropdown on focus
+        destinationInput.addEventListener('focus', function () {
+            if (this.value.length === 0) {
+                showPopularDestinations();
+            } else if (this.value.length >= 2) {
+                searchLocations(this.value);
+            }
+            locationDropdown.classList.add('active');
+        });
+
+        // Search as user types (debounced)
+        destinationInput.addEventListener('input', function () {
+            const query = this.value.trim();
+
+            // Show/hide clear button
+            clearBtn.style.display = query.length > 0 ? 'flex' : 'none';
+
+            // Clear previous timeout
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+
+            if (query.length === 0) {
+                showPopularDestinations();
+                return;
+            }
+
+            if (query.length < 2) {
+                dropdownResults.innerHTML = '';
+                dropdownEmpty.style.display = 'none';
+                return;
+            }
+
+            // Debounce API call (300ms)
+            searchTimeout = setTimeout(() => {
+                searchLocations(query);
+            }, 300);
+        });
+
+        // Clear button
+        clearBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            destinationInput.value = '';
+            this.style.display = 'none';
+            selectedLocationData = null;
+            showPopularDestinations();
+            destinationInput.focus();
+        });
+
+        // Keyboard navigation
+        destinationInput.addEventListener('keydown', function (e) {
+            const items = dropdownResults.querySelectorAll('.location-item');
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                highlightedIndex = Math.min(highlightedIndex + 1, items.length - 1);
+                updateHighlight(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                highlightedIndex = Math.max(highlightedIndex - 1, 0);
+                updateHighlight(items);
+            } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+                e.preventDefault();
+                items[highlightedIndex]?.click();
+            } else if (e.key === 'Escape') {
+                locationDropdown.classList.remove('active');
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (e) {
+            if (!destinationInput.contains(e.target) && !locationDropdown.contains(e.target)) {
+                locationDropdown.classList.remove('active');
+            }
+        });
+
+        function updateHighlight(items) {
+            items.forEach((item, index) => {
+                item.classList.toggle('highlighted', index === highlightedIndex);
+            });
+            if (highlightedIndex >= 0 && items[highlightedIndex]) {
+                items[highlightedIndex].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        function showPopularDestinations() {
+            highlightedIndex = -1;
+            dropdownEmpty.style.display = 'none';
+            dropdownLoading.classList.remove('active');
+
+            let html = '<div class="dropdown-header">Popular Destinations</div>';
+            popularDestinations.forEach(loc => {
+                html += createLocationItemHtml(loc);
+            });
+            dropdownResults.innerHTML = html;
+            attachLocationListeners();
+            locationDropdown.classList.add('active');
+        }
+
+        async function searchLocations(query) {
+            highlightedIndex = -1;
+            dropdownEmpty.style.display = 'none';
+            dropdownLoading.classList.add('active');
+            dropdownResults.innerHTML = '';
+            locationDropdown.classList.add('active');
+
+            try {
+                // Use our backend API that wraps Google Places
+                const response = await fetch(`/api/hotels/autocomplete?query=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                dropdownLoading.classList.remove('active');
+
+                if (data.success && data.predictions && data.predictions.length > 0) {
+                    let html = '<div class="dropdown-header">Search Results</div>';
+                    data.predictions.forEach(pred => {
+                        const location = {
+                            name: pred.structured_formatting?.main_text || pred.description.split(',')[0],
+                            country: pred.structured_formatting?.secondary_text || pred.description.split(',').slice(1).join(',').trim(),
+                            type: getLocationType(pred.types || []),
+                            place_id: pred.place_id,
+                            full_description: pred.description
+                        };
+                        html += createLocationItemHtml(location);
+                    });
+                    dropdownResults.innerHTML = html;
+                    attachLocationListeners();
+                } else {
+                    // Fallback: filter popular destinations
+                    const filtered = popularDestinations.filter(loc =>
+                        loc.name.toLowerCase().includes(query.toLowerCase()) ||
+                        loc.country.toLowerCase().includes(query.toLowerCase())
+                    );
+
+                    if (filtered.length > 0) {
+                        let html = '<div class="dropdown-header">Matching Destinations</div>';
+                        filtered.forEach(loc => {
+                            html += createLocationItemHtml(loc);
+                        });
+                        dropdownResults.innerHTML = html;
+                        attachLocationListeners();
+                    } else {
+                        dropdownEmpty.style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                console.error('Autocomplete error:', error);
+                dropdownLoading.classList.remove('active');
+                // Fallback to popular destinations on error
+                showPopularDestinations();
+            }
+        }
+
+        function getLocationType(types) {
+            if (types.includes('airport')) return 'airport';
+            if (types.includes('lodging') || types.includes('hotel')) return 'hotel';
+            if (types.includes('point_of_interest') || types.includes('tourist_attraction')) return 'landmark';
+            if (types.includes('neighborhood') || types.includes('sublocality')) return 'area';
+            return 'city';
+        }
+
+        function getIconForType(type) {
+            const icons = {
+                'city': 'fa-building',
+                'airport': 'fa-plane',
+                'landmark': 'fa-map-marker-alt',
+                'hotel': 'fa-hotel',
+                'area': 'fa-map-marked-alt'
+            };
+            return icons[type] || 'fa-building';
+        }
+
+        function createLocationItemHtml(location) {
+            const icon = getIconForType(location.type);
+            return `
+                <div class="location-item" 
+                     data-name="${location.name}" 
+                     data-country="${location.country}"
+                     data-type="${location.type}"
+                     data-full="${location.full_description || location.name + ', ' + location.country}">
+                    <div class="location-icon ${location.type}">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                    <div class="location-details">
+                        <div class="location-name">${location.name}</div>
+                        <div class="location-country">${location.country}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function attachLocationListeners() {
+            dropdownResults.querySelectorAll('.location-item').forEach(item => {
+                item.addEventListener('click', function () {
+                    const name = this.dataset.name;
+                    const fullDesc = this.dataset.full;
+                    destinationInput.value = name;
+                    selectedLocationData = {
+                        name: name,
+                        country: this.dataset.country,
+                        type: this.dataset.type,
+                        full_description: fullDesc
+                    };
+                    clearBtn.style.display = 'flex';
+                    locationDropdown.classList.remove('active');
+                });
+            });
+        }
+        // ========== END AUTOCOMPLETE ==========
 
         // Set min date to today
         const today = new Date().toISOString().split('T')[0];

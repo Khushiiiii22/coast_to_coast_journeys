@@ -102,6 +102,54 @@ def debug_email_test():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@hotel_bp.route('/autocomplete', methods=['GET'])
+def autocomplete_location():
+    """
+    Returns location suggestions using Google Places Autocomplete API
+    Query param: query (min 2 chars)
+    """
+    query = request.args.get('query', '').strip()
+    
+    if len(query) < 2:
+        return jsonify({
+            'success': False,
+            'error': 'Query must be at least 2 characters'
+        }), 400
+    
+    try:
+        from config import Config
+        import requests as req
+        
+        api_key = Config.GOOGLE_MAPS_API_KEY
+        
+        if not api_key or api_key == 'your_google_maps_api_key':
+            # Return fallback with popular matching cities
+            popular = [
+                {'description': 'Mumbai, Maharashtra, India', 'types': ['locality'], 'structured_formatting': {'main_text': 'Mumbai', 'secondary_text': 'Maharashtra, India'}},
+                {'description': 'Delhi, India', 'types': ['locality'], 'structured_formatting': {'main_text': 'Delhi', 'secondary_text': 'India'}},
+                {'description': 'Dubai, United Arab Emirates', 'types': ['locality'], 'structured_formatting': {'main_text': 'Dubai', 'secondary_text': 'United Arab Emirates'}},
+                {'description': 'Paris, France', 'types': ['locality'], 'structured_formatting': {'main_text': 'Paris', 'secondary_text': 'France'}},
+                {'description': 'London, United Kingdom', 'types': ['locality'], 'structured_formatting': {'main_text': 'London', 'secondary_text': 'United Kingdom'}},
+            ]
+            filtered = [p for p in popular if query.lower() in p['description'].lower()]
+            return jsonify({'success': True, 'predictions': filtered[:5], 'source': 'fallback'})
+        
+        # Call Google Places Autocomplete API
+        url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json'
+        params = {'input': query, 'types': '(regions)', 'key': api_key}
+        
+        response = req.get(url, params=params, timeout=5)
+        data = response.json()
+        
+        if data.get('status') == 'OK':
+            return jsonify({'success': True, 'predictions': data.get('predictions', [])[:8], 'source': 'google'})
+        else:
+            return jsonify({'success': False, 'error': data.get('status', 'Unknown error'), 'predictions': []})
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e), 'predictions': []}), 500
+
+
 @hotel_bp.route('/debug/ip-check', methods=['GET'])
 def debug_ip_check():
     """Check outgoing IP address (to verify Proxy/Static IP)"""
