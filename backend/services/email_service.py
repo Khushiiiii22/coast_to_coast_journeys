@@ -1,63 +1,76 @@
 """
-Email Service using SendGrid API (HTTPS-based)
+Email Service using Brevo (Sendinblue) API
 
-SendGrid sends emails over HTTPS (Port 443), which works on Render
+Brevo sends emails over HTTPS (Port 443), which works on Render
 unlike traditional SMTP which uses blocked ports (25, 465, 587).
 """
 import os
+import requests
 from datetime import datetime
-
-# SendGrid library
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, Email, To, Content, HtmlContent
 
 
 class EmailService:
-    """Email Service using SendGrid API"""
+    """Email Service using Brevo (Sendinblue) API"""
+    
+    BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
     
     def __init__(self, app=None):
         self.api_key = None
         self.default_sender = None
+        self.sender_name = "C2C Journeys"
         if app:
             self.init_app(app)
 
     def init_app(self, app):
-        # SendGrid API Configuration
-        self.api_key = app.config.get('SENDGRID_API_KEY') or os.getenv('SENDGRID_API_KEY')
-        self.default_sender = app.config.get('MAIL_DEFAULT_SENDER') or os.getenv('MAIL_DEFAULT_SENDER', 'noreply@c2cjourneys.com')
+        # Brevo API Configuration
+        self.api_key = app.config.get('BREVO_API_KEY') or os.getenv('BREVO_API_KEY')
+        self.default_sender = app.config.get('MAIL_DEFAULT_SENDER') or os.getenv('MAIL_DEFAULT_SENDER', 'info@coasttocoastjourneys.com')
         
         if self.api_key:
-            print(f"✅ Email service configured with SendGrid API")
+            print(f"✅ Email service configured with Brevo API")
             print(f"   📧 Sender: {self.default_sender}")
         else:
-            print(f"⚠️  Email service NOT configured - missing SENDGRID_API_KEY")
-            print(f"   Set SENDGRID_API_KEY in Render Environment Variables")
+            print(f"⚠️  Email service NOT configured - missing BREVO_API_KEY")
+            print(f"   Set BREVO_API_KEY in Render Environment Variables")
         
     def send_email(self, to_email, subject, body, html_body=None, attachments=None):
-        """Send an email using SendGrid API (HTTPS)"""
+        """Send an email using Brevo API (HTTPS)"""
         if not self.api_key:
-            print("⚠️ SendGrid API key not configured. Skipping email.")
+            print("⚠️ Brevo API key not configured. Skipping email.")
             return False
 
         try:
-            # Create the email message
-            message = Mail(
-                from_email=self.default_sender,
-                to_emails=to_email,
-                subject=subject,
-                plain_text_content=body
-            )
+            headers = {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "api-key": self.api_key
+            }
+            
+            # Build email payload
+            payload = {
+                "sender": {
+                    "name": self.sender_name,
+                    "email": self.default_sender
+                },
+                "to": [{"email": to_email}],
+                "subject": subject,
+                "textContent": body
+            }
             
             # Add HTML body if provided
             if html_body:
-                message.html_content = html_body
+                payload["htmlContent"] = html_body
             
             # Send the email
-            sg = SendGridAPIClient(self.api_key)
-            response = sg.send(message)
+            response = requests.post(self.BREVO_API_URL, json=payload, headers=headers)
             
-            print(f"✅ Email sent to {to_email} (Status: {response.status_code})")
-            return response.status_code in [200, 201, 202]
+            if response.status_code in [200, 201, 202]:
+                result = response.json()
+                print(f"✅ Email sent to {to_email} (Message ID: {result.get('messageId', 'N/A')})")
+                return True
+            else:
+                print(f"❌ Brevo API error: {response.status_code} - {response.text}")
+                return False
             
         except Exception as e:
             print(f"❌ Failed to send email: {str(e)}")

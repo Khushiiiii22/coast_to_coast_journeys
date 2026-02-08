@@ -54,6 +54,7 @@ class Config:
     MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER')
     RESEND_API_KEY = os.getenv('RESEND_API_KEY')
     SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
+    BREVO_API_KEY = os.getenv('BREVO_API_KEY')
     
     # Static IP Proxy Configuration (QuotaGuard Static or Fixie)
     PROXY_URL = os.getenv('QUOTAGUARDSTATIC_URL', os.getenv('FIXIE_URL'))

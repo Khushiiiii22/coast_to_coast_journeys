@@ -14,72 +14,84 @@ hotel_bp = Blueprint('hotels', __name__, url_prefix='/api/hotels')
 
 
 # ==========================================
-# DEBUG ENDPOINT (Temporary) - v2.0 SendGrid
+# DEBUG ENDPOINT (Temporary) - v3.0 Brevo
 # ==========================================
 
 @hotel_bp.route('/debug/email-test', methods=['GET'])
 def debug_email_test():
-    """Test SendGrid email configuration"""
+    """Test Brevo email configuration"""
     try:
         from flask import current_app
         import os as os_lib
+        import requests
         
-        # Check SendGrid config
-        sendgrid_key = current_app.config.get('SENDGRID_API_KEY') or os_lib.getenv('SENDGRID_API_KEY')
-        mail_sender = current_app.config.get('MAIL_DEFAULT_SENDER') or os_lib.getenv('MAIL_DEFAULT_SENDER', 'noreply@c2cjourneys.com')
+        # Check Brevo config
+        brevo_key = current_app.config.get('BREVO_API_KEY') or os_lib.getenv('BREVO_API_KEY')
+        mail_sender = current_app.config.get('MAIL_DEFAULT_SENDER') or os_lib.getenv('MAIL_DEFAULT_SENDER', 'info@coasttocoastjourneys.com')
         
         results = {
             "config": {
-                "sendgrid_api_key_configured": bool(sendgrid_key),
-                "sendgrid_key_masked": f"{sendgrid_key[:10]}...{sendgrid_key[-5:]}" if sendgrid_key else "None",
+                "brevo_api_key_configured": bool(brevo_key),
+                "brevo_key_masked": f"{brevo_key[:10]}...{brevo_key[-5:]}" if brevo_key else "None",
                 "mail_sender": mail_sender
             },
             "steps": []
         }
         
-        if not sendgrid_key:
-            results['steps'].append("❌ SENDGRID_API_KEY not configured")
-            results['steps'].append("👉 Add SENDGRID_API_KEY in Render Environment Variables")
+        if not brevo_key:
+            results['steps'].append("❌ BREVO_API_KEY not configured")
+            results['steps'].append("👉 Add BREVO_API_KEY in Render Environment Variables")
             return jsonify({
                 "success": False,
-                "error": "SendGrid not configured",
+                "error": "Brevo not configured",
                 "debug_info": results
             }), 500
         
-        # Test SendGrid
-        results['steps'].append("✅ SendGrid API Key found")
+        # Test Brevo
+        results['steps'].append("✅ Brevo API Key found")
         results['steps'].append(f"📧 Sender: {mail_sender}")
         
         # Try to send a test email
         try:
-            from sendgrid import SendGridAPIClient
-            from sendgrid.helpers.mail import Mail
+            results['steps'].append("Testing Brevo API connectivity...")
             
-            results['steps'].append("Testing SendGrid API connectivity...")
-            
-            # Send test email to owner
+            # Send test email
             test_email = "khushikumari62406@gmail.com"
-            message = Mail(
-                from_email=mail_sender,
-                to_emails=test_email,
-                subject="C2C Journeys - SendGrid Test",
-                plain_text_content="This is a test email from your Render deployment."
-            )
             
-            sg = SendGridAPIClient(sendgrid_key)
-            response = sg.send(message)
+            headers = {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "api-key": brevo_key
+            }
             
-            results['steps'].append(f"✅ Test email sent! Status: {response.status_code}")
-            results['steps'].append(f"📫 Sent to: {test_email}")
+            payload = {
+                "sender": {"name": "C2C Journeys", "email": mail_sender},
+                "to": [{"email": test_email}],
+                "subject": "C2C Journeys - Brevo Test",
+                "textContent": "This is a test email from your Render deployment via Brevo."
+            }
             
-            return jsonify({
-                "success": True,
-                "message": "SendGrid is working!",
-                "debug_info": results
-            })
+            response = requests.post("https://api.brevo.com/v3/smtp/email", json=payload, headers=headers)
+            
+            if response.status_code in [200, 201, 202]:
+                result = response.json()
+                results['steps'].append(f"✅ Test email sent! (Message ID: {result.get('messageId', 'N/A')})")
+                results['steps'].append(f"📫 Sent to: {test_email}")
+                return jsonify({
+                    "success": True,
+                    "message": "Brevo is working!",
+                    "debug_info": results
+                })
+            else:
+                results['steps'].append(f"❌ Brevo error: {response.status_code} - {response.text}")
+                return jsonify({
+                    "success": False,
+                    "error": response.text,
+                    "debug_info": results
+                }), 500
             
         except Exception as e:
-            results['steps'].append(f"❌ SendGrid error: {str(e)}")
+            results['steps'].append(f"❌ Brevo error: {str(e)}")
             return jsonify({
                 "success": False,
                 "error": str(e),
