@@ -24,7 +24,8 @@ class EmailService:
     def init_app(self, app):
         # Brevo API Configuration
         self.api_key = app.config.get('BREVO_API_KEY') or os.getenv('BREVO_API_KEY')
-        self.default_sender = app.config.get('MAIL_DEFAULT_SENDER') or os.getenv('MAIL_DEFAULT_SENDER', 'info@coasttocoastjourneys.com')
+        # Verified sender in Brevo
+        self.default_sender = os.getenv('MAIL_DEFAULT_SENDER', 'info@coasttocoastjourneys.com')
         
         if self.api_key:
             print(f"✅ Email service configured with Brevo API")
