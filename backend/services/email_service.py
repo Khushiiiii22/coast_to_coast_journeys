@@ -111,7 +111,7 @@ C2C Journeys Team
 
     def _send_owner_notification(self, guest_email, booking_details):
         """Send booking notification to owner/admin"""
-        owner_email = os.getenv('OWNER_EMAIL', 'khushikumari62406@gmail.com')
+        owner_email = os.getenv('OWNER_EMAIL', 'info@coasttocoastjourneys.com')
         
         subject = f"🎉 New Booking - {booking_details.get('hotel_name')} | {booking_details.get('booking_id', 'N/A')}"
         
