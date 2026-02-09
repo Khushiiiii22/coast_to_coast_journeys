@@ -47,6 +47,11 @@ async function initHotelDetails() {
     // Display hotel data
     if (currentHotel) {
         displayHotelDetails(currentHotel);
+
+        // For Google Places hotels, fetch additional photos for gallery
+        if (currentHotel.id && currentHotel.id.startsWith('google_')) {
+            fetchGooglePlacePhotos(currentHotel.id);
+        }
     } else {
         // Fetch from API
         await fetchHotelDetails();
@@ -602,6 +607,46 @@ async function fetchHotelPolicies(hotelId) {
         console.log('Could not fetch hotel policies:', error);
         loadingEl?.classList.add('hidden');
         displayDefaultPolicies();
+    }
+}
+
+/**
+ * Fetch additional photos for Google Places hotels
+ * Updates the gallery with real photos from Google Places API
+ */
+async function fetchGooglePlacePhotos(hotelId) {
+    try {
+        // Extract place_id from hotel ID (remove 'google_' prefix)
+        const placeId = hotelId.replace('google_', '');
+
+        if (!placeId) {
+            console.log('No place ID found for Google Places hotel');
+            return;
+        }
+
+        console.log(`📸 Fetching Google Places photos for: ${placeId}`);
+
+        const result = await HotelAPI.getGooglePlacePhotos(placeId);
+
+        if (result.success && result.data?.photo_urls?.length > 0) {
+            // Update the hotelImages array with new photos
+            hotelImages = result.data.photo_urls;
+
+            // Update currentHotel images
+            if (currentHotel) {
+                currentHotel.images = hotelImages;
+            }
+
+            // Refresh the photo gallery display
+            displayPhotoGallery(hotelImages);
+
+            console.log(`✅ Loaded ${hotelImages.length} photos from Google Places`);
+        } else {
+            console.log('No additional photos from Google Places');
+        }
+    } catch (error) {
+        console.log('Could not fetch Google Places photos:', error);
+        // Keep existing images, no need to show error
     }
 }
 

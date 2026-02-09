@@ -172,6 +172,15 @@ const HotelAPI = {
     },
 
     /**
+     * Get photos for a Google Places hotel
+     * Returns array of photo URLs for the hotel gallery
+     * @param {string} placeId - Google Place ID (without 'google_' prefix)
+     */
+    async getGooglePlacePhotos(placeId) {
+        return this.request(`/hotels/photos/google/${placeId}`);
+    },
+
+    /**
      * Get hotel details with rates enriched with room static data
      * Auto-matches rates with room groups using rg_ext.rg
      */

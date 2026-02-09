@@ -897,10 +897,27 @@ def extract_amenities(rates):
     return list(amenities)[:4]
 
 
+def get_google_photo_url(photo_reference: str, max_width: int = 600) -> str:
+    """
+    Build a Google Places Photo URL from photo_reference
+    
+    Args:
+        photo_reference: The photo_reference from Google Places API
+        max_width: Maximum width of the image
+    
+    Returns:
+        Full URL to the photo
+    """
+    api_key = google_maps_service.api_key
+    if not api_key or not photo_reference:
+        return None
+    return f"https://maps.googleapis.com/maps/api/place/photo?maxwidth={max_width}&photo_reference={photo_reference}&key={api_key}"
+
+
 def search_hotels_via_google(destination: str, checkin: str, checkout: str) -> list:
     """
     Search for hotels using Google Places API as fallback
-    Returns real hotel data for ANY destination worldwide
+    Returns real hotel data with actual Google Places photos
     
     Args:
         destination: Destination city/location name
@@ -927,8 +944,8 @@ def search_hotels_via_google(destination: str, checkin: str, checkout: str) -> l
         google_places = result['data']
         hotels = []
         
-        # Sample hotel images for variety
-        hotel_images = [
+        # Fallback images only if Google Places doesn't return photos
+        fallback_images = [
             'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600',
             'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600',
             'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=600',
@@ -945,8 +962,24 @@ def search_hotels_via_google(destination: str, checkin: str, checkout: str) -> l
             star_rating = min(5, max(3, round(rating)))
             
             # Estimate price based on rating (rough approximation)
-            # Real prices would require additional API or booking data
             base_price = 2000 + (rating * 1500) + (idx * 200)
+            
+            # Get photos from Google Places - use actual photos if available
+            photos = place.get('photos', [])
+            hotel_images = []
+            
+            for photo in photos[:5]:  # Get up to 5 photos
+                photo_ref = photo.get('photo_reference') if isinstance(photo, dict) else None
+                if photo_ref:
+                    photo_url = get_google_photo_url(photo_ref, 800)
+                    if photo_url:
+                        hotel_images.append(photo_url)
+            
+            # Use fallback if no Google photos available
+            if not hotel_images:
+                hotel_images = [fallback_images[idx % len(fallback_images)]]
+            
+            primary_image = hotel_images[0] if hotel_images else fallback_images[idx % len(fallback_images)]
             
             hotel = {
                 'id': f"google_{place.get('place_id', idx)}",
@@ -956,7 +989,8 @@ def search_hotels_via_google(destination: str, checkin: str, checkout: str) -> l
                 'guest_rating': rating,
                 'review_count': review_count,
                 'address': place.get('address', destination),
-                'image': hotel_images[idx % len(hotel_images)],
+                'image': primary_image,
+                'images': hotel_images,  # Include all images for gallery
                 'latitude': place.get('latitude'),
                 'longitude': place.get('longitude'),
                 'price': round(base_price),
@@ -982,6 +1016,75 @@ def search_hotels_via_google(destination: str, checkin: str, checkout: str) -> l
     except Exception as e:
         print(f"❌ Error searching Google Places: {e}")
         return []
+
+
+# ==========================================
+# GOOGLE PLACES PHOTOS ENDPOINT
+# ==========================================
+
+@hotel_bp.route('/photos/google/<place_id>', methods=['GET'])
+def get_google_place_photos(place_id):
+    """
+    Get photos for a Google Places hotel
+    Returns array of photo URLs for the hotel gallery
+    
+    Args:
+        place_id: Google Place ID (without 'google_' prefix)
+    """
+    try:
+        if not google_maps_service.is_available():
+            return jsonify({
+                'success': False,
+                'error': 'Google Maps API not configured'
+            }), 400
+        
+        # Get place details which includes photos
+        result = google_maps_service.get_place_details(place_id)
+        
+        if not result.get('success'):
+            return jsonify(result), 400
+        
+        # Get photos from the place details
+        # The googlemaps client returns photos in the raw result
+        try:
+            raw_result = google_maps_service.client.place(
+                place_id=place_id,
+                fields=['photos', 'name']
+            )
+            
+            photos = []
+            photo_data = raw_result.get('result', {}).get('photos', [])
+            
+            for photo in photo_data[:10]:  # Get up to 10 photos
+                photo_ref = photo.get('photo_reference')
+                if photo_ref:
+                    photo_url = get_google_photo_url(photo_ref, 800)
+                    if photo_url:
+                        photos.append({
+                            'url': photo_url,
+                            'width': photo.get('width'),
+                            'height': photo.get('height')
+                        })
+            
+            return jsonify({
+                'success': True,
+                'data': {
+                    'photos': photos,
+                    'photo_urls': [p['url'] for p in photos],  # Simple array of URLs
+                    'place_name': raw_result.get('result', {}).get('name', ''),
+                    'total_photos': len(photos)
+                }
+            })
+            
+        except Exception as e:
+            print(f"❌ Error fetching place photos: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 # HOTEL DETAILS ENDPOINT
