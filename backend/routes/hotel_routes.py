@@ -1038,14 +1038,9 @@ def get_google_place_photos(place_id):
                 'error': 'Google Maps API not configured'
             }), 400
         
-        # Get place details which includes photos
-        result = google_maps_service.get_place_details(place_id)
+        print(f"📸 Fetching photos for place_id: {place_id}")
         
-        if not result.get('success'):
-            return jsonify(result), 400
-        
-        # Get photos from the place details
-        # The googlemaps client returns photos in the raw result
+        # Get photos directly from Google Places API
         try:
             raw_result = google_maps_service.client.place(
                 place_id=place_id,
@@ -1054,6 +1049,8 @@ def get_google_place_photos(place_id):
             
             photos = []
             photo_data = raw_result.get('result', {}).get('photos', [])
+            
+            print(f"📸 Found {len(photo_data)} photos from Google Places")
             
             for photo in photo_data[:10]:  # Get up to 10 photos
                 photo_ref = photo.get('photo_reference')
@@ -1065,6 +1062,8 @@ def get_google_place_photos(place_id):
                             'width': photo.get('width'),
                             'height': photo.get('height')
                         })
+            
+            print(f"✅ Returning {len(photos)} photo URLs")
             
             return jsonify({
                 'success': True,
@@ -1084,6 +1083,7 @@ def get_google_place_photos(place_id):
             }), 500
             
     except Exception as e:
+        print(f"❌ Google Photos endpoint error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
@@ -1144,6 +1144,9 @@ def get_hotel_details():
     
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+
 
 
 @hotel_bp.route('/info/<hotel_id>', methods=['GET'])

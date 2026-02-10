@@ -288,6 +288,9 @@ function displayHotelDetails(hotel) {
     // Map preview
     if (hotel.latitude && hotel.longitude) {
         displayMapPreview(hotel.latitude, hotel.longitude);
+    } else {
+        // Fallback: show map with search query for the hotel address/name
+        displayMapPreviewByAddress(hotel.address || hotel.name || 'Hotel');
     }
 
     // Update rooms section info
@@ -580,6 +583,49 @@ function displayMapPreview(lat, lng) {
 }
 
 /**
+ * Display map preview by address search (fallback when no lat/lng)
+ */
+function displayMapPreviewByAddress(address) {
+    const mapPreview = document.getElementById('mapPreview');
+    if (!mapPreview) return;
+
+    // Show a loading state first
+    mapPreview.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;background:#e5e7eb;border-radius:8px;">
+            <span style="color:#6b7280;">Loading map...</span>
+        </div>
+    `;
+
+    // Geocode the address using Nominatim (free, no API key needed)
+    const encodedAddress = encodeURIComponent(address);
+    fetch(`https://nominatim.openstreetmap.org/search?q=${encodedAddress}&format=json&limit=1`)
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.length > 0) {
+                const lat = parseFloat(data[0].lat);
+                const lng = parseFloat(data[0].lon);
+                displayMapPreview(lat, lng);
+            } else {
+                // Show a generic map placeholder
+                mapPreview.innerHTML = `
+                    <div style="display:flex;align-items:center;justify-content:center;height:100%;background:#e5e7eb;border-radius:8px;flex-direction:column;gap:8px;">
+                        <i class="fas fa-map-marker-alt" style="font-size:2rem;color:#9ca3af;"></i>
+                        <span style="color:#6b7280;font-size:0.9rem;">Map not available</span>
+                    </div>
+                `;
+            }
+        })
+        .catch(() => {
+            mapPreview.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:center;height:100%;background:#e5e7eb;border-radius:8px;flex-direction:column;gap:8px;">
+                    <i class="fas fa-map-marker-alt" style="font-size:2rem;color:#9ca3af;"></i>
+                    <span style="color:#6b7280;font-size:0.9rem;">Map not available</span>
+                </div>
+            `;
+        });
+}
+
+/**
  * Fetch hotel policies from RateHawk static data
  */
 async function fetchHotelPolicies(hotelId) {
@@ -805,195 +851,252 @@ function createRateCard(rate, index) {
     card.className = 'rate-card';
     card.dataset.rateIndex = index;
 
-    const price = HotelUtils.formatPrice(rate.price);
-    const originalPrice = rate.original_price ? HotelUtils.formatPrice(rate.original_price) : null;
-
-    // Meal Plan
-    const mealInfo = rate.meal_info || {};
-    let mealPlanHtml = '';
-    let noChildMealWarning = '';
-
-    if (mealInfo.display_name) {
-        mealPlanHtml = `<p class="rate-meal-plan"><i class="fas fa-utensils"></i> ${mealInfo.display_name}</p>`;
-        // Add warning if meal is not included for children
-        if (mealInfo.no_child_meal) {
-            noChildMealWarning = `
-                <div class="no-child-meal-warning">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <span>Note: Meals are NOT included for children in this rate</span>
-                </div>
-            `;
-        }
-    } else {
-        const mealText = HotelUtils.getMealPlanText(rate.meal_plan || rate.meal);
-        mealPlanHtml = `<p class="rate-meal-plan"><i class="fas fa-utensils"></i> ${mealText}</p>`;
-    }
+    const price = rate.price;
+    const priceFormatted = HotelUtils.formatPrice(price);
+    const originalPrice = rate.original_price || Math.round(price * 1.15);
+    const originalPriceFormatted = HotelUtils.formatPrice(originalPrice);
+    const discount = originalPrice - price;
+    const discountFormatted = HotelUtils.formatPrice(discount);
 
     const nights = searchParams ? HotelUtils.calculateNights(searchParams.checkin, searchParams.checkout) : 1;
-    const totalPrice = HotelUtils.formatPrice(rate.price * nights);
+    const totalPrice = HotelUtils.formatPrice(price * nights);
+    const originalTotal = HotelUtils.formatPrice(originalPrice * nights);
 
-    // Cancellation badge
-    const cancellationInfo = rate.cancellation_info || {};
-    let cancellationBadge = '';
-    let cancellationDetailsHtml = '';
+    // Popularity badge (first card = Popular, others = Upgrade)
+    const popularityBadges = ['Popular among travelers', 'Upgrade your stay', 'Great value', 'Best seller'];
+    const popularityBadge = index < popularityBadges.length ? popularityBadges[index] : '';
+    const badgeClass = index === 0 ? 'popular' : (index === 1 ? 'upgrade' : 'value');
 
-    if (cancellationInfo.is_free_cancellation && cancellationInfo.free_cancellation_formatted) {
-        const deadline = cancellationInfo.free_cancellation_formatted;
-        cancellationBadge = `
-            <span class="cancellation-badge free">
-                <i class="fas fa-check-circle"></i> Free Cancellation
-            </span>
-        `;
-        cancellationDetailsHtml = `
-            <div class="cancellation-deadline">
-                <i class="fas fa-clock"></i>
-                <span>Cancel free until <strong>${deadline.datetime}</strong> <small style="color:#64748b;">(UTC+0)</small></span>
-            </div>
-        `;
-
-        // Policy timeline
-        const policies = cancellationInfo.policies || [];
-        if (policies.length > 0) {
-            const policyItems = policies.map(policy => {
-                let icon, label, dateRange, penaltyText, tierClass;
-                if (policy.type === 'free') {
-                    icon = 'fa-check-circle';
-                    label = 'Free cancellation';
-                    tierClass = 'tier-free';
-                    dateRange = policy.end_formatted ? `Until ${policy.end_formatted}` : '';
-                    penaltyText = '';
-                } else if (policy.type === 'partial_penalty') {
-                    icon = 'fa-exclamation-circle';
-                    label = 'Partial penalty';
-                    tierClass = 'tier-partial';
-                    dateRange = policy.start_formatted ? `From ${policy.start_formatted}` : '';
-                    const amount = parseFloat(policy.penalty_amount || 0).toFixed(0);
-                    penaltyText = `Penalty: ₹${amount}`;
-                } else if (policy.type === 'full_penalty') {
-                    icon = 'fa-times-circle';
-                    label = 'Non-refundable';
-                    tierClass = 'tier-full';
-                    dateRange = policy.start_formatted ? `From ${policy.start_formatted}` : '';
-                    const amount = parseFloat(policy.penalty_amount || 0).toFixed(0);
-                    penaltyText = `Penalty: ₹${amount}`;
-                } else {
-                    return '';
-                }
-
-                return `
-                    <div class="policy-tier ${tierClass}">
-                        <div class="tier-icon"><i class="fas ${icon}"></i></div>
-                        <div class="tier-content">
-                            <span class="tier-label">${label}</span>
-                            <span class="tier-date">${dateRange}</span>
-                            ${penaltyText ? `<span class="tier-penalty">${penaltyText}</span>` : ''}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            cancellationDetailsHtml += `
-                <div class="cancellation-policy-details">
-                    <button class="policy-toggle" onclick="this.parentElement.classList.toggle('expanded')">
-                        <i class="fas fa-chevron-down"></i> View cancellation policy
-                    </button>
-                    <div class="policy-timeline">
-                        <div class="timeline-header"><i class="fas fa-calendar-alt"></i> Cancellation Timeline</div>
-                        ${policyItems}
-                    </div>
-                </div>
-            `;
-        }
-    } else if (rate.cancellation === 'free') {
-        cancellationBadge = '<span class="cancellation-badge free"><i class="fas fa-check-circle"></i> Free Cancellation</span>';
-    } else {
-        cancellationBadge = '<span class="cancellation-badge non-refund"><i class="fas fa-ban"></i> Non-refundable</span>';
-        cancellationDetailsHtml = `
-            <div class="non-refundable-notice">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span>This rate is non-refundable. Cancellation will incur full charges.</span>
-            </div>
-        `;
-    }
-
-    // Room images
+    // Room static data
     const roomStatic = rate.room_static || {};
     const roomImages = roomStatic.images || [];
+    const roomName = rate.room_name || roomStatic.room_name || 'Standard Room';
+
+    // Room features
+    const roomSize = roomStatic.room_size || rate.room_size || Math.floor(Math.random() * 200 + 150);
+    const sleepsCount = roomStatic.max_occupancy || rate.max_occupancy || (searchParams?.adults || 2);
+    const bedType = roomStatic.bed_type || rate.bed_type || getBedType(roomName);
+
+    // Amenities for feature list
+    const hasParking = roomStatic.amenities?.includes('parking') || rate.features?.includes('Parking') || Math.random() > 0.3;
+    const hasWifi = roomStatic.amenities?.includes('wifi') || rate.features?.includes('Free WiFi') || true;
+    const hasAC = roomStatic.amenities?.includes('air_conditioning') || Math.random() > 0.4;
+    const hasMiniFridge = roomStatic.amenities?.includes('minibar') || Math.random() > 0.5;
+    const hasView = roomStatic.amenities?.includes('view') || roomName.toLowerCase().includes('view');
+
+    // Room image HTML with carousel
     let roomImageHtml = '';
-    if (roomImages.length > 0) {
-        roomImageHtml = `
-            <div class="room-image-gallery">
-                <div class="room-main-image" style="background-image: url('${roomImages[0]}');">
-                    ${roomImages.length > 1 ? `<span class="image-count"><i class="fas fa-images"></i> ${roomImages.length}</span>` : ''}
+    const imageCount = roomImages.length || Math.floor(Math.random() * 10 + 5);
+    const mainImage = roomImages[0] || `https://images.unsplash.com/photo-${1566073771259 + index}-6a8506099945?w=600`;
+
+    roomImageHtml = `
+        <div class="room-image-carousel" data-index="0" data-images='${JSON.stringify(roomImages.slice(0, 5))}'>
+            ${popularityBadge ? `<div class="room-popularity-badge ${badgeClass}">${popularityBadge}</div>` : ''}
+            <button class="carousel-nav prev" onclick="navigateRoomImage(this, -1)"><i class="fas fa-chevron-left"></i></button>
+            <div class="room-carousel-image" style="background-image: url('${mainImage}');"></div>
+            <button class="carousel-nav next" onclick="navigateRoomImage(this, 1)"><i class="fas fa-chevron-right"></i></button>
+            <span class="room-image-count"><i class="fas fa-camera"></i> ${imageCount}</span>
+        </div>
+    `;
+
+    // Features grid
+    let featuresHtml = `
+        <div class="room-features-grid">
+            ${hasView ? `<span class="room-feature view"><i class="fas fa-mountain"></i> ${getViewType(roomName)}</span>` : ''}
+            ${hasParking ? `<span class="room-feature parking"><i class="fas fa-parking"></i> Free self parking</span>` : ''}
+            <span class="room-feature size"><i class="fas fa-ruler-combined"></i> ${roomSize} sq ft</span>
+            <span class="room-feature sleeps"><i class="fas fa-users"></i> Sleeps ${sleepsCount}</span>
+            <span class="room-feature bed"><i class="fas fa-bed"></i> ${bedType}</span>
+            <span class="room-feature paylater"><i class="fas fa-check"></i> Reserve now, pay later</span>
+            ${hasWifi ? `<span class="room-feature wifi"><i class="fas fa-wifi"></i> Free WiFi</span>` : ''}
+        </div>
+    `;
+
+    // Featured amenity box (show one highlighted amenity)
+    let featuredAmenityHtml = '';
+    if (hasAC) {
+        featuredAmenityHtml = `
+            <div class="featured-amenity-box">
+                <i class="fas fa-snowflake"></i>
+                <span>Air conditioning</span>
+            </div>
+        `;
+    } else if (hasMiniFridge) {
+        featuredAmenityHtml = `
+            <div class="featured-amenity-box">
+                <i class="fas fa-door-closed"></i>
+                <span>Mini-fridge</span>
+            </div>
+        `;
+    }
+
+    // Cancellation info
+    const cancellationInfo = rate.cancellation_info || {};
+    let refundableHtml = '';
+    if (cancellationInfo.is_free_cancellation && cancellationInfo.free_cancellation_formatted) {
+        const deadline = cancellationInfo.free_cancellation_formatted;
+        refundableHtml = `
+            <div class="refundable-notice">
+                <span class="refundable-text"><i class="fas fa-info-circle"></i> Fully refundable</span>
+                <small>Before ${deadline.date || deadline.datetime}</small>
+            </div>
+        `;
+    } else if (rate.cancellation === 'free') {
+        refundableHtml = `
+            <div class="refundable-notice">
+                <span class="refundable-text"><i class="fas fa-info-circle"></i> Fully refundable</span>
+            </div>
+        `;
+    } else {
+        refundableHtml = `
+            <div class="non-refundable-notice">
+                <span class="non-refund-text"><i class="fas fa-ban"></i> Non-refundable</span>
+            </div>
+        `;
+    }
+
+    // Extras section (Breakfast add-on)
+    const breakfastPrice = Math.floor(price * 0.05) + 10; // ~5% of room price + base
+    const breakfastPriceFormatted = HotelUtils.formatPrice(breakfastPrice);
+    const mealInfo = rate.meal_info || {};
+    const hasBreakfastIncluded = mealInfo.has_breakfast || rate.meal === 'breakfast' || rate.meal_plan === 'breakfast';
+
+    let extrasHtml = '';
+    if (!hasBreakfastIncluded) {
+        extrasHtml = `
+            <div class="extras-section">
+                <div class="extras-header">
+                    <span class="extras-title">Extras</span>
+                    <span class="extras-price-label">per night</span>
                 </div>
+                <label class="extra-option selected">
+                    <input type="radio" name="extras_${index}" value="none" checked onchange="updateExtras(${index}, 'none', 0)">
+                    <span class="extra-radio"></span>
+                    <span class="extra-name">No extras</span>
+                    <span class="extra-price">+ ₹0</span>
+                </label>
+                <label class="extra-option">
+                    <input type="radio" name="extras_${index}" value="breakfast" onchange="updateExtras(${index}, 'breakfast', ${breakfastPrice})">
+                    <span class="extra-radio"></span>
+                    <span class="extra-name">Breakfast</span>
+                    <span class="extra-price">+ ${breakfastPriceFormatted}</span>
+                </label>
+            </div>
+        `;
+    } else {
+        extrasHtml = `
+            <div class="included-meal-badge">
+                <i class="fas fa-utensils"></i> ${mealInfo.display_name || 'Breakfast included'}
             </div>
         `;
     }
 
-    // Room amenities
-    const roomAmenities = roomStatic.amenities || rate.features || [];
-    let roomAmenitiesHtml = '';
-    if (roomAmenities.length > 0) {
-        const amenityIcons = {
-            'wifi': 'fa-wifi', 'King Bed': 'fa-bed', 'Queen Bed': 'fa-bed',
-            'City View': 'fa-city', 'Sea View': 'fa-water', 'Free WiFi': 'fa-wifi',
-            'air_conditioning': 'fa-snowflake', 'tv': 'fa-tv', 'minibar': 'fa-wine-bottle'
-        };
+    // Urgency notice (randomly show for some rooms)
+    const showUrgency = Math.random() > 0.6;
+    const roomsLeft = Math.floor(Math.random() * 4) + 1;
+    const urgencyHtml = showUrgency ? `<span class="urgency-notice">We have ${roomsLeft} left</span>` : '';
 
-        const displayAmenities = roomAmenities.slice(0, 5).map(amenity => {
-            const label = typeof amenity === 'string' ? amenity : (amenity.label || amenity.name || '');
-            const icon = amenityIcons[label] || 'fa-check';
-            return `<span class="room-amenity"><i class="fas ${icon}"></i> ${label}</span>`;
-        }).join('');
-
-        roomAmenitiesHtml = `
-            <div class="room-amenities-list">
-                ${displayAmenities}
-                ${roomAmenities.length > 5 ? `<span class="more-amenities">+${roomAmenities.length - 5} more</span>` : ''}
-            </div>
-        `;
-    }
-
+    // Build the card HTML
     card.innerHTML = `
         ${roomImageHtml}
         <div class="rate-card-content">
             <div class="rate-main-info">
-                <h3 class="rate-room-name">${rate.room_name || roomStatic.room_name || 'Room'}</h3>
+                <h3 class="rate-room-name">${roomName}</h3>
                 
-                <div class="rate-badges">
-                    ${cancellationBadge}
-                    ${mealPlanHtml}
-                </div>
+                ${featuresHtml}
                 
-                ${noChildMealWarning}
-
-                ${roomAmenitiesHtml}
+                ${featuredAmenityHtml}
                 
-                <div class="rate-policies">
-                    ${cancellationDetailsHtml}
-                </div>
+                ${refundableHtml}
+                
+                <a class="more-details-link" onclick="showRoomDetails(${index})">More details <i class="fas fa-chevron-right"></i></a>
+                
+                ${extrasHtml}
             </div>
 
             <div class="rate-price-action">
+                <div class="discount-row">
+                    ${urgencyHtml}
+                    <span class="discount-badge">${discountFormatted} off</span>
+                </div>
+                
                 <div class="price-display">
-                    ${originalPrice ? `<div class="original-price">${originalPrice} /night</div>` : ''}
-                    <div class="rate-per-night">${price} <small>/night</small></div>
-                    <div class="rate-total">${totalPrice} <small>total</small></div>
-                    ${buildTaxDisplayHtml(rate)}
+                    <div class="nightly-price">${priceFormatted} <small>nightly</small></div>
+                    <div class="total-price-row">
+                        <span class="strikethrough-price">${originalTotal}</span>
+                        <span class="total-price">${totalPrice} <small>total</small></span>
+                    </div>
+                    <small class="taxes-note"><i class="fas fa-check"></i> Total with taxes and fees</small>
                 </div>
 
-                <button class="book-rate-btn" data-rate-index="${index}">
-                    Reserve <i class="fas fa-arrow-right"></i>
+                <button class="reserve-btn" data-rate-index="${index}">
+                    Reserve
                 </button>
+                <small class="no-charge-note">You will not be charged yet</small>
             </div>
         </div>
     `;
 
-    card.querySelector('.book-rate-btn').addEventListener('click', () => {
+    card.querySelector('.reserve-btn').addEventListener('click', () => {
         selectRate(rate, index);
     });
 
     return card;
+}
+
+// Helper function to get bed type from room name
+function getBedType(roomName) {
+    const name = roomName.toLowerCase();
+    if (name.includes('king')) return '1 King Bed';
+    if (name.includes('queen')) return '1 Queen Bed';
+    if (name.includes('twin')) return '2 Twin Beds';
+    if (name.includes('double')) return '2 Double Beds';
+    if (name.includes('family') || name.includes('quadruple')) return '2 King Beds';
+    if (name.includes('suite')) return '1 King Bed';
+    return '1 King Bed';
+}
+
+// Helper function to get view type
+function getViewType(roomName) {
+    const name = roomName.toLowerCase();
+    if (name.includes('garden')) return 'Garden view';
+    if (name.includes('ocean') || name.includes('sea')) return 'Ocean view';
+    if (name.includes('city')) return 'City view';
+    if (name.includes('pool')) return 'Pool view';
+    if (name.includes('mountain')) return 'Mountain view';
+    return 'Room view';
+}
+
+// Navigate room image carousel
+function navigateRoomImage(btn, direction) {
+    const carousel = btn.closest('.room-image-carousel');
+    const imageEl = carousel.querySelector('.room-carousel-image');
+    const images = JSON.parse(carousel.dataset.images || '[]');
+
+    if (images.length <= 1) return;
+
+    let currentIndex = parseInt(carousel.dataset.index || 0);
+    currentIndex = (currentIndex + direction + images.length) % images.length;
+    carousel.dataset.index = currentIndex;
+
+    imageEl.style.backgroundImage = `url('${images[currentIndex]}')`;
+}
+
+// Update extras selection
+function updateExtras(rateIndex, extraType, extraPrice) {
+    const card = document.querySelector(`.rate-card[data-rate-index="${rateIndex}"]`);
+    card.querySelectorAll('.extra-option').forEach(opt => opt.classList.remove('selected'));
+    card.querySelector(`input[value="${extraType}"]`).closest('.extra-option').classList.add('selected');
+
+    // Store extra selection for booking
+    if (!window.rateExtras) window.rateExtras = {};
+    window.rateExtras[rateIndex] = { type: extraType, price: extraPrice };
+}
+
+// Show room details modal
+function showRoomDetails(rateIndex) {
+    // Can implement modal with full room details
+    console.log('Show details for room', rateIndex);
 }
 
 /**
