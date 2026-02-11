@@ -419,7 +419,8 @@ class ETGApiService:
         partner_order_id: str,
         guests: List[Dict],
         user_ip: str = "127.0.0.1",
-        payment_type: str = "now"
+        payment_type: str = "now",
+        user_comment: str = None
     ) -> dict:
         """
         Create booking - form order
@@ -438,6 +439,10 @@ class ETGApiService:
                 "last_name": "Bookings"
             }
         }
+        
+        if user_comment:
+            data["user_comment"] = user_comment
+            
         return self._make_request("/hotel/order/booking/form/", data)
     
     def finish_booking(self, partner_order_id: str) -> dict:

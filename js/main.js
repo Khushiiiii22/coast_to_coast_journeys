@@ -357,13 +357,15 @@ async function handleHotelSearch(e) {
         childrenAges.push(8); // Default child age
     }
 
+    const regionId = document.getElementById('hotelRegionId')?.value || null;
+
     const searchParams = {
         destination: document.getElementById('hotelDestination').value,
+        region_id: regionId,
         checkin: document.getElementById('checkInDate').value,
         checkout: document.getElementById('checkOutDate').value,
         rooms: rooms,
         adults: adults,
-        children_ages: childrenAges,
         children_ages: childrenAges,
         currency: DOM.currencySelect ? DOM.currencySelect.value : 'INR'
     };

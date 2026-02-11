@@ -14,6 +14,11 @@ hotel_bp = Blueprint('hotels', __name__, url_prefix='/api/hotels')
 
 
 # ==========================================
+# CONSTANTS
+# ==========================================
+COMMISSION_RATE = 0.15  # 15% Markup
+
+# ==========================================
 # DEBUG ENDPOINT (Temporary) - v3.0 Brevo
 # ==========================================
 
@@ -434,9 +439,10 @@ def search_by_destination():
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
         
         destination = data['destination'].lower().strip()
-        region_id = None
+        region_id = data.get('region_id')
         location_name = data['destination']
-        is_sandbox_supported = False
+        is_sandbox_supported = bool(region_id) # If region_id is provided, assume we want to try RateHawk
+
         
         print(f"🔍 Hotel Search Request: {data['destination']}")
         
@@ -630,8 +636,36 @@ def search_by_destination():
             'supported_destinations': ['Paris', 'Moscow', 'Dubai']
         }), 400
     
+
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ==========================================
+# HOTEL SUGGEST (AUTOCOMPLETE)
+# ==========================================
+
+@hotel_bp.route('/suggest', methods=['GET'])
+def suggest_locations():
+    """Proxy for ETG/RateHawk Multicomplete Suggestion"""
+    try:
+        query = request.args.get('query', '')
+        language = request.args.get('language', 'en')
+        
+        if not query or len(query) < 2:
+            return jsonify({
+                "success": True, 
+                "data": {"hotels": [], "regions": []}
+            })
+            
+        # Call ETG service
+        result = etg_service.suggest(query, language)
+        return jsonify(result)
+        
+    except Exception as e:
+        print(f"❌ Suggest API Error: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 
 
 def transform_etg_hotels(etg_hotels, destination, static_data=None, target_currency='INR'):
@@ -720,7 +754,7 @@ def transform_etg_hotels(etg_hotels, destination, static_data=None, target_curre
                     currency = rate_currency # Trust API
                 
                 # Apply 15% Commission (on top of converted price)
-                amount = amount * 1.15
+                amount = amount * (1 + COMMISSION_RATE)
                 
                 if lowest_price == 0 or amount < lowest_price:
                     lowest_price = amount
@@ -835,7 +869,7 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map):
             amount = amount * conversion_rates['EUR_TO_INR']
         
         # Apply commission
-        amount = amount * 1.15
+        amount = amount * (1 + COMMISSION_RATE)
         
         # Get meal_data (preferred)
         meal_data = rate.get('meal_data', {})
@@ -871,7 +905,12 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map):
                 'has_breakfast': meal_data.get('has_breakfast', False) if meal_data else False,
                 'no_child_meal': no_child_meal
             },
-            'tax_info': parse_taxes(payment_options.get('tax_data', {})),
+            'tax_info': parse_taxes(
+                payment_options.get('tax_data', {}), 
+                target_currency, 
+                rate_currency, 
+                conversion_rates
+            ),
             'cancellation_info': format_cancellation_policies(rate)
         }
         
@@ -883,16 +922,20 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map):
 
 
 
-def parse_taxes(tax_data):
-    """Parse tax data from rate"""
+def parse_taxes(tax_data, target_currency='USD', source_currency='USD', conversion_rates=None):
+    """Parse tax data from rate and convert if needed"""
     if not tax_data or not tax_data.get('taxes'):
-        return None
+        return {
+            'included_taxes': [],
+            'non_included_taxes': [],
+            'total_tax': 0,
+            'currency': target_currency
+        }
         
     taxes = tax_data.get('taxes', [])
     total_tax = 0.0
-    currency = 'USD'
-    included = True
-    details = []
+    included_taxes = []
+    non_included_taxes = []
     
     for tax in taxes:
         amount = float(tax.get('amount', 0))
@@ -900,24 +943,33 @@ def parse_taxes(tax_data):
         name = tax.get('name', 'Tax')
         is_included = tax.get('included_by_supplier', True)
         
-        if is_included:
-            total_tax += amount
-        else:
-            included = False # If any tax is excluded, mark as having excluded taxes
-            
-        details.append({
+        # Convert currency if needed
+        if target_currency == 'INR' and source_currency == 'USD':
+            amount = amount * conversion_rates['USD_TO_INR']
+            currency = 'INR'
+        elif target_currency == 'INR' and source_currency == 'EUR':
+             amount = amount * conversion_rates['EUR_TO_INR']
+             currency = 'INR'
+        
+        tax_item = {
             'name': name,
-            'amount': amount,
+            'amount': round(amount, 2),
             'currency': currency,
             'included': is_included
-        })
+        }
         
+        if is_included:
+            included_taxes.append(tax_item)
+            total_tax += amount
+        else:
+            non_included_taxes.append(tax_item)
+            
     return {
-        'total': total_tax,
-        'currency': currency,
-        'included': included,
-        'details': details,
-        'summary': f"{'Includes' if included else 'Excludes'} {currency} {total_tax:.2f} taxes"
+        'total': round(total_tax, 2),
+        'currency': target_currency, # Always target currency after conversion
+        'included_taxes': included_taxes,
+        'non_included_taxes': non_included_taxes,
+        'summary': f"{'Includes' if not non_included_taxes else 'Excludes'} {target_currency} {round(total_tax, 2)} taxes"
     }
 
 
@@ -1033,6 +1085,11 @@ def search_hotels_via_google(destination: str, checkin: str, checkout: str) -> l
             
             primary_image = hotel_images[0] if hotel_images else fallback_images[idx % len(fallback_images)]
             
+            # Extract city and country from destination
+            destination_parts = destination.split(',')
+            city = destination_parts[0].strip() if destination_parts else destination
+            country = destination_parts[-1].strip() if len(destination_parts) > 1 else 'India'
+            
             hotel = {
                 'id': f"google_{place.get('place_id', idx)}",
                 'google_place_id': place.get('place_id'),
@@ -1041,6 +1098,9 @@ def search_hotels_via_google(destination: str, checkin: str, checkout: str) -> l
                 'guest_rating': rating,
                 'review_count': review_count,
                 'address': place.get('address', destination),
+                'city': city,
+                'country': country,
+                'location': f"{city}, {country}",
                 'image': primary_image,
                 'images': hotel_images,  # Include all images for gallery
                 'latitude': place.get('latitude'),
@@ -2249,7 +2309,8 @@ def create_booking():
             book_hash=book_hash,
             partner_order_id=partner_order_id,
             guests=data['guests'],
-            user_ip=user_ip
+            user_ip=user_ip,
+            user_comment=data.get('special_requests')
         )
         
         if not etg_result.get('success'):

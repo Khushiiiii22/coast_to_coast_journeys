@@ -405,7 +405,7 @@ function createHotelCardHorizontal(hotel) {
             <div class="hotel-card-header">
                 <div class="hotel-card-title">
                     <h3>${hotel.name}</h3>
-                    <p class="hotel-location"><i class="fas fa-map-marker-alt"></i> ${hotel.address || 'Location available'}</p>
+                    <p class="hotel-location"><i class="fas fa-map-marker-alt"></i> ${hotel.location || hotel.city || hotel.address || 'Location available'}</p>
                     ${hotel.distance ? `<p class="hotel-distance">${hotel.distance}</p>` : ''}
                 </div>
             </div>
