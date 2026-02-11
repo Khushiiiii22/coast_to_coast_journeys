@@ -166,17 +166,21 @@ async function performSearch(params) {
  * Display search results
  */
 function displayResults(result) {
+    console.log('📊 displayResults called with:', result);
     hideLoading();
 
     const hotels = result.data?.hotels || result.hotels || [];
+    console.log(`📊 Processing ${hotels.length} hotels`);
 
     if (hotels.length === 0) {
+        console.error('❌ No hotels to display');
         showNoResults();
         return;
     }
 
     allHotels = hotels;
     filteredHotels = [...hotels];
+    console.log(`✅ Set allHotels: ${allHotels.length}, filteredHotels: ${filteredHotels.length}`);
 
     document.getElementById('resultsCount').textContent = hotels.length;
 
