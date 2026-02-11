@@ -1292,6 +1292,7 @@ def format_hotel_policies(policies):
     """
     formatted = {
         'check_in_out': [],
+        'early_late': [],
         'children': [],
         'pets': [],
         'payments': [],
@@ -1299,6 +1300,9 @@ def format_hotel_policies(policies):
         'parking': [],
         'meals': [],
         'extra_beds': [],
+        'mandatory_fees': [],
+        'optional_fees': [],
+        'special': [],
         'other': []
     }
     
@@ -1318,6 +1322,81 @@ def format_hotel_policies(policies):
             'label': 'Check-out Time',
             'value': policies['check_out_time']
         })
+    
+    # Early check-in / Late check-out policies from metapolicy_struct
+    if metapolicy:
+        # Extract early check-in info
+        early_checkin = metapolicy.get('check_in', metapolicy.get('early_check_in', {}))
+        if early_checkin:
+            if isinstance(early_checkin, dict):
+                available = early_checkin.get('available', early_checkin.get('possibility'))
+                fee = early_checkin.get('fee', early_checkin.get('price'))
+                time_val = early_checkin.get('time', early_checkin.get('from'))
+                if available is not None or fee or time_val:
+                    value_parts = []
+                    if time_val:
+                        value_parts.append(f'Available from {time_val}')
+                    if available is True:
+                        value_parts.append('Available upon request')
+                    elif available is False:
+                        value_parts.append('Not available')
+                    if fee:
+                        value_parts.append(f'Fee: {fee}')
+                    formatted['early_late'].append({
+                        'icon': 'fa-clock',
+                        'label': 'Early Check-in',
+                        'value': ' — '.join(value_parts) if value_parts else 'Subject to availability'
+                    })
+            elif isinstance(early_checkin, str):
+                formatted['early_late'].append({
+                    'icon': 'fa-clock',
+                    'label': 'Early Check-in',
+                    'value': early_checkin
+                })
+        
+        # Extract late check-out info
+        late_checkout = metapolicy.get('check_out', metapolicy.get('late_check_out', {}))
+        if late_checkout:
+            if isinstance(late_checkout, dict):
+                available = late_checkout.get('available', late_checkout.get('possibility'))
+                fee = late_checkout.get('fee', late_checkout.get('price'))
+                time_val = late_checkout.get('time', late_checkout.get('until'))
+                if available is not None or fee or time_val:
+                    value_parts = []
+                    if time_val:
+                        value_parts.append(f'Available until {time_val}')
+                    if available is True:
+                        value_parts.append('Available upon request')
+                    elif available is False:
+                        value_parts.append('Not available')
+                    if fee:
+                        value_parts.append(f'Fee: {fee}')
+                    formatted['early_late'].append({
+                        'icon': 'fa-clock',
+                        'label': 'Late Check-out',
+                        'value': ' — '.join(value_parts) if value_parts else 'Subject to availability'
+                    })
+            elif isinstance(late_checkout, str):
+                formatted['early_late'].append({
+                    'icon': 'fa-clock',
+                    'label': 'Late Check-out',
+                    'value': late_checkout
+                })
+    
+    # If no early/late policies found, add defaults
+    if not formatted['early_late']:
+        formatted['early_late'] = [
+            {
+                'icon': 'fa-clock',
+                'label': 'Early Check-in',
+                'value': 'Subject to availability — Contact hotel directly'
+            },
+            {
+                'icon': 'fa-clock',
+                'label': 'Late Check-out',
+                'value': 'Subject to availability — Contact hotel directly'
+            }
+        ]
     
     # Process metapolicy_struct
     if metapolicy:
@@ -1468,6 +1547,15 @@ def format_hotel_policies(policies):
                     elif 'meal' in category.lower() or 'breakfast' in category.lower():
                         target_category = 'meals'
                         icon = 'fa-utensils'
+                    elif 'mandatory' in category.lower() or 'resort_fee' in category.lower() or 'facility_fee' in category.lower() or 'tax' in category.lower():
+                        target_category = 'mandatory_fees'
+                        icon = 'fa-dollar-sign'
+                    elif 'optional' in category.lower() or 'extra_charge' in category.lower() or 'surcharge' in category.lower() or 'service_charge' in category.lower():
+                        target_category = 'optional_fees'
+                        icon = 'fa-money-bill-wave'
+                    elif 'special' in category.lower() or 'instruction' in category.lower() or 'notice' in category.lower() or 'important' in category.lower():
+                        target_category = 'special'
+                        icon = 'fa-info-circle'
                     
                     if isinstance(info, list):
                         for item in info:
@@ -1999,11 +2087,13 @@ def format_tax_name(tax_name):
 def prebook_rate():
     """
     Prebook a rate - check availability and final price
+    Also validates booking cut-off (minimum 6 hours before check-in)
     
     Request Body:
     {
         "book_hash": "hash_from_hotel_page",
-        "price_increase_percent": 5
+        "price_increase_percent": 5,
+        "checkin": "2026-02-01" (optional, for cut-off validation)
     }
     """
     try:
@@ -2011,6 +2101,27 @@ def prebook_rate():
         
         if 'book_hash' not in data:
             return jsonify({'success': False, 'error': 'Missing book_hash'}), 400
+        
+        # Booking cut-off validation
+        checkin_str = data.get('checkin')
+        if checkin_str:
+            try:
+                from datetime import datetime, timedelta
+                checkin_date = datetime.strptime(checkin_str, '%Y-%m-%d')
+                # Default check-in time is 14:00 (2 PM)
+                checkin_datetime = checkin_date.replace(hour=14, minute=0)
+                now = datetime.utcnow() + timedelta(hours=5, minutes=30)  # IST offset
+                hours_until_checkin = (checkin_datetime - now).total_seconds() / 3600
+                
+                if hours_until_checkin < 6:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Booking cut-off reached. Bookings must be made at least 6 hours before check-in time (2:00 PM). Please select a later check-in date.',
+                        'error_code': 'BOOKING_CUTOFF',
+                        'hours_remaining': round(hours_until_checkin, 1)
+                    }), 400
+            except ValueError:
+                pass  # Invalid date format, skip validation
         
         result = etg_service.prebook(
             book_hash=data['book_hash'],
@@ -2050,6 +2161,25 @@ def create_booking():
         for field in required:
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
+        
+        # Booking cut-off validation for create_booking as well
+        checkin_str = data.get('checkin')
+        if checkin_str:
+            try:
+                from datetime import datetime, timedelta
+                checkin_date = datetime.strptime(checkin_str, '%Y-%m-%d')
+                checkin_datetime = checkin_date.replace(hour=14, minute=0)
+                now = datetime.utcnow() + timedelta(hours=5, minutes=30)  # IST offset
+                hours_until_checkin = (checkin_datetime - now).total_seconds() / 3600
+                
+                if hours_until_checkin < 6:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Booking cut-off reached. Bookings must be made at least 6 hours before check-in time (2:00 PM).',
+                        'error_code': 'BOOKING_CUTOFF'
+                    }), 400
+            except ValueError:
+                pass
         
         book_hash = data['book_hash']
         

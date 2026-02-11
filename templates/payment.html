@@ -694,6 +694,19 @@
                 <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
                     style="height: 24px; background: white; padding: 3px 6px; border-radius: 4px;">
             </div>
+            <!-- Trustpilot Review Badge -->
+            <div class="trustpilot-badge" style="margin: 20px 0;">
+                <a href="https://www.trustpilot.com/review/coasttocoastjourneys.com" target="_blank"
+                    rel="noopener noreferrer"
+                    style="display: inline-flex; align-items: center; gap: 8px; background: #fff; color: #191919; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s;"
+                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
+                    onmouseout="this.style.transform=''; this.style.boxShadow='';">
+                    Review us on
+                    <img src="https://cdn.trustpilot.net/brand-assets/4.1.0/logo-black.svg" alt="Trustpilot"
+                        style="height: 18px; width: auto;">
+                    <span style="color: #00b67a; font-size: 1rem;">★</span>
+                </a>
+            </div>
             <div class="footer-bottom">
                 <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">C2C Journeys is a customer-facing
                     brand operated by Coast to Coast Journeys</p>
@@ -750,14 +763,28 @@
             document.getElementById('guests').textContent = `${searchParams.adults} Adults`;
             document.getElementById('roomType').textContent = rate.room_name || 'Standard Room';
 
-            // Price breakdown
+            // Price breakdown - use real tax data
             const basePrice = parseFloat(rate.total_price || (rate.price * (rate.nights || 1)) || 0);
-            const taxes = basePrice * 0.18; // 18% GST estimate
+
+            // Use taxes from guest-details (already computed with API data)
+            let taxes = 0;
+            if (bookingData.taxes) {
+                taxes = parseFloat(bookingData.taxes);
+            } else {
+                const taxInfo = rate.tax_info || {};
+                const includedTaxes = taxInfo.included_taxes || [];
+                const nonIncludedTaxes = taxInfo.non_included_taxes || [];
+                includedTaxes.forEach(t => { taxes += parseFloat(t.amount || 0); });
+                nonIncludedTaxes.forEach(t => { taxes += parseFloat(t.amount || 0); });
+                if (taxes === 0) {
+                    taxes = basePrice * 0.12; // 12% fallback
+                }
+            }
             const total = basePrice + taxes;
 
             document.getElementById('basePrice').textContent = `₹${basePrice.toLocaleString('en-IN')}`;
-            document.getElementById('taxes').textContent = `₹${taxes.toLocaleString('en-IN')}`;
-            document.getElementById('totalAmount').textContent = `₹${total.toLocaleString('en-IN')}`;
+            document.getElementById('taxes').textContent = `₹${Math.round(taxes).toLocaleString('en-IN')}`;
+            document.getElementById('totalAmount').textContent = `₹${Math.round(total).toLocaleString('en-IN')}`;
 
             // Populate Guest Details
             const guest = bookingData.guest || {};
@@ -1101,7 +1128,7 @@
                 // Send booking confirmation email
                 const guest = bookingData.guest || {};
                 const customerEmail = guest.email || bookingData.email;
-                
+
                 console.log('📧 Email Debug:', {
                     guest: guest,
                     customerEmail: customerEmail,
@@ -1122,7 +1149,7 @@
                             total_amount: bookingData.total
                         };
                         console.log('📦 Email payload:', emailPayload);
-                        
+
                         const emailResponse = await fetch('/api/hotels/booking/send-confirmation', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },

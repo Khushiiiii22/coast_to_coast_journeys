@@ -298,7 +298,7 @@ function displayHotelDetails(hotel) {
 
     // Update sticky price bar
     updateStickyPriceBar(hotel.rates);
-    
+
     // Initialize Expedia-style enhancements
     if (typeof ExpediaEnhancements !== 'undefined') {
         ExpediaEnhancements.initialize(hotel);
@@ -772,6 +772,10 @@ function displayDefaultPolicies() {
             { icon: 'fa-sign-in-alt', label: 'Check-in', value: 'From 3:00 PM' },
             { icon: 'fa-sign-out-alt', label: 'Check-out', value: 'Until 11:00 AM' }
         ],
+        early_late: [
+            { icon: 'fa-clock', label: 'Early Check-in', value: 'Subject to availability — Contact hotel directly' },
+            { icon: 'fa-clock', label: 'Late Check-out', value: 'Subject to availability — Contact hotel directly' }
+        ],
         children: [
             { icon: 'fa-child', label: 'Children', value: 'Children of all ages welcome' }
         ],
@@ -786,6 +790,15 @@ function displayDefaultPolicies() {
         ],
         parking: [
             { icon: 'fa-parking', label: 'Parking', value: 'Subject to availability' }
+        ],
+        mandatory_fees: [
+            { icon: 'fa-dollar-sign', label: 'Resort/Facility Fee', value: 'Contact property for mandatory fee details' }
+        ],
+        optional_fees: [
+            { icon: 'fa-money-bill-wave', label: 'Optional Charges', value: 'Additional services available at extra cost upon request' }
+        ],
+        special: [
+            { icon: 'fa-info-circle', label: 'Special Instructions', value: 'Please contact the property for special check-in instructions' }
         ]
     };
 
@@ -798,6 +811,7 @@ function displayDefaultPolicies() {
 function displayHotelPolicies(policies) {
     const sections = {
         'check_in_out': 'policyCheckInOut',
+        'early_late': 'policyEarlyLate',
         'children': 'policyChildren',
         'extra_beds': 'policyExtraBeds',
         'pets': 'policyPets',
@@ -805,6 +819,9 @@ function displayHotelPolicies(policies) {
         'parking': 'policyParking',
         'payments': 'policyPayments',
         'meals': 'policyMeals',
+        'mandatory_fees': 'policyMandatoryFees',
+        'optional_fees': 'policyOptionalFees',
+        'special': 'policySpecial',
         'other': 'policyOther'
     };
 
@@ -936,10 +953,10 @@ function displayRates(rates) {
     // If we have actual rates, create multiple room type variations
     const baseRate = rates[0];
     const roomsToShow = Math.min(roomTypes.length, 6);
-    
+
     for (let i = 0; i < roomsToShow; i++) {
         const roomType = roomTypes[i];
-        
+
         // Create a modified rate object with room type characteristics
         const modifiedRate = {
             ...baseRate,
@@ -947,7 +964,7 @@ function displayRates(rates) {
             price: Math.round(baseRate.price * roomType.priceMultiplier),
             _roomTypeConfig: roomType
         };
-        
+
         const card = createRateCard(modifiedRate, i, roomType.badge);
         container.appendChild(card);
     }
@@ -1061,7 +1078,41 @@ function createRateCard(rate, index, customBadge = null) {
 
     // Features grid - use room type config view if available
     const viewType = roomTypeConfig.viewType || getViewType(roomName);
+
+    // Meal info display
+    const mealInfo = rate.meal_info || {};
+    const mealDisplay = mealInfo.display_name || '';
+    const hasBreakfastIncluded = mealInfo.has_breakfast || rate.meal === 'breakfast' || rate.meal_plan === 'breakfast';
+    const mealCode = mealInfo.code || 'nomeal';
+    const isMealIncluded = mealCode !== 'nomeal' && mealCode !== 'room-only';
+
+    // Meal badge HTML
+    let mealBadgeHtml = '';
+    if (isMealIncluded && mealDisplay) {
+        mealBadgeHtml = `
+            <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:8px;border:1px solid #a7f3d0;margin-bottom:8px;">
+                <i class="fas fa-utensils" style="color:#059669;font-size:0.8rem;"></i>
+                <span style="color:#065f46;font-size:0.82rem;font-weight:600;">${mealDisplay}</span>
+            </div>
+        `;
+    } else if (hasBreakfastIncluded) {
+        mealBadgeHtml = `
+            <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:8px;border:1px solid #a7f3d0;margin-bottom:8px;">
+                <i class="fas fa-coffee" style="color:#059669;font-size:0.8rem;"></i>
+                <span style="color:#065f46;font-size:0.82rem;font-weight:600;">Breakfast Included</span>
+            </div>
+        `;
+    } else {
+        mealBadgeHtml = `
+            <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:8px;">
+                <i class="fas fa-utensils" style="color:#94a3b8;font-size:0.8rem;"></i>
+                <span style="color:#64748b;font-size:0.82rem;">Room Only (No Meals)</span>
+            </div>
+        `;
+    }
+
     let featuresHtml = `
+        ${mealBadgeHtml}
         <div class="room-features-grid">
             ${hasView && viewType ? `<span class="room-feature view"><i class="fas fa-mountain"></i> ${viewType}</span>` : ''}
             ${hasParking ? `<span class="room-feature parking"><i class="fas fa-parking"></i> Free self parking</span>` : ''}
@@ -1149,11 +1200,9 @@ function createRateCard(rate, index, customBadge = null) {
         `;
     }
 
-    // Extras section (Breakfast add-on)
+    // Extras section (Breakfast add-on) - uses mealInfo and hasBreakfastIncluded declared above
     const breakfastPrice = Math.floor(price * 0.05) + 10; // ~5% of room price + base
     const breakfastPriceFormatted = HotelUtils.formatPrice(breakfastPrice);
-    const mealInfo = rate.meal_info || {};
-    const hasBreakfastIncluded = mealInfo.has_breakfast || rate.meal === 'breakfast' || rate.meal_plan === 'breakfast';
 
     let extrasHtml = '';
     if (!hasBreakfastIncluded) {
@@ -1190,10 +1239,40 @@ function createRateCard(rate, index, customBadge = null) {
     const roomsLeft = Math.floor(Math.random() * 4) + 1;
     const urgencyHtml = showUrgency ? `<span class="urgency-notice">We have ${roomsLeft} left</span>` : '';
 
-    // Tax info display
+    // Tax info display - use REAL tax data from rate
     let taxNoteHtml = '<small class="taxes-note"><i class="fas fa-check"></i> Total with taxes and fees</small>';
 
-    if (rate.tax_info && rate.tax_info.total > 0) {
+    const taxInfo = rate.tax_info || {};
+    const nonIncludedTaxes = taxInfo.non_included_taxes || [];
+    const includedTaxes = taxInfo.included_taxes || [];
+
+    if (nonIncludedTaxes.length > 0) {
+        // Calculate total non-included tax amount
+        let totalNonIncluded = 0;
+        const taxDetailsHtml = nonIncludedTaxes.map(tax => {
+            const amount = parseFloat(tax.amount || 0);
+            totalNonIncluded += amount;
+            const displayName = tax.display_name || tax.name || 'Tax';
+            const currency = tax.currency_code || 'INR';
+            return `<div style="display:flex;justify-content:space-between;font-size:0.72rem;color:#92400e;"><span>${displayName}</span><span>${currency} ${amount.toFixed(2)}</span></div>`;
+        }).join('');
+
+        taxNoteHtml = `
+            <div style="margin-top:6px;padding:8px 10px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;">
+                <div style="font-size:0.78rem;font-weight:600;color:#92400e;margin-bottom:4px;">
+                    <i class="fas fa-info-circle"></i> Additional fees payable at property:
+                </div>
+                ${taxDetailsHtml}
+                <div style="font-size:0.7rem;color:#b45309;margin-top:4px;font-style:italic;">These taxes are not included and must be paid at check-in.</div>
+            </div>
+        `;
+    } else if (includedTaxes.length > 0) {
+        let totalIncluded = 0;
+        includedTaxes.forEach(tax => { totalIncluded += parseFloat(tax.amount || 0); });
+        if (totalIncluded > 0) {
+            taxNoteHtml = `<small class="taxes-note" style="color:#059669"><i class="fas fa-check-circle"></i> Includes ₹${totalIncluded.toLocaleString('en-IN')} taxes & fees</small>`;
+        }
+    } else if (rate.tax_info && rate.tax_info.total > 0) {
         const taxAmount = HotelUtils.formatPrice(rate.tax_info.total);
         if (rate.tax_info.included) {
             taxNoteHtml = `<small class="taxes-note"><i class="fas fa-check"></i> Includes ${taxAmount} taxes & fees</small>`;

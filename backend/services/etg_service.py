@@ -97,7 +97,7 @@ class ETGApiService:
         
         return log_entry
     
-    def _make_request(self, endpoint: str, data: dict = None, method: str = "POST") -> dict:
+    def _make_request(self, endpoint: str, data: dict = None, method: str = "POST", timeout: int = 30) -> dict:
         """Make a request to ETG API with detailed logging"""
         url = f"{self.base_url}{endpoint}"
         
@@ -109,13 +109,13 @@ class ETGApiService:
         start_time = datetime.now()
         
         try:
-            print(f"🔄 ETG API Request: {method} {endpoint}")
+            print(f"🔄 ETG API Request: {method} {endpoint} (timeout: {timeout}s)")
             print(f"📤 Request Data: {json.dumps(data, indent=2, default=str) if data else 'None'}")
             
             if method == "GET":
-                response = requests.get(url, headers=headers, proxies=self.proxies, timeout=30)
+                response = requests.get(url, headers=headers, proxies=self.proxies, timeout=timeout)
             else:
-                response = requests.post(url, json=data or {}, headers=headers, proxies=self.proxies, timeout=30)
+                response = requests.post(url, json=data or {}, headers=headers, proxies=self.proxies, timeout=timeout)
             
             duration_ms = (datetime.now() - start_time).total_seconds() * 1000
             
@@ -444,17 +444,20 @@ class ETGApiService:
         """
         Finish/Start booking process
         POST /hotel/order/booking/finish/
+        RateHawk recommended timeout: 180 seconds (min 60s, max 600s)
+        Countdown starts after successful response to "Start booking process"
         """
         data = {"partner_order_id": partner_order_id}
-        return self._make_request("/hotel/order/booking/finish/", data)
+        return self._make_request("/hotel/order/booking/finish/", data, timeout=180)
     
     def check_booking_status(self, partner_order_id: str) -> dict:
         """
         Check booking status
         POST /hotel/order/booking/finish/status/
+        Uses extended timeout (180s) as booking confirmation may take time
         """
         data = {"partner_order_id": partner_order_id}
-        return self._make_request("/hotel/order/booking/finish/status/", data)
+        return self._make_request("/hotel/order/booking/finish/status/", data, timeout=180)
     
     def get_booking_info(self, partner_order_id: str) -> dict:
         """

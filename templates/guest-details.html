@@ -310,6 +310,20 @@
                     </form>
                 </div>
 
+
+                <!-- Booking Cut-off Warning -->
+                <div id="cutoffWarning"
+                    style="display: none; padding: 16px; background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 12px; border: 1px solid #f59e0b; margin-bottom: 30px;">
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <i class="fas fa-exclamation-triangle"
+                            style="color: #d97706; font-size: 1.2rem; margin-top: 2px;"></i>
+                        <div>
+                            <h4 style="margin: 0 0 4px; font-size: 0.95rem; color: #92400e;">Booking Cut-off Notice</h4>
+                            <p id="cutoffMessage" style="margin: 0; font-size: 0.85rem; color: #78350f;"></p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Booking Summary -->
                 <div class="booking-summary">
                     <h2>Booking Summary</h2>
@@ -381,6 +395,19 @@
                 <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
                     style="height: 24px; background: white; padding: 3px 6px; border-radius: 4px;">
             </div>
+            <!-- Trustpilot Review Badge -->
+            <div class="trustpilot-badge" style="margin: 20px 0;">
+                <a href="https://www.trustpilot.com/review/coasttocoastjourneys.com" target="_blank"
+                    rel="noopener noreferrer"
+                    style="display: inline-flex; align-items: center; gap: 8px; background: #fff; color: #191919; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s;"
+                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
+                    onmouseout="this.style.transform=''; this.style.boxShadow='';">
+                    Review us on
+                    <img src="https://cdn.trustpilot.net/brand-assets/4.1.0/logo-black.svg" alt="Trustpilot"
+                        style="height: 18px; width: auto;">
+                    <span style="color: #00b67a; font-size: 1rem;">★</span>
+                </a>
+            </div>
             <div class="footer-bottom">
                 <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">C2C Journeys is a customer-facing
                     brand operated by Coast to Coast Journeys</p>
@@ -423,18 +450,83 @@
             document.getElementById('guests').textContent = `${searchParams.adults} Adults`;
             document.getElementById('roomType').textContent = rate.room_name || 'Standard Room';
 
-            // Price breakdown
+            // Price breakdown - use real tax data from API if available
             const basePrice = parseFloat(rate.total_price || (rate.price * (rate.nights || 1)) || 0);
-            const taxes = basePrice * 0.18; // 18% GST estimate
+
+            // Calculate taxes from real API data
+            let taxes = 0;
+            const taxInfo = rate.tax_info || {};
+            const includedTaxes = taxInfo.included_taxes || [];
+            const nonIncludedTaxes = taxInfo.non_included_taxes || [];
+
+            // Sum up all taxes (both included and non-included)
+            includedTaxes.forEach(t => { taxes += parseFloat(t.amount || 0); });
+            nonIncludedTaxes.forEach(t => { taxes += parseFloat(t.amount || 0); });
+
+            // If no tax data from API, use a reasonable estimate
+            if (taxes === 0) {
+                taxes = basePrice * 0.12; // 12% estimated GST
+            }
+
             const total = basePrice + taxes;
 
             document.getElementById('basePrice').textContent = `₹${basePrice.toLocaleString('en-IN')}`;
-            document.getElementById('taxes').textContent = `₹${taxes.toLocaleString('en-IN')}`;
-            document.getElementById('totalAmount').textContent = `₹${total.toLocaleString('en-IN')}`;
+            document.getElementById('taxes').textContent = `₹${Math.round(taxes).toLocaleString('en-IN')}`;
+            document.getElementById('totalAmount').textContent = `₹${Math.round(total).toLocaleString('en-IN')}`;
 
-            // Store for payment (not strictly needed here as we don't pay here, but good for consistency)
+            // Show non-included tax notice if applicable
+            if (nonIncludedTaxes.length > 0) {
+                const taxRow = document.querySelector('.price-row:nth-child(2)');
+                if (taxRow) {
+                    let nonIncTotal = 0;
+                    nonIncludedTaxes.forEach(t => { nonIncTotal += parseFloat(t.amount || 0); });
+                    const taxNote = document.createElement('div');
+                    taxNote.style.cssText = 'font-size:0.75rem;color:#d97706;padding:4px 0;';
+                    taxNote.innerHTML = `<i class="fas fa-info-circle"></i> Includes ₹${Math.round(nonIncTotal).toLocaleString('en-IN')} payable at property`;
+                    taxRow.after(taxNote);
+                }
+            }
+
+            // Store for payment
             bookingData.total = total;
             bookingData.base_price = basePrice;
+            bookingData.taxes = taxes;
+
+            // Booking cut-off check
+            if (searchParams.checkin) {
+                const checkinDate = new Date(searchParams.checkin + 'T14:00:00');
+                const now = new Date();
+                const hoursUntil = (checkinDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+                if (hoursUntil < 24 && hoursUntil > 6) {
+                    // Show warning but allow booking
+                    const cutoffWarning = document.getElementById('cutoffWarning');
+                    const cutoffMsg = document.getElementById('cutoffMessage');
+                    if (cutoffWarning && cutoffMsg) {
+                        cutoffWarning.style.display = 'block';
+                        cutoffMsg.textContent = `Your check-in date is less than 24 hours away. Please ensure all details are correct. Bookings cannot be made less than 6 hours before check-in time (2:00 PM).`;
+                    }
+                } else if (hoursUntil <= 6) {
+                    // Block booking
+                    const cutoffWarning = document.getElementById('cutoffWarning');
+                    const cutoffMsg = document.getElementById('cutoffMessage');
+                    if (cutoffWarning && cutoffMsg) {
+                        cutoffWarning.style.display = 'block';
+                        cutoffWarning.style.background = 'linear-gradient(135deg, #fee2e2, #fecaca)';
+                        cutoffWarning.style.borderColor = '#ef4444';
+                        cutoffMsg.textContent = 'Booking cut-off reached. Bookings must be made at least 6 hours before check-in time (2:00 PM). Please select a later date.';
+                        cutoffMsg.style.color = '#991b1b';
+                    }
+                    // Disable proceed button
+                    const proceedBtn = document.querySelector('.proceed-button');
+                    if (proceedBtn) {
+                        proceedBtn.disabled = true;
+                        proceedBtn.style.opacity = '0.5';
+                        proceedBtn.style.cursor = 'not-allowed';
+                        proceedBtn.textContent = 'Booking Cut-off Reached';
+                    }
+                }
+            }
 
             // PRE-FILL USER DETAILS
             if (typeof AuthGuard !== 'undefined' && window.supabase) {
@@ -500,7 +592,11 @@
         }
 
         // Load booking details on page load
-        document.addEventListener('DOMContentLoaded', loadBookingDetails);
+        document.addEventListener('DOMContentLoaded', function () {
+            loadBookingDetails();
+
+
+        });
     </script>
 </body>
 

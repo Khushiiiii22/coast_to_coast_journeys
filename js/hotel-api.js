@@ -205,13 +205,16 @@ const HotelAPI = {
     /**
      * Prebook rate - check availability
      */
-    async prebookRate(bookHash, priceIncreasePercent = 5) {
+    async prebookRate(bookHash, priceIncreasePercent = 5, checkin = null) {
+        const body = {
+            book_hash: bookHash,
+            price_increase_percent: priceIncreasePercent
+        };
+        if (checkin) body.checkin = checkin;
+
         return this.request('/hotels/prebook', {
             method: 'POST',
-            body: JSON.stringify({
-                book_hash: bookHash,
-                price_increase_percent: priceIncreasePercent
-            })
+            body: JSON.stringify(body)
         });
     },
 
