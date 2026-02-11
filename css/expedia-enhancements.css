@@ -1,0 +1,105 @@
+/* Additional User-Friendly Enhancements */
+
+/* Smooth scroll behavior */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Better section transitions */
+.property-highlights-section,
+.about-section,
+.amenities-section,
+.accessibility-section,
+.policies-section {
+    transition: opacity 0.3s ease;
+}
+
+/* Improved readability */
+.about-narrative p,
+.accessibility-intro,
+.policies-intro {
+    max-width: 70ch;
+    line-height: 1.7;
+}
+
+/* Better mobile padding */
+@media (max-width: 768px) {
+    .property-highlights-section,
+    .about-section,
+    .amenities-section,
+    .accessibility-section,
+    .policies-section {
+        padding: var(--spacing-xl) 0;
+    }
+    
+    .highlight-card {
+        padding: var(--spacing-md);
+    }
+    
+    .highlights-header h2,
+    .about-section h2,
+    .amenities-section h2,
+    .accessibility-section h2,
+    .policies-section h2 {
+        font-size: 1.375rem;
+    }
+}
+
+/* Loading states */
+.fade-in-up {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Stagger animation for cards */
+.highlight-card:nth-child(1) { animation-delay: 0.05s; }
+.highlight-card:nth-child(2) { animation-delay: 0.1s; }
+.highlight-card:nth-child(3) { animation-delay: 0.15s; }
+.highlight-card:nth-child(4) { animation-delay: 0.2s; }
+.highlight-card:nth-child(5) { animation-delay: 0.25s; }
+.highlight-card:nth-child(6) { animation-delay: 0.3s; }
+
+/* Better hover effects */
+.policy-card,
+.accessibility-feature {
+    position: relative;
+    overflow: hidden;
+}
+
+.policy-card::before,
+.accessibility-feature::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.03), transparent);
+    transition: left 0.5s ease;
+}
+
+.policy-card:hover::before,
+.accessibility-feature:hover::before {
+    left: 100%;
+}
+
+/* Print styles */
+@media print {
+    .highlight-card,
+    .policy-card,
+    .accessibility-feature {
+        page-break-inside: avoid;
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+    }
+}

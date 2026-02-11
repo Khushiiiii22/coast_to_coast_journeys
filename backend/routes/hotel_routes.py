@@ -821,7 +821,7 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map):
     """Transform rate data with proper meal_data and cancellation info"""
     transformed_rates = []
     
-    for rate in rates[:5]:  # Limit to 5 rates per hotel
+    for rate in rates[:20]:  # Increased limit to 20 rates to show more variety
         payment_options = rate.get('payment_options', {})
         payment_types = payment_options.get('payment_types', [{}])
         rate_currency = payment_options.get('currency_code', 'USD')
@@ -843,9 +843,15 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map):
         meal_display = meal_display_map.get(meal_value, meal_value.replace('-', ' ').title())
         no_child_meal = meal_data.get('no_child_meal', False) if meal_data else False
         
-        # Get room details
+        # Get room details - Try multiple fields to avoid "Standard Room" default
         room_data = rate.get('room_data_trans', {})
-        room_name = room_data.get('main_name') or rate.get('room_name', 'Standard Room')
+        room_name = (
+            room_data.get('main_name') or 
+            room_data.get('name') or 
+            rate.get('room_name') or 
+            rate.get('room_category') or 
+            'Standard Room'
+        )
         
         transformed_rate = {
             'book_hash': rate.get('match_hash', ''),
@@ -859,6 +865,13 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map):
                 'has_breakfast': meal_data.get('has_breakfast', False) if meal_data else False,
                 'no_child_meal': no_child_meal
             },
+            'meal_info': {
+                'value': meal_value,
+                'display_name': meal_display,
+                'has_breakfast': meal_data.get('has_breakfast', False) if meal_data else False,
+                'no_child_meal': no_child_meal
+            },
+            'tax_info': parse_taxes(payment_options.get('tax_data', {})),
             'cancellation_info': format_cancellation_policies(rate)
         }
         
@@ -867,6 +880,45 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map):
     return transformed_rates
 
 
+
+
+
+def parse_taxes(tax_data):
+    """Parse tax data from rate"""
+    if not tax_data or not tax_data.get('taxes'):
+        return None
+        
+    taxes = tax_data.get('taxes', [])
+    total_tax = 0.0
+    currency = 'USD'
+    included = True
+    details = []
+    
+    for tax in taxes:
+        amount = float(tax.get('amount', 0))
+        currency = tax.get('currency_code', 'USD')
+        name = tax.get('name', 'Tax')
+        is_included = tax.get('included_by_supplier', True)
+        
+        if is_included:
+            total_tax += amount
+        else:
+            included = False # If any tax is excluded, mark as having excluded taxes
+            
+        details.append({
+            'name': name,
+            'amount': amount,
+            'currency': currency,
+            'included': is_included
+        })
+        
+    return {
+        'total': total_tax,
+        'currency': currency,
+        'included': included,
+        'details': details,
+        'summary': f"{'Includes' if included else 'Excludes'} {currency} {total_tax:.2f} taxes"
+    }
 
 
 def extract_amenities(rates):
@@ -1154,13 +1206,13 @@ def get_hotel_info(hotel_id):
     """Get static hotel information"""
     try:
         # Check cache first
-        cached = supabase_service.get_cached_hotel(hotel_id)
-        if cached.get('success') and cached.get('data'):
-            return jsonify({
-                'success': True,
-                'data': cached['data']['hotel_data'],
-                'source': 'cache'
-            })
+        # cached = supabase_service.get_cached_hotel(hotel_id)
+        # if cached.get('success') and cached.get('data'):
+        #     return jsonify({
+        #         'success': True,
+        #         'data': cached['data']['hotel_data'],
+        #         'source': 'cache'
+        #     })
         
         # Fetch from ETG API
         result = etg_service.get_hotel_info(hotel_id)

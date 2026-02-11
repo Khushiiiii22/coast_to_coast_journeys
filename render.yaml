@@ -1,0 +1,104 @@
+# Render Blueprint Configuration for Coast to Coast Journeys
+# This file defines your infrastructure as code for Render deployment
+
+services:
+  # Main Web Service (Backend + Frontend)
+  - type: web
+    name: coast-to-coast-journeys
+    runtime: python
+    region: oregon  # Choose: oregon, ohio, frankfurt, singapore
+    plan: starter  # $7/month - upgrade to standard for better performance
+    
+    # Build settings
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && python app.py
+    
+    # Environment variables (add in Render dashboard or here)
+    envVars:
+      # Flask Configuration
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: false
+      - key: FLASK_SECRET_KEY
+        generateValue: true  # Auto-generate secret
+      
+      # Server
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 10000  # Render uses 10000
+      
+      # ETG/RateHawk API - PRODUCTION (update after approval)
+      - key: ETG_API_KEY_ID
+        sync: false  # Add manually in Render dashboard
+      - key: ETG_API_KEY_SECRET
+        sync: false
+      - key: ETG_API_BASE_URL
+        value: https://api.worldota.net/api/b2b/v3  # Production URL
+      
+      # Static IP Proxy for RateHawk Whitelisting
+      - key: QUOTAGUARDSTATIC_URL
+        sync: false  # Add your QuotaGuard URL: http://user:pass@proxy:port
+      - key: STATIC_IP_ENABLED
+        value: true
+      
+      # Supabase
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      
+      # Google Maps
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+      
+      # Razorpay (Live Mode)
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+      
+      # PayPal (Live Mode)
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_MODE
+        value: live
+      
+      # Email Configuration
+      - key: MAIL_SERVER
+        value: smtpout.secureserver.net
+      - key: MAIL_PORT
+        value: 465
+      - key: MAIL_USE_SSL
+        value: true
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_DEFAULT_SENDER
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+    
+    # Health check configuration
+    healthCheckPath: /api/health
+    
+    # Auto-deploy settings
+    autoDeploy: true  # Auto-deploy on git push
+    branch: main  # Or your default branch
+
+# Database (if needed in future)
+# databases:
+#   - name: postgres-db
+#     plan: starter
+#     databaseName: coasttocoast
+#     user: coasttocoast

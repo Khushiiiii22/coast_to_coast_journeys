@@ -1,0 +1,198 @@
+{
+  "name": "Shine Residency",
+  "id": "shine_residency_mysore",
+  "property_type": "Hotel",
+  "star_rating": 3.5,
+  "guest_rating": 4.2,
+  "review_count": 643,
+  "description": "Welcome to Shine Residency, a charming 3.5-star hotel located in the cultural heart of Mysore. This property offers a perfect blend of comfort and convenience for both business and leisure travelers exploring Karnataka's heritage city.",
+  "address": {
+    "line1": "Near Mysore Palace",
+    "city": "Mysore",
+    "state": "Karnataka",
+    "country": "India",
+    "country_code": "IN",
+    "postal_code": "570001"
+  },
+  "latitude": 12.3051828,
+  "longitude": 76.6553609,
+  "images": [
+    "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+    "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800",
+    "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800",
+    "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800",
+    "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800"
+  ],
+  "amenities": [
+    "Free WiFi in all rooms",
+    "Free WiFi in public areas",
+    "24-hour front desk",
+    "24-hour security",
+    "Air conditioning",
+    "Room service",
+    "Daily housekeeping",
+    "Laundry service",
+    "Dry cleaning",
+    "Luggage storage",
+    "Free parking",
+    "On-site parking available",
+    "Valet parking",
+    "Restaurant",
+    "Coffee shop",
+    "Breakfast buffet (surcharge)",
+    "Bar/lounge",
+    "Swimming pool",
+    "Outdoor pool",
+    "Fitness center",
+    "Spa services (surcharge)",
+    "Massage services available",
+    "Business center",
+    "Meeting rooms",
+    "Conference facilities",
+    "Wedding services",
+    "Banquet facilities",
+    "Tour desk",
+    "Ticket service",
+    "Currency exchange",
+    "ATM on site",
+    "Multilingual staff",
+    "Concierge services",
+    "Express check-in",
+    "Express check-out",
+    "Non-smoking rooms",
+    "Soundproofed rooms",
+    "Family rooms",
+    "Connecting rooms available",
+    "Crib/infant bed available (surcharge)",
+    "Extra beds available (surcharge)",
+    "Children's playground",
+    "Game room",
+    "Library",
+    "Garden",
+    "Terrace",
+    "Elevator/lift",
+    "Wheelchair accessible",
+    "Accessible bathroom",
+    "Grab bars in bathroom",
+    "Roll-in shower",
+    "Lowered sink",
+    "Fire extinguishers",
+    "Smoke detectors",
+    "Security alarm",
+    "First aid kit",
+    "CCTV in common areas"
+  ],
+  "accessibility_features": {
+    "bathroom": [
+      "Accessible bathroom with grab bars",
+      "Raised toilet seat",
+      "Roll-under sink",
+      "Shower seat available"
+    ],
+    "shower": [
+      "Roll-in shower with built-in seat on side wall",
+      "Water controls within reach of seat",
+      "Hand-held shower head"
+    ],
+    "entrance": [
+      "Wheelchair accessible entrance",
+      "Stair-free path to entrance (minimum 36 inches wide)",
+      "Elevator access to all floors",
+      "Wide doorways (minimum 32 inches)"
+    ],
+    "sensory": [
+      "Visual fire alarms",
+      "Doorbell visual notifications"
+    ],
+    "visual": [
+      "High-contrast signage",
+      "Braille room numbers"
+    ],
+    "service": [
+      "Service animals welcome",
+      "No additional fees for service animals"
+    ]
+  },
+  "policies": {
+    "checkin": {
+      "begin_time": "12:00 PM",
+      "end_time": "11:59 PM",
+      "minimum_age": 18,
+      "special_instructions": "Guests must present a valid government-issued photo ID and credit card at check-in. Property requires advance notice for late arrivals."
+    },
+    "checkout": {
+      "time": "11:00 AM"
+    },
+    "children": {
+      "policy": "Children of all ages are welcome",
+      "crib_available": true,
+      "crib_fee": "₹500 per stay",
+      "extra_bed_available": true,
+      "extra_bed_fee": "₹800 per person, per night",
+      "max_extra_beds": 1
+    },
+    "pets": {
+      "allowed": false,
+      "policy": "Pets are not allowed",
+      "service_animals": "Service animals are exempt and welcome at no additional charge"
+    },
+    "mandatory_fees": [
+      "Tax: 12% GST on room rate",
+      "Service charge: 10% on food and beverages"
+    ],
+    "optional_fees": [
+      "Airport shuttle: ₹600 per vehicle, one-way",
+      "Breakfast buffet: ₹350 per person",
+      "Early check-in: Subject to availability, ₹500",
+      "Late checkout: Subject to availability, ₹800",
+      "Rollaway bed: ₹800 per night",
+      "Crib: ₹500 per stay"
+    ],
+    "payment": {
+      "accepted_cards": ["Visa", "Mastercard", "American Express", "RuPay"],
+      "cash_accepted": true,
+      "advance_deposit": "First night's accommodation may be required at time of booking"
+    },
+    "parking": {
+      "available": true,
+      "fee": "Free self-parking available on site"
+    },
+    "internet": {
+      "available": true,
+      "fee": "Free WiFi in all rooms and public areas"
+    },
+    "cancellation": {
+      "free_cancellation_until": "24 hours before check-in",
+      "penalty": "One night's room charge for cancellations within 24 hours of arrival or no-shows"
+    },
+    "special_instructions": [
+      "This property requires advance notice for group bookings (5+ rooms)",
+      "ID proof is mandatory for Indian nationals. PAN card will not be accepted as valid ID proof",
+      "Only Indian Nationals are allowed"
+    ]
+  },
+  "rates": [
+    {
+      "room_type": "Deluxe Room",
+      "bed_type": "1 King Bed or 2 Twin Beds",
+      "max_occupancy": 3,
+      "price_per_night": 15717,
+      "currency": "INR",
+      "tax_included": false,
+      "breakfast_included": false,
+      "free_cancellation": true,
+      "payment_type": "Pay at property"
+    },
+    {
+      "room_type": "Executive Suite",
+      "bed_type": "1 King Bed",
+      "max_occupancy": 4,
+      "price_per_night": 22450,
+      "currency": "INR",
+      "tax_included": false,
+      "breakfast_included": true,
+      "free_cancellation": true,
+      "payment_type": "Pay now"
+    }
+  ]
+}

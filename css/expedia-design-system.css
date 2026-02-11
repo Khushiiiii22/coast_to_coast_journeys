@@ -1,0 +1,793 @@
+/**
+ * Expedia Design System Implementation
+ * Typography, Colors, Icons, and Component Styles
+ * Based on Expedia Group Display custom font and Brilliant Blue color system
+ */
+
+/* ============================================
+   ROOT VARIABLES - Expedia Color System
+   ============================================ */
+
+:root {
+    /* Primary Colors */
+    --expedia-brilliant-blue: #1e40af;
+    --expedia-action-blue: #2563eb;
+    --expedia-hover-blue: #1d4ed8;
+    --expedia-aqua-accent: #06b6d4;
+    
+    /* Neutral Colors */
+    --expedia-black: #1f2937;
+    --expedia-dark-gray: #4b5563;
+    --expedia-medium-gray: #6b7280;
+    --expedia-light-gray: #9ca3af;
+    --expedia-border-gray: #e5e7eb;
+    --expedia-bg-gray: #f9fafb;
+    --expedia-white: #ffffff;
+    
+    /* Semantic Colors */
+    --expedia-success: #10b981;
+    --expedia-warning: #f59e0b;
+    --expedia-error: #ef4444;
+    --expedia-info: #3b82f6;
+    
+    /* Typography */
+    --font-primary: 'Outfit', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-secondary: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-2xl: 48px;
+    
+    /* Border Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-full: 9999px;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   TYPOGRAPHY SYSTEM
+   ============================================ */
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-primary);
+    font-weight: 600;
+    color: var(--expedia-black);
+    line-height: 1.4;
+    margin: 0;
+}
+
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1.1rem; }
+h5 { font-size: 1rem; }
+h6 { font-size: 0.95rem; }
+
+body, p, span, div {
+    font-family: var(--font-secondary);
+    color: var(--expedia-dark-gray);
+}
+
+/* ============================================
+   PROPERTY HIGHLIGHTS SECTION (AI-Generated)
+   ============================================ */
+
+.property-highlights-section {
+    background: var(--expedia-white);
+    padding: var(--spacing-2xl) 0;
+    border-bottom: 1px solid var(--expedia-border-gray);
+}
+
+.highlights-header {
+    margin-bottom: var(--spacing-lg);
+}
+
+.highlights-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.5rem;
+    color: var(--expedia-black);
+    font-weight: 600;
+}
+
+.highlights-header h2 i {
+    color: var(--expedia-action-blue);
+    font-size: 1.5rem;
+}
+
+.highlights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.highlight-card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--expedia-bg-gray);
+    border-radius: var(--radius-lg);
+    transition: all 0.3s ease;
+}
+
+.highlight-card:hover {
+    background: white;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.highlight-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--expedia-brilliant-blue);
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+    position: relative;
+}
+
+.highlight-icon i {lg);
+    background: white;
+    border: 1px solid var(--expedia-border-gray);
+    border-radius: var(--radius-lg);
+    transition: all 0.3s ease;
+}
+
+.highlight-card:hover {
+    border-color: var(--expedia-action-blue);
+    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.08);
+    transform: translateY(-2px);
+}
+
+.highlight-icon {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+    border-radius: var(--radius-lg);
+    flex-shrink: 0;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(30, 64, 175, 0.15);
+}
+
+.highlight-icon i {
+    font-size: 1.4rem;
+    color: white
+.about-section h2 {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+}
+
+.about-section h2 i {
+    color: var(--expedia-brilliant-blue);
+}
+
+.about-content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: var(--spacing-xl);
+}
+
+.about-narrative {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--expedia-dark-gray);
+}
+
+.about-narrative p {
+    margin-bottom: var(--spacing-md);
+}
+
+.about-summary {
+    background: white;
+    border: 1px solid var(--expedia-border-gray);
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    height: fit-content;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.about-summary h3 {
+    font-size: 1.125rem;
+    margin-bottom: var(--spacing-md);
+    color: var(--expedia-black);
+    font-weight: 600;
+}
+
+.summary-amenities {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.summary-amenity {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 0.95rem;
+    color: var(--expedia-dark-gray);
+}
+
+.summary-amenity i {
+    color: var(--expedia-action-blue);
+    width: 20px;
+    text-align: center;
+}
+
+/* ============================================
+   AMENITIES SECTION (Categorized)
+   ============================================ */
+
+.amenities-section {
+    padding: var(--spacing-2xl) 0;
+    border-bottom: 1px solid var(--expedia-border-gray);
+}
+
+.amenities-section h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: var(--spacing-xl);
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.about-section h2 i {
+    color: var(--expedia-action-blue);
+    font-size: 1.5rem;
+}
+
+.amenity-category {
+    margin-bottom: var(--spacing-xl);
+}
+
+.amenity-category h3 {md);
+    font-size: 1.125rem;
+    color: var(--expedia-black);
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--expedia-border-gray);
+    font-weight: 600;
+}
+
+.amenity-category h3 i {
+    color: var(--expedia-action-blue);
+    width: 24px;
+    text-align: center;
+    font-size: 1.125rem {
+    color: var(--expedia-brilliant-blue);
+    width: 28px;
+    text-align: center;
+}
+
+.amenity-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-sm);
+    list-style: none;
+    padding: 0;
+}
+
+.amenity-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 8px;
+    font-size: 0.95rem;
+    color: var(--expedia-dark-gray);
+    transition: background 0.2s;
+    line-height: 1.5;
+}
+
+.amenity-list li:hover {
+    background: var(--expedia-bg-gray);
+    border-radius: 6px;
+}
+
+.amenity-list li::before {
+    content: '✓';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: bold;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+}
+
+.amenity-list li.with-fee {
+    color: var(--expedia-medium-gray);
+}
+
+.amenity-fee {
+    margin-left: auto;
+    font-size: 0.85rem;
+    color: var(--expedia-medium-gray);
+    font-style: italic;
+}
+
+.show-more-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    width: 100%;
+    max-width: 400px;
+    margin: var(--spacing-xl) auto 0;
+    padding: 12px var(--spacing-lg);
+    background: white;
+    border: 1px solid var(--expedia-action-blue);
+    color: var(--expedia-action-blue);
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.show-more-btn:hover {
+    background: var(--expedia-action-blue);
+    color: white;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.show-more-btn i {
+    transition: transform 0.3s;
+}
+
+.show-more-btn.expanded i {
+    transform: rotate(180deg);
+}
+
+/* ============================================
+   ACCESSIBILITY SECTION (WCAG 2.1 AA Compliant)
+   ============================================ */
+
+.accessibility-section {
+    padding: var(--spacing-2xl) 0;
+    border-bottom: 1px solid var(--expedia-border-gray);
+}
+
+.accessibility-section h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: var(--spacing-md);
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.accessibility-section h2 i {
+    color: var(--expedia-success);
+    font-size: 1.5rem;
+}
+
+.accessibility-io {
+    font-size: 1.05rem;
+    color: var(--expedia-medium-gray);
+    margin-bottom: var(--spacing-xl);
+    line-height: 1.6;
+}
+
+.accessibility-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--spacing-lg);
+}white;
+    border: 1px solid var(--expedia-border-gray);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    border-left: 3px solid var(--expedia-success);
+    transition: all 0.2s ease;
+}
+
+.accessibility-feature:hover {
+    border-left-width: 4px;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    border-left: 4px solid var(--expedia-success);
+}
+
+.accessibility-feature h4 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    color: var(--expedia-black);
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.accessibility-feature h4 i {
+    color: var(--expedia-success);
+    font-size: 1.3rem;
+}
+
+.accessibility-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.accessibility-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.95rem;
+    color: var(--expedia-dark-gray);
+    line-height: 1.6;
+    padding: 4px 0;
+}
+
+.accessibility-list li::before {
+    content: '✓';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: var(--expedia-success);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    font-weight: bold;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.accessibility-note {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+    padding: var(--spacing-md);
+    background: #fef3c7;
+    border-left: 4px solid var(--expedia-warning);
+    border-radius: var(--radius-md);
+}
+
+.accessibility-note i {
+    color: var(--expedia-warning);
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.accessibility-note p {
+    font-size: 0.95rem;
+    color: var(--expedia-dark-gray);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ============================================
+   AMENITIES MODAL OVERLAY
+   ============================================ */
+
+.amenities-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.amenities-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.amenities-modal-content {
+    background: white;
+    border-radius: var(--radius-xl);
+    max-width: 900px;
+    max-height: 85vh;
+    width: 90%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-xl);
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.amenities-modal.active .amenities-modal-content {
+    transform: scale(1);
+}
+
+.amenities-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--expedia-border-gray);
+}
+
+.amenities-modal-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--expedia-black);
+}
+
+.close-modal-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--expedia-bg-gray);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.close-modal-btn:hover {
+    background: var(--expedia-brilliant-blue);
+    color: white;
+}
+
+.amenities-modal-body {
+    padding: var(--spacing-lg);
+    overflow-y: auto;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN (Mobile-First)
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .about-content-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .about-summary {
+        order: -1;
+    }
+}
+
+@media (max-width: 768px) {
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.75rem; }
+    h3 { font-size: 1.25rem; }
+    
+    .highlights-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .amenity-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .accessibility-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .amenities-modal-content {
+        width: 95%;2xl) 0;
+    border-bottom: 1px solid var(--expedia-border-gray);
+}
+
+.policies-section h2 {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    font-size: 1.625rem;
+    font-weight: 600;
+}
+
+.policies-section h2 i {
+    color: var(--expedia-action-blue);
+    font-size: 1.25rem
+
+.policies-section h2 {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.policies-section h2 i {
+    color: var(--expedia-brilliant-blue);
+}
+
+.policies-intro 
+    font-size: 1.05rem;
+    color: var(--expedia-medium-gray);
+    margin-bottom: var(--spacing-xl);
+    line-height: 1.6;
+}
+
+.policies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.policy-card {
+    background: white;
+    border: 1px solid var(--expedia-border-gray);
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.2s ease;
+    display: flex;
+    gap: 16px;
+}
+
+.policy-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: var(--expedia-action-blue);
+    transform: translateY(-1px);
+}
+
+.policy-icon {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.policy-icon i {
+    font-size: 1.4rem;
+    color: var(--expedia-action-blue);
+}
+
+.policy-content {
+    flex: 1;
+}
+
+.policy-content h4 {
+    font-size: 1.1rem;
+    color: var(--expedia-black);
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.policy-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.policy-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.95rem;
+    color: var(--expedia-dark-gray);
+    line-height: 1.6;
+}
+
+.policy-item strong {
+    color: var(--expedia-black);
+    font-weight: 600;
+}
+
+.policy-item::before {
+    content: '•';
+    color: var(--expedia-action-blue);
+    font-weight: bold;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.policy-highlight {
+    background: #fef3c7;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-left: 3px solid var(--expedia-warning);
+    border-radius: var(--radius-sm);
+    margin-top: var(--spacing-sm);
+    font-size: 0.9rem;
+}
+
+.policy-fee {
+    color: var(--expedia-warning);
+    font-weight: 600;
+}
+
+.policies-loading {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-xl);
+    justify-content: center;
+    color: var(--expedia-medium-gray);
+}
+
+.policies-error {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background: var(--expedia-bg-gray);
+    border-radius: var(--radius-lg);
+    color: var(--expedia-medium-gray);
+}
+
+.policies-error.hidden {
+    display: none;
+}
+
+/* ============================================
+   MICRO-INTERACTIONS & ANIMATIONS
+   ============================================ */
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Smooth hover transitions */
+a, button, .highlight-card, .amenity-list li {
+    transition: all 0.2s ease;
+}
+
+/* Focus states for accessibility */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid var(--expedia-action-blue);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

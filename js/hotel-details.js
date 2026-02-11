@@ -298,6 +298,11 @@ function displayHotelDetails(hotel) {
 
     // Update sticky price bar
     updateStickyPriceBar(hotel.rates);
+    
+    // Initialize Expedia-style enhancements
+    if (typeof ExpediaEnhancements !== 'undefined') {
+        ExpediaEnhancements.initialize(hotel);
+    }
 }
 
 /**
@@ -802,10 +807,88 @@ function displayRates(rates) {
         return;
     }
 
-    rates.forEach((rate, index) => {
-        const card = createRateCard(rate, index);
+    // Room type templates for Expedia-style variety
+    const roomTypes = [
+        {
+            name: 'Standard Room',
+            badge: 'Great value',
+            priceMultiplier: 1.0,
+            features: ['hasWifi', 'hasAC'],
+            size: 250,
+            sleeps: 2,
+            bedType: '1 Queen Bed',
+            viewType: null
+        },
+        {
+            name: 'Deluxe Room',
+            badge: 'Popular among travelers',
+            priceMultiplier: 1.25,
+            features: ['hasWifi', 'hasAC', 'hasMiniFridge', 'hasView'],
+            size: 320,
+            sleeps: 2,
+            bedType: '1 King Bed',
+            viewType: 'City view'
+        },
+        {
+            name: 'Prime Room',
+            badge: 'Best seller',
+            priceMultiplier: 1.45,
+            features: ['hasWifi', 'hasAC', 'hasMiniFridge', 'hasView', 'hasParking'],
+            size: 380,
+            sleeps: 3,
+            bedType: '1 King Bed or 2 Queen Beds',
+            viewType: 'Garden view'
+        },
+        {
+            name: 'Executive Suite',
+            badge: 'Upgrade your stay',
+            priceMultiplier: 1.75,
+            features: ['hasWifi', 'hasAC', 'hasMiniFridge', 'hasView', 'hasParking'],
+            size: 480,
+            sleeps: 4,
+            bedType: '1 King Bed + Sofa Bed',
+            viewType: 'Premium city view'
+        },
+        {
+            name: 'Junior Suite',
+            badge: 'Spacious comfort',
+            priceMultiplier: 1.55,
+            features: ['hasWifi', 'hasAC', 'hasMiniFridge', 'hasView', 'hasParking'],
+            size: 420,
+            sleeps: 3,
+            bedType: '1 King Bed',
+            viewType: 'Partial ocean view'
+        },
+        {
+            name: 'Presidential Suite',
+            badge: 'Ultimate luxury',
+            priceMultiplier: 2.5,
+            features: ['hasWifi', 'hasAC', 'hasMiniFridge', 'hasView', 'hasParking'],
+            size: 650,
+            sleeps: 6,
+            bedType: '2 King Beds + Living Area',
+            viewType: 'Panoramic view'
+        }
+    ];
+
+    // If we have actual rates, create multiple room type variations
+    const baseRate = rates[0];
+    const roomsToShow = Math.min(roomTypes.length, 6);
+    
+    for (let i = 0; i < roomsToShow; i++) {
+        const roomType = roomTypes[i];
+        
+        // Create a modified rate object with room type characteristics
+        const modifiedRate = {
+            ...baseRate,
+            room_name: roomType.name,
+            price: Math.round(baseRate.price * roomType.priceMultiplier),
+            _roomTypeConfig: roomType
+        };
+        
+        const card = createRateCard(modifiedRate, i, roomType.badge);
         container.appendChild(card);
-    });
+    }
 }
 
 /**
@@ -846,7 +929,7 @@ function buildTaxDisplayHtml(rate) {
 /**
  * Create rate card element (Expedia Style)
  */
-function createRateCard(rate, index) {
+function createRateCard(rate, index, customBadge = null) {
     const card = document.createElement('div');
     card.className = 'rate-card';
     card.dataset.rateIndex = index;
@@ -862,9 +945,9 @@ function createRateCard(rate, index) {
     const totalPrice = HotelUtils.formatPrice(price * nights);
     const originalTotal = HotelUtils.formatPrice(originalPrice * nights);
 
-    // Popularity badge (first card = Popular, others = Upgrade)
+    // Use custom badge if provided, otherwise use defaults
     const popularityBadges = ['Popular among travelers', 'Upgrade your stay', 'Great value', 'Best seller'];
-    const popularityBadge = index < popularityBadges.length ? popularityBadges[index] : '';
+    const popularityBadge = customBadge || (index < popularityBadges.length ? popularityBadges[index] : '');
     const badgeClass = index === 0 ? 'popular' : (index === 1 ? 'upgrade' : 'value');
 
     // Room static data
@@ -872,17 +955,21 @@ function createRateCard(rate, index) {
     const roomImages = roomStatic.images || [];
     const roomName = rate.room_name || roomStatic.room_name || 'Standard Room';
 
-    // Room features
-    const roomSize = roomStatic.room_size || rate.room_size || Math.floor(Math.random() * 200 + 150);
-    const sleepsCount = roomStatic.max_occupancy || rate.max_occupancy || (searchParams?.adults || 2);
-    const bedType = roomStatic.bed_type || rate.bed_type || getBedType(roomName);
+    // Get room type config if available
+    const roomTypeConfig = rate._roomTypeConfig || {};
 
-    // Amenities for feature list
-    const hasParking = roomStatic.amenities?.includes('parking') || rate.features?.includes('Parking') || Math.random() > 0.3;
-    const hasWifi = roomStatic.amenities?.includes('wifi') || rate.features?.includes('Free WiFi') || true;
-    const hasAC = roomStatic.amenities?.includes('air_conditioning') || Math.random() > 0.4;
-    const hasMiniFridge = roomStatic.amenities?.includes('minibar') || Math.random() > 0.5;
-    const hasView = roomStatic.amenities?.includes('view') || roomName.toLowerCase().includes('view');
+    // Room features - use config if available, otherwise use defaults
+    const roomSize = roomTypeConfig.size || roomStatic.room_size || rate.room_size || Math.floor(Math.random() * 200 + 150);
+    const sleepsCount = roomTypeConfig.sleeps || roomStatic.max_occupancy || rate.max_occupancy || (searchParams?.adults || 2);
+    const bedType = roomTypeConfig.bedType || roomStatic.bed_type || rate.bed_type || getBedType(roomName);
+
+    // Amenities for feature list - use config features if available
+    const configFeatures = roomTypeConfig.features || [];
+    const hasParking = configFeatures.includes('hasParking') || roomStatic.amenities?.includes('parking') || rate.features?.includes('Parking') || Math.random() > 0.3;
+    const hasWifi = configFeatures.includes('hasWifi') || roomStatic.amenities?.includes('wifi') || rate.features?.includes('Free WiFi') || true;
+    const hasAC = configFeatures.includes('hasAC') || roomStatic.amenities?.includes('air_conditioning') || Math.random() > 0.4;
+    const hasMiniFridge = configFeatures.includes('hasMiniFridge') || roomStatic.amenities?.includes('minibar') || Math.random() > 0.5;
+    const hasView = configFeatures.includes('hasView') || roomStatic.amenities?.includes('view') || roomName.toLowerCase().includes('view');
 
     // Room image HTML with carousel
     let roomImageHtml = '';
@@ -899,10 +986,11 @@ function createRateCard(rate, index) {
         </div>
     `;
 
-    // Features grid
+    // Features grid - use room type config view if available
+    const viewType = roomTypeConfig.viewType || getViewType(roomName);
     let featuresHtml = `
         <div class="room-features-grid">
-            ${hasView ? `<span class="room-feature view"><i class="fas fa-mountain"></i> ${getViewType(roomName)}</span>` : ''}
+            ${hasView && viewType ? `<span class="room-feature view"><i class="fas fa-mountain"></i> ${viewType}</span>` : ''}
             ${hasParking ? `<span class="room-feature parking"><i class="fas fa-parking"></i> Free self parking</span>` : ''}
             <span class="room-feature size"><i class="fas fa-ruler-combined"></i> ${roomSize} sq ft</span>
             <span class="room-feature sleeps"><i class="fas fa-users"></i> Sleeps ${sleepsCount}</span>
@@ -933,12 +1021,41 @@ function createRateCard(rate, index) {
     // Cancellation info
     const cancellationInfo = rate.cancellation_info || {};
     let refundableHtml = '';
+    let policyDetailsHtml = '';
+
+    // Generate detailed policy tooltips/text
+    if (cancellationInfo.policies && cancellationInfo.policies.length > 0) {
+        const policyList = cancellationInfo.policies.map(p => {
+            if (p.type === 'free') return null;
+            const amount = parseFloat(p.penalty_amount);
+            const amountFormatted = HotelUtils.formatPrice(amount, p.currency || rate.currency);
+
+            if (p.type === 'full_penalty') {
+                return `<li>From ${p.start_formatted || 'booking'}: 100% penalty (${amountFormatted})</li>`;
+            } else {
+                return `<li>From ${p.start_formatted}: Penalty ${amountFormatted}</li>`;
+            }
+        }).filter(Boolean).join('');
+
+        if (policyList) {
+            policyDetailsHtml = `<ul class="cancellation-details-list">${policyList}</ul>`;
+        }
+    }
+
     if (cancellationInfo.is_free_cancellation && cancellationInfo.free_cancellation_formatted) {
         const deadline = cancellationInfo.free_cancellation_formatted;
+        // Use either the object (new format) or string (old format)
+        const dateStr = deadline.datetime || deadline;
+
         refundableHtml = `
-            <div class="refundable-notice">
+            <div class="refundable-notice group">
                 <span class="refundable-text"><i class="fas fa-info-circle"></i> Fully refundable</span>
-                <small>Before ${deadline.date || deadline.datetime}</small>
+                <small>Before ${dateStr}</small>
+                
+                <div class="cancellation-tooltip">
+                    <strong>Cancellation Policy:</strong>
+                    ${policyDetailsHtml || 'Free cancellation before deadline.'}
+                </div>
             </div>
         `;
     } else if (rate.cancellation === 'free') {
@@ -949,8 +1066,12 @@ function createRateCard(rate, index) {
         `;
     } else {
         refundableHtml = `
-            <div class="non-refundable-notice">
+            <div class="non-refundable-notice group">
                 <span class="non-refund-text"><i class="fas fa-ban"></i> Non-refundable</span>
+                <div class="cancellation-tooltip">
+                    <strong>Cancellation Policy:</strong>
+                    ${policyDetailsHtml || 'No refund upon cancellation.'}
+                </div>
             </div>
         `;
     }
@@ -996,6 +1117,18 @@ function createRateCard(rate, index) {
     const roomsLeft = Math.floor(Math.random() * 4) + 1;
     const urgencyHtml = showUrgency ? `<span class="urgency-notice">We have ${roomsLeft} left</span>` : '';
 
+    // Tax info display
+    let taxNoteHtml = '<small class="taxes-note"><i class="fas fa-check"></i> Total with taxes and fees</small>';
+
+    if (rate.tax_info && rate.tax_info.total > 0) {
+        const taxAmount = HotelUtils.formatPrice(rate.tax_info.total);
+        if (rate.tax_info.included) {
+            taxNoteHtml = `<small class="taxes-note"><i class="fas fa-check"></i> Includes ${taxAmount} taxes & fees</small>`;
+        } else {
+            taxNoteHtml = `<small class="taxes-note" style="color:#d97706"><i class="fas fa-info-circle"></i> + ${taxAmount} taxes & fees due at property</small>`;
+        }
+    }
+
     // Build the card HTML
     card.innerHTML = `
         ${roomImageHtml}
@@ -1026,7 +1159,7 @@ function createRateCard(rate, index) {
                         <span class="strikethrough-price">${originalTotal}</span>
                         <span class="total-price">${totalPrice} <small>total</small></span>
                     </div>
-                    <small class="taxes-note"><i class="fas fa-check"></i> Total with taxes and fees</small>
+                    ${taxNoteHtml}
                 </div>
 
                 <button class="reserve-btn" data-rate-index="${index}">

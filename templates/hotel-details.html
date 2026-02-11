@@ -21,6 +21,9 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/hotel-booking.css">
     <link rel="stylesheet" href="../css/hotel-details-expedia.css">
+    <link rel="stylesheet" href="../css/expedia-design-system.css">
+    <link rel="stylesheet" href="../css/expedia-enhancements.css">
+    <link rel="stylesheet" href="../css/expedia-polish.css">
 </head>
 
 <body class="hotel-details-page">
@@ -210,17 +213,154 @@
                     </div>
                 </section>
 
-                <!-- About Section -->
-                <section class="about-section hidden" id="aboutSection">
-                    <h2><i class="fas fa-info-circle"></i> About this property</h2>
-                    <div class="about-content" id="aboutContent">
-                        <!-- About content will be inserted here -->
+                <!-- Property Highlights Section -->
+                <section class="property-highlights-section" id="propertyHighlights">
+                    <div class="highlights-header">
+                        <h2><i class="fas fa-star"></i> Property Highlights</h2>
+                    </div>
+                    <div class="highlights-grid" id="highlightsGrid">
+                        <!-- Dynamic highlights will be inserted here -->
                     </div>
                 </section>
 
-                <!-- Policies Section (Expedia Style) -->
+                <!-- About Section -->
+                <section class="about-section" id="aboutSection">
+                    <h2><i class="fas fa-info-circle"></i> About this property</h2>
+                    <div class="about-content-grid">
+                        <div class="about-narrative" id="aboutNarrative">
+                            <!-- Narrative description will be inserted here -->
+                        </div>
+                        <div class="about-summary" id="aboutSummary">
+                            <h3>Popular Amenities</h3>
+                            <div class="summary-amenities" id="summaryAmenities">
+                                <!-- Quick amenity summary -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Amenities Section (Categorized Expedia Style) -->
+                <section class="amenities-section" id="amenitiesSection">
+                    <h2><i class="fas fa-concierge-bell"></i> Amenities</h2>
+                    
+                    <!-- Internet & Connectivity -->
+                    <div class="amenity-category">
+                        <h3><i class="fas fa-wifi"></i> Internet & Connectivity</h3>
+                        <ul class="amenity-list" id="amenitiesInternet">
+                            <!-- Will be populated dynamically -->
+                        </ul>
+                    </div>
+
+                    <!-- Parking & Transportation -->
+                    <div class="amenity-category">
+                        <h3><i class="fas fa-parking"></i> Parking & Transportation</h3>
+                        <ul class="amenity-list" id="amenitiesParking">
+                            <!-- Will be populated dynamically -->
+                        </ul>
+                    </div>
+
+                    <!-- Food & Drink -->
+                    <div class="amenity-category">
+                        <h3><i class="fas fa-utensils"></i> Food & Drink</h3>
+                        <ul class="amenity-list" id="amenitiesFood">
+                            <!-- Will be populated dynamically -->
+                        </ul>
+                    </div>
+
+                    <!-- Things to Do -->
+                    <div class="amenity-category">
+                        <h3><i class="fas fa-swimming-pool"></i> Things to Do</h3>
+                        <ul class="amenity-list" id="amenitiesActivities">
+                            <!-- Will be populated dynamically -->
+                        </ul>
+                    </div>
+
+                    <!-- Family Friendly -->
+                    <div class="amenity-category">
+                        <h3><i class="fas fa-child"></i> Family Friendly</h3>
+                        <ul class="amenity-list" id="amenitiesFamily">
+                            <!-- Will be populated dynamically -->
+                        </ul>
+                    </div>
+
+                    <!-- Guest Services -->
+                    <div class="amenity-category">
+                        <h3><i class="fas fa-concierge"></i> Guest Services</h3>
+                        <ul class="amenity-list" id="amenitiesServices">
+                            <!-- Will be populated dynamically -->
+                        </ul>
+                    </div>
+
+                    <button class="show-more-btn" id="showMoreAmenities">
+                        <i class="fas fa-chevron-down"></i> Show all amenities
+                    </button>
+                </section>
+
+                <!-- Accessibility Section (WCAG 2.1 AA Compliant) -->
+                <section class="accessibility-section" id="accessibilitySection">
+                    <h2><i class="fas fa-universal-access"></i> Accessibility</h2>
+                    <p class="accessibility-intro">This property is committed to ensuring accessible accommodations for guests with disabilities.</p>
+                    
+                    <div class="accessibility-grid">
+                        <!-- Accessible Bathroom -->
+                        <div class="accessibility-feature">
+                            <h4><i class="fas fa-bath"></i> Accessible Bathroom</h4>
+                            <ul class="accessibility-list" id="accessibleBathroom">
+                                <!-- Will be populated dynamically -->
+                            </ul>
+                        </div>
+
+                        <!-- Roll-in Shower -->
+                        <div class="accessibility-feature">
+                            <h4><i class="fas fa-shower"></i> Roll-in Shower</h4>
+                            <ul class="accessibility-list" id="rollInShower">
+                                <!-- Will be populated dynamically -->
+                            </ul>
+                        </div>
+
+                        <!-- Entrance & Paths -->
+                        <div class="accessibility-feature">
+                            <h4><i class="fas fa-door-open"></i> Entrance & Pathways</h4>
+                            <ul class="accessibility-list" id="accessibleEntrance">
+                                <!-- Will be populated dynamically -->
+                            </ul>
+                        </div>
+
+                        <!-- Sensory Equipment -->
+                        <div class="accessibility-feature">
+                            <h4><i class="fas fa-assistive-listening-systems"></i> Sensory Equipment</h4>
+                            <ul class="accessibility-list" id="sensoryEquipment">
+                                <!-- Will be populated dynamically -->
+                            </ul>
+                        </div>
+
+                        <!-- Visual Aids -->
+                        <div class="accessibility-feature">
+                            <h4><i class="fas fa-eye"></i> Visual Aids</h4>
+                            <ul class="accessibility-list" id="visualAids">
+                                <!-- Will be populated dynamically -->
+                            </ul>
+                        </div>
+
+                        <!-- Service Animals -->
+                        <div class="accessibility-feature">
+                            <h4><i class="fas fa-dog"></i> Service Animals</h4>
+                            <ul class="accessibility-list" id="serviceAnimals">
+                                <!-- Will be populated dynamically -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="accessibility-note">
+                        <i class="fas fa-info-circle"></i>
+                        <p>For specific accessibility requirements or to request accommodations, please contact the property directly.</p>
+                    </div>
+                </section>
+
+                <!-- Policies Section (Expedia Style Enhanced) -->
                 <section class="policies-section" id="policiesSection">
                     <h2><i class="fas fa-clipboard-list"></i> Policies</h2>
+                    <p class="policies-intro">Please review the property's policies before making your reservation</p>
 
                     <div class="policies-grid">
                         <!-- Check-in/Check-out -->
@@ -240,7 +380,7 @@
                                 <i class="fas fa-child"></i>
                             </div>
                             <div class="policy-content">
-                                <h4>Children & extra beds</h4>
+                                <h4>Children & Extra Beds</h4>
                                 <div class="policy-items"></div>
                             </div>
                         </div>
@@ -256,13 +396,35 @@
                             </div>
                         </div>
 
+                        <!-- Mandatory Fees -->
+                        <div class="policy-card" id="policyMandatoryFees">
+                            <div class="policy-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="policy-content">
+                                <h4>Mandatory Fees</h4>
+                                <div class="policy-items"></div>
+                            </div>
+                        </div>
+
+                        <!-- Optional Fees -->
+                        <div class="policy-card" id="policyOptionalFees">
+                            <div class="policy-icon">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div class="policy-content">
+                                <h4>Optional Charges</h4>
+                                <div class="policy-items"></div>
+                            </div>
+                        </div>
+
                         <!-- Payment -->
                         <div class="policy-card" id="policyPayments">
                             <div class="policy-icon">
                                 <i class="fas fa-credit-card"></i>
                             </div>
                             <div class="policy-content">
-                                <h4>Payment options</h4>
+                                <h4>Payment Options</h4>
                                 <div class="policy-items"></div>
                             </div>
                         </div>
@@ -311,13 +473,24 @@
                             </div>
                         </div>
 
-                        <!-- Other -->
-                        <div class="policy-card" id="policyOther">
+                        <!-- Special Instructions -->
+                        <div class="policy-card" id="policySpecial">
                             <div class="policy-icon">
                                 <i class="fas fa-info-circle"></i>
                             </div>
                             <div class="policy-content">
-                                <h4>Other information</h4>
+                                <h4>Special Instructions</h4>
+                                <div class="policy-items"></div>
+                            </div>
+                        </div>
+
+                        <!-- Other -->
+                        <div class="policy-card" id="policyOther">
+                            <div class="policy-icon">
+                                <i class="fas fa-list-check"></i>
+                            </div>
+                            <div class="policy-content">
+                                <h4>Other Policies</h4>
                                 <div class="policy-items"></div>
                             </div>
                         </div>
@@ -416,6 +589,7 @@
     <script src="../js/auth-guard.js"></script>
 
     <script src="../js/hotel-api.js"></script>
+    <script src="../js/expedia-hotel-enhancements.js"></script>
     <script src="../js/hotel-details.js"></script>
 </body>
 

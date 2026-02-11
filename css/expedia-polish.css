@@ -1,0 +1,268 @@
+/**
+ * Final Polish and Alignment Fixes
+ * Ensures perfect typography, icon sizing, and seamless design
+ */
+
+/* Better section spacing */
+.property-highlights-section,
+.about-section,
+.amenities-section,
+.accessibility-section,
+.policies-section {
+    padding: 48px 0;
+}
+
+/* Perfect header alignment across all sections */
+.highlights-header h2,
+.about-section h2,
+.amenities-section h2,
+.accessibility-section h2,
+.policies-section h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--expedia-black);
+    margin-bottom: 32px;
+}
+
+.highlights-header h2 i,
+.about-section h2 i,
+.amenities-section h2 i,
+.accessibility-section h2 i,
+.policies-section h2 i {
+    font-size: 1.5rem;
+}
+
+/* Room Type Cards - Premium Styling */
+.rate-card:nth-child(4), /* Executive Suite */
+.rate-card:nth-child(5), /* Junior Suite */
+.rate-card:nth-child(6) { /* Presidential Suite */
+    border: 2px solid var(--expedia-action-blue);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+.rate-card:nth-child(6) { /* Presidential Suite - Special */
+    border-color: #d97706;
+    background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
+    box-shadow: 0 6px 16px rgba(217, 119, 6, 0.2);
+}
+
+.room-popularity-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(30, 64, 175, 0.95);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.room-popularity-badge.upgrade {
+    background: rgba(37, 99, 235, 0.95);
+}
+
+.room-popularity-badge.value {
+    background: rgba(22, 163, 74, 0.95);
+}
+
+/* Highlight cards - perfect alignment */
+.highlight-card {
+    display: flex;
+    align-items: center !important;
+    gap: 16px;
+    padding: 20px;
+}
+
+.highlight-icon {
+    width: 56px !important;
+    height: 56px !important;
+    min-width: 56px;
+    border-radius: 12px;
+}
+
+.highlight-icon i {
+    font-size: 1.5rem !important;
+}
+
+.highlight-content {
+    flex: 1;
+}
+
+.highlight-content h4 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    line-height: 1.3;
+}
+
+.highlight-content p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Amenity category headers - consistent sizing */
+.amenity-category h3 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.amenity-category h3 i {
+    font-size: 1.3rem !important;
+    width: 24px;
+    text-align: center;
+}
+
+/* Amenity list items - perfect vertical alignment */
+.amenity-list li {
+    display: flex;
+    align-items: center !important;
+    gap: 10px;
+    padding: 10px 8px;
+    line-height: 1.5;
+}
+
+.amenity-list li::before {
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px;
+    font-size: 0.75rem;
+    margin-top: 0;
+}
+
+/* Summary amenities alignment */
+.summary-amenity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.summary-amenity i {
+    font-size: 1.1rem !important;
+    width: 20px;
+}
+
+/* Accessibility cards */
+.accessibility-feature h4 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.accessibility-feature h4 i {
+    font-size: 1.3rem !important;
+}
+
+.accessibility-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 4px 0;
+    line-height: 1.6;
+}
+
+.accessibility-list li::before {
+    margin-top: 3px;
+}
+
+/* Policy cards - perfect alignment */
+.policy-card {
+    display: flex;
+    gap: 16px;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.policy-icon {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px;
+    border-radius: 10px;
+}
+
+.policy-icon i {
+    font-size: 1.4rem !important;
+}
+
+.policy-content h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.policy-items {
+    gap: 8px;
+}
+
+.policy-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.6;
+}
+
+.policy-item::before {
+    margin-top: 4px;
+}
+
+/* Show more button centering */
+.show-more-btn {
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 12px 24px;
+    font-size: 0.95rem;
+}
+
+/* About section summary */
+.about-summary h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+/* Mobile improvements */
+@media (max-width: 768px) {
+    .highlights-header h2,
+    .about-section h2,
+    .amenities-section h2,
+    .accessibility-section h2,
+    .policies-section h2 {
+        font-size: 1.375rem;
+    }
+    
+    .highlight-icon {
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px;
+    }
+    
+    .highlight-icon i {
+        font-size: 1.3rem !important;
+    }
+    
+    .policy-icon {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px;
+    }
+    
+    .policy-icon i {
+        font-size: 1.25rem !important;
+    }
+}

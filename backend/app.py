@@ -176,6 +176,47 @@ def create_app():
             'version': '1.0.0'
         })
     
+    # Static IP Test Endpoint - IMPORTANT for RateHawk Production
+    @app.route('/api/test/static-ip', methods=['GET'])
+    def test_static_ip():
+        """Test endpoint to verify static IP configuration for RateHawk whitelisting"""
+        import requests
+        
+        result = {
+            'proxy_configured': Config.PROXY_URL is not None,
+            'proxy_url_set': bool(Config.PROXY_URL)
+        }
+        
+        try:
+            # Test without proxy
+            response_no_proxy = requests.get('https://api.ipify.org?format=json', timeout=10)
+            result['ip_without_proxy'] = response_no_proxy.json().get('ip')
+        except Exception as e:
+            result['ip_without_proxy'] = f"Error: {str(e)}"
+        
+        # Test with proxy if configured
+        if Config.PROXY_URL:
+            try:
+                proxies = {
+                    'http': Config.PROXY_URL,
+                    'https': Config.PROXY_URL
+                }
+                response_with_proxy = requests.get('https://api.ipify.org?format=json', 
+                                                   proxies=proxies, timeout=10)
+                result['ip_with_proxy'] = response_with_proxy.json().get('ip')
+                result['static_ip_working'] = True
+                result['message'] = f'✅ Static IP configured: {result["ip_with_proxy"]}'
+                result['instructions'] = 'Send this IP to RateHawk for production whitelisting'
+            except Exception as e:
+                result['ip_with_proxy'] = f"Error: {str(e)}"
+                result['static_ip_working'] = False
+                result['message'] = 'Proxy configured but not working'
+        else:
+            result['message'] = '⚠️ No proxy configured. Add QUOTAGUARDSTATIC_URL to Render environment variables.'
+            result['instructions'] = 'See docs/RENDER_STATIC_IP_SETUP.md for setup guide'
+        
+        return jsonify(result)
+    
     # API info endpoint
     @app.route('/api', methods=['GET'])
     def api_info():
