@@ -309,6 +309,18 @@ function displayHotelDetails(hotel) {
  * Display photo gallery grid (Expedia Style)
  */
 function displayPhotoGallery(images) {
+    // Ensure we always have images
+    if (!images || images.length === 0) {
+        images = [
+            'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80',
+            'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80',
+            'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80',
+            'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&q=80',
+            'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80'
+        ];
+        hotelImages = images;
+    }
+    
     const mainImage = document.getElementById('galleryMainImage');
     const sideImages = [
         document.getElementById('sideImage1'),
@@ -317,15 +329,36 @@ function displayPhotoGallery(images) {
         document.getElementById('sideImage4')
     ];
 
-    // Main image
-    if (images[0]) {
-        mainImage.style.backgroundImage = `url('${images[0]}')`;
+    // Main image with error handling
+    if (images[0] && mainImage) {
+        const img = new Image();
+        img.onload = () => {
+            mainImage.style.backgroundImage = `url('${images[0]}')`;
+        };
+        img.onerror = () => {
+            mainImage.style.backgroundImage = `url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80')`;
+        };
+        img.src = images[0];
     }
 
-    // Side images
+    // Side images with error handling
     for (let i = 0; i < 4; i++) {
-        if (images[i + 1] && sideImages[i]) {
-            sideImages[i].style.backgroundImage = `url('${images[i + 1]}')`;
+        if (sideImages[i]) {
+            const imgUrl = images[i + 1] || images[0]; // Fallback to first image
+            const img = new Image();
+            img.onload = () => {
+                sideImages[i].style.backgroundImage = `url('${imgUrl}')`;
+            };
+            img.onerror = () => {
+                const fallbackImages = [
+                    'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80',
+                    'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80',
+                    'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&q=80',
+                    'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80'
+                ];
+                sideImages[i].style.backgroundImage = `url('${fallbackImages[i]}')`;
+            };
+            img.src = imgUrl;
         }
     }
 
@@ -693,11 +726,40 @@ async function fetchGooglePlacePhotos(hotelId) {
 
             console.log(`✅ Loaded ${hotelImages.length} photos from Google Places`);
         } else {
-            console.log('No additional photos from Google Places');
+            console.log('No additional photos from Google Places, using fallback images');
+            // Use high-quality fallback images if API fails
+            useFallbackHotelImages();
         }
     } catch (error) {
         console.log('Could not fetch Google Places photos:', error);
-        // Keep existing images, no need to show error
+        // Use fallback images on error
+        useFallbackHotelImages();
+    }
+}
+
+/**
+ * Use high-quality fallback images when API fails
+ */
+function useFallbackHotelImages() {
+    const fallbackImages = [
+        'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80', // Hotel exterior
+        'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80', // Luxury room
+        'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80', // Hotel lobby
+        'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&q=80', // Modern room
+        'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80', // Hotel pool
+        'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80', // Bathroom
+        'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&q=80', // Suite
+        'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80'  // Restaurant
+    ];
+    
+    // Only update if current images are empty or placeholder
+    if (!hotelImages || hotelImages.length === 0 || hotelImages[0].includes('placeholder')) {
+        hotelImages = fallbackImages;
+        if (currentHotel) {
+            currentHotel.images = hotelImages;
+        }
+        displayPhotoGallery(hotelImages);
+        console.log('✅ Using fallback hotel images');
     }
 }
 
@@ -971,10 +1033,21 @@ function createRateCard(rate, index, customBadge = null) {
     const hasMiniFridge = configFeatures.includes('hasMiniFridge') || roomStatic.amenities?.includes('minibar') || Math.random() > 0.5;
     const hasView = configFeatures.includes('hasView') || roomStatic.amenities?.includes('view') || roomName.toLowerCase().includes('view');
 
-    // Room image HTML with carousel
+    // Room image HTML with carousel - with proper fallback images
     let roomImageHtml = '';
+    
+    // Room type specific images
+    const roomTypeImages = [
+        'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800', // Standard - clean room
+        'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800', // Deluxe - modern room
+        'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800', // Prime - luxury room
+        'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800', // Executive Suite
+        'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800', // Junior Suite
+        'https://images.unsplash.com/photo-1591088398332-8a7791972843?w=800'  // Presidential Suite
+    ];
+    
     const imageCount = roomImages.length || Math.floor(Math.random() * 10 + 5);
-    const mainImage = roomImages[0] || `https://images.unsplash.com/photo-${1566073771259 + index}-6a8506099945?w=600`;
+    const mainImage = roomImages[0] || roomTypeImages[index % roomTypeImages.length];
 
     roomImageHtml = `
         <div class="room-image-carousel" data-index="0" data-images='${JSON.stringify(roomImages.slice(0, 5))}'>

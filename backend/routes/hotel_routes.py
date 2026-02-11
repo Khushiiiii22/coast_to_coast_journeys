@@ -1096,11 +1096,11 @@ def get_google_place_photos(place_id):
         try:
             raw_result = google_maps_service.client.place(
                 place_id=place_id,
-                fields=['photos', 'name']
+                fields=['photo', 'name']
             )
             
             photos = []
-            photo_data = raw_result.get('result', {}).get('photos', [])
+            photo_data = raw_result.get('result', {}).get('photo', [])
             
             print(f"📸 Found {len(photo_data)} photos from Google Places")
             
