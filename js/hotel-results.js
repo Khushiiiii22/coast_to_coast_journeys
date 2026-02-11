@@ -288,16 +288,35 @@ function generateDemoHotels(destination, count) {
  * Render hotels list (Expedia-style horizontal cards)
  */
 function renderHotels(hotels, append = false) {
+    console.log(`🏨 renderHotels called with ${hotels.length} hotels, append: ${append}`);
     const list = document.getElementById('hotelsList');
+
+    if (!list) {
+        console.error('❌ hotelsList element not found!');
+        return;
+    }
 
     if (!append) {
         list.innerHTML = '';
     }
 
-    hotels.forEach(hotel => {
-        const card = createHotelCardHorizontal(hotel);
-        list.appendChild(card);
+    if (hotels.length === 0) {
+        console.warn('⚠️ No hotels to render');
+        list.innerHTML = '<div class="no-hotels-message">No hotels found. Try a different search.</div>';
+        return;
+    }
+
+    hotels.forEach((hotel, index) => {
+        console.log(`🏨 Creating card ${index + 1}/${hotels.length}: ${hotel.name}`);
+        try {
+            const card = createHotelCardHorizontal(hotel);
+            list.appendChild(card);
+        } catch (error) {
+            console.error(`❌ Error creating card for hotel ${hotel.name}:`, error);
+        }
     });
+
+    console.log(`✅ Rendered ${list.children.length} hotel cards`);
 
     // Initialize all carousels
     initCarousels();
@@ -311,7 +330,18 @@ function createHotelCardHorizontal(hotel) {
     card.className = 'hotel-card-horizontal';
     card.dataset.hotelId = hotel.id;
 
-    const images = hotel.images || [hotel.image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800'];
+    // Ensure we have valid image data with fallbacks
+    const fallbackImage = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80';
+    let images = [];
+    
+    if (hotel.images && Array.isArray(hotel.images) && hotel.images.length > 0) {
+        images = hotel.images;
+    } else if (hotel.image) {
+        images = [hotel.image];
+    } else {
+        images = [fallbackImage];
+    }
+
     const price = HotelUtils.formatPrice(hotel.price || hotel.rates?.[0]?.price || 0, hotel.currency);
     const originalPrice = hotel.original_price ? HotelUtils.formatPrice(hotel.original_price, hotel.currency) : null;
     const nights = getSearchNights();
