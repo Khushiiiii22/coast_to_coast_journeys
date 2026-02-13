@@ -232,18 +232,74 @@ class ETGApiService:
 
     def get_hotels_static(self, hotel_ids: List[str], language: str = "en") -> dict:
         """
-        Batch retrieve hotel static data for multiple IDs
+        Fetch hotel static data for multiple IDs
         Used to enrich search results with names/images
-        POST /hotel/info/
+        
+        RateHawk /hotel/info/ takes a single 'id' per request.
+        We iterate over hotel IDs and collect results.
         """
-        data = {
-            "ids": hotel_ids,
-            "language": language
+        all_hotel_data = {}
+        
+        for hotel_id in hotel_ids:
+            try:
+                data = {
+                    "id": hotel_id,
+                    "language": language
+                }
+                result = self._make_request("/hotel/info/", data, timeout=10)
+                
+                if result.get('success') and result.get('data'):
+                    response_data = result['data']
+                    # RateHawk wraps response in 'data' key
+                    hotel_info = response_data.get('data', response_data)
+                    
+                    if isinstance(hotel_info, dict):
+                        # Extract images from images_ext (modern) or images (deprecated)
+                        images = []
+                        
+                        # Prefer images_ext (categorized images - modern field)
+                        images_ext = hotel_info.get('images_ext', {})
+                        if images_ext and isinstance(images_ext, dict):
+                            # images_ext is a dict with categories: exterior, guest_rooms, lobby, pool, etc.
+                            for category, img_list in images_ext.items():
+                                if isinstance(img_list, list):
+                                    for img in img_list:
+                                        if isinstance(img, str) and img:
+                                            images.append(img)
+                                        elif isinstance(img, dict) and img.get('url'):
+                                            images.append(img['url'])
+                        
+                        # Fallback to deprecated images field
+                        if not images:
+                            raw_images = hotel_info.get('images', [])
+                            if isinstance(raw_images, list):
+                                for img in raw_images:
+                                    if isinstance(img, str) and img:
+                                        images.append(img)
+                                    elif isinstance(img, dict) and img.get('url'):
+                                        images.append(img['url'])
+                        
+                        # Store hotel info with extracted images
+                        hotel_info['images'] = images
+                        hotel_info['id'] = hotel_id
+                        all_hotel_data[hotel_id] = hotel_info
+                        
+                        if images:
+                            print(f"📸 Got {len(images)} images for hotel {hotel_id}")
+                        else:
+                            print(f"⚠️ No images found for hotel {hotel_id}")
+                            
+            except Exception as e:
+                print(f"⚠️ Failed to fetch static data for hotel {hotel_id}: {e}")
+                continue
+        
+        # Return in a format compatible with the existing code
+        return {
+            'success': True,
+            'data': {
+                'data': all_hotel_data  # Dict keyed by hotel_id
+            }
         }
-        # Assuming the batch endpoint is /hotel/info/ as per standard RateHawk V3 patterns for lists
-        # If specific endpoint differs, this may need adjustment. Using content/ as fallback pattern if needed.
-        # But for RateHawk V3, /hotel/info/ is often used for bulk details.
-        return self._make_request("/hotel/info/", data)
     
     # ==========================================
     # SEARCH ENDPOINTS (9-14)

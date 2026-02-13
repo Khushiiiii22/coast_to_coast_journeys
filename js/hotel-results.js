@@ -330,10 +330,19 @@ function createHotelCardHorizontal(hotel) {
     card.className = 'hotel-card-horizontal';
     card.dataset.hotelId = hotel.id;
 
+    // Build location string with city and country
+    const searchParams = SearchSession.getSearchParams();
+    const searchedDestination = searchParams?.destination || '';
+    let locationDisplay = hotel.address || searchedDestination || 'Location available';
+    // If the address doesn't already contain the destination context (city, country), append it
+    if (searchedDestination && locationDisplay && !locationDisplay.toLowerCase().includes(searchedDestination.split(',')[0].trim().toLowerCase())) {
+        locationDisplay = `${locationDisplay}, ${searchedDestination}`;
+    }
+
     // Ensure we have valid image data with fallbacks
     const fallbackImage = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80';
     let images = [];
-    
+
     if (hotel.images && Array.isArray(hotel.images) && hotel.images.length > 0) {
         images = hotel.images;
     } else if (hotel.image) {
@@ -405,7 +414,7 @@ function createHotelCardHorizontal(hotel) {
             <div class="hotel-card-header">
                 <div class="hotel-card-title">
                     <h3>${hotel.name}</h3>
-                    <p class="hotel-location"><i class="fas fa-map-marker-alt"></i> ${hotel.location || hotel.city || hotel.address || 'Location available'}</p>
+                    <p class="hotel-location"><i class="fas fa-map-marker-alt"></i> ${locationDisplay}</p>
                     ${hotel.distance ? `<p class="hotel-distance">${hotel.distance}</p>` : ''}
                 </div>
             </div>
@@ -762,6 +771,9 @@ function setupEventListeners() {
 
     // Init Currency
     initCurrency();
+
+    // Setup Autocomplete for Modify Search
+    setupModifyDestAutocomplete();
 }
 
 /**
@@ -1057,6 +1069,150 @@ function initCurrency() {
             if (filteredHotels.length > 0) {
                 applyFiltersAndSort();
             }
+        });
+    }
+}
+/**
+ * Popular destinations (sync with index.html)
+ */
+const popularHotelDestinationsResults = [
+    { name: 'Mumbai', country: 'Maharashtra, India', type: 'city' },
+    { name: 'Delhi', country: 'Delhi, India', type: 'city' },
+    { name: 'Dubai', country: 'Dubai, UAE', type: 'city' },
+    { name: 'Paris', country: 'Ile-de-France, France', type: 'city' },
+    { name: 'London', country: 'Greater London, United Kingdom', type: 'city' },
+    { name: 'Singapore', country: 'Singapore', type: 'city' },
+    { name: 'New York', country: 'NY, United States', type: 'city' },
+    { name: 'Bangkok', country: 'Bangkok, Thailand', type: 'city' }
+];
+
+/**
+ * Setup autocomplete for modify destination input
+ */
+function setupModifyDestAutocomplete() {
+    const input = document.getElementById('modifyDestination');
+    if (!input) return;
+
+    // Create dropdown container
+    const wrapper = document.createElement('div');
+    wrapper.className = 'autocomplete-wrapper';
+    wrapper.style.position = 'relative';
+    input.parentNode.insertBefore(wrapper, input);
+    wrapper.appendChild(input);
+
+    const dropdown = document.createElement('div');
+    dropdown.className = 'autocomplete-dropdown';
+    dropdown.style.display = 'none';
+    dropdown.style.position = 'absolute';
+    dropdown.style.top = '100%';
+    dropdown.style.left = '0';
+    dropdown.style.right = '0';
+    dropdown.style.background = 'white';
+    dropdown.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)';
+    dropdown.style.borderRadius = '0 0 12px 12px';
+    dropdown.style.zIndex = '1000';
+    dropdown.style.maxHeight = '300px';
+    dropdown.style.overflowY = 'auto';
+    dropdown.style.padding = '8px 0';
+    wrapper.appendChild(dropdown);
+
+    // Debounced search
+    const performSearch = debounce(async (query) => {
+        if (query.length < 2) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        try {
+            dropdown.innerHTML = '<div style="padding: 10px 15px; color: #64748b; font-size: 0.9rem;"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+            dropdown.style.display = 'block';
+
+            const response = await HotelAPI.autocompleteLocation(query);
+
+            if (response.success && response.predictions && response.predictions.length > 0) {
+                let html = '<div style="padding: 8px 15px; font-size: 0.8rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Search Results</div>';
+
+                response.predictions.forEach(pred => {
+                    const name = pred.structured_formatting?.main_text || pred.description.split(',')[0];
+                    const country = pred.structured_formatting?.secondary_text || pred.description.split(',').slice(1).join(',').trim();
+                    const location = { name, country, type: 'city' };
+                    html += createLocationItemHtml(location);
+                });
+
+                dropdown.innerHTML = html;
+                addClickListeners();
+            } else {
+                dropdown.innerHTML = '<div style="padding: 10px 15px; color: #64748b; font-size: 0.9rem;">No results found</div>';
+            }
+        } catch (error) {
+            console.error('Autocomplete error:', error);
+            dropdown.style.display = 'none';
+        }
+    }, 300);
+
+    // Input listener
+    input.addEventListener('input', function () {
+        const query = this.value.trim();
+        if (query.length === 0) {
+            showPopular();
+        } else {
+            performSearch(query);
+        }
+    });
+
+    // Focus listener
+    input.addEventListener('focus', function () {
+        if (this.value.trim().length === 0) {
+            showPopular();
+        }
+    });
+
+    // Blur listener (delayed)
+    input.addEventListener('blur', function () {
+        setTimeout(() => {
+            dropdown.style.display = 'none';
+        }, 200);
+    });
+
+    function showPopular() {
+        let html = '<div style="padding: 8px 15px; font-size: 0.8rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Popular Destinations</div>';
+        popularHotelDestinationsResults.forEach(loc => {
+            html += createLocationItemHtml(loc);
+        });
+        dropdown.innerHTML = html;
+        dropdown.style.display = 'block';
+        addClickListeners();
+    }
+
+    function createLocationItemHtml(location) {
+        return `
+            <div class="location-item" data-name="${location.name}" data-country="${location.country}" 
+                style="padding: 10px 15px; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; transition: background 0.2s;">
+                <div style="background: #f1f5f9; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #3b82f6;">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div>
+                    <div style="font-weight: 500; color: #1e293b;">${location.name}</div>
+                    <div style="font-size: 0.85rem; color: #64748b;">${location.country || ''}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    function addClickListeners() {
+        dropdown.querySelectorAll('.location-item').forEach(item => {
+            item.addEventListener('mouseenter', () => item.style.background = '#f8fafc');
+            item.addEventListener('mouseleave', () => item.style.background = 'transparent');
+
+            item.addEventListener('click', function () {
+                const name = this.dataset.name;
+                const country = this.dataset.country;
+                input.value = country ? `${name}, ${country}` : name;
+                dropdown.style.display = 'none';
+            });
+
+            // Prevent blur event from closing dropdown before click registers
+            item.addEventListener('mousedown', (e) => e.preventDefault());
         });
     }
 }

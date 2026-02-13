@@ -3294,3 +3294,40 @@
         align-items: center;
     }
 }
+/* ============================================
+   Layout Adjustments (Reduced Spacing)
+   ============================================ */
+
+/* Compress hero section spacing */
+.page-hero.hotel-hero {
+    padding-bottom: 60px !important; /* Reduced from 80px */
+}
+
+.hotel-hero .hero-content {
+    margin-bottom: 24px !important; /* Bring search box closer to title */
+}
+
+/* Adjust search container positioning and spacing */
+.booking-search-container {
+    margin-top: -60px !important; /* Optimize overlap (default was -60px) */
+    margin-bottom: 24px !important; /* Reduce space below search box */
+    padding: 28px !important; /* Slightly more compact internal spacing */
+}
+
+/* Ensure results layout sits nicely */
+.results-layout {
+    margin-top: 0 !important;
+}
+
+/* Refine mobile spacing */
+@media (max-width: 768px) {
+    .page-hero.hotel-hero {
+        padding-bottom: 40px !important;
+    }
+    
+    .booking-search-container {
+        margin-top: -40px !important;
+        margin-bottom: 20px !important;
+        padding: 20px !important;
+    }
+}

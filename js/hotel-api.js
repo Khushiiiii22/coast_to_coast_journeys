@@ -126,6 +126,14 @@ const HotelAPI = {
         });
     },
 
+    /**
+     * Autocomplete location
+     * @param {string} query - Search query
+     */
+    async autocompleteLocation(query) {
+        return this.request(`/hotels/autocomplete?query=${encodeURIComponent(query)}`);
+    },
+
     // ==========================================
     // HOTEL DETAILS
     // ==========================================

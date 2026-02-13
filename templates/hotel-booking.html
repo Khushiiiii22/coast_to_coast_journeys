@@ -832,14 +832,14 @@
 
         // Popular destinations (fallback when no search)
         const popularDestinations = [
-            { name: 'Mumbai', country: 'India', type: 'city' },
-            { name: 'Delhi', country: 'India', type: 'city' },
-            { name: 'Dubai', country: 'UAE', type: 'city' },
-            { name: 'Paris', country: 'France', type: 'city' },
-            { name: 'London', country: 'United Kingdom', type: 'city' },
+            { name: 'Mumbai', country: 'Maharashtra, India', type: 'city' },
+            { name: 'Delhi', country: 'Delhi, India', type: 'city' },
+            { name: 'Dubai', country: 'Dubai, UAE', type: 'city' },
+            { name: 'Paris', country: 'Ile-de-France, France', type: 'city' },
+            { name: 'London', country: 'Greater London, United Kingdom', type: 'city' },
             { name: 'Singapore', country: 'Singapore', type: 'city' },
-            { name: 'New York', country: 'United States', type: 'city' },
-            { name: 'Bangkok', country: 'Thailand', type: 'city' }
+            { name: 'New York', country: 'NY, United States', type: 'city' },
+            { name: 'Bangkok', country: 'Bangkok, Thailand', type: 'city' }
         ];
 
         // Show dropdown on focus
@@ -1038,11 +1038,13 @@
             dropdownResults.querySelectorAll('.location-item').forEach(item => {
                 item.addEventListener('click', function () {
                     const name = this.dataset.name;
+                    const country = this.dataset.country;
                     const fullDesc = this.dataset.full;
-                    destinationInput.value = name;
+                    // Show city, country in the input (e.g., "Mumbai, India")
+                    destinationInput.value = country ? `${name}, ${country}` : name;
                     selectedLocationData = {
                         name: name,
-                        country: this.dataset.country,
+                        country: country,
                         type: this.dataset.type,
                         full_description: fullDesc
                     };

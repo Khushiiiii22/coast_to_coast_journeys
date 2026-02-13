@@ -505,33 +505,29 @@ def search_by_destination():
                     static_hotel_map = {}
                     
                     if hotel_ids:
-                        chunk_size = 50
-                        for i in range(0, len(hotel_ids), chunk_size):
-                            chunk = hotel_ids[i:i + chunk_size]
-                            try:
-                                # Batch fetch static content in chunks
-                                static_resp = etg_service.get_hotels_static(chunk)
+                        # Limit to first 30 hotels to avoid excessive API calls
+                        # (each hotel requires a separate /hotel/info/ call)
+                        fetch_ids = hotel_ids[:30]
+                        print(f"📸 Fetching static data for {len(fetch_ids)} hotels...")
+                        
+                        try:
+                            static_resp = etg_service.get_hotels_static(fetch_ids)
+                            
+                            if static_resp.get('success'):
+                                inner_data = static_resp.get('data', {}).get('data', {})
                                 
-                                if static_resp.get('success'):
-                                    inner_data = static_resp.get('data', {}).get('data', {})
+                                if isinstance(inner_data, dict):
+                                    # New format: dict keyed by hotel_id
+                                    static_hotel_map = inner_data
+                                    print(f"✅ Got static data for {len(static_hotel_map)} hotels")
                                     
-                                    # Handle RateHawk response variants
-                                    data_list = []
-                                    if isinstance(inner_data, dict) and 'hotels' in inner_data:
-                                        data_list = inner_data['hotels']
-                                    elif isinstance(inner_data, list):
-                                        data_list = inner_data
-                                        
-                                    if data_list:
-                                        for h_info in data_list:
-                                            if isinstance(h_info, dict) and h_info.get('id'):
-                                                static_hotel_map[h_info['id']] = h_info
-                                    elif isinstance(inner_data, dict):
-                                        static_hotel_map.update(inner_data)
-                                        
-                            except Exception as e:
-                                print(f"⚠️ Failed to fetch static chunk {i}: {e}")
-                                continue
+                                    # Log image counts
+                                    hotels_with_images = sum(1 for h in static_hotel_map.values() 
+                                                           if isinstance(h, dict) and h.get('images'))
+                                    print(f"📸 {hotels_with_images}/{len(static_hotel_map)} hotels have images")
+                                    
+                        except Exception as e:
+                            print(f"⚠️ Failed to fetch static data: {e}")
                     
                     # Pass target_currency to transform function for conversion if needed
                     transformed_hotels = transform_etg_hotels(etg_hotels, location_name, static_hotel_map, target_currency)
@@ -602,7 +598,21 @@ def search_by_destination():
                         
                         if etg_hotels and len(etg_hotels) > 0:
                             print(f"✅ Found {len(etg_hotels)} hotels via RateHawk suggest")
-                            transformed_hotels = transform_etg_hotels(etg_hotels, location_name)
+                            
+                            # Fetch static data for images
+                            suggest_hotel_ids = [h.get('id') for h in etg_hotels if h.get('id')]
+                            suggest_static_map = {}
+                            if suggest_hotel_ids:
+                                try:
+                                    fetch_ids = suggest_hotel_ids[:30]
+                                    print(f"📸 Fetching static data for {len(fetch_ids)} suggest hotels...")
+                                    static_resp = etg_service.get_hotels_static(fetch_ids)
+                                    if static_resp.get('success'):
+                                        suggest_static_map = static_resp.get('data', {}).get('data', {})
+                                except Exception as e:
+                                    print(f"⚠️ Failed to fetch static data for suggest hotels: {e}")
+                            
+                            transformed_hotels = transform_etg_hotels(etg_hotels, location_name, suggest_static_map)
                             return jsonify({
                                 'success': True,
                                 'data': {'hotels': transformed_hotels},
@@ -666,6 +676,34 @@ def suggest_locations():
         print(f"❌ Suggest API Error: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
+
+# RateHawk CDN base URL for images
+CDN_BASE = 'https://cdn.worldota.net/t/'
+# RateHawk size format: crop/WIDTHxHEIGHT (crops to fit), or WIDTHxHEIGHT
+IMG_SIZE = 'crop/640x400'
+IMG_SIZE_THUMB = '240x240'
+
+def process_etg_image_url(raw_url):
+    """Process a RateHawk image URL, replacing {size} placeholder"""
+    if not raw_url or not isinstance(raw_url, str):
+        return None
+    
+    url = raw_url.strip()
+    
+    # Replace {size} placeholder with actual dimensions
+    if '{size}' in url:
+        url = url.replace('{size}', IMG_SIZE)
+    
+    # Some RateHawk URLs are relative paths like '/content/12345/abcdef.jpg'
+    # They need the CDN base prepended
+    if url.startswith('/'):
+        url = CDN_BASE + IMG_SIZE + url
+    
+    # Ensure URL starts with http
+    if not url.startswith('http'):
+        url = CDN_BASE + IMG_SIZE + '/' + url
+        
+    return url
 
 
 def transform_etg_hotels(etg_hotels, destination, static_data=None, target_currency='INR'):
@@ -777,30 +815,41 @@ def transform_etg_hotels(etg_hotels, destination, static_data=None, target_curre
         image_url = None
         all_images = []
         
+        
         # 1. Try static data images first (highest quality source)
         if static_info.get('images'):
             img_list = static_info['images']
-            for img in img_list:
+            for img in img_list[:10]:  # Limit to 10 images per hotel
                 if isinstance(img, str):
-                    processed_url = img.replace('{size}', '640x480')
-                    all_images.append(processed_url)
+                    processed_url = process_etg_image_url(img)
+                    if processed_url:
+                        all_images.append(processed_url)
                 elif isinstance(img, dict) and img.get('url'):
-                    processed_url = img['url'].replace('{size}', '640x480')
-                    all_images.append(processed_url)
+                    processed_url = process_etg_image_url(img['url'])
+                    if processed_url:
+                        all_images.append(processed_url)
         
         # 2. Try search response images
         if not all_images and hotel.get('images'):
-            for img in hotel['images']:
+            for img in hotel['images'][:10]:
                 if isinstance(img, str):
-                    all_images.append(img.replace('{size}', '640x480'))
+                    processed_url = process_etg_image_url(img)
+                    if processed_url:
+                        all_images.append(processed_url)
                 elif isinstance(img, dict) and img.get('url'):
-                    all_images.append(img['url'].replace('{size}', '640x480'))
+                    processed_url = process_etg_image_url(img['url'])
+                    if processed_url:
+                        all_images.append(processed_url)
         
         # 3. Use fallback only as last resort
         if not all_images:
             all_images = [fallback_hotel_images[idx % len(fallback_hotel_images)]]
         
         image_url = all_images[0] if all_images else fallback_hotel_images[0]
+        
+        # Log image info for debugging
+        if all_images and not all_images[0].startswith('https://images.unsplash.com'):
+            print(f"📸 Hotel {hotel_id}: {len(all_images)} ETG images, first: {all_images[0][:80]}...")
 
         # Format meal display from meal_data
         best_meal_display = 'Room Only'
@@ -1731,12 +1780,28 @@ def get_enriched_hotel_details():
             for rg in static_data.get('room_groups', []):
                 rg_hash = rg.get('rg_hash')
                 if rg_hash:
+                    # Process images
+                    processed_images = []
+                    for img in rg.get('images', []):
+                        if isinstance(img, str):
+                            processed_url = process_etg_image_url(img)
+                            if processed_url:
+                                processed_images.append(processed_url)
+                        elif isinstance(img, dict):
+                            img_url = img.get('url', img.get('src', ''))
+                            processed_url = process_etg_image_url(img_url)
+                            if processed_url:
+                                processed_images.append(processed_url)
+
                     room_groups[rg_hash] = {
                         'name': rg.get('name', rg.get('room_name', '')),
                         'name_struct': rg.get('name_struct', {}),
-                        'images': rg.get('images', []),
+                        'images': processed_images,
                         'room_amenities': rg.get('room_amenities', []),
-                        'rg_hash': rg_hash
+                        'rg_hash': rg_hash,
+                        'bed_type': rg.get('name_struct', {}).get('bedding_type', ''),
+                        'bathroom': rg.get('name_struct', {}).get('bathroom', ''),
+                        'quality': rg.get('name_struct', {}).get('quality', '')
                     }
         
         # 3. Enrich rates with room group data
@@ -1803,12 +1868,15 @@ def format_room_groups(room_groups):
         # Process images
         for img in rg.get('images', []):
             if isinstance(img, str):
-                formatted_rg['images'].append(img)
+                processed_url = process_etg_image_url(img)
+                if processed_url:
+                    formatted_rg['images'].append(processed_url)
             elif isinstance(img, dict):
                 # Handle different image format
                 img_url = img.get('url', img.get('src', ''))
-                if img_url:
-                    formatted_rg['images'].append(img_url)
+                processed_url = process_etg_image_url(img_url)
+                if processed_url:
+                    formatted_rg['images'].append(processed_url)
         
         # Process amenities
         amenity_labels = {
