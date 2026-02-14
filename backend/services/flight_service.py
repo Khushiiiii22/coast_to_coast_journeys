@@ -1,13 +1,24 @@
 """
-Mock Flight Service
-Generates realistic flight data for demo purposes since no live Flight API is available.
+Flight Service with Duffel Integration
+Provides live flight data via Duffel API with a mock fallback.
 """
 import random
 from datetime import datetime, timedelta
 import hashlib
+from duffel_api import Duffel
+from config import Config
 
 class FlightService:
     def __init__(self):
+        self.access_token = Config.DUFFEL_ACCESS_TOKEN
+        self.client = None
+        if self.access_token:
+            try:
+                self.client = Duffel(access_token=self.access_token)
+                print("✅ Duffel API client initialized")
+            except Exception as e:
+                print(f"⚠️ Error initializing Duffel client: {e}")
+
         self.airlines = [
             {'code': 'AI', 'name': 'Air India', 'logo': 'https://logos-world.net/wp-content/uploads/2023/01/Air-India-Logo.png'},
             {'code': '6E', 'name': 'IndiGo', 'logo': 'https://upload.wikimedia.org/wikipedia/en/thumb/9/93/IndiGo_Logo_2.svg/1200px-IndiGo_Logo_2.svg.png'},
@@ -40,12 +51,10 @@ class FlightService:
             'MLE': {'name': 'Velana International Airport', 'city': 'Male', 'country': 'Maldives'}
         }
         
-        # City name to code mapping for common searches
         self.city_to_code = {}
         for code, details in self.airports.items():
             city_lower = details['city'].lower()
             self.city_to_code[city_lower] = code
-            # Also add common variations
             if 'new delhi' in city_lower:
                 self.city_to_code['delhi'] = code
             if 'bangalore' in city_lower:
@@ -59,31 +68,35 @@ class FlightService:
         location_upper = location.upper().strip()
         location_lower = location.lower().strip()
         
-        # If it's already a valid airport code
         if location_upper in self.airports:
             return location_upper
         
-        # Try to find by city name
         if location_lower in self.city_to_code:
             return self.city_to_code[location_lower]
         
-        # Try partial match
         for city, code in self.city_to_code.items():
             if location_lower in city or city in location_lower:
                 return code
         
-        # Return as is (will generate flights anyway for demo)
         return location_upper if len(location_upper) <= 4 else location_upper[:3]
 
     def search_flights(self, origin, destination, depart_date, return_date=None, adults=1, flight_class='economy'):
-        """Search flights with realistic mock data"""
-        # Resolve city names to airport codes
+        """Search flights with Duffel or fallback to mock data"""
         origin_code = self._resolve_airport_code(origin)
         dest_code = self._resolve_airport_code(destination)
-        
+
+        # If Duffel is configured, try real search
+        if self.client:
+            try:
+                return self._duffel_search(origin_code, dest_code, depart_date, return_date, adults, flight_class)
+            except Exception as e:
+                print(f"⚠️ Duffel search failed, falling back to mock: {e}")
+
+        # Fallback to mock data
         results = {
             'outbound': self._generate_flights(origin_code, dest_code, depart_date, adults, flight_class),
-            'inbound': []
+            'inbound': [],
+            'meta': {'provider': 'mock'}
         }
         
         if return_date:
@@ -94,8 +107,101 @@ class FlightService:
             'data': results
         }
 
+    def _duffel_search(self, origin, destination, depart_date, return_date, adults, flight_class):
+        """Perform real search using Duffel API"""
+        slices = [
+            {
+                "origin": origin,
+                "destination": destination,
+                "departure_date": depart_date,
+            }
+        ]
+        
+        if return_date:
+            slices.append({
+                "origin": destination,
+                "destination": origin,
+                "departure_date": return_date,
+            })
+
+        passengers = [{"type": "adult"} for _ in range(adults)]
+        
+        cabin_class_map = {
+            'economy': 'economy',
+            'business': 'business',
+            'first': 'first',
+            'premium_economy': 'premium_economy'
+        }
+        
+        # Create offer request
+        offer_request = self.client.offer_requests.create() \
+            .slices(slices) \
+            .passengers(passengers) \
+            .cabin_class(cabin_class_map.get(flight_class, 'economy')) \
+            .execute()
+
+        # Retrieve offers
+        offers = self.client.offers.list(offer_request.id)
+        
+        formatted_outbound = []
+        formatted_inbound = []
+
+        for offer in offers:
+            # We simplify for demo purposes, picking the first slice as outbound
+            # and second as inbound if round-trip
+            outbound_slice = offer.slices[0]
+            inbound_slice = offer.slices[1] if len(offer.slices) > 1 else None
+
+            price_data = offer.total_amount
+            currency = offer.total_currency
+
+            outbound_flight = self._format_duffel_slice(offer.id, outbound_slice, price_data, currency)
+            formatted_outbound.append(outbound_flight)
+
+            if inbound_slice:
+                inbound_flight = self._format_duffel_slice(offer.id, inbound_slice, price_data, currency, is_inbound=True)
+                formatted_inbound.append(inbound_flight)
+
+        return {
+            'success': True,
+            'data': {
+                'outbound': formatted_outbound,
+                'inbound': formatted_inbound,
+                'meta': {
+                    'provider': 'duffel',
+                    'offer_request_id': offer_request.id
+                }
+            }
+        }
+
+    def _format_duffel_slice(self, offer_id, fslice, price, currency, is_inbound=False):
+        """Format Duffel slice data to match frontend expectations"""
+        # For simplicity, we take the first segment's details
+        segment = fslice.segments[0]
+        airline = segment.marketing_carrier
+        
+        return {
+            'id': f"{offer_id}_{'in' if is_inbound else 'out'}",
+            'airline': {
+                'code': airline.iata_code,
+                'name': airline.name,
+                'logo': f"https://res.cloudinary.com/duffel/image/upload/v1582230000/intermediary/carrier-logos/{airline.iata_code}.png"
+            },
+            'flight_number': f"{airline.iata_code}{segment.marketing_carrier_flight_number}",
+            'origin': segment.origin.iata_code,
+            'destination': segment.destination.iata_code,
+            'depart_time': datetime.fromisoformat(segment.departing_at).strftime('%H:%M'),
+            'arrival_time': datetime.fromisoformat(segment.arriving_at).strftime('%H:%M'),
+            'duration': f"{fslice.duration[2:].lower().replace('h', 'h ')}", # Converts PT10H20M
+            'next_day': False, # Could be calculated from dates
+            'stops': len(fslice.segments) - 1,
+            'price': float(price),
+            'currency': currency,
+            'class': segment.cabin_class
+        }
+
     def suggest(self, query):
-        """Autocomplete for airports"""
+        """Autocomplete for airports - stays mock for now to avoid heavy API usage"""
         query = query.upper()
         suggestions = []
         
@@ -111,7 +217,6 @@ class FlightService:
                     'label': f"{details['city']} ({code})"
                 })
         
-        # Add a generic result if query looks like a code but not in our list
         if not suggestions and len(query) == 3:
             suggestions.append({
                 'code': query,
@@ -127,41 +232,31 @@ class FlightService:
         }
 
     def _generate_flights(self, origin, destination, date_str, adults, flight_class):
-        """Generate 5-10 realistic flight options"""
+        """Generate realistic mock flight options (moved from original implementation)"""
         flights = []
         num_flights = random.randint(5, 12)
-        
-        # Base price calculation based on distance/random
         base_price = random.randint(100, 800) if flight_class == 'economy' else random.randint(500, 2500)
         
         for i in range(num_flights):
             airline = random.choice(self.airlines)
             flight_num = f"{airline['code']}{random.randint(100, 999)}"
-            
-            # Times
             hour = random.randint(0, 23)
             minute = random.choice([0, 15, 30, 45])
             depart_time = f"{hour:02d}:{minute:02d}"
-            
-            # Duration (2h to 10h)
             duration_mins = random.randint(120, 600)
             duration_hours = duration_mins // 60
             duration_rem_mins = duration_mins % 60
             duration_str = f"{duration_hours}h {duration_rem_mins}m"
-            
-            # Arrival Time logic
             arrival_mins_total = hour * 60 + minute + duration_mins
             arr_hour = (arrival_mins_total // 60) % 24
             arr_min = arrival_mins_total % 60
             arrival_time = f"{arr_hour:02d}:{arr_min:02d}"
             next_day = arrival_mins_total >= 24 * 60
-            
-            # Stops
-            stops = random.choice([0, 0, 0, 1, 1, 2]) # Weight towards direct
-            price = base_price * (1.2 if stops == 0 else 0.8) # Direct flights more expensive
+            stops = random.choice([0, 0, 0, 1, 1, 2])
+            price = base_price * (1.2 if stops == 0 else 0.8)
             price += random.randint(-50, 50)
             
-            flt = {
+            flights.append({
                 'id': hashlib.md5(f"{flight_num}{date_str}{i}".encode()).hexdigest(),
                 'airline': airline,
                 'flight_number': flight_num,
@@ -172,14 +267,10 @@ class FlightService:
                 'duration': duration_str,
                 'next_day': next_day,
                 'stops': stops,
-                'stop_city': random.choice(list(self.airports.keys())) if stops > 0 else None,
                 'price': int(price),
                 'currency': 'USD',
                 'class': flight_class
-            }
-            flights.append(flt)
-            
-        # Sort by price
+            })
         flights.sort(key=lambda x: x['price'])
         return flights
 

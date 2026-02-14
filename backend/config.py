@@ -25,6 +25,9 @@ class Config:
     ETG_API_KEY_SECRET = os.getenv('ETG_API_KEY_SECRET')
     ETG_API_BASE_URL = os.getenv('ETG_API_BASE_URL', 'https://api.worldota.net/api/b2b/v3')
     
+    # Duffel Flight API Configuration
+    DUFFEL_ACCESS_TOKEN = os.getenv('DUFFEL_ACCESS_TOKEN')
+    
     # Supabase Configuration
     SUPABASE_URL = os.getenv('SUPABASE_URL')
     SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY')
