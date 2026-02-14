@@ -5,12 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Search results for flights - C2C Journeys">
-    <title>Flight Results | Coast To Coast Journeys</title>
+    <title>Flight Search Results | Coast To Coast Journeys</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -18,743 +20,399 @@
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/hotel-booking.css">
-
     <style>
-        /* Flight Results Page Specific Styles - Trip.com Inspired */
-        :root {
-            --primary-blue: #0e64a6;
-            --navy: #1a365d;
-            --accent-gold: #f59e0b;
-            --success: #10b981;
-            --danger: #ef4444;
-        }
-
-        body {
-            font-family: 'Outfit', sans-serif;
-            background: #f5f7fa;
-            min-height: 100vh;
-        }
-
-        /* Simple Header */
-        .simple-header {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-        }
-
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo-link {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            text-decoration: none;
-            color: var(--navy);
-        }
-
-        .logo-link img {
-            height: 45px;
-            border-radius: 8px;
-        }
-
-        .logo-link span {
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #64748b;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        .nav-links a:hover,
-        .nav-links a.active {
-            color: var(--primary-blue);
-        }
-
-        /* Search Summary Bar */
-        .search-summary-bar {
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--navy) 100%);
-            padding: 1.5rem 0;
-            margin-top: 77px;
-            color: white;
-        }
-
-        .summary-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-
-        .summary-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .summary-details h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .summary-details p {
-            opacity: 0.9;
-            font-size: 0.95rem;
-        }
-
-        .btn-modify {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .btn-modify:hover {
-            background: rgba(255, 255, 255, 0.25);
-        }
-
-        /* Main Content */
-        .main-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        .results-grid {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 2rem;
-        }
-
-        @media (max-width: 992px) {
-            .results-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .filters-panel {
-                display: none;
-            }
-        }
-
-        /* Filters Panel */
-        .filters-panel {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-            height: fit-content;
-            position: sticky;
-            top: 100px;
-        }
-
-        .filters-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .filters-header h3 {
-            font-size: 1.1rem;
-            color: var(--navy);
-            font-weight: 600;
-        }
-
-        .clear-btn {
-            background: none;
-            border: none;
-            color: var(--primary-blue);
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-
-        .filter-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .filter-group h4 {
-            font-size: 0.95rem;
-            color: var(--navy);
-            margin-bottom: 0.75rem;
-            font-weight: 600;
-        }
-
-        .filter-option {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.6rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .filter-option:hover {
-            background: #f8fafc;
-        }
-
-        .filter-option input {
-            accent-color: var(--primary-blue);
-            width: 18px;
-            height: 18px;
-        }
-
-        /* Results Panel */
-        .results-panel {
-            min-height: 500px;
-        }
-
-        .results-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: white;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .results-count {
-            font-weight: 500;
-            color: var(--navy);
-        }
-
-        .results-count strong {
-            color: var(--primary-blue);
-        }
-
-        .sort-select {
-            padding: 0.5rem 1rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-
-        /* Flight Cards */
-        .flights-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
+        /* Flight specific styles */
         .flight-card {
             background: white;
-            border-radius: 16px;
-            padding: 1.5rem 2rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-            display: grid;
-            grid-template-columns: 180px 1fr 150px;
-            align-items: center;
-            gap: 2rem;
-            transition: all 0.3s ease;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .flight-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
         }
 
-        /* Airline Info */
-        .airline-section {
+        .flight-main-info {
             display: flex;
+            padding: 20px;
             align-items: center;
-            gap: 1rem;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .airline-info {
+            flex: 0 0 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
         }
 
         .airline-logo {
-            width: 48px;
-            height: 48px;
+            height: 40px;
             object-fit: contain;
-            border-radius: 8px;
+            margin-bottom: 8px;
         }
 
-        .airline-details h4 {
-            font-size: 1rem;
-            color: var(--navy);
-            margin-bottom: 0.25rem;
-        }
-
-        .flight-number {
+        .airline-name {
             font-size: 0.85rem;
-            color: #94a3b8;
+            font-weight: 600;
+            color: #1e293b;
         }
 
-        /* Flight Route */
-        .route-section {
+        .flight-timing {
+            flex: 1;
             display: flex;
+            justify-content: space-around;
             align-items: center;
-            justify-content: center;
-            gap: 1.5rem;
+            min-width: 300px;
         }
 
-        .time-point {
+        .time-block {
             text-align: center;
         }
 
         .time {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 700;
-            color: var(--navy);
+            color: #0f172a;
+            display: block;
         }
 
         .airport-code {
             font-size: 0.9rem;
             color: #64748b;
-            margin-top: 0.25rem;
+            font-weight: 500;
         }
 
-        .duration-section {
-            flex: 1;
+        .flight-path {
+            flex: 0 0 120px;
             text-align: center;
             position: relative;
-            padding: 0 1rem;
         }
 
-        .duration-time {
-            font-size: 0.85rem;
+        .duration {
+            font-size: 0.8rem;
             color: #64748b;
-            margin-bottom: 0.5rem;
+            margin-bottom: 4px;
+            display: block;
         }
 
-        .duration-line {
+        .path-line {
             height: 2px;
-            background: linear-gradient(90deg, #e2e8f0 0%, var(--primary-blue) 50%, #e2e8f0 100%);
+            background: #cbd5e1;
+            width: 100%;
             position: relative;
+            margin: 10px 0;
         }
 
-        .duration-line::before {
-            content: '✈';
+        .path-line::before,
+        .path-line::after {
+            content: '';
             position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #94a3b8;
             top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(90deg);
-            background: white;
-            padding: 0.25rem;
-            color: var(--primary-blue);
-            font-size: 0.9rem;
+            transform: translateY(-50%);
+        }
+
+        .path-line::before {
+            left: 0;
+        }
+
+        .path-line::after {
+            right: 0;
         }
 
         .stops-info {
-            font-size: 0.8rem;
-            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #ef4444;
         }
 
         .stops-info.direct {
-            color: var(--success);
+            color: #10b981;
         }
 
-        .stops-info.has-stops {
-            color: #f59e0b;
+        .flight-price-action {
+            flex: 0 0 180px;
+            padding: 20px;
+            background: #f8fafc;
+            border-left: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* Price Section */
-        .price-section {
-            text-align: right;
+        .price-label {
+            font-size: 0.8rem;
+            color: #64748b;
         }
 
         .price {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: var(--navy);
-            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #2563eb;
+            margin: 5px 0 15px 0;
         }
 
-        .price-currency {
-            font-size: 1rem;
-        }
-
-        .select-btn {
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--navy) 100%);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
+        .btn-select-flight {
             width: 100%;
-        }
-
-        .select-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(14, 100, 166, 0.3);
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            background: white;
-            border-radius: 16px;
-        }
-
-        .empty-state i {
-            font-size: 4rem;
-            color: #cbd5e1;
-            margin-bottom: 1.5rem;
-        }
-
-        .empty-state h3 {
-            color: var(--navy);
-            margin-bottom: 0.5rem;
-        }
-
-        .empty-state p {
-            color: #64748b;
-            margin-bottom: 1.5rem;
-        }
-
-        /* Loading State */
-        .loading-state {
-            text-align: center;
-            padding: 4rem 2rem;
-        }
-
-        .loading-spinner {
-            font-size: 3rem;
-            color: var(--primary-blue);
-            margin-bottom: 1rem;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .flight-card {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .airline-section,
-            .price-section {
-                justify-content: center;
-                text-align: center;
-            }
-
-            .route-section {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-        }
-
-        /* Footer */
-        .simple-footer {
-            background: var(--navy);
+            padding: 10px;
+            border-radius: 8px;
+            background: #2563eb;
             color: white;
-            padding: 2rem;
+            font-weight: 600;
             text-align: center;
-            margin-top: 3rem;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
         }
 
-        .simple-footer p {
-            opacity: 0.8;
+        .btn-select-flight:hover {
+            background: #1d4ed8;
+        }
+
+        .flight-meta {
+            padding: 10px 20px;
+            background: #f1f5f9;
+            border-top: 1px dashed #cbd5e1;
+            display: flex;
+            gap: 20px;
+            font-size: 0.8rem;
+            color: #475569;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .meta-item i {
+            color: #64748b;
+        }
+
+        @media (max-width: 768px) {
+            .flight-price-action {
+                flex: 1 1 100%;
+                border-left: none;
+                border-top: 1px solid #e2e8f0;
+            }
+
+            .flight-timing {
+                min-width: 100%;
+            }
         }
     </style>
 </head>
 
-<body>
+<body class="hotel-results-page">
     <!-- Header -->
-    <header class="simple-header">
-        <div class="header-content">
-            <a href="index.html" class="logo-link">
-                <img src="../assets/images/c2c-logo.png" alt="Logo">
-                <span>C2C Journeys</span>
-            </a>
-            <nav class="nav-links">
-                <a href="index.html">Home</a>
-                <a href="index.html#flights" class="active">Flights</a>
-                <a href="hotel-results.html">Hotels</a>
-                <a href="index.html#deals">Deals</a>
-                <a href="index.html#contact">Contact</a>
-            </nav>
-        </div>
+    <header class="header scrolled" id="header">
+        <nav class="main-nav">
+            <div class="container">
+                <div class="nav-content">
+                    <a href="index.html" class="logo">
+                        <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
+                        <span class="brand-name">C2C Journeys</span>
+                    </a>
+
+                    <ul class="nav-menu" id="navMenu">
+                        <li><a href="index.html" class="nav-link">Home</a></li>
+                        <li><a href="flight-booking.html" class="nav-link active">Flights</a></li>
+                        <li><a href="hotel-booking.html" class="nav-link">Hotels</a></li>
+                        <li><a href="visa.html" class="nav-link">Visa</a></li>
+                        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                    </ul>
+
+                    <div class="nav-actions">
+                        <div class="currency-selector" style="margin-right: 15px;">
+                            <select id="currencySelect">
+                                <option value="INR">🇮🇳 INR</option>
+                                <option value="USD" selected>🇺🇸 USD</option>
+                                <option value="EUR">🇪🇺 EUR</option>
+                                <option value="GBP">🇬🇧 GBP</option>
+                                <option value="AED">🇦🇪 AED</option>
+                            </select>
+                        </div>
+                        <a href="javascript:history.back()" class="btn btn-outline" style="margin-right: 10px;">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                        <a href="auth.html" class="btn btn-outline" id="loginBtn">
+                            <i class="fas fa-user"></i> Login
+                        </a>
+                    </div>
+
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                        <span></span><span></span><span></span>
+                    </button>
+                </div>
+            </div>
+        </nav>
     </header>
 
-    <!-- Search Summary -->
-    <div class="search-summary-bar">
-        <div class="summary-container">
-            <div class="summary-content">
-                <div class="summary-details">
-                    <h1><i class="fas fa-plane"></i> Flights: <span id="summaryOrigin">...</span> → <span
-                            id="summaryDest">...</span></h1>
-                    <p id="summaryDates">Loading flight details...</p>
-                </div>
-                <button class="btn-modify" onclick="window.location.href='index.html'">
-                    <i class="fas fa-edit"></i> Modify Search
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Main Content -->
-    <main class="main-container">
-        <div class="results-grid">
-            <!-- Filters Sidebar -->
-            <aside class="filters-panel">
-                <div class="filters-header">
-                    <h3><i class="fas fa-sliders-h"></i> Filters</h3>
-                    <button class="clear-btn" id="clearFiltersBtn">Clear All</button>
-                </div>
-
-                <div class="filter-group">
-                    <h4>Stops</h4>
-                    <label class="filter-option">
-                        <input type="checkbox" id="filterDirect" checked>
-                        <span>Direct flights</span>
-                    </label>
-                    <label class="filter-option">
-                        <input type="checkbox" id="filter1Stop" checked>
-                        <span>1 Stop</span>
-                    </label>
-                    <label class="filter-option">
-                        <input type="checkbox" id="filter2Stop" checked>
-                        <span>2+ Stops</span>
-                    </label>
-                </div>
-
-                <div class="filter-group">
-                    <h4>Airlines</h4>
-                    <div id="airlineFilters">
-                        <!-- Dynamically populated -->
-                    </div>
-                </div>
-
-                <div class="filter-group">
-                    <h4>Departure Time</h4>
-                    <label class="filter-option">
-                        <input type="checkbox" checked>
-                        <span>🌅 Morning (6AM - 12PM)</span>
-                    </label>
-                    <label class="filter-option">
-                        <input type="checkbox" checked>
-                        <span>☀️ Afternoon (12PM - 6PM)</span>
-                    </label>
-                    <label class="filter-option">
-                        <input type="checkbox" checked>
-                        <span>🌙 Evening (6PM - 12AM)</span>
-                    </label>
-                </div>
-            </aside>
-
-            <!-- Results -->
-            <section class="results-panel">
-                <div class="results-header">
-                    <span class="results-count" id="resultsCount">
-                        <i class="fas fa-spinner fa-spin"></i> Loading flights...
-                    </span>
-                    <select class="sort-select" id="sortSelect">
-                        <option value="price_asc">Price: Low to High</option>
-                        <option value="price_desc">Price: High to Low</option>
-                        <option value="duration_asc">Duration: Shortest</option>
-                        <option value="depart_asc">Departure: Earliest</option>
-                    </select>
-                </div>
-
-                <div class="flights-list" id="flightsList">
-                    <!-- Flight cards will be injected here -->
-                </div>
-            </section>
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="simple-footer">
-        <p>&copy; 2026 C2C Journeys. All rights reserved.</p>
-    </footer>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const results = JSON.parse(sessionStorage.getItem('ctc_flight_results'));
-            const params = JSON.parse(sessionStorage.getItem('ctc_flight_search_params'));
-
-            if (!results || !params) {
-                document.getElementById('flightsList').innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-search"></i>
-                        <h3>No search results</h3>
-                        <p>Please search for flights from the home page</p>
-                        <button class="select-btn" style="max-width: 200px; margin: 0 auto;" onclick="window.location.href='index.html'">
-                            Go to Home
-                        </button>
-                    </div>
-                `;
-                document.getElementById('resultsCount').innerHTML = '0 flights found';
-                return;
-            }
-
-            // Update Summary
-            document.getElementById('summaryOrigin').textContent = params.from || 'Origin';
-            document.getElementById('summaryDest').textContent = params.to || 'Destination';
-
-            const departDate = new Date(params.departDate);
-            let dateStr = departDate.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-            if (params.returnDate) {
-                const returnDate = new Date(params.returnDate);
-                dateStr += ` - ${returnDate.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}`;
-            }
-            dateStr += ` • ${params.travelers || '1 Traveler'} • ${params.class || 'Economy'}`;
-            document.getElementById('summaryDates').textContent = dateStr;
-
-            // Render Flights
-            const container = document.getElementById('flightsList');
-            const countEl = document.getElementById('resultsCount');
-
-            const flights = results.outbound || [];
-
-            if (flights.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-plane-slash"></i>
-                        <h3>No flights found</h3>
-                        <p>Try adjusting your search criteria</p>
-                        <button class="select-btn" style="max-width: 200px; margin: 0 auto;" onclick="window.location.href='index.html'">
-                            Modify Search
-                        </button>
-                    </div>
-                `;
-                countEl.innerHTML = '0 flights found';
-                return;
-            }
-
-            countEl.innerHTML = `<strong>${flights.length}</strong> flights found`;
-
-            // Populate airline filters
-            const airlines = [...new Set(flights.map(f => f.airline?.name))].filter(Boolean);
-            const airlineFiltersEl = document.getElementById('airlineFilters');
-            airlineFiltersEl.innerHTML = airlines.map(airline => `
-                <label class="filter-option">
-                    <input type="checkbox" checked data-airline="${airline}">
-                    <span>${airline}</span>
-                </label>
-            `).join('');
-
-            // Render flights
-            renderFlights(flights);
-
-            // Sorting
-            document.getElementById('sortSelect').addEventListener('change', (e) => {
-                let sorted = [...flights];
-                switch (e.target.value) {
-                    case 'price_asc':
-                        sorted.sort((a, b) => a.price - b.price);
-                        break;
-                    case 'price_desc':
-                        sorted.sort((a, b) => b.price - a.price);
-                        break;
-                    case 'duration_asc':
-                        sorted.sort((a, b) => parseDuration(a.duration) - parseDuration(b.duration));
-                        break;
-                    case 'depart_asc':
-                        sorted.sort((a, b) => a.depart_time.localeCompare(b.depart_time));
-                        break;
-                }
-                renderFlights(sorted);
-            });
-
-            function parseDuration(dur) {
-                const match = dur?.match(/(\d+)h\s*(\d+)?m?/);
-                if (match) {
-                    return parseInt(match[1]) * 60 + (parseInt(match[2]) || 0);
-                }
-                return 0;
-            }
-
-            function renderFlights(flightList) {
-                container.innerHTML = flightList.map(flight => `
-                    <div class="flight-card">
-                        <div class="airline-section">
-                            <img src="${flight.airline?.logo || 'https://via.placeholder.com/48'}" 
-                                 alt="${flight.airline?.name}" 
-                                 class="airline-logo"
-                                 onerror="this.src='https://via.placeholder.com/48?text=✈'">
-                            <div class="airline-details">
-                                <h4>${flight.airline?.name || 'Airline'}</h4>
-                                <span class="flight-number">${flight.flight_number || ''}</span>
-                            </div>
+    <main class="hotel-results-main">
+        <!-- Search Info Section -->
+        <section class="expedia-search-bar" style="background: #0f172a; color: white;">
+            <div class="container">
+                <div class="search-bar-container"
+                    style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+                    <div class="search-input-group">
+                        <i class="fas fa-plane-departure" style="color: #60a5fa;"></i>
+                        <div class="search-input-content">
+                            <span class="input-label" style="color: #94a3b8;">From</span>
+                            <span class="input-value" id="flightOriginDisplay" style="color: white;">Loading...</span>
                         </div>
+                    </div>
+                    <div class="search-divider" style="background: rgba(255,255,255,0.2);"></div>
+                    <div class="search-input-group">
+                        <i class="fas fa-plane-arrival" style="color: #60a5fa;"></i>
+                        <div class="search-input-content">
+                            <span class="input-label" style="color: #94a3b8;">To</span>
+                            <span class="input-value" id="flightDestDisplay" style="color: white;">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="search-divider" style="background: rgba(255,255,255,0.2);"></div>
+                    <div class="search-input-group">
+                        <i class="fas fa-calendar-alt" style="color: #60a5fa;"></i>
+                        <div class="search-input-content">
+                            <span class="input-label" style="color: #94a3b8;">Departure</span>
+                            <span class="input-value" id="flightDateDisplay" style="color: white;">Loading...</span>
+                        </div>
+                    </div>
+                    <button class="search-btn" id="modifySearchBtn" style="background: #2563eb;">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
 
-                        <div class="route-section">
-                            <div class="time-point">
-                                <div class="time">${flight.depart_time}</div>
-                                <div class="airport-code">${flight.origin}</div>
+        <!-- Results Section -->
+        <section class="results-section">
+            <div class="container">
+                <div class="results-layout">
+                    <!-- Filters Sidebar -->
+                    <aside class="filters-sidebar">
+                        <div class="filters-card">
+                            <div class="filters-header">
+                                <h3><i class="fas fa-filter"></i> Filters</h3>
+                                <button class="clear-filters" id="clearFilters">Reset</button>
                             </div>
 
-                            <div class="duration-section">
-                                <div class="duration-time">${flight.duration}</div>
-                                <div class="duration-line"></div>
-                                <div class="stops-info ${flight.stops === 0 ? 'direct' : 'has-stops'}">
-                                    ${flight.stops === 0 ? 'Direct' : flight.stops + ' Stop' + (flight.stops > 1 ? 's' : '')}
-                                    ${flight.stop_city ? ' via ' + flight.stop_city : ''}
+                            <div class="filter-group">
+                                <h4>Stops</h4>
+                                <div class="filter-options">
+                                    <label class="filter-checkbox">
+                                        <input type="checkbox" value="0" checked>
+                                        <span class="checkmark"></span>
+                                        <span class="filter-label">Non-stop</span>
+                                    </label>
+                                    <label class="filter-checkbox">
+                                        <input type="checkbox" value="1" checked>
+                                        <span class="checkmark"></span>
+                                        <span class="filter-label">1 Stop</span>
+                                    </label>
+                                    <label class="filter-checkbox">
+                                        <input type="checkbox" value="2" checked>
+                                        <span class="checkmark"></span>
+                                        <span class="filter-label">2+ Stops</span>
+                                    </label>
                                 </div>
                             </div>
 
-                            <div class="time-point">
-                                <div class="time">${flight.arrival_time}${flight.next_day ? '<sup>+1</sup>' : ''}</div>
-                                <div class="airport-code">${flight.destination}</div>
+                            <div class="filter-group">
+                                <h4>Airlines</h4>
+                                <div class="filter-options" id="airlineFilters">
+                                    <!-- Dynamic airlines list -->
+                                    <p style="font-size: 0.85rem; color: #64748b;">Loading airlines...</p>
+                                </div>
+                            </div>
+
+                            <div class="filter-group">
+                                <h4>Price Range</h4>
+                                <div class="price-range-slider">
+                                    <input type="range" id="priceRange" min="0" max="2500" value="2500" step="50">
+                                    <div class="price-labels">
+                                        <span>$0</span>
+                                        <span id="maxPriceLabel">$2500+</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- Results Content -->
+                    <div class="results-content">
+                        <div class="results-header-bar">
+                            <div class="results-info">
+                                <span id="flightCount">0</span> flight offers found
+                                <span class="badge badge-blue" style="margin-left: 10px; font-size: 0.7rem;"
+                                    id="providerBadge">
+                                    <i class="fas fa-bolt"></i> Live Prices
+                                </span>
+                            </div>
+                            <div class="sort-dropdown">
+                                <label>Sort by:</label>
+                                <select id="sortSelect">
+                                    <option value="price_low">Cheapest</option>
+                                    <option value="duration_low">Fastest</option>
+                                    <option value="depart_early">Earliest</option>
+                                </select>
                             </div>
                         </div>
 
-                        <div class="price-section">
-                            <div class="price"><span class="price-currency">$</span>${flight.price}</div>
-                            <button class="select-btn" onclick="selectFlight('${flight.id}')">
-                                Select <i class="fas fa-arrow-right"></i>
-                            </button>
+                        <!-- Loading State -->
+                        <div class="loading-state" id="loadingState">
+                            <div class="loading-spinner">
+                                <i class="fas fa-plane fa-spin" style="color: #2563eb; font-size: 3rem;"></i>
+                            </div>
+                            <p style="font-weight: 600; margin-top: 15px;">Searching live flight offers from Duffel...
+                            </p>
+                            <p style="font-size: 0.9rem; color: #64748b;">This usually takes a few seconds.</p>
+                        </div>
+
+                        <!-- Error State -->
+                        <div class="error-state hidden" id="errorState">
+                            <i class="fas fa-exclamation-triangle"
+                                style="font-size: 3rem; color: #ef4444; margin-bottom: 15px;"></i>
+                            <h3>Search Failed</h3>
+                            <p id="errorMessage">We couldn't retrieve flight offers right now.</p>
+                            <button class="btn btn-primary" onclick="location.reload()">Retry Search</button>
+                        </div>
+
+                        <!-- Flights List -->
+                        <div id="flightsList">
+                            <!-- Flight cards will be injected here -->
                         </div>
                     </div>
-                `).join('');
-            }
-        });
+                </div>
+            </div>
+        </section>
+    </main>
 
-        function selectFlight(flightId) {
-            alert('Flight booking coming soon! Selected flight: ' + flightId);
-            // TODO: Implement flight booking flow
-        }
-    </script>
-    <!-- Floating WhatsApp Button -->
-    <a href="https://wa.me/919934547108" target="_blank" class="whatsapp-float" title="Chat on WhatsApp"
-        style="position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: block; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.3s;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp"
-            style="width: 60px; height: 60px; display: block; border-radius: 50%;">
-    </a>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 C2C Journeys. Powered by Duffel.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/flight-results.js"></script>
 </body>
 
 </html>

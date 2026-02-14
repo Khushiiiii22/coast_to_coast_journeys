@@ -867,6 +867,21 @@ def transform_etg_hotels(etg_hotels, destination, static_data=None, target_curre
             best_meal_value = best_rate.get('meal', 'nomeal')
             best_meal_display = MEAL_TYPE_DISPLAY.get(best_meal_value, best_meal_value.replace('-', ' ').title())
         
+        # Extract city and country from address or destination
+        city = static_info.get('city')
+        country = static_info.get('country')
+        
+        if not city or not country:
+            # Try to parse from destination string if available
+            dest_parts = destination.split(',')
+            if not city:
+                city = dest_parts[0].strip() if dest_parts else destination.title()
+            if not country:
+                country = dest_parts[-1].strip() if len(dest_parts) > 1 else 'India'
+        
+        # Create full location string
+        location_str = f"{city}, {country}" if city and country else static_info.get('address') or destination.title()
+
         # Create transformed hotel object
         transformed_hotel = {
             'id': hotel_id or f'hotel_{idx}',
@@ -876,10 +891,13 @@ def transform_etg_hotels(etg_hotels, destination, static_data=None, target_curre
             'guest_rating': round(3.5 + (star_rating or 3) * 0.3, 1),
             'review_count': 50 + (idx * 23) % 500,
             'address': static_info.get('address') or destination.title(),
+            'city': city,
+            'country': country,
+            'location': location_str,
             'latitude': static_info.get('latitude') or hotel.get('latitude'),
             'longitude': static_info.get('longitude') or hotel.get('longitude'),
             'image': image_url,
-            'images': all_images,  # Include all images for gallery
+            'images': all_images,  # Include all images for gallery (ensure list)
             'price': round(lowest_price, 2),
             'original_price': round(lowest_price * 1.25, 2),
             'currency': currency, # Use real currency from API

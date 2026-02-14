@@ -202,7 +202,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 `;
 
                 item.addEventListener('click', () => {
-                    selectLocation(hotel.name, null, 'hotel');
+                    const loc = regionName ? regionName : countryName;
+                    const fullName = loc ? `${hotel.name}, ${loc}` : hotel.name;
+                    selectLocation(fullName, null, 'hotel');
                 });
 
                 resultsContainer.appendChild(item);

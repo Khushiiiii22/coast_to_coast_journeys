@@ -22,6 +22,10 @@ TRUSTPILOT_BADGE_HTML = '''            <!-- Trustpilot Review Badge -->
 '''
 
 FILES_TO_UPDATE = [
+    'index.html',
+    'flight-booking.html',
+    'hotel-booking.html',
+    'visa.html',
     'hotel-results.html',
     'payment.html',
     'booking-confirmation.html',
@@ -60,15 +64,15 @@ def add_trustpilot_badge(file_path):
         
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(new_content)
-       
-print(f"  ✅ {os.path.basename(file_path)} - Added Trustpilot badge")
+        
+        print(f"  ✅ {os.path.basename(file_path)} - Added Trustpilot badge")
         return True
     else:
         print(f"  ⚠️  {os.path.basename(file_path)} - No footer-bottom div found")
         return False
 
 def main():
-    templates_dir = '/Users/khushi22/coasttocoast/templates'
+    templates_dir = '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates'
     
     print("Adding Trustpilot badge to HTML files...")
     print("=" * 60)
@@ -88,7 +92,7 @@ def main():
             updated_count += 1
         else:
             skipped_count += 1
-   
+    
     print("=" * 60)
     print(f"Summary: {updated_count} files updated, {skipped_count} files skipped")
 

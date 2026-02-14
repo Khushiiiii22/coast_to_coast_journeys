@@ -2112,7 +2112,6 @@
                 item.addEventListener('click', function () {
                     const name = this.dataset.name;
                     const country = this.dataset.country;
-                    // Show city, country in the input (e.g., "Mumbai, India")
                     hotelDestInput.value = country ? `${name}, ${country}` : name;
                     clearHotelBtn.style.display = 'flex';
                     hotelDropdown.classList.remove('active');

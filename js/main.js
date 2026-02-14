@@ -29,9 +29,9 @@ const DOM = {
     returnDate: document.getElementById('returnDate'),
 
     // Swap Button
-    swapBtn: document.getElementById('swapLocations'),
-    flightFrom: document.getElementById('flightFrom'),
-    flightTo: document.getElementById('flightTo'),
+    swapBtn: document.getElementById('swapCitiesBtn'),
+    flightFrom: document.getElementById('fromCity'),
+    flightTo: document.getElementById('toCity'),
 
     // Travelers
     travelersSelector: document.getElementById('travelersSelector'),
@@ -300,47 +300,32 @@ function applyRooms() {
 async function handleFlightSearch(e) {
     e.preventDefault();
 
-    const formData = {
-        from: DOM.flightFrom.value,
-        to: DOM.flightTo.value,
-        departDate: document.getElementById('departDate').value,
-        returnDate: document.getElementById('returnDate').value,
-        travelers: DOM.travelersCount.textContent,
-        class: DOM.travelClass.textContent,
-        tripType: document.querySelector('input[name="tripType"]:checked').value
-    };
+    const from = document.getElementById('fromCity').value;
+    const to = document.getElementById('toCity').value;
+    const date = document.getElementById('departDate').value;
 
-    console.log('Flight Search:', formData);
+    // Travelers - parse from spans
+    const adults = parseInt(document.getElementById('adultsCount').textContent) || 1;
+    const children = parseInt(document.getElementById('childrenCount').textContent) || 0;
+    const infants = parseInt(document.getElementById('infantsCount').textContent) || 0;
+    const totalTravelers = adults + children + infants;
 
-    // Show notification
-    showNotification('Searching for flights...', 'info');
+    const fClass = document.getElementById('cabinClass').value;
 
-    try {
-        // Call Backend API
-        const response = await fetch('/api/flights/search', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            // Save results to session storage for results page
-            sessionStorage.setItem('ctc_flight_results', JSON.stringify(data.data));
-            sessionStorage.setItem('ctc_flight_search_params', JSON.stringify(formData));
-
-            // Redirect to results page
-            window.location.href = 'flight-results.html';
-        } else {
-            showNotification(data.error || 'Failed to search flights', 'error');
-        }
-    } catch (error) {
-        console.error('Search error:', error);
-        showNotification('Error connecting to server', 'error');
+    if (!from || !to || !date) {
+        showNotification('Please fill in From, To, and Departure fields', 'warning');
+        return;
     }
+
+    const params = new URLSearchParams({
+        from: from,
+        to: to,
+        date: date,
+        adults: totalTravelers,
+        class: fClass
+    });
+
+    window.location.href = `flight-results.html?${params.toString()}`;
 }
 
 async function handleHotelSearch(e) {

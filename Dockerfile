@@ -22,4 +22,4 @@ ENV PORT=8080
 # Adjust the path to app:app based on your structure. 
 # Since app.py is in backend/app.py, user runs "python backend/app.py"
 # We need to make sure gunicorn can find the app factory or instance.
-CMD ["gunicorn", "--bind", ":8080", "--workers", "1", "--threads", "8", "--timeout", "0", "--chdir", "backend", "app:create_app()"]
+CMD ["gunicorn", "--bind", ":8080", "--workers", "1", "--threads", "8", "--timeout", "180", "--chdir", "backend", "app:create_app()"]
