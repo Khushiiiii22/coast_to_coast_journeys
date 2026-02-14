@@ -478,6 +478,13 @@
 
         // Check Session logic
         async function checkExistingSession() {
+            // Check for admin token first (as it's a separate system)
+            const adminToken = localStorage.getItem('admin_token');
+            if (adminToken) {
+                window.location.href = 'admin/dashboard.html';
+                return;
+            }
+
             const session = await SupabaseDB.getSession();
             if (session) {
                 const isAdmin = await SupabaseDB.isAdmin();
@@ -510,14 +517,28 @@
             btn.textContent = 'SIGNING IN...';
 
             try {
+                // SPECIAL CASE: Check for admin credentials to support admin login from this page
+                if (email === 'admin@coasttocoast.com' && password === 'admin123') {
+                    const adminResponse = await fetch('/api/admin/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+
+                    const adminData = await adminResponse.json();
+                    if (adminData.success) {
+                        localStorage.setItem('admin_token', adminData.data.token);
+                        localStorage.setItem('admin_user', JSON.stringify(adminData.data.user));
+                        window.location.href = 'admin/dashboard.html';
+                        return;
+                    }
+                }
+
                 // Try to login via Supabase first (covers customers)
                 let result = await SupabaseDB.signIn(email, password);
 
                 // If Supabase login fails, check if we need to try simulated admin login or handle error
                 if (!result.success) {
-                    // Check if the user is trying to be admin with hardcoded creds (legacy support from app.py)
-                    // But typically we should use one auth system.
-                    // If error is just invalid creds, show it.
                     showError('loginError', result.error || 'Invalid email or password');
                     btn.disabled = false;
                     btn.textContent = 'SIGN IN';

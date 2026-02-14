@@ -100,6 +100,21 @@ class AdminService:
     def get_dashboard_stats(self):
         """Get dashboard statistics"""
         try:
+            if not self.supabase:
+                # Return demo data if Supabase is not available
+                return {
+                    'success': True,
+                    'data': {
+                        'total_bookings': 0,
+                        'confirmed_bookings': 0,
+                        'total_revenue': 0,
+                        'pending_cancellations': 0,
+                        'recent_bookings': [],
+                        'new_customers': 0,
+                        'message': 'Running in demo mode (Database offline)'
+                    }
+                }
+
             # Total bookings
             total_bookings = self.supabase.table('bookings').select('id', count='exact').execute()
             
@@ -123,7 +138,8 @@ class AdminService:
                     'confirmed_bookings': confirmed.count or 0,
                     'total_revenue': round(total_revenue, 2),
                     'pending_cancellations': pending_cancellations.count or 0,
-                    'recent_bookings': recent.data
+                    'recent_bookings': recent.data,
+                    'new_customers': 0 # Fallback
                 }
             }
         except Exception as e:
@@ -132,6 +148,8 @@ class AdminService:
     def log_activity(self, admin_id, action, target_type=None, target_id=None, details=None, ip_address=None):
         """Log admin activity"""
         try:
+            if not self.supabase:
+                return
             self.supabase.table('admin_activity_logs').insert({
                 'admin_id': admin_id,
                 'action': action,

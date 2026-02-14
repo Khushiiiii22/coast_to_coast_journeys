@@ -76,6 +76,14 @@ def get_bookings():
         offset = int(request.args.get('offset', 0))
         
         # Build query
+        if not supabase:
+            return jsonify({
+                'success': True,
+                'data': [],
+                'count': 0,
+                'message': 'Database not initialized'
+            }), 200
+
         query = supabase.table('bookings').select('*')
         
         if status:
@@ -104,6 +112,9 @@ def get_booking_details(booking_id):
         supabase = current_app.config.get('SUPABASE')
         
         # Get booking
+        if not supabase:
+            return jsonify({'success': False, 'error': 'Database not initialized'}), 500
+
         booking = supabase.table('bookings').select('*').eq('id', booking_id).execute()
         
         if not booking.data:
@@ -139,6 +150,9 @@ def get_customers():
         limit = int(request.args.get('limit', 50))
         offset = int(request.args.get('offset', 0))
         
+        if not supabase:
+            return jsonify({'success': True, 'data': [], 'count': 0}), 200
+
         result = supabase.table('customers').select('*').order('created_at', desc=True).limit(limit).offset(offset).execute()
         
         return jsonify({
