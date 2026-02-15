@@ -1078,12 +1078,18 @@ function initCurrency() {
 const popularHotelDestinationsResults = [
     { name: 'Mumbai', country: 'Maharashtra, India', type: 'city' },
     { name: 'Delhi', country: 'Delhi, India', type: 'city' },
+    { name: 'Goa', country: 'Goa, India', type: 'city' },
+    { name: 'Bangalore', country: 'Karnataka, India', type: 'city' },
+    { name: 'Chennai', country: 'Tamil Nadu, India', type: 'city' },
+    { name: 'Kolkata', country: 'West Bengal, India', type: 'city' },
+    { name: 'Jaipur', country: 'Rajasthan, India', type: 'city' },
+    { name: 'Hyderabad', country: 'Telangana, India', type: 'city' },
+    { name: 'Pune', country: 'Maharashtra, India', type: 'city' },
+    { name: 'Ahmedabad', country: 'Gujarat, India', type: 'city' },
     { name: 'Dubai', country: 'Dubai, UAE', type: 'city' },
     { name: 'Paris', country: 'Ile-de-France, France', type: 'city' },
     { name: 'London', country: 'Greater London, United Kingdom', type: 'city' },
-    { name: 'Singapore', country: 'Singapore', type: 'city' },
-    { name: 'New York', country: 'NY, United States', type: 'city' },
-    { name: 'Bangkok', country: 'Bangkok, Thailand', type: 'city' }
+    { name: 'Singapore', country: 'Singapore', type: 'city' }
 ];
 
 /**
@@ -1135,7 +1141,13 @@ function setupModifyDestAutocomplete() {
                 response.predictions.forEach(pred => {
                     const name = pred.structured_formatting?.main_text || pred.description.split(',')[0];
                     const country = pred.structured_formatting?.secondary_text || pred.description.split(',').slice(1).join(',').trim();
-                    const location = { name, country, type: 'city' };
+                    const location = {
+                        name,
+                        country,
+                        type: 'city',
+                        full: pred.description,
+                        region_id: pred.place_id // Assuming place_id can be used as region_id or similar
+                    };
                     html += createLocationItemHtml(location);
                 });
 
@@ -1185,8 +1197,10 @@ function setupModifyDestAutocomplete() {
     }
 
     function createLocationItemHtml(location) {
+        const fullDesc = location.full || (location.country ? `${location.name}, ${location.country}` : location.name);
         return `
             <div class="location-item" data-name="${location.name}" data-country="${location.country}" 
+                data-full="${fullDesc}"
                 style="padding: 10px 15px; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; transition: background 0.2s;">
                 <div style="background: #f1f5f9; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #3b82f6;">
                     <i class="fas fa-map-marker-alt"></i>
@@ -1205,9 +1219,7 @@ function setupModifyDestAutocomplete() {
             item.addEventListener('mouseleave', () => item.style.background = 'transparent');
 
             item.addEventListener('click', function () {
-                const name = this.dataset.name;
-                const country = this.dataset.country;
-                input.value = country ? `${name}, ${country}` : name;
+                input.value = this.dataset.full;
                 dropdown.style.display = 'none';
             });
 

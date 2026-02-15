@@ -260,16 +260,18 @@
 
                         <div class="form-field">
                             <label>Check-in</label>
-                            <div class="input-wrapper">
+                            <div class="input-wrapper date-picker-wrapper">
                                 <i class="fas fa-calendar-alt"></i>
+                                <span class="date-display" id="checkInDisplay">dd/mm/yy</span>
                                 <input type="date" id="checkIn" required>
                             </div>
                         </div>
 
                         <div class="form-field">
                             <label>Check-out</label>
-                            <div class="input-wrapper">
+                            <div class="input-wrapper date-picker-wrapper">
                                 <i class="fas fa-calendar-alt"></i>
+                                <span class="date-display" id="checkOutDisplay">dd/mm/yy</span>
                                 <input type="date" id="checkOut" required>
                             </div>
                         </div>
@@ -358,7 +360,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="btn-search" style="height: auto;">
+                        <button type="submit" class="btn-search">
                             <i class="fas fa-search"></i>
                             Search Hotels
                         </button>
@@ -1017,18 +1019,19 @@
 
         function createLocationItemHtml(location) {
             const icon = getIconForType(location.type);
+            const fullDescription = location.full_description || (location.country ? `${location.name}, ${location.country}` : location.name);
             return `
                 <div class="location-item" 
                      data-name="${location.name}" 
                      data-country="${location.country}"
                      data-type="${location.type}"
-                     data-full="${location.full_description || location.name + ', ' + location.country}">
+                     data-full="${fullDescription}">
                     <div class="location-icon ${location.type}">
                         <i class="fas ${icon}"></i>
                     </div>
                     <div class="location-details">
                         <div class="location-name">${location.name}</div>
-                        <div class="location-country">${location.country}</div>
+                        <div class="location-country">${location.country || ''}</div>
                     </div>
                 </div>
             `;
@@ -1037,16 +1040,16 @@
         function attachLocationListeners() {
             dropdownResults.querySelectorAll('.location-item').forEach(item => {
                 item.addEventListener('click', function () {
-                    const name = this.dataset.name;
-                    const country = this.dataset.country;
                     const fullDesc = this.dataset.full;
-                    destinationInput.value = fullDesc || (country ? `${name}, ${country}` : name);
+                    destinationInput.value = fullDesc;
+
                     selectedLocationData = {
-                        name: name,
-                        country: country,
+                        name: this.dataset.name,
+                        country: this.dataset.country,
                         type: this.dataset.type,
                         full_description: fullDesc
                     };
+
                     clearBtn.style.display = 'flex';
                     locationDropdown.classList.remove('active');
                 });
@@ -1054,26 +1057,71 @@
         }
         // ========== END AUTOCOMPLETE ==========
 
+        // Helper to format date as dd/mm/yy
+        function formatDateDisplay(dateStr) {
+            if (!dateStr) return 'dd/mm/yy';
+            const date = new Date(dateStr);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = String(date.getFullYear()).slice(-2);
+            return `${day}/${month}/${year}`;
+        }
+
         // Set min date to today
         const today = new Date().toISOString().split('T')[0];
-        document.getElementById('checkIn').min = today;
-        document.getElementById('checkIn').value = today;
+        const checkInInput = document.getElementById('checkIn');
+        const checkOutInput = document.getElementById('checkOut');
+        const checkInDisplay = document.getElementById('checkInDisplay');
+        const checkOutDisplay = document.getElementById('checkOutDisplay');
+
+        checkInInput.min = today;
+        checkInInput.value = today;
+        checkInDisplay.textContent = formatDateDisplay(today);
 
         // Set checkout to tomorrow
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         const tomorrowStr = tomorrow.toISOString().split('T')[0];
-        document.getElementById('checkOut').min = tomorrowStr;
-        document.getElementById('checkOut').value = tomorrowStr;
+        checkOutInput.min = tomorrowStr;
+        checkOutInput.value = tomorrowStr;
+        checkOutDisplay.textContent = formatDateDisplay(tomorrowStr);
 
-        // Update checkout min date when checkin changes
-        document.getElementById('checkIn').addEventListener('change', function () {
-            const checkIn = new Date(this.value);
-            checkIn.setDate(checkIn.getDate() + 1);
-            document.getElementById('checkOut').min = checkIn.toISOString().split('T')[0];
-            if (new Date(document.getElementById('checkOut').value) <= new Date(this.value)) {
-                document.getElementById('checkOut').value = checkIn.toISOString().split('T')[0];
+        // Update display and min dates when checkin changes
+        checkInInput.addEventListener('change', function () {
+            checkInDisplay.textContent = formatDateDisplay(this.value);
+            const checkInDate = new Date(this.value);
+            checkInDate.setDate(checkInDate.getDate() + 1);
+            const nextDayStr = checkInDate.toISOString().split('T')[0];
+            checkOutInput.min = nextDayStr;
+
+            if (new Date(checkOutInput.value) <= new Date(this.value)) {
+                checkOutInput.value = nextDayStr;
+                checkOutDisplay.textContent = formatDateDisplay(nextDayStr);
             }
+        });
+
+        checkOutInput.addEventListener('change', function () {
+            checkOutDisplay.textContent = formatDateDisplay(this.value);
+        });
+
+        // Trigger native date picker when clicking on the wrapper
+        document.querySelectorAll('.date-picker-wrapper').forEach(wrapper => {
+            wrapper.addEventListener('click', function () {
+                const input = this.querySelector('input[type="date"]');
+                if (input) {
+                    try {
+                        if (typeof input.showPicker === 'function') {
+                            input.showPicker();
+                        } else {
+                            input.focus();
+                            input.click();
+                        }
+                    } catch (e) {
+                        console.log('showPicker not supported or failed:', e);
+                        input.focus();
+                    }
+                }
+            });
         });
 
         // ========== Guests Dropdown (Multi-room) ==========

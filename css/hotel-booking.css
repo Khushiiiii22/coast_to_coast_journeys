@@ -2014,10 +2014,18 @@
 
 .hotel-search-grid {
     display: grid;
-    /* Optimized grid for hotel search fields */
-    grid-template-columns: minmax(200px, 2.5fr) minmax(130px, 0.8fr) minmax(130px, 0.8fr) minmax(160px, 1.2fr) minmax(180px, 1.4fr) auto;
-    gap: 16px;
+    /* Balanced grid for hotel search fields */
+    grid-template-columns: minmax(180px, 2fr) minmax(140px, 1fr) minmax(140px, 1fr) minmax(200px, 1.5fr) minmax(160px, 1.2fr) auto;
+    gap: 12px;
     align-items: end;
+}
+
+.hotel-search-grid .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 100%;
+    justify-content: flex-end;
 }
 
 /* Ensure destination input has enough space */
@@ -2045,6 +2053,105 @@
 /* Ensure inputs are full width of their grid cell */
 .hotel-search-grid .input-wrapper {
     width: 100%;
+}
+
+/* Date Picker Display Styling */
+.date-picker-wrapper {
+    position: relative !important;
+    cursor: pointer !important;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    background: white !important;
+    height: 52px !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+    transition: all 0.3s ease !important;
+}
+
+.date-display {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+    border: none !important;
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+    color: #1a365d !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    /* Perfect centering */
+    white-space: nowrap !important;
+    pointer-events: none !important;
+    background: transparent !important;
+    z-index: 2 !important;
+}
+
+.date-picker-wrapper i {
+    position: absolute !important;
+    left: 14px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 5 !important;
+    pointer-events: none !important;
+    color: #0e64a6 !important;
+    font-size: 1rem !important;
+}
+
+.date-picker-wrapper:hover {
+    border-color: #0e64a6 !important;
+    box-shadow: 0 0 0 4px rgba(14, 100, 166, 0.1) !important;
+}
+
+.date-picker-wrapper input[type="date"] {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    opacity: 0 !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    z-index: 10 !important;
+    /* Ensure it's on top of everything */
+    display: block !important;
+    border: none !important;
+}
+
+.guests-display {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #1a365d !important;
+    min-width: 140px;
+}
+
+.guests-dropdown.input-wrapper {
+    min-height: 52px;
+    padding: 12px 14px 12px 14px !important;
+}
+
+.hotel-search-grid input[type="text"],
+.hotel-search-grid .btn-search {
+    min-height: 52px;
+    height: 52px;
+}
+
+.hotel-search-grid .btn-search {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 24px;
+    font-size: 1rem;
+    font-weight: 600;
 }
 
 /* Responsive adjustment for Hotel Search */
@@ -3294,24 +3401,30 @@
         align-items: center;
     }
 }
+
 /* ============================================
    Layout Adjustments (Reduced Spacing)
    ============================================ */
 
 /* Compress hero section spacing */
 .page-hero.hotel-hero {
-    padding-bottom: 60px !important; /* Reduced from 80px */
+    padding-bottom: 60px !important;
+    /* Reduced from 80px */
 }
 
 .hotel-hero .hero-content {
-    margin-bottom: 24px !important; /* Bring search box closer to title */
+    margin-bottom: 24px !important;
+    /* Bring search box closer to title */
 }
 
 /* Adjust search container positioning and spacing */
 .booking-search-container {
-    margin-top: -60px !important; /* Optimize overlap (default was -60px) */
-    margin-bottom: 24px !important; /* Reduce space below search box */
-    padding: 28px !important; /* Slightly more compact internal spacing */
+    margin-top: -60px !important;
+    /* Optimize overlap (default was -60px) */
+    margin-bottom: 24px !important;
+    /* Reduce space below search box */
+    padding: 28px !important;
+    /* Slightly more compact internal spacing */
 }
 
 /* Ensure results layout sits nicely */
@@ -3324,7 +3437,7 @@
     .page-hero.hotel-hero {
         padding-bottom: 40px !important;
     }
-    
+
     .booking-search-container {
         margin-top: -40px !important;
         margin-bottom: 20px !important;

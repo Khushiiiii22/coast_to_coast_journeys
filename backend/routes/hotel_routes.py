@@ -141,6 +141,7 @@ def autocomplete_location():
         
         # Call Google Places Autocomplete API
         url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json'
+        # Try both (regions) and (cities) if regions fails, or just broader types
         params = {'input': query, 'types': '(regions)', 'key': api_key}
         
         response = req.get(url, params=params, timeout=5)
@@ -148,8 +149,15 @@ def autocomplete_location():
         
         if data.get('status') == 'OK':
             return jsonify({'success': True, 'predictions': data.get('predictions', [])[:8], 'source': 'google'})
-        else:
-            return jsonify({'success': False, 'error': data.get('status', 'Unknown error'), 'predictions': []})
+        elif data.get('status') == 'ZERO_RESULTS':
+            # Try without types restriction if no results found
+            params.pop('types')
+            response = req.get(url, params=params, timeout=5)
+            data = response.json()
+            if data.get('status') == 'OK':
+                return jsonify({'success': True, 'predictions': data.get('predictions', [])[:8], 'source': 'google_unfiltered'})
+            
+        return jsonify({'success': False, 'error': data.get('status', 'Unknown error'), 'predictions': []})
             
     except Exception as e:
         return jsonify({'success': False, 'error': str(e), 'predictions': []}), 500
