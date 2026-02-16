@@ -1135,8 +1135,8 @@
         const guestsDropdown = document.getElementById('guestsDropdown');
         const guestsPopup = document.getElementById('guestsPopup');
         const guestsDisplay = document.getElementById('guestsDisplay');
-        const guestsDone = document.getElementById('guestsDone');
         const roomsContainer = document.getElementById('roomsContainer');
+        const guestsDone = document.getElementById('guestsDone');
         const addRoomBtn = document.getElementById('addRoomBtn');
         const removeRoomBtn = document.getElementById('removeRoomBtn');
 
@@ -1156,16 +1156,16 @@
             }
         });
 
-        // Add Room
+        // Add Room Button handling
         addRoomBtn.addEventListener('click', function (e) {
             e.stopPropagation();
-            if (rooms.length < 8) {
+            if (rooms.length < 30) {
                 rooms.push({ adults: 2, children: 0, childAges: [] });
                 renderRooms();
             }
         });
 
-        // Remove Room
+        // Remove Room Button handling
         removeRoomBtn.addEventListener('click', function (e) {
             e.stopPropagation();
             if (rooms.length > 1) {
@@ -1190,9 +1190,9 @@
                                 <span class="traveler-age">18+ years</span>
                             </div>
                             <div class="traveler-counter">
-                                <button type="button" class="counter-btn minus" onclick="updateGuest(${index}, 'adults', -1)" ${room.adults <= 1 ? 'disabled' : ''}>-</button>
+                                <button type="button" class="counter-btn minus" onclick="event.stopPropagation(); updateGuest(${index}, 'adults', -1)" ${room.adults <= 1 ? 'disabled' : ''}>-</button>
                                 <span>${room.adults}</span>
-                                <button type="button" class="counter-btn plus" onclick="updateGuest(${index}, 'adults', 1)" ${!canAddAdult ? 'disabled' : ''}>+</button>
+                                <button type="button" class="counter-btn plus" onclick="event.stopPropagation(); updateGuest(${index}, 'adults', 1)" ${!canAddAdult ? 'disabled' : ''}>+</button>
                             </div>
                         </div>
                         <div class="traveler-row">
@@ -1201,9 +1201,9 @@
                                 <span class="traveler-age">0-17 years</span>
                             </div>
                             <div class="traveler-counter">
-                                <button type="button" class="counter-btn minus" onclick="updateGuest(${index}, 'children', -1)" ${room.children <= 0 ? 'disabled' : ''}>-</button>
+                                <button type="button" class="counter-btn minus" onclick="event.stopPropagation(); updateGuest(${index}, 'children', -1)" ${room.children <= 0 ? 'disabled' : ''}>-</button>
                                 <span>${room.children}</span>
-                                <button type="button" class="counter-btn plus" onclick="updateGuest(${index}, 'children', 1)" ${!canAddChild ? 'disabled' : ''}>+</button>
+                                <button type="button" class="counter-btn plus" onclick="event.stopPropagation(); updateGuest(${index}, 'children', 1)" ${!canAddChild ? 'disabled' : ''}>+</button>
                             </div>
                         </div>
                         ${totalGuests >= 10 ? '<div class="room-limit-warning"><i class="fas fa-info-circle"></i> Maximum 10 guests per room</div>' : ''}
@@ -1235,7 +1235,8 @@
         }
 
         function updateButtons() {
-            removeRoomBtn.style.display = rooms.length > 1 ? 'inline-block' : 'none';
+            addRoomBtn.disabled = (rooms.length >= 30);
+            removeRoomBtn.style.display = (rooms.length > 1) ? 'block' : 'none';
         }
 
         window.updateGuest = function (roomIndex, type, change) {
@@ -1244,16 +1245,13 @@
 
             if (type === 'adults') {
                 const newValue = room.adults + change;
-                // ETG limits: max 6 adults, min 1 adult, max 10 total guests
                 if (newValue >= 1 && newValue <= 6 && (newValue + room.children) <= 10) {
                     room.adults = newValue;
                 }
             } else if (type === 'children') {
                 const newValue = room.children + change;
-                // ETG limits: max 4 children, min 0 children, max 10 total guests
                 if (newValue >= 0 && newValue <= 4 && (room.adults + newValue) <= 10) {
                     room.children = newValue;
-                    // Adjust child ages array
                     if (change > 0) {
                         room.childAges.push(null);
                     } else {

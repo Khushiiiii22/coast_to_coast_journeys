@@ -2500,6 +2500,21 @@ h6 {
     flex-direction: column;
 }
 
+.rooms-count-selector {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid var(--gray-100);
+}
+
+.rooms-count-selector span {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
 .travelers-popup.active {
     opacity: 1;
     visibility: visible;
@@ -2538,6 +2553,25 @@ h6 {
     display: flex;
     align-items: center;
     gap: 12px;
+}
+
+.guest-select {
+    padding: 8px 12px;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    font-weight: 500;
+    background: var(--white);
+    color: var(--text-primary);
+    cursor: pointer;
+    min-width: 75px;
+    outline: none;
+    transition: var(--transition);
+}
+
+.guest-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(5, 108, 185, 0.1);
 }
 
 .counter-btn {
