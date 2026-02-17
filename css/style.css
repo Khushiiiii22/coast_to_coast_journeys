@@ -549,17 +549,14 @@ body {
         display: none;
     }
 
-    .mobile-menu-toggle {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
+    .header-actions,
+    .mobile-menu-toggle,
+    .nav-actions {
+        display: none !important;
     }
 
-    .mobile-menu-toggle span {
-        width: 24px;
-        height: 3px;
-        background: var(--gray-700);
-        border-radius: 2px;
+    .hamburger-menu {
+        display: flex !important;
     }
 
     .hero-title {

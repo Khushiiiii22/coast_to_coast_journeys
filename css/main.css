@@ -1832,101 +1832,6 @@ h6 {
     }
 }
 
-@media (max-width: 768px) {
-    :root {
-        --header-height: 64px;
-    }
-
-    h1 {
-        font-size: 2rem;
-    }
-
-    h2 {
-        font-size: 1.5rem;
-    }
-
-    .nav-menu {
-        display: none;
-        position: fixed;
-        top: var(--header-height);
-        left: 0;
-        right: 0;
-        background: var(--white);
-        flex-direction: column;
-        padding: 24px;
-        gap: 16px;
-        box-shadow: var(--shadow-lg);
-    }
-
-    .nav-menu.active {
-        display: flex;
-    }
-
-    .mobile-menu-toggle {
-        display: flex;
-    }
-
-    .hero {
-        padding: 100px 0 60px;
-    }
-
-    .hero-title {
-        font-size: 2rem;
-    }
-
-    .hero-subtitle {
-        font-size: 1rem;
-    }
-
-    .search-form,
-    .search-form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .swap-btn {
-        position: static;
-        transform: none;
-        margin: 8px auto;
-    }
-
-    .trip-type,
-    .trip-type-selector {
-        flex-wrap: wrap;
-    }
-
-    .offers-grid,
-    .trust-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .contact-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .footer-grid {
-        grid-template-columns: 1fr;
-        gap: 32px;
-    }
-
-    .page-hero {
-        padding: 100px 0 60px;
-    }
-
-    .page-hero h1 {
-        font-size: 1.75rem;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .help-box {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .help-actions {
-        justify-content: center;
-    }
-}
 
 /* === Footer Partners === */
 .footer-partners {
@@ -2125,7 +2030,8 @@ h6 {
 
 /* Hamburger Menu Button */
 .hamburger-menu {
-    display: flex;
+    display: none;
+    /* Hidden by default on desktop */
     flex-direction: column;
     gap: 5px;
     padding: 8px;
@@ -2737,37 +2643,6 @@ h6 {
     box-shadow: var(--shadow-accent);
 }
 
-/* Responsive Adjustments for New Components */
-@media (max-width: 768px) {
-    .search-row {
-        flex-direction: column;
-    }
-
-    .swap-cities-btn {
-        align-self: center;
-        margin: 8px 0;
-    }
-
-    .travelers-popup {
-        position: fixed;
-        top: auto;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-        max-height: 80vh;
-        overflow-y: auto;
-    }
-
-    .sidebar {
-        width: 280px;
-    }
-
-    .hamburger-menu {
-        display: flex;
-    }
-}
-
 @media (min-width: 769px) {
     #returnDateWrapper {
         display: flex;
@@ -2834,20 +2709,6 @@ h6 {
     width: calc(50% - 32px);
     /* Adjust width based on margin */
 }
-
-@media (max-width: 768px) {
-    .testimonial-card {
-        min-width: 100%;
-        width: 100%;
-        margin: 0;
-    }
-
-    .testimonials-track {
-        gap: 0;
-    }
-}
-
-
 
 .testimonial-card:hover {
     transform: translateY(-5px);
@@ -2939,15 +2800,6 @@ h6 {
 .dot.active {
     background: var(--primary);
     transform: scale(1.2);
-}
-
-@media (max-width: 768px) {
-
-    .testimonials-section .section-header h2,
-    .testimonials-section .section-header h3 {
-        display: block;
-        margin-right: 0;
-    }
 }
 
 /* =====================================================
@@ -3205,4 +3057,186 @@ input:disabled+.date-display-content {
     background: var(--light);
     /* visual feedback for disabled */
     border-radius: var(--radius);
+}
+
+/* =====================================================
+   MOBILE RESPONSIVENESS (CONSOLIDATED)
+   ===================================================== */
+@media (max-width: 768px) {
+    :root {
+        --header-height: 64px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    .nav-menu {
+        display: none !important;
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        right: 0;
+        background: var(--white);
+        flex-direction: column;
+        padding: 24px;
+        gap: 16px;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .nav-menu.active {
+        display: flex;
+    }
+
+    .header-actions,
+    .mobile-menu-toggle {
+        display: none !important;
+    }
+
+    .hamburger-menu {
+        display: flex !important;
+    }
+
+    .hero {
+        padding: 100px 0 60px;
+    }
+
+    .hero-title {
+        font-size: 1.75rem;
+    }
+
+    .hero-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .search-box {
+        padding: 15px;
+        margin: 0 10px;
+        max-width: calc(100vw - 20px);
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .search-form {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .search-row {
+        flex-direction: column !important;
+        gap: 15px !important;
+        align-items: stretch !important;
+        /* Fix the right-pushed alignment */
+    }
+
+    .form-field-improved {
+        width: 100% !important;
+        flex: none !important;
+    }
+
+    .swap-cities-btn {
+        align-self: center;
+        margin: 5px 0 !important;
+        transform: rotate(90deg);
+        z-index: 5;
+    }
+
+    .btn-search-main {
+        width: 100%;
+        padding: 14px;
+        margin-top: 10px;
+    }
+
+    .nav-menu {
+        display: none;
+    }
+
+    .swap-btn {
+        position: static;
+        transform: none;
+        margin: 8px auto;
+    }
+
+    .trip-type,
+    .trip-type-selector {
+        flex-wrap: wrap;
+    }
+
+    .offers-grid,
+    .trust-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .contact-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+
+    .page-hero {
+        padding: 100px 0 60px;
+    }
+
+    .page-hero h1 {
+        font-size: 1.75rem;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .help-box {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .help-actions {
+        justify-content: center;
+    }
+
+    .travelers-popup {
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .sidebar {
+        width: 280px;
+    }
+
+    .testimonial-card {
+        min-width: 100%;
+        width: 100%;
+        margin: 0;
+    }
+
+    .testimonials-track {
+        gap: 0;
+    }
+
+    .testimonials-section .section-header h2,
+    .testimonials-section .section-header h3 {
+        display: block;
+        margin-right: 0;
+    }
+
+    .search-tabs {
+        gap: 2px;
+        margin-bottom: 20px;
+    }
+
+    .search-tab {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
 }
