@@ -319,7 +319,7 @@
                     <td>${booking.guest_name || 'Guest'}</td>
                     <td>${booking.hotel_name || 'Flight/Hotel'}</td>
                     <td>${formatDate(booking.check_in || booking.created_at)}</td>
-                    <td><strong>${formatCurrency(booking.total_price)}</strong></td>
+                    <td><strong>${formatCurrency(booking.total_amount)}</strong></td>
                     <td><span class="status-badge ${getStatusClass(booking.status)}">${capitalize(booking.status)}</span></td>
                     <td>
                         <button class="btn btn-secondary btn-icon" title="View" onclick="window.location.href='bookings.html?id=${booking.id}'">

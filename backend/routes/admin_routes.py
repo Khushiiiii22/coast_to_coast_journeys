@@ -84,7 +84,7 @@ def get_bookings():
                 'message': 'Database not initialized'
             }), 200
 
-        query = supabase.table('bookings').select('*')
+        query = supabase.table('hotel_bookings').select('*')
         
         if status:
             query = query.eq('status', status)
@@ -115,7 +115,7 @@ def get_booking_details(booking_id):
         if not supabase:
             return jsonify({'success': False, 'error': 'Database not initialized'}), 500
 
-        booking = supabase.table('bookings').select('*').eq('id', booking_id).execute()
+        booking = supabase.table('hotel_bookings').select('*').eq('id', booking_id).execute()
         
         if not booking.data:
             return jsonify({'success': False, 'error': 'Booking not found'}), 404

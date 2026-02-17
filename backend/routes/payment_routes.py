@@ -96,7 +96,7 @@ def verify_payment():
             if 'booking_id' in data and supabase:
                 try:
                     # Update booking as confirmed
-                    supabase.table('bookings').update({
+                    supabase.table('hotel_bookings').update({
                         'status': 'confirmed',
                         'updated_at': 'NOW()'
                     }).eq('id', data['booking_id']).execute()
@@ -111,7 +111,7 @@ def verify_payment():
                     }).execute()
                     
                     # Fetch booking details for email
-                    booking_response = supabase.table('bookings').select('*').eq('id', data['booking_id']).execute()
+                    booking_response = supabase.table('hotel_bookings').select('*').eq('id', data['booking_id']).execute()
                     if booking_response.data:
                         booking = booking_response.data[0]
                         
@@ -319,7 +319,7 @@ def capture_paypal_order(order_id):
             
             if 'booking_id' in data and supabase:
                 try:
-                    supabase.table('bookings').update({
+                    supabase.table('hotel_bookings').update({
                         'status': 'confirmed',
                         'updated_at': 'NOW()'
                     }).eq('id', data['booking_id']).execute()
@@ -336,7 +336,7 @@ def capture_paypal_order(order_id):
                 # Send confirmation email logic for PayPal
                 try:
                     # Fetch booking details for email
-                    booking_response = supabase.table('bookings').select('*').eq('id', data['booking_id']).execute()
+                    booking_response = supabase.table('hotel_bookings').select('*').eq('id', data['booking_id']).execute()
                     if booking_response.data:
                         booking = booking_response.data[0]
                         

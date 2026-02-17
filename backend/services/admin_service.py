@@ -116,20 +116,20 @@ class AdminService:
                 }
 
             # Total bookings
-            total_bookings = self.supabase.table('bookings').select('id', count='exact').execute()
+            total_bookings = self.supabase.table('hotel_bookings').select('id', count='exact').execute()
             
             # Confirmed bookings
-            confirmed = self.supabase.table('bookings').select('id', count='exact').eq('status', 'confirmed').execute()
+            confirmed = self.supabase.table('hotel_bookings').select('id', count='exact').eq('status', 'confirmed').execute()
             
-            # Total revenue (sum of total_price for confirmed bookings)
-            revenue_result = self.supabase.table('bookings').select('total_price').eq('status', 'confirmed').execute()
-            total_revenue = sum(float(b.get('total_price', 0) or 0) for b in revenue_result.data)
+            # Total revenue (sum of total_amount for confirmed bookings)
+            revenue_result = self.supabase.table('hotel_bookings').select('total_amount').eq('status', 'confirmed').execute()
+            total_revenue = sum(float(b.get('total_amount', 0) or 0) for b in revenue_result.data)
             
             # Pending cancellations
             pending_cancellations = self.supabase.table('cancellation_requests').select('id', count='exact').eq('refund_status', 'pending').execute()
             
             # Recent bookings
-            recent = self.supabase.table('bookings').select('*').order('created_at', desc=True).limit(10).execute()
+            recent = self.supabase.table('hotel_bookings').select('*').order('created_at', desc=True).limit(10).execute()
             
             return {
                 'success': True,
