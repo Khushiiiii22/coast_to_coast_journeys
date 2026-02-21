@@ -2731,21 +2731,77 @@ def poll_booking_status():
 def get_booking(partner_order_id):
     """
     Get booking details from ETG (/hotel/order/info/)
-    
-    IMPORTANT (RateHawk Certification):
-    - This endpoint should NOT be used for booking confirmation display.
-    - For immediate confirmation, use data from the prebook step.
-    - /order/info/ should only be used for booking history/voucher retrieval.
-    - RateHawk recommends a minimum 60-second gap after /finish/status/ returns "ok"
-      before calling /order/info/ (data sync can take up to 60s).
-    - If /order/info/ returns blank, the booking is still valid - retry after 60s.
+
+    RateHawk Certification Requirements:
+    1. NOT for immediate confirmation display — use prebook/poll data for that.
+    2. Minimum 60-second gap after /finish/status/ returns "ok" before calling /order/info/
+       (ETG data sync can take up to 60 seconds after confirmation).
+    3. If /order/info/ returns blank → booking is still valid, return cached DB data.
+
+    Behaviour:
+    - If booking was confirmed < 60s ago → return cached Supabase data (no ETG call)
+    - If > 60s ago → call /order/info/, return ETG data
+    - If /order/info/ returns blank → fall back to cached Supabase data
     """
     try:
+        from datetime import datetime, timezone
+
+        MIN_GAP_SECONDS = 60  # RateHawk recommended minimum gap
+
+        # Fetch our cached booking record from Supabase
+        db_booking = supabase_service.get_booking_by_partner_order_id(partner_order_id)
+        cached_data = db_booking.get('data') if db_booking else None
+
+        # Check how long ago the booking was confirmed
+        seconds_since_confirmed = None
+        if cached_data and cached_data.get('updated_at'):
+            try:
+                updated_str = cached_data['updated_at']
+                # Parse ISO timestamp
+                updated_at = datetime.fromisoformat(updated_str.replace('Z', '+00:00'))
+                now = datetime.now(timezone.utc)
+                seconds_since_confirmed = (now - updated_at).total_seconds()
+            except Exception:
+                seconds_since_confirmed = None
+
+        # If < 60s since confirmation, return cached data to respect ETG sync window
+        if seconds_since_confirmed is not None and seconds_since_confirmed < MIN_GAP_SECONDS:
+            remaining = int(MIN_GAP_SECONDS - seconds_since_confirmed)
+            print(f"⏳ Only {int(seconds_since_confirmed)}s since confirmation — returning cached data (gap: {remaining}s remaining)")
+            return jsonify({
+                'success': True,
+                'source': 'cache',
+                'reason': f'ETG data sync in progress — using cached data ({remaining}s until /order/info/ is available)',
+                'data': cached_data,
+                'retry_after_seconds': remaining
+            })
+
+        # Call /order/info/ — it's been >= 60s since confirmation
+        print(f"📋 Calling /order/info/ for {partner_order_id} ({int(seconds_since_confirmed or 999)}s after confirmation)")
         result = etg_service.get_booking_info(partner_order_id)
-        return jsonify(result)
-    
+
+        # If /order/info/ returns blank or empty data, fall back to cached DB record
+        etg_data = result.get('data', {})
+        is_blank = not etg_data or (isinstance(etg_data, dict) and not etg_data.get('data'))
+
+        if is_blank:
+            print(f"⚠️ /order/info/ returned blank — booking is still valid, returning cached Supabase data")
+            return jsonify({
+                'success': True,
+                'source': 'cache',
+                'reason': 'ETG order info not yet available — booking confirmed, using cached data',
+                'data': cached_data
+            })
+
+        return jsonify({
+            'success': True,
+            'source': 'etg',
+            'data': etg_data
+        })
+
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 
 @hotel_bp.route('/booking/cancel', methods=['POST'])
