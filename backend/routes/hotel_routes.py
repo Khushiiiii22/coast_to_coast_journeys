@@ -2368,29 +2368,10 @@ def create_booking():
                 'message': 'Demo booking created successfully'
             })
         
-        # For real ETG bookings, call prebook first to validate the hash
-        print(f"📋 Calling prebook to validate hash: {book_hash[:50]}...")
-        prebook_result = etg_service.prebook(book_hash)
-        
-        if not prebook_result.get('success'):
-            error_msg = prebook_result.get('error', 'Unknown prebook error')
-            print(f"❌ Prebook failed: {error_msg}")
-            
-            # Return user-friendly error message
-            if '400' in str(error_msg) or 'Bad Request' in str(error_msg):
-                return jsonify({
-                    'success': False,
-                    'error': 'This room rate has expired or is no longer available. Please go back and select a different room.',
-                    'error_code': 'RATE_EXPIRED'
-                }), 400
-            
-            return jsonify({
-                'success': False,
-                'error': f'Rate validation failed: {error_msg}',
-                'error_code': 'PREBOOK_FAILED'
-            }), 400
-        
-        print(f"✅ Prebook successful, proceeding with booking...")
+        # Frontend already called prebook (Step 6 in booking flow).
+        # Do NOT call prebook again here — it wastes quota and slows the flow.
+        # Trust the book_hash is valid (prebook was already done by the frontend).
+        print(f"📋 Proceeding to booking form with validated hash: {book_hash[:50]}...")
         
         # Generate unique partner order ID
         partner_order_id = etg_service.generate_partner_order_id()
@@ -2456,6 +2437,15 @@ def finish_booking():
     """
     Finalize booking and start status polling
     
+    RateHawk Certification Table 3: /hotel/order/booking/finish/ responses
+    - Status "ok"          -> Proceed to poll /finish/status/
+    - 5xx status code      -> Retry once, then show error
+    - Error "timeout"      -> Start polling /finish/status/
+    - Error "unknown"      -> Start polling /finish/status/
+    - Error "booking_form_expired" -> Session expired, redirect to search
+    - Error "rate_not_found"       -> Room no longer available
+    - Error "return_path_required" -> Additional verification needed
+    
     Request Body:
     {
         "partner_order_id": "CTC-20260201-ABC123"
@@ -2478,8 +2468,80 @@ def finish_booking():
                 partner_order_id,
                 {'status': 'processing'}
             )
+            return jsonify(result)
         
-        return jsonify(result)
+        # ===== ERROR HANDLING (Table 3) =====
+        error_msg = result.get('error', '')
+        error_str = str(error_msg).lower()
+        status_code = result.get('status_code', 0)
+        
+        # 5xx Server Error -> Retry once
+        if status_code and 500 <= status_code < 600:
+            print(f"⚠️ ETG 5xx error on /finish/, retrying once...")
+            time.sleep(1)
+            retry_result = etg_service.finish_booking(partner_order_id)
+            if retry_result.get('success'):
+                supabase_service.update_booking_by_partner_order_id(
+                    partner_order_id, {'status': 'processing'}
+                )
+                return jsonify(retry_result)
+            # Retry failed -> still proceed to poll (booking may be processing)
+            supabase_service.update_booking_by_partner_order_id(
+                partner_order_id, {'status': 'processing'}
+            )
+            return jsonify({
+                'success': True,
+                'message': 'Server error during finalization. Booking may still be processing.',
+                'should_poll': True
+            })
+        
+        # Timeout / Unknown -> Start polling (booking may be processing on ETG side)
+        if 'timeout' in error_str or 'unknown' in error_str:
+            supabase_service.update_booking_by_partner_order_id(
+                partner_order_id, {'status': 'processing'}
+            )
+            return jsonify({
+                'success': True,
+                'message': 'Booking is being processed. Please wait...',
+                'should_poll': True
+            })
+        
+        # Booking form expired -> User must search again
+        if 'booking_form_expired' in error_str:
+            supabase_service.update_booking_by_partner_order_id(
+                partner_order_id, {'status': 'expired'}
+            )
+            return jsonify({
+                'success': False,
+                'error': 'Your booking session has expired. Please search again and select a new room.',
+                'error_code': 'SESSION_EXPIRED'
+            }), 400
+        
+        # Rate not found -> Room no longer available
+        if 'rate_not_found' in error_str:
+            supabase_service.update_booking_by_partner_order_id(
+                partner_order_id, {'status': 'failed'}
+            )
+            return jsonify({
+                'success': False,
+                'error': 'This room is no longer available. Please go back and select a different room.',
+                'error_code': 'RATE_NOT_FOUND'
+            }), 400
+        
+        # Return path required -> 3DS / additional verification
+        if 'return_path_required' in error_str:
+            return jsonify({
+                'success': False,
+                'error': 'Additional payment verification is required.',
+                'error_code': 'VERIFICATION_REQUIRED'
+            }), 400
+        
+        # Generic error fallback
+        return jsonify({
+            'success': False,
+            'error': f'Booking finalization failed: {error_msg}',
+            'error_code': 'FINISH_FAILED'
+        }), 400
     
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -2527,13 +2589,41 @@ def check_booking_status():
 def poll_booking_status():
     """
     Poll booking status until final (with timeout)
-    Polls every 2.5 seconds for max 60 seconds
+    Polls every 2.5 seconds for max 180 seconds (RateHawk recommended)
+    Timeout countdown begins after successful response to "Start booking process"
+    
+    RateHawk Certification Table 4: /hotel/order/booking/finish/status/ responses
+    - Status "ok"          -> Booking Confirmed
+    - Status "processing"  -> Continue polling
+    - Error "timeout"      -> Save as pending, notify user
+    - Error "unknown"      -> Save as pending, notify user
+    - 5xx status code      -> Save as pending, retry later
+    - Error "block"        -> Payment blocked by bank
+    - Error "charge"       -> Payment charge failed
+    - Error "3ds"          -> 3D Secure verification failed
+    - Error "soldout"      -> Room sold out during booking
+    - Error "provider"     -> Hotel provider error
+    - Error "book_limit"   -> Booking limit reached
+    - Error "not_allowed"  -> Booking not permitted
+    - Error "booking_finish_did_not_succeed" -> Booking could not be completed
     
     Request Body:
     {
         "partner_order_id": "CTC-20260201-ABC123"
     }
     """
+    # Error code -> user-friendly message mapping
+    ERROR_MESSAGES = {
+        'block': 'Payment was blocked by your bank. Please contact your bank or try a different card.',
+        'charge': 'Payment charge failed. Please try again or use a different payment method.',
+        '3ds': '3D Secure verification failed. Please try again.',
+        'soldout': 'This room was sold out while processing your booking. Please select a different room.',
+        'provider': 'The hotel provider encountered an error. Please try again later.',
+        'book_limit': 'Booking limit reached for this property. Please try a different hotel.',
+        'not_allowed': 'This booking is not permitted at this time. Please contact support.',
+        'booking_finish_did_not_succeed': 'Booking could not be completed. Please try again or select a different room.',
+    }
+    
     try:
         data = request.get_json()
         
@@ -2541,7 +2631,7 @@ def poll_booking_status():
             return jsonify({'success': False, 'error': 'Missing partner_order_id'}), 400
         
         partner_order_id = data['partner_order_id']
-        max_attempts = 24  # 60 seconds / 2.5 seconds
+        max_attempts = 72  # 180 seconds / 2.5 seconds (RateHawk recommended timeout)
         attempt = 0
         
         while attempt < max_attempts:
@@ -2549,28 +2639,85 @@ def poll_booking_status():
             
             if result.get('success') and result.get('data'):
                 status = result['data'].get('status', '')
+                error = result['data'].get('error', '')
                 
-                if status != 'processing':
-                    # Final status reached
-                    final_status = 'confirmed' if status == 'ok' else status
+                # Still processing -> continue polling
+                if status == 'processing':
+                    attempt += 1
+                    time.sleep(2.5)
+                    continue
+                
+                # === SUCCESS ===
+                if status == 'ok':
                     supabase_service.update_booking_by_partner_order_id(
                         partner_order_id,
-                        {'status': final_status, 'booking_response': result['data']}
+                        {'status': 'confirmed', 'booking_response': result['data']}
                     )
                     return jsonify({
                         'success': True,
-                        'status': final_status,
+                        'status': 'confirmed',
                         'data': result['data']
                     })
+                
+                # === KNOWN ERRORS (Table 4) ===
+                error_key = error if error else status
+                if error_key in ERROR_MESSAGES:
+                    supabase_service.update_booking_by_partner_order_id(
+                        partner_order_id,
+                        {'status': 'failed', 'booking_response': result['data']}
+                    )
+                    return jsonify({
+                        'success': False,
+                        'status': 'failed',
+                        'error': ERROR_MESSAGES[error_key],
+                        'error_code': error_key.upper()
+                    })
+                
+                # === TIMEOUT / UNKNOWN from ETG ===
+                if error_key in ('timeout', 'unknown'):
+                    supabase_service.update_booking_by_partner_order_id(
+                        partner_order_id,
+                        {'status': 'pending', 'booking_response': result['data']}
+                    )
+                    return jsonify({
+                        'success': False,
+                        'status': 'pending',
+                        'error': 'Your booking is still being processed. We will send you a confirmation email once it is finalized.',
+                        'error_code': 'PENDING'
+                    })
+                
+                # === UNRECOGNIZED FINAL STATUS ===
+                final_status = 'confirmed' if status == 'ok' else status
+                supabase_service.update_booking_by_partner_order_id(
+                    partner_order_id,
+                    {'status': final_status, 'booking_response': result['data']}
+                )
+                return jsonify({
+                    'success': status == 'ok',
+                    'status': final_status,
+                    'data': result['data']
+                })
+            
+            # API call itself failed (5xx, network error)
+            elif result.get('status_code') and result['status_code'] >= 500:
+                # 5xx -> continue polling (ETG may still be processing)
+                print(f"⚠️ 5xx error during status poll attempt {attempt}, continuing...")
             
             attempt += 1
             time.sleep(2.5)
         
+        # === POLLING TIMEOUT (180s exhausted) ===
+        # Save as pending - booking may still succeed on ETG side
+        supabase_service.update_booking_by_partner_order_id(
+            partner_order_id,
+            {'status': 'pending'}
+        )
         return jsonify({
             'success': False,
-            'error': 'Booking status check timed out',
-            'status': 'timeout'
-        }), 408
+            'error': 'Your booking is still being processed by the hotel. We will email you a confirmation once it is finalized.',
+            'status': 'pending',
+            'error_code': 'TIMEOUT_PENDING'
+        }), 202  # 202 Accepted (still processing)
     
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -2582,7 +2729,17 @@ def poll_booking_status():
 
 @hotel_bp.route('/booking/<partner_order_id>', methods=['GET'])
 def get_booking(partner_order_id):
-    """Get booking details from ETG"""
+    """
+    Get booking details from ETG (/hotel/order/info/)
+    
+    IMPORTANT (RateHawk Certification):
+    - This endpoint should NOT be used for booking confirmation display.
+    - For immediate confirmation, use data from the prebook step.
+    - /order/info/ should only be used for booking history/voucher retrieval.
+    - RateHawk recommends a minimum 60-second gap after /finish/status/ returns "ok"
+      before calling /order/info/ (data sync can take up to 60s).
+    - If /order/info/ returns blank, the booking is still valid - retry after 60s.
+    """
     try:
         result = etg_service.get_booking_info(partner_order_id)
         return jsonify(result)

@@ -207,9 +207,9 @@ async function handleBookingSubmit(e) {
  */
 async function processRealBooking(guests, email, phone, specialRequests) {
     try {
-        // Step 1: Prebook to check availability
+        // Step 1: Prebook to check availability (price_increase_percent: 5 allows up to 5% price change)
         updateLoadingMessage('Checking availability...');
-        const prebookResult = await HotelAPI.prebookRate(rate.book_hash);
+        const prebookResult = await HotelAPI.prebookRate(rate.book_hash, 5, searchParams?.checkin);
 
         if (!prebookResult.success) {
             return { success: false, error: 'Room is no longer available at this price' };
