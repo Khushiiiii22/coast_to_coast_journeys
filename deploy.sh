@@ -66,6 +66,10 @@ gcloud run deploy $SERVICE_NAME \
     --allow-unauthenticated \
     --port 8080 \
     --env-vars-file env.yaml \
+    --memory 1Gi \
+    --cpu 2 \
+    --concurrency 80 \
+    --cpu-boost \
     --project $PROJECT_ID
 
 if [ $? -ne 0 ]; then
