@@ -502,15 +502,143 @@ const HotelUtils = {
     /**
      * Get meal plan display text
      */
-    getMealPlanText(mealPlan) {
-        const plans = {
-            'nomeal': 'Room Only',
-            'breakfast': 'Breakfast Included',
-            'halfboard': 'Half Board',
-            'fullboard': 'Full Board',
-            'allinclusive': 'All Inclusive'
-        };
-        return plans[mealPlan] || mealPlan || 'Room Only';
+    /**
+     * Full ETG → display-name mapping (meal_data.value).
+     * The deprecated `meal` field must NOT be used.
+     * Cross-mapping table delivered to RateHawk:
+     *
+     *  ETG code                 | Partner display name
+     *  -------------------------|-----------------------------
+     *  all-inclusive            | All Inclusive
+     *  breakfast                | Breakfast Included
+     *  breakfast-buffet         | Breakfast Buffet
+     *  continental-breakfast    | Continental Breakfast
+     *  dinner                   | Dinner Included
+     *  full-board               | Full Board (All Meals)
+     *  half-board               | Half Board (Breakfast & Dinner)
+     *  half-board-lunch         | Half Board (Breakfast & Lunch)
+     *  half-board-dinner        | Half Board (Breakfast & Dinner)
+     *  lunch                    | Lunch Included
+     *  nomeal                   | Room Only (No Meals)
+     *  some-meal                | Some Meals Included
+     *  english-breakfast        | English Breakfast
+     *  american-breakfast       | American Breakfast
+     *  asian-breakfast          | Asian Breakfast
+     *  chinese-breakfast        | Chinese Breakfast
+     *  israeli-breakfast        | Israeli Breakfast
+     *  japanese-breakfast       | Japanese Breakfast
+     *  scandinavian-breakfast   | Scandinavian Breakfast
+     *  scottish-breakfast       | Scottish Breakfast
+     *  breakfast-for-1          | Breakfast for 1 Guest
+     *  breakfast-for-2          | Breakfast for 2 Guests
+     *  super-all-inclusive      | Super All Inclusive
+     *  soft-all-inclusive       | Soft All Inclusive
+     *  ultra-all-inclusive      | Ultra All Inclusive
+     */
+    MEAL_TYPE_MAP: {
+        'all-inclusive': 'All Inclusive',
+        'breakfast': 'Breakfast Included',
+        'breakfast-buffet': 'Breakfast Buffet',
+        'continental-breakfast': 'Continental Breakfast',
+        'dinner': 'Dinner Included',
+        'full-board': 'Full Board (All Meals)',
+        'half-board': 'Half Board (Breakfast & Dinner)',
+        'half-board-lunch': 'Half Board (Breakfast & Lunch)',
+        'half-board-dinner': 'Half Board (Breakfast & Dinner)',
+        'lunch': 'Lunch Included',
+        'nomeal': 'Room Only (No Meals)',
+        'some-meal': 'Some Meals Included',
+        'english-breakfast': 'English Breakfast',
+        'american-breakfast': 'American Breakfast',
+        'asian-breakfast': 'Asian Breakfast',
+        'chinese-breakfast': 'Chinese Breakfast',
+        'israeli-breakfast': 'Israeli Breakfast',
+        'japanese-breakfast': 'Japanese Breakfast',
+        'scandinavian-breakfast': 'Scandinavian Breakfast',
+        'scottish-breakfast': 'Scottish Breakfast',
+        'breakfast-for-1': 'Breakfast for 1 Guest',
+        'breakfast-for-2': 'Breakfast for 2 Guests',
+        'super-all-inclusive': 'Super All Inclusive',
+        'soft-all-inclusive': 'Soft All Inclusive',
+        'ultra-all-inclusive': 'Ultra All Inclusive',
+    },
+
+    /**
+     * Returns the display name for a meal code.
+     * Reads from meal_data.value — never the deprecated `meal` field.
+     * @param {string} mealCode  - meal_data.value from the rate
+     * @returns {string}
+     */
+    getMealPlanText(mealCode) {
+        if (!mealCode) return 'Room Only (No Meals)';
+        return this.MEAL_TYPE_MAP[mealCode]
+            || mealCode.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    },
+
+    /**
+     * Builds the full meal display HTML for a rate card, including:
+     *  - Meal type badge (using meal_data.value)
+     *  - Child-meal warning when no_child_meal === true
+     *  - Fixed-count note for breakfast-for-1 / breakfast-for-2
+     *
+     * @param {Object} rate         - rate object containing meal_info
+     * @param {number} numChildren  - number of children in the search (0 if none)
+     * @returns {string}            - HTML string
+     */
+    getMealInfoHtml(rate, numChildren = 0) {
+        const mealInfo = rate.meal_info || {};
+        // Always use meal_data.value (via meal_info.value); fallback chain stops here.
+        const code = mealInfo.value || rate.meal_plan || rate.meal || 'nomeal';
+        const displayName = this.getMealPlanText(code);
+        const isNoMeal = (code === 'nomeal' || code === 'room-only');
+        const noChildMeal = !!mealInfo.no_child_meal;
+        const isFixedCount = !!mealInfo.is_fixed_count;
+        const fixedCount = mealInfo.fixed_count;
+
+        // Meal badge
+        let html = '';
+        if (isNoMeal) {
+            html += `
+                <div class="meal-badge meal-badge--none">
+                    <i class="fas fa-utensils"></i>
+                    <span>Room Only (No Meals)</span>
+                </div>`;
+        } else {
+            html += `
+                <div class="meal-badge meal-badge--included">
+                    <i class="fas fa-utensils"></i>
+                    <span>${displayName}</span>
+                </div>`;
+        }
+
+        // Fixed-count note (breakfast-for-1 / breakfast-for-2)
+        if (isFixedCount && fixedCount !== null) {
+            html += `
+                <div class="meal-note meal-note--info">
+                    <i class="fas fa-info-circle"></i>
+                    <span>This rate includes breakfast for <strong>${fixedCount}</strong> guest${fixedCount > 1 ? 's' : ''} only, regardless of party size.</span>
+                </div>`;
+        }
+
+        // some-meal explanation
+        if (code === 'some-meal') {
+            html += `
+                <div class="meal-note meal-note--info">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Specific meal details will be confirmed at the property. Contact the hotel for more information.</span>
+                </div>`;
+        }
+
+        // No-child-meal warning (only shown when children are in the party)
+        if (!isNoMeal && noChildMeal && numChildren > 0) {
+            html += `
+                <div class="meal-note meal-note--warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span><strong>Meal not included for children</strong> — ${displayName} applies to adults only. Meals for children (${numChildren} child${numChildren > 1 ? 'ren' : ''}) are not part of this plan.</span>
+                </div>`;
+        }
+
+        return html;
     },
 
     /**

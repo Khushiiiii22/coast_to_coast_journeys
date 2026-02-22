@@ -745,6 +745,7 @@ function displayDefaultPolicies() {
 
 /**
  * Display formatted hotel policies (Expedia Style)
+ * Maps ALL backend policy categories to their HTML card elements.
  */
 function displayHotelPolicies(policies) {
     const sections = {
@@ -760,6 +761,11 @@ function displayHotelPolicies(policies) {
         'mandatory_fees': 'policyMandatoryFees',
         'optional_fees': 'policyOptionalFees',
         'special': 'policySpecial',
+        'shuttle': 'policyShuttle',
+        'smoking': 'policySmoking',
+        'age_restriction': 'policyAgeRestriction',
+        'visa': 'policyVisa',
+        'no_show': 'policyNoShow',
         'other': 'policyOther'
     };
 
@@ -770,12 +776,16 @@ function displayHotelPolicies(policies) {
 
         if (policyItems.length > 0 && itemsEl) {
             sectionEl.style.display = 'flex';
-            itemsEl.innerHTML = policyItems.map(item => `
-                <div class="policy-item">
-                    <i class="fas fa-check-circle"></i>
-                    <span>${item.label ? `${item.label}: ${item.value}` : item.value || item}</span>
-                </div>
-            `).join('');
+            itemsEl.innerHTML = policyItems.map(item => {
+                const displayText = item.label
+                    ? `<strong>${item.label}:</strong> ${item.value || item}`
+                    : (item.value || item);
+                return `
+                    <div class="policy-item">
+                        <i class="fas ${item.icon || 'fa-check-circle'}"></i>
+                        <span>${displayText}</span>
+                    </div>`;
+            }).join('');
         } else if (sectionEl) {
             sectionEl.style.display = 'none';
         }
@@ -1006,37 +1016,19 @@ function createRateCard(rate, index, customBadge = null) {
     // Features grid - use room type config view if available
     const viewType = roomTypeConfig.viewType || getViewType(roomName);
 
-    // Meal info display
+    // Meal info display — use meal_data.value via meal_info (never deprecated `meal` field)
     const mealInfo = rate.meal_info || {};
-    const mealDisplay = mealInfo.display_name || '';
-    const hasBreakfastIncluded = mealInfo.has_breakfast || rate.meal === 'breakfast' || rate.meal_plan === 'breakfast';
-    const mealCode = mealInfo.code || 'nomeal';
+    const mealCode = mealInfo.value || rate.meal_plan || rate.meal || 'nomeal';
     const isMealIncluded = mealCode !== 'nomeal' && mealCode !== 'room-only';
 
-    // Meal badge HTML
-    let mealBadgeHtml = '';
-    if (isMealIncluded && mealDisplay) {
-        mealBadgeHtml = `
-            <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:8px;border:1px solid #a7f3d0;margin-bottom:8px;">
-                <i class="fas fa-utensils" style="color:#059669;font-size:0.8rem;"></i>
-                <span style="color:#065f46;font-size:0.82rem;font-weight:600;">${mealDisplay}</span>
-            </div>
-        `;
-    } else if (hasBreakfastIncluded) {
-        mealBadgeHtml = `
-            <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:8px;border:1px solid #a7f3d0;margin-bottom:8px;">
-                <i class="fas fa-coffee" style="color:#059669;font-size:0.8rem;"></i>
-                <span style="color:#065f46;font-size:0.82rem;font-weight:600;">Breakfast Included</span>
-            </div>
-        `;
-    } else {
-        mealBadgeHtml = `
-            <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:8px;">
-                <i class="fas fa-utensils" style="color:#94a3b8;font-size:0.8rem;"></i>
-                <span style="color:#64748b;font-size:0.82rem;">Room Only (No Meals)</span>
-            </div>
-        `;
-    }
+    // Derive number of children from search session for no_child_meal warning
+    const searchData = SearchSession.getSearchData() || {};
+    const roomGuests = (searchData.rooms || [{}])[0] || {};
+    const numChildren = (roomGuests.children || []).length;
+
+    // Build meal badge + child warning + fixed-count note via shared utility
+    const mealBadgeHtml = HotelUtils.getMealInfoHtml(rate, numChildren);
+
 
     let featuresHtml = `
         ${mealBadgeHtml}
@@ -1179,8 +1171,8 @@ function createRateCard(rate, index, customBadge = null) {
         const taxDetailsHtml = nonIncludedTaxes.map(tax => {
             const amount = parseFloat(tax.amount || 0);
             totalNonIncluded += amount;
-            const displayName = tax.display_name || tax.name || 'Tax';
-            const currency = tax.currency_code || 'INR';
+            const displayName = tax.name || 'Tax';
+            const currency = tax.currency || 'USD';
             return `<div style="display:flex;justify-content:space-between;font-size:0.72rem;color:#92400e;"><span>${displayName}</span><span>${currency} ${amount.toFixed(2)}</span></div>`;
         }).join('');
 

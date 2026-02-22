@@ -367,7 +367,7 @@
                     <span style="color: #00b67a; font-weight: 700; font-size: 1.1rem;">★★★★★</span>
                 </a>
             </div>
-            
+
             <div class="footer-payment-icons"
                 style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; align-items: center;">
                 <span style="color: #9ca3af; font-size: 0.9rem;">Payment Partners:</span>
@@ -419,8 +419,54 @@
             // Amount
             document.getElementById('totalAmount').textContent = HotelUtils.formatPrice(total_amount);
 
-            // Meal plan
-            document.getElementById('mealPlan').textContent = HotelUtils.getMealPlanText(rate.meal_plan);
+            // Meal plan — use meal_info.value (meal_data.value), never deprecated `meal` field
+            const mealInfo = rate.meal_info || {};
+            const mealCode = mealInfo.value || rate.meal_plan || rate.meal || 'nomeal';
+            document.getElementById('mealPlan').textContent = HotelUtils.getMealPlanText(mealCode);
+
+            // No-child-meal warning on confirmation page
+            if (mealInfo.no_child_meal) {
+                const childGuests = (guests || []).filter(g => g.is_child);
+                if (childGuests.length > 0 || (search_params.children_ages && search_params.children_ages.length > 0)) {
+                    const mealNote = document.createElement('p');
+                    mealNote.style.cssText = 'color:#92400e;font-size:0.82rem;margin-top:6px;';
+                    mealNote.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Meals for children are not included in this plan.';
+                    document.getElementById('mealPlan').after(mealNote);
+                }
+            }
+
+            // Fixed-count note (breakfast-for-1 / breakfast-for-2)
+            if (mealInfo.is_fixed_count && mealInfo.fixed_count) {
+                const fixedNote = document.createElement('p');
+                fixedNote.style.cssText = 'color:#1e40af;font-size:0.82rem;margin-top:4px;';
+                fixedNote.innerHTML = `<i class="fas fa-info-circle"></i> Breakfast is included for ${mealInfo.fixed_count} guest${mealInfo.fixed_count > 1 ? 's' : ''} only.`;
+                document.getElementById('mealPlan').after(fixedNote);
+            }
+
+            // Non-included taxes display
+            const taxInfo = rate.tax_info || {};
+            const nonIncludedTaxes = taxInfo.non_included_taxes || [];
+            if (nonIncludedTaxes.length > 0) {
+                const taxContainer = document.createElement('div');
+                taxContainer.style.cssText = 'margin-top:15px;padding:12px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;';
+                
+                const taxesListHtml = nonIncludedTaxes.map(tax => 
+                    `<div style="display:flex;justify-content:space-between;font-size:0.8rem;color:#92400e;margin-top:4px;">
+                        <span>${tax.name}</span>
+                        <span>${tax.currency} ${tax.amount.toFixed(2)}</span>
+                    </div>`
+                ).join('');
+
+                taxContainer.innerHTML = `
+                    <div style="font-size:0.85rem;font-weight:600;color:#92400e;margin-bottom:6px;">
+                        <i class="fas fa-info-circle"></i> Additional fees payable at property:
+                    </div>
+                    ${taxesListHtml}
+                    <p style="font-size:0.75rem;color:#b45309;margin-top:8px;font-style:italic;">Note: These taxes are NOT included in your payment and must be paid at the property.</p>
+                `;
+                document.getElementById('totalAmount').parentElement.after(taxContainer);
+            }
+
 
             // Email
             document.getElementById('confirmEmail').textContent = email || 'your email';
@@ -452,26 +498,60 @@
                 demo: confirmation.demo || false
             });
 
-            // Post-Booking: Retrieve latest booking details from API
-            // We wait 3 seconds to ensure the order is fully processed on the supplier side
+            // ─────────────────────────────────────────────────────────────────
+            // POST-BOOKING: /hotel/order/info/ call
+            //
+            // IMPORTANT (per RateHawk checklist):
+            //   • The confirmation page UI is populated exclusively from the
+            //     "Prebook / finish" step response stored in bookingData above.
+            //     /order/info is NOT used to confirm a booking.
+            //   • /order/info is called ONLY to create a booking history record
+            //     (e.g. store enriched data in localStorage / backend DB).
+            //   • RateHawk requires a minimum ~60-second gap after receiving a
+            //     successful booking status via /finish/status before calling
+            //     /order/info, because it can take up to 60 s for the booking
+            //     to sync into that endpoint.
+            //   • If /order/info returns a blank/failed response the booking is
+            //     considered confirmed — we continue showing data from the prebook
+            //     session and log the sync lag for monitoring.
+            // ─────────────────────────────────────────────────────────────────
             if (!confirmation.demo) {
+                const ORDER_INFO_DELAY_MS = 60_000; // 60 seconds — per RateHawk recommendation
+                console.log(`⏳ /order/info call scheduled in ${ORDER_INFO_DELAY_MS / 1000}s (history sync only)…`);
+
                 setTimeout(async () => {
                     try {
-                        console.log('🔄 Verifying booking details with backend (Retrieve Booking)...');
-                        const result = await HotelAPI.getBookingInfo(bookingData.confirmation.partner_order_id);
+                        const orderId = bookingData.confirmation.partner_order_id;
+                        console.log('🔄 [History Sync] Calling /order/info for order:', orderId);
+                        const result = await HotelAPI.getBookingInfo(orderId);
 
                         if (result.success && result.data) {
-                            console.log('✅ Retrieved latest booking details:', result.data);
-                            // If status changed or new info available, we could update UI here
-                            // For now, valid response confirms success.
+                            // Enrich the locally-stored booking record with server data
+                            console.log('✅ [History Sync] /order/info returned data — updating booking record.');
+                            try {
+                                const bookings = JSON.parse(localStorage.getItem('c2c_bookings') || '[]');
+                                const idx = bookings.findIndex(b =>
+                                    b.partner_order_id === orderId || b.confirmation_number === orderId
+                                );
+                                if (idx !== -1) {
+                                    bookings[idx].order_info = result.data;
+                                    bookings[idx].order_info_synced_at = new Date().toISOString();
+                                    localStorage.setItem('c2c_bookings', JSON.stringify(bookings));
+                                    console.log('✅ [History Sync] Booking record enriched with /order/info data.');
+                                }
+                            } catch (storageErr) {
+                                console.warn('[History Sync] Could not update localStorage:', storageErr);
+                            }
                         } else {
-                            console.warn('⚠️ Retrieve bookings returned empty response. Keeping session data.');
-                            // Logic: If blank, assume polling/sync delay, show existing confirmation.
+                            // Blank response is acceptable — booking is already confirmed via /finish/status.
+                            // This simply means the sync window hasn't completed yet.
+                            console.warn('⚠️ [History Sync] /order/info returned empty — sync still in progress. Booking status unchanged.');
                         }
                     } catch (e) {
-                        console.error('Failed to retrieve booking info:', e);
+                        // Network / API error — booking status is unaffected.
+                        console.error('[History Sync] /order/info call failed (non-critical):', e);
                     }
-                }, 3000);
+                }, ORDER_INFO_DELAY_MS);
             }
 
             // Send confirmation email for ALL bookings (including demo)

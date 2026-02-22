@@ -1645,6 +1645,69 @@
     margin-top: 8px;
 }
 
+/* ── Meal Badge (getMealInfoHtml) ─────────────────────────────────── */
+.meal-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    border: 1px solid transparent;
+}
+
+.meal-badge--included {
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+
+.meal-badge--none {
+    background: #f8fafc;
+    color: #64748b;
+    border-color: #e2e8f0;
+}
+
+/* ── Meal Notes (child warning, fixed-count, some-meal) ───────────── */
+.meal-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    margin-bottom: 6px;
+}
+
+.meal-note i {
+    margin-top: 2px;
+    flex-shrink: 0;
+    font-size: 0.8rem;
+}
+
+.meal-note--warning {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.meal-note--warning i {
+    color: #d97706;
+}
+
+.meal-note--info {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+}
+
+.meal-note--info i {
+    color: #2563eb;
+}
+
 /* Discount Row */
 .discount-row {
     display: flex;

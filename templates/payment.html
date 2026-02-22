@@ -766,25 +766,45 @@
             // Price breakdown - use real tax data
             const basePrice = parseFloat(rate.total_price || (rate.price * (rate.nights || 1)) || 0);
 
-            // Use taxes from guest-details (already computed with API data)
-            let taxes = 0;
-            if (bookingData.taxes) {
-                taxes = parseFloat(bookingData.taxes);
-            } else {
-                const taxInfo = rate.tax_info || {};
-                const includedTaxes = taxInfo.included_taxes || [];
-                const nonIncludedTaxes = taxInfo.non_included_taxes || [];
-                includedTaxes.forEach(t => { taxes += parseFloat(t.amount || 0); });
-                nonIncludedTaxes.forEach(t => { taxes += parseFloat(t.amount || 0); });
-                if (taxes === 0) {
-                    taxes = basePrice * 0.12; // 12% fallback
-                }
-            }
-            const total = basePrice + taxes;
+            let includedTaxesAmount = 0;
+            let nonIncludedTaxesHtml = '';
 
-            document.getElementById('basePrice').textContent = `₹${basePrice.toLocaleString('en-IN')}`;
-            document.getElementById('taxes').textContent = `₹${Math.round(taxes).toLocaleString('en-IN')}`;
-            document.getElementById('totalAmount').textContent = `₹${Math.round(total).toLocaleString('en-IN')}`;
+            const taxInfo = rate.tax_info || {};
+            const includedTaxes = taxInfo.included_taxes || [];
+            const nonIncludedTaxes = taxInfo.non_included_taxes || [];
+
+            includedTaxes.forEach(t => { includedTaxesAmount += parseFloat(t.amount || 0); });
+
+            if (nonIncludedTaxes.length > 0) {
+                const taxesListHtml = nonIncludedTaxes.map(tax =>
+                    `<div style="display:flex;justify-content:space-between;font-size:0.85rem;color:#92400e;margin-top:4px;">
+                        <span>${tax.name}</span>
+                        <span>${tax.currency} ${tax.amount.toFixed(2)}</span>
+                    </div>`
+                ).join('');
+
+                nonIncludedTaxesHtml = `
+                    <div style="margin-top:15px;padding:12px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;">
+                        <div style="font-size:0.9rem;font-weight:600;color:#92400e;margin-bottom:5px;">
+                            <i class="fas fa-info-circle"></i> Payable at Property:
+                        </div>
+                        ${taxesListHtml}
+                        <p style="font-size:0.75rem;color:#b45309;margin-top:8px;font-style:italic;line-height:1.4;">
+                            The above fees are not included in your total and must be paid directly to the hotel in their local currency.
+                        </p>
+                    </div>
+                `;
+            }
+
+            const totalPayableNow = basePrice; // Base price already includes commission and included taxes if done right on backend
+
+            document.getElementById('basePrice').textContent = `₹${(basePrice - includedTaxesAmount).toLocaleString('en-IN')}`;
+            document.getElementById('taxes').textContent = `₹${Math.round(includedTaxesAmount).toLocaleString('en-IN')}`;
+            document.getElementById('totalAmount').textContent = `₹${Math.round(totalPayableNow).toLocaleString('en-IN')}`;
+
+            if (nonIncludedTaxesHtml) {
+                document.getElementById('totalAmount').parentElement.insertAdjacentHTML('afterend', nonIncludedTaxesHtml);
+            }
 
             // Populate Guest Details
             const guest = bookingData.guest || {};
