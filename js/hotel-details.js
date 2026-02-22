@@ -746,9 +746,7 @@ function displayDefaultPolicies() {
         children: [
             { icon: 'fa-child', label: 'Children', value: 'Children of all ages welcome' }
         ],
-        pets: [
-            { icon: 'fa-paw', label: 'Pets', value: 'Contact property for pet policy' }
-        ],
+        pets: [],
         payments: [
             { icon: 'fa-credit-card', label: 'Payment', value: 'Credit/Debit cards accepted' }
         ],
@@ -758,15 +756,9 @@ function displayDefaultPolicies() {
         parking: [
             { icon: 'fa-parking', label: 'Parking', value: 'Subject to availability' }
         ],
-        mandatory_fees: [
-            { icon: 'fa-dollar-sign', label: 'Resort/Facility Fee', value: 'Contact property for mandatory fee details' }
-        ],
-        optional_fees: [
-            { icon: 'fa-money-bill-wave', label: 'Optional Charges', value: 'Additional services available at extra cost upon request' }
-        ],
-        special: [
-            { icon: 'fa-info-circle', label: 'Special Instructions', value: 'Please contact the property for special check-in instructions' }
-        ]
+        mandatory_fees: [],
+        optional_fees: [],
+        special: []
     };
 
     displayHotelPolicies(policies);
