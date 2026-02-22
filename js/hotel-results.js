@@ -440,7 +440,7 @@ function createHotelCardHorizontal(hotel) {
                         ${originalPrice ? `<span class="price-original">${originalPrice}</span>` : ''}
                         <span class="price-total">${totalPrice} <span class="total-label">total</span></span>
                         ${(hotel.rates?.[0]?.tax_info?.all_included !== false) ?
-            `<span class="price-includes"><i class="fas fa-check"></i> Total with taxes and fees</span>` :
+            `<span class="price-includes"><i class="fas fa-info-circle"></i> Excludes taxes and fees</span>` :
             `<span class="price-includes warning" style="color:#d97706"><i class="fas fa-exclamation-triangle"></i> Excludes property fees</span>`
         }
                     </div>

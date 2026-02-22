@@ -1159,7 +1159,7 @@ function createRateCard(rate, index, customBadge = null) {
     const urgencyHtml = showUrgency ? `<span class="urgency-notice">We have ${roomsLeft} left</span>` : '';
 
     // Tax info display - use REAL tax data from rate
-    let taxNoteHtml = '<small class="taxes-note"><i class="fas fa-check"></i> Total with taxes and fees</small>';
+    let taxNoteHtml = '<small class="taxes-note"><i class="fas fa-info-circle"></i> Excludes taxes and fees</small>';
 
     const taxInfo = rate.tax_info || {};
     const nonIncludedTaxes = taxInfo.non_included_taxes || [];

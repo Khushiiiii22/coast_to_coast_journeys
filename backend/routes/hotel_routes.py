@@ -779,31 +779,35 @@ def transform_etg_hotels(etg_hotels, destination, static_data=None, target_curre
         currency = 'USD' # Default
         
         for rate in rates:
-            payment_types = rate.get('payment_options', {}).get('payment_types', [])
-            rate_currency = rate.get('payment_options', {}).get('currency_code', 'USD')
+            payment_options = rate.get('payment_options', {})
+            payment_types = payment_options.get('payment_types', [])
+            rate_currency = payment_options.get('currency_code', 'USD')
             
-            # Get meal_data (preferred over deprecated 'meal' field)
+            # Get included taxes from tax_data if available
+            api_included_tax = 0
+            tax_data = payment_options.get('tax_data', {}) or {}
+            for tax in tax_data.get('taxes', []):
+                if tax.get('included_by_supplier', True):
+                    api_included_tax += float(tax.get('amount', 0))
+            
+            # Get meal_data
             rate_meal_data = rate.get('meal_data')
             
             for pt in payment_types:
-                amount = float(pt.get('amount', 0))
+                api_total = float(pt.get('amount', 0))
+                api_net = api_total - api_included_tax
                 
                 # Check for currency mismatch and convert if needed
-                # E.g. User wants INR, API returned USD
                 if target_currency == 'INR' and rate_currency == 'USD':
-                    amount = amount * CONVERSION_RATES['USD_TO_INR']
-                    currency = 'INR'
+                    api_net = api_net * CONVERSION_RATES['USD_TO_INR']
                 elif target_currency == 'INR' and rate_currency == 'EUR':
-                    amount = amount * CONVERSION_RATES['EUR_TO_INR']
-                    currency = 'INR'
-                else:
-                    currency = rate_currency # Trust API
+                    api_net = api_net * CONVERSION_RATES['EUR_TO_INR']
                 
-                # Apply 15% Commission (on top of converted price)
-                amount = amount * (1 + COMMISSION_RATE)
+                # Apply 15% Commission on the net price
+                display_net = api_net * (1 + COMMISSION_RATE)
                 
-                if lowest_price == 0 or amount < lowest_price:
-                    lowest_price = amount
+                if lowest_price == 0 or display_net < lowest_price:
+                    lowest_price = display_net
                     best_rate = rate
                     meal_data_info = rate_meal_data
         
@@ -935,24 +939,61 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map):
         payment_types = payment_options.get('payment_types', [{}])
         rate_currency = payment_options.get('currency_code', 'USD')
         
-        amount = float(payment_types[0].get('amount', 0)) if payment_types else 0
+        # Original total amount from API
+        total_amount = float(payment_types[0].get('amount', 0)) if payment_types else 0
         
         # Currency conversion
         if target_currency == 'INR' and rate_currency == 'USD':
-            amount = amount * conversion_rates['USD_TO_INR']
+            total_amount = total_amount * conversion_rates['USD_TO_INR']
         elif target_currency == 'INR' and rate_currency == 'EUR':
-            amount = amount * conversion_rates['EUR_TO_INR']
+            total_amount = total_amount * conversion_rates['EUR_TO_INR']
         
-        # Apply commission
-        amount = amount * (1 + COMMISSION_RATE)
+        # Apply commission to the total
+        total_with_commission = total_amount * (1 + COMMISSION_RATE)
         
+        # Parse taxes
+        tax_info = parse_taxes(
+            payment_options.get('tax_data', {}), 
+            target_currency, 
+            rate_currency, 
+            conversion_rates
+        )
+        
+        # Calculate Net Price (Exclusive of included taxes)
+        # tax_info['total_included'] already has commission if parse_taxes followed the same logic?
+        # WAIT: parse_taxes doesn't know about commission. We need to add commission to taxes too 
+        # OR subtract taxes from the total BEFORE commission.
+        
+        # Better logic:
+        # 1. Total (Net + Tax) from API.
+        # 2. Split into API_Net and API_Tax.
+        # 3. Apply commission to both: Display_Net = API_Net * 1.15, Display_Tax = API_Tax * 1.15.
+        
+        api_included_tax = 0
+        for tax in payment_options.get('tax_data', {}).get('taxes', []):
+            if tax.get('included_by_supplier', True):
+                val = float(tax.get('amount', 0))
+                if target_currency == 'INR' and rate_currency == 'USD':
+                    val *= conversion_rates['USD_TO_INR']
+                elif target_currency == 'INR' and rate_currency == 'EUR':
+                    val *= conversion_rates['EUR_TO_INR']
+                api_included_tax += val
+        
+        display_included_tax = api_included_tax * (1 + COMMISSION_RATE)
+        display_net_price = total_with_commission - display_included_tax
+        
+        # Update tax_info to include commission on taxes
+        tax_info['total_included'] = round(display_included_tax, 2)
+        for t in tax_info.get('included_taxes', []):
+             t['amount'] = round(t['amount'] * (1 + COMMISSION_RATE), 2)
+
         # Get meal_data (preferred)
         meal_data = rate.get('meal_data', {})
         meal_value = meal_data.get('value', rate.get('meal', 'nomeal')) if meal_data else rate.get('meal', 'nomeal')
         meal_display = meal_display_map.get(meal_value, meal_value.replace('-', ' ').title())
         no_child_meal = meal_data.get('no_child_meal', False) if meal_data else False
         
-        # Get room details - Try multiple fields to avoid "Standard Room" default
+        # Get room details
         room_data = rate.get('room_data_trans', {})
         room_name = (
             room_data.get('main_name') or 
@@ -962,8 +1003,6 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map):
             'Standard Room'
         )
         
-        # Breakfast-for-1 / breakfast-for-2 have a fixed number of breakfasts
-        # regardless of guest count — flag this so the UI can show the correct note.
         FIXED_COUNT_MEALS = {'breakfast-for-1': 1, 'breakfast-for-2': 2}
         is_fixed_count = meal_value in FIXED_COUNT_MEALS
         fixed_count = FIXED_COUNT_MEALS.get(meal_value)
@@ -971,25 +1010,20 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map):
         transformed_rate = {
             'book_hash': rate.get('match_hash', ''),
             'room_name': room_name,
-            'price': round(amount, 2),
+            'price': round(display_net_price, 2), # EXCLUSIVE OF TAX
+            'total_price': round(total_with_commission, 2), # INCLUSIVE OF TAX
             'currency': target_currency,
-            'meal': meal_value,           # kept for legacy consumers
-            'meal_plan': meal_value,      # alias used by some JS callers
+            'meal': meal_value,
+            'meal_plan': meal_value,
             'meal_info': {
                 'value': meal_value,
                 'display_name': meal_display,
                 'has_breakfast': meal_data.get('has_breakfast', False) if meal_data else False,
                 'no_child_meal': no_child_meal,
-                'includes_child': not no_child_meal,
                 'is_fixed_count': is_fixed_count,
                 'fixed_count': fixed_count,
             },
-            'tax_info': parse_taxes(
-                payment_options.get('tax_data', {}), 
-                target_currency, 
-                rate_currency, 
-                conversion_rates
-            ),
+            'tax_info': tax_info,
             'cancellation_info': format_cancellation_policies(rate)
         }
         
