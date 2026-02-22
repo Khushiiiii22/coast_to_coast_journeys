@@ -281,14 +281,6 @@
             <div class="price-summary">
                 <h2>Price Breakdown</h2>
 
-                <div class="price-row">
-                    <span>Room Rate</span>
-                    <span id="basePrice">₹0</span>
-                </div>
-                <div class="price-row">
-                    <span>Taxes & Fees</span>
-                    <span id="taxes">₹0</span>
-                </div>
                 <div class="price-row total-row">
                     <span>Total Amount</span>
                     <span id="totalAmount">₹0</span>
@@ -334,7 +326,7 @@
                 <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
                     style="height: 24px; background: white; padding: 3px 6px; border-radius: 4px;">
             </div>
-                        <!-- Trustpilot Review Badge -->
+            <!-- Trustpilot Review Badge -->
             <div class="trustpilot-badge" style="margin: 20px 0; text-align: center;">
                 <a href="https://www.trustpilot.com/review/coasttocoastjourneys.com" target="_blank"
                     rel="noopener noreferrer"
@@ -344,11 +336,11 @@
                     Review us on
                     <img src="https://cdn.trustpilot.net/brand-assets/4.1.0/logo-black.svg" alt="Trustpilot"
                         style="height: 18px; width: auto;">
-                   <span style="color: #00b67a; font-size: 1rem;">★</span>
+                    <span style="color: #00b67a; font-size: 1rem;">★</span>
                 </a>
             </div>
 
-<div class="footer-bottom">
+            <div class="footer-bottom">
                 <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">C2C Journeys is a customer-facing
                     brand operated by Coast to Coast Journeys</p>
                 <p style="color: #94a3b8; font-size: 0.9rem;">&copy; 2026 C2C Journeys. All Rights Reserved.</p>
@@ -396,27 +388,10 @@
             document.getElementById('guests').textContent = `${searchParams.adults} Adults`;
             document.getElementById('roomType').textContent = rate.room_name || 'Standard Room';
 
-            // Price breakdown - use real tax data passed through from guest-details
+            // Price - total amount (includes commission and taxes)
             const basePrice = parseFloat(rate.total_price || (rate.price * (rate.nights || 1)) || 0);
+            const total = basePrice;
 
-            // Use taxes already calculated in guest-details, or compute from API data
-            let taxes = 0;
-            if (bookingData.taxes) {
-                taxes = parseFloat(bookingData.taxes);
-            } else {
-                const taxInfo = rate.tax_info || {};
-                const includedTaxes = taxInfo.included_taxes || [];
-                const nonIncludedTaxes = taxInfo.non_included_taxes || [];
-                includedTaxes.forEach(t => { taxes += parseFloat(t.amount || 0); });
-                nonIncludedTaxes.forEach(t => { taxes += parseFloat(t.amount || 0); });
-                if (taxes === 0) {
-                    taxes = basePrice * 0.12; // 12% estimated GST fallback
-                }
-            }
-            const total = basePrice + taxes;
-
-            document.getElementById('basePrice').textContent = `₹${basePrice.toLocaleString('en-IN')}`;
-            document.getElementById('taxes').textContent = `₹${Math.round(taxes).toLocaleString('en-IN')}`;
             document.getElementById('totalAmount').textContent = `₹${Math.round(total).toLocaleString('en-IN')}`;
 
             // Store for payment

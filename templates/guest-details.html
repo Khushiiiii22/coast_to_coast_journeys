@@ -360,14 +360,6 @@
             <div class="price-summary">
                 <h2>Price Breakdown</h2>
 
-                <div class="price-row">
-                    <span>Room Rate</span>
-                    <span id="basePrice">₹0</span>
-                </div>
-                <div class="price-row">
-                    <span>Taxes & Fees</span>
-                    <span id="taxes">₹0</span>
-                </div>
                 <div class="price-row total-row">
                     <span>Total Amount</span>
                     <span id="totalAmount">₹0</span>
@@ -450,28 +442,10 @@
             document.getElementById('guests').textContent = `${searchParams.adults} Adults`;
             document.getElementById('roomType').textContent = rate.room_name || 'Standard Room';
 
-            // Price breakdown - use real tax data from API if available
+            // Price - total amount (includes commission and taxes)
             const basePrice = parseFloat(rate.total_price || (rate.price * (rate.nights || 1)) || 0);
-
-            // Calculate taxes from real data
-            let includedTaxesAmount = 0;
-            let nonIncludedTaxesAmount = 0;
-            const taxInfo = rate.tax_info || {};
-            const includedTaxes = taxInfo.included_taxes || [];
-            const nonIncludedTaxes = taxInfo.non_included_taxes || [];
-
-            // Sum up taxes
-            includedTaxes.forEach(t => { includedTaxesAmount += parseFloat(t.amount || 0); });
-            nonIncludedTaxes.forEach(t => { nonIncludedTaxesAmount += parseFloat(t.amount || 0); });
-
-            // Total Payable Now is the basePrice (which includes commission and included taxes)
             const totalPayableNow = basePrice;
 
-            // Room Rate (Net of included taxes for display)
-            const displayRoomRate = basePrice - includedTaxesAmount;
-
-            document.getElementById('basePrice').textContent = `₹${Math.round(displayRoomRate).toLocaleString('en-IN')}`;
-            document.getElementById('taxes').textContent = `₹${Math.round(includedTaxesAmount).toLocaleString('en-IN')}`;
             document.getElementById('totalAmount').textContent = `₹${Math.round(totalPayableNow).toLocaleString('en-IN')}`;
 
             // Show non-included tax notice if applicable (payable at property)
