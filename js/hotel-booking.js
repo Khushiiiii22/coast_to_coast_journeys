@@ -60,23 +60,46 @@ function populateBookingSummary() {
         document.getElementById('summaryCheckout').textContent = HotelUtils.formatDate(searchParams.checkout);
     }
 
-    // Calculate pricing
+    // Calculate pricing using real ETG data
     const nights = rate.nights || HotelUtils.calculateNights(searchParams.checkin, searchParams.checkout);
     const rooms = searchParams?.rooms || 1;
     const pricePerNight = rate.price;
     const subtotal = pricePerNight * nights * rooms;
-    const taxes = Math.round(subtotal * 0.18); // 18% GST
-    const total = subtotal + taxes;
+
+    // Use real tax_info from ETG (set by backend enrich_rate_with_room_data)
+    // Non-included taxes (included_by_supplier: false) are paid at hotel — show separately
+    const taxInfo = rate.tax_info || {};
+    const nonIncludedTaxes = taxInfo.non_included_taxes || [];
+    const hasPropertyFees = nonIncludedTaxes.length > 0;
+
+    // Total payable now = subtotal only (non-included taxes are paid at hotel)
+    const total = subtotal;
 
     document.getElementById('pricePerNightLabel').textContent = `${rooms} Room × ${nights} Night${nights > 1 ? 's' : ''}`;
     document.getElementById('pricePerNightValue').textContent = HotelUtils.formatPrice(subtotal);
-    document.getElementById('taxesValue').textContent = HotelUtils.formatPrice(taxes);
+
+    // Show tax info correctly
+    if (hasPropertyFees) {
+        // Non-included taxes shown in their original currency (not converted to INR)
+        const taxLines = nonIncludedTaxes.map(t =>
+            `${t.display_name || t.name}: ${t.amount} ${t.currency_code}`
+        ).join(', ');
+        document.getElementById('taxesValue').textContent = `Paid at hotel`;
+        document.getElementById('taxesValue').title = taxLines; // tooltip with details
+    } else {
+        document.getElementById('taxesValue').textContent = 'Included';
+    }
+
     document.getElementById('totalAmountValue').textContent = HotelUtils.formatPrice(total);
     document.getElementById('btnTotalPrice').textContent = total.toLocaleString('en-IN');
 
-    // Cancellation policy
-    if (rate.cancellation === 'free') {
-        document.getElementById('cancellationText').innerHTML = `<span style="color: #22c55e;"><i class="fas fa-check-circle"></i> Free cancellation until 2 days before check-in</span>`;
+    // Cancellation policy (use real data if available)
+    const cancellationInfo = rate.cancellation_info || {};
+    if (cancellationInfo.is_free_cancellation) {
+        const deadline = cancellationInfo.free_cancellation_formatted?.datetime || 'before check-in';
+        document.getElementById('cancellationText').innerHTML = `<span style="color: #22c55e;"><i class="fas fa-check-circle"></i> Free cancellation until ${deadline}</span>`;
+    } else if (rate.cancellation === 'free') {
+        document.getElementById('cancellationText').innerHTML = `<span style="color: #22c55e;"><i class="fas fa-check-circle"></i> Free cancellation available</span>`;
     } else {
         document.getElementById('cancellationText').innerHTML = `<span style="color: #f59e0b;"><i class="fas fa-exclamation-circle"></i> This booking is non-refundable</span>`;
     }
@@ -84,7 +107,9 @@ function populateBookingSummary() {
     // Store total for booking
     bookingData.total_amount = total;
     bookingData.subtotal = subtotal;
-    bookingData.taxes = taxes;
+    bookingData.taxes = 0; // non-included taxes paid at hotel, not charged by us
+    bookingData.has_property_fees = hasPropertyFees;
+    bookingData.property_fees = nonIncludedTaxes;
 }
 
 /**
