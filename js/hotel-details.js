@@ -549,85 +549,62 @@ function displayAmenities(amenities) {
 }
 
 /**
- * Display map preview (Expedia Style)
+ * Display map preview using Google Maps embed (works with lat/lng)
+ * No API key required for embed URL
  */
 function displayMapPreview(lat, lng) {
     const mapPreview = document.getElementById('mapPreview');
     if (!mapPreview) return;
 
+    const query = `${parseFloat(lat)},${parseFloat(lng)}`;
     mapPreview.innerHTML = `
-        <iframe 
-            width="100%" 
-            height="100%" 
-            frameborder="0" 
-            scrolling="no" 
-            marginheight="0" 
-            marginwidth="0" 
-            src="https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(lng) - 0.01},${parseFloat(lat) - 0.01},${parseFloat(lng) + 0.01},${parseFloat(lat) + 0.01}&layer=mapnik&marker=${lat},${lng}"
+        <iframe
+            width="100%"
+            height="100%"
+            style="border:0;"
+            loading="lazy"
+            allowfullscreen
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://maps.google.com/maps?q=${query}&z=15&output=embed"
         ></iframe>
     `;
 
-    // Add nearby places (demo data)
+    // Nearby places section
     const nearbyPlaces = document.getElementById('nearbyPlaces');
     if (nearbyPlaces) {
         nearbyPlaces.innerHTML = `
             <div class="nearby-place">
                 <span class="place-name">City Center</span>
-                <span class="place-distance">1.2 km</span>
-            </div>
-            <div class="nearby-place">
-                <span class="place-name">Train Station</span>
-                <span class="place-distance">2.5 km</span>
+                <span class="place-distance">~1–2 km</span>
             </div>
             <div class="nearby-place">
                 <span class="place-name">Airport</span>
-                <span class="place-distance">15 km</span>
+                <span class="place-distance">~15 km</span>
             </div>
         `;
     }
 }
 
 /**
- * Display map preview by address search (fallback when no lat/lng)
+ * Display map preview by address/name search (fallback when no lat/lng)
+ * Uses Google Maps embed search — no API key, no CORS issues
  */
 function displayMapPreviewByAddress(address) {
     const mapPreview = document.getElementById('mapPreview');
     if (!mapPreview) return;
 
-    // Show a loading state first
+    const encodedQuery = encodeURIComponent(address);
     mapPreview.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:center;height:100%;background:#e5e7eb;border-radius:8px;">
-            <span style="color:#6b7280;">Loading map...</span>
-        </div>
+        <iframe
+            width="100%"
+            height="100%"
+            style="border:0;"
+            loading="lazy"
+            allowfullscreen
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://maps.google.com/maps?q=${encodedQuery}&output=embed"
+        ></iframe>
     `;
-
-    // Geocode the address using Nominatim (free, no API key needed)
-    const encodedAddress = encodeURIComponent(address);
-    fetch(`https://nominatim.openstreetmap.org/search?q=${encodedAddress}&format=json&limit=1`)
-        .then(res => res.json())
-        .then(data => {
-            if (data && data.length > 0) {
-                const lat = parseFloat(data[0].lat);
-                const lng = parseFloat(data[0].lon);
-                displayMapPreview(lat, lng);
-            } else {
-                // Show a generic map placeholder
-                mapPreview.innerHTML = `
-                    <div style="display:flex;align-items:center;justify-content:center;height:100%;background:#e5e7eb;border-radius:8px;flex-direction:column;gap:8px;">
-                        <i class="fas fa-map-marker-alt" style="font-size:2rem;color:#9ca3af;"></i>
-                        <span style="color:#6b7280;font-size:0.9rem;">Map not available</span>
-                    </div>
-                `;
-            }
-        })
-        .catch(() => {
-            mapPreview.innerHTML = `
-                <div style="display:flex;align-items:center;justify-content:center;height:100%;background:#e5e7eb;border-radius:8px;flex-direction:column;gap:8px;">
-                    <i class="fas fa-map-marker-alt" style="font-size:2rem;color:#9ca3af;"></i>
-                    <span style="color:#6b7280;font-size:0.9rem;">Map not available</span>
-                </div>
-            `;
-        });
 }
 
 /**
