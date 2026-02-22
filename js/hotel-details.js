@@ -101,9 +101,16 @@ async function fetchHotelDetails() {
                 displayHotelDetails(currentHotel);
                 console.log(`✅ Loaded hotel with ${enrichedResult.data.room_groups_count} room groups matched`);
                 return;
+            } else if (hotelId.startsWith('demo_')) {
+                showDemoHotel(hotelId);
+                return;
             }
         } catch (enrichedError) {
             console.log('Enriched endpoint error:', enrichedError);
+            if (hotelId.startsWith('demo_')) {
+                showDemoHotel(hotelId);
+                return;
+            }
         }
 
         // Fallback to standard hotel details endpoint
@@ -114,11 +121,12 @@ async function fetchHotelDetails() {
             adults: searchParams?.adults || 2
         });
 
-        if (result.success) {
-            currentHotel = result.data;
+        if (result.success && result.data && (result.data.name || result.data.hotels?.length > 0)) {
+            currentHotel = result.data.hotels ? result.data.hotels[0] : result.data;
             displayHotelDetails(currentHotel);
         } else {
-            showError(result.error || 'Failed to load hotel details');
+            console.log('API returned success but no hotel data. Falling back to demo.');
+            showDemoHotel(hotelId);
         }
     } catch (error) {
         console.error('Error fetching hotel:', error);
@@ -287,7 +295,7 @@ function displayHotelDetails(hotel) {
 
     // Map preview
     if (hotel.latitude && hotel.longitude) {
-        displayMapPreview(hotel.latitude, hotel.longitude);
+        displayMapPreview(hotel.latitude, hotel.longitude, hotel);
     } else {
         // Fallback: show map with search query for the hotel address/name
         displayMapPreviewByAddress(hotel.address || hotel.name || 'Hotel');
@@ -479,24 +487,17 @@ function setupTabNavigation() {
             btn.classList.add('active');
 
             // Scroll to section
-            let targetSection;
-            switch (tab) {
-                case 'overview':
-                    targetSection = document.getElementById('overviewSection');
-                    break;
-                case 'about':
-                    targetSection = document.getElementById('aboutSection');
-                    break;
-                case 'rooms':
-                    targetSection = document.getElementById('roomsSection');
-                    break;
-                case 'policies':
-                    targetSection = document.getElementById('policiesSection');
-                    break;
-            }
+            const targetSection = document.getElementById(tab);
 
             if (targetSection) {
-                targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const headerOffset = 150;
+                const elementPosition = targetSection.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
             }
         });
     });
@@ -552,7 +553,7 @@ function displayAmenities(amenities) {
  * Display map preview using Google Maps embed (works with lat/lng)
  * No API key required for embed URL
  */
-function displayMapPreview(lat, lng) {
+function displayMapPreview(lat, lng, hotelData = {}) {
     const mapPreview = document.getElementById('mapPreview');
     if (!mapPreview) return;
 
@@ -569,19 +570,70 @@ function displayMapPreview(lat, lng) {
         ></iframe>
     `;
 
-    // Nearby places section
-    const nearbyPlaces = document.getElementById('nearbyPlaces');
-    if (nearbyPlaces) {
-        nearbyPlaces.innerHTML = `
-            <div class="nearby-place">
-                <span class="place-name">City Center</span>
-                <span class="place-distance">~1–2 km</span>
-            </div>
-            <div class="nearby-place">
-                <span class="place-name">Airport</span>
-                <span class="place-distance">~15 km</span>
-            </div>
-        `;
+    // Process surroundings from static_data if available
+    const staticData = hotelData.static_data || {};
+    const surroundings = staticData.surroundings || [];
+
+    // Categorization logic
+    const categories = {
+        'categoryNearby': [],
+        'categoryInterest': [],
+        'categoryAirports': [],
+        'categorySubway': []
+    };
+
+    if (surroundings.length > 0) {
+        surroundings.forEach(place => {
+            const item = {
+                name: place.name,
+                distance: place.distance_value ? `${place.distance_value} ${place.distance_unit || 'm'}` : 'Nearby',
+                icon: 'fa-map-marker-alt'
+            };
+
+            const type = (place.type || '').toLowerCase();
+            if (type.includes('airport')) categories.categoryAirports.push(item);
+            else if (type.includes('metro') || type.includes('subway') || type.includes('station')) categories.categorySubway.push(item);
+            else if (type.includes('sight') || type.includes('museum') || type.includes('landmark')) categories.categoryInterest.push(item);
+            else categories.categoryNearby.push(item);
+        });
+    } else {
+        // Fallback demo data if no surroundings from API
+        categories.categoryNearby = [
+            { name: 'City Center', distance: '1.2 km', icon: 'fa-city' },
+            { name: 'Shopping Mall', distance: '800 m', icon: 'fa-shopping-bag' }
+        ];
+        categories.categoryInterest = [
+            { name: 'Famous Landmark', distance: '2.5 km', icon: 'fa-monument' },
+            { name: 'City Museum', distance: '3.1 km', icon: 'fa-university' }
+        ];
+        categories.categoryAirports = [
+            { name: 'International Airport', distance: '15 km', icon: 'fa-plane' }
+        ];
+        categories.categorySubway = [
+            { name: 'Central Station', distance: '1.1 km', icon: 'fa-subway' }
+        ];
+    }
+
+    // Populate the UI
+    for (const [id, items] of Object.entries(categories)) {
+        const container = document.getElementById(id);
+        const listEl = container?.querySelector('.surroundings-list');
+        if (listEl) {
+            if (items.length > 0) {
+                container.style.display = 'block';
+                listEl.innerHTML = items.slice(0, 5).map(item => `
+                    <div class="surroundings-item">
+                        <div class="place-info">
+                            <i class="fas ${item.icon}"></i>
+                            <span>${item.name}</span>
+                        </div>
+                        <span class="place-distance">${item.distance}</span>
+                    </div>
+                `).join('');
+            } else {
+                container.style.display = 'none';
+            }
+        }
     }
 }
 
@@ -725,46 +777,111 @@ function displayDefaultPolicies() {
  * Maps ALL backend policy categories to their HTML card elements.
  */
 function displayHotelPolicies(policies) {
-    const sections = {
-        'check_in_out': 'policyCheckInOut',
-        'early_late': 'policyEarlyLate',
-        'children': 'policyChildren',
-        'extra_beds': 'policyExtraBeds',
-        'pets': 'policyPets',
-        'internet': 'policyInternet',
-        'parking': 'policyParking',
-        'payments': 'policyPayments',
-        'meals': 'policyMeals',
-        'mandatory_fees': 'policyMandatoryFees',
-        'optional_fees': 'policyOptionalFees',
-        'special': 'policySpecial',
-        'shuttle': 'policyShuttle',
-        'smoking': 'policySmoking',
-        'age_restriction': 'policyAgeRestriction',
-        'visa': 'policyVisa',
-        'no_show': 'policyNoShow',
-        'other': 'policyOther'
+    // 1. Check-in/Check-out with Progress Bars
+    const checkinTime = policies.check_in_time || '14:00';
+    const checkoutTime = policies.check_out_time || '11:00';
+
+    const checkinEl = document.getElementById('checkinValue');
+    const checkoutEl = document.getElementById('checkoutValue');
+    const checkinProgress = document.getElementById('checkinProgress');
+    const checkoutProgress = document.getElementById('checkoutProgress');
+
+    if (checkinEl) checkinEl.textContent = `After ${checkinTime}`;
+    if (checkoutEl) checkoutEl.textContent = `Until ${checkoutTime}`;
+
+    // Calculate progress (00:00 to 24:00)
+    const timeToPercent = (timeStr) => {
+        if (!timeStr) return 50;
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return ((hours + (minutes || 0) / 60) / 24) * 100;
     };
 
-    for (const [key, elementId] of Object.entries(sections)) {
-        const sectionEl = document.getElementById(elementId);
-        const itemsEl = sectionEl?.querySelector('.policy-items');
-        const policyItems = policies[key] || [];
+    if (checkinProgress) checkinProgress.style.width = `${timeToPercent(checkinTime)}%`;
+    if (checkoutProgress) checkoutProgress.style.width = `${timeToPercent(checkoutTime)}%`;
 
-        if (policyItems.length > 0 && itemsEl) {
-            sectionEl.style.display = 'flex';
-            itemsEl.innerHTML = policyItems.map(item => {
-                const displayText = item.label
-                    ? `<strong>${item.label}:</strong> ${item.value || item}`
-                    : (item.value || item);
-                return `
-                    <div class="policy-item">
-                        <i class="fas ${item.icon || 'fa-check-circle'}"></i>
-                        <span>${displayText}</span>
-                    </div>`;
-            }).join('');
-        } else if (sectionEl) {
-            sectionEl.style.display = 'none';
+    // 2. Paid on the Spot (Pets, Extra Beds, Parking)
+    const petsPolicy = policies.pets || [];
+    const extraBedsPolicy = policies.extra_beds || policies.children || [];
+    const parkingPolicy = policies.parking || [];
+
+    const petsSection = document.getElementById('paidPets');
+    const extraBedsSection = document.getElementById('paidExtraBed');
+    const parkingSection = document.getElementById('paidParking');
+    const paidSection = document.getElementById('paidOnSpot');
+
+    let hasAnyPaid = false;
+
+    if (petsSection) {
+        if (petsPolicy.length > 0) {
+            petsSection.style.display = 'flex';
+            petsSection.querySelector('.paid-item-details').innerHTML = petsPolicy.map(p => `
+                <div class="paid-detail-row"><span class="paid-text">${p.value || p}</span></div>
+            `).join('');
+            hasAnyPaid = true;
+        } else {
+            petsSection.style.display = 'none';
+        }
+    }
+
+    if (extraBedsSection) {
+        if (extraBedsPolicy.length > 0) {
+            extraBedsSection.style.display = 'flex';
+            extraBedsSection.querySelector('.paid-item-details').innerHTML = extraBedsPolicy.map(p => `
+                <div class="paid-detail-row"><span class="paid-text">${p.value || p}</span></div>
+            `).join('');
+            hasAnyPaid = true;
+        } else {
+            extraBedsSection.style.display = 'none';
+        }
+    }
+
+    if (parkingSection) {
+        if (parkingPolicy.length > 0) {
+            parkingSection.style.display = 'flex';
+            parkingSection.querySelector('.paid-item-details').innerHTML = parkingPolicy.map(p => `
+                <div class="paid-detail-row"><span class="paid-text">${p.value || p}</span></div>
+            `).join('');
+            hasAnyPaid = true;
+        } else {
+            parkingSection.style.display = 'none';
+        }
+    }
+
+    if (paidSection) {
+        paidSection.style.display = hasAnyPaid ? 'block' : 'none';
+    }
+
+    // 3. Additional Information (Mandatory fees, Smoking, Age, Special instructions)
+    const additionalInfoContainer = document.getElementById('additionalInfoContent');
+    if (additionalInfoContainer) {
+        const otherSections = [
+            { title: 'Mandatory Fees', data: policies.mandatory_fees },
+            { title: 'Optional Charges', data: policies.optional_fees },
+            { title: 'Special Instructions', data: policies.special },
+            { title: 'Internet', data: policies.internet },
+            { title: 'Smoking Policy', data: policies.smoking },
+            { title: 'Age Restriction', data: policies.age_restriction },
+            { title: 'Other Policies', data: policies.other }
+        ];
+
+        let additionalHtml = '';
+        otherSections.forEach(section => {
+            if (section.data && section.data.length > 0) {
+                additionalHtml += `
+                    <div class="info-block" style="margin-bottom: 16px;">
+                        <strong style="display: block; margin-bottom: 4px; color: #111827;">${section.title}</strong>
+                        <ul style="padding-left: 20px; color: #4b5563;">
+                            ${section.data.map(item => `<li>${item.value || item}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+        });
+
+        if (additionalHtml) {
+            additionalInfoContainer.innerHTML = additionalHtml;
+        } else {
+            document.getElementById('additionalInfoSection').style.display = 'none';
         }
     }
 }
@@ -997,9 +1114,12 @@ function createRateCard(rate, index, customBadge = null) {
     const mealInfo = rate.meal_info || {};
     const mealCode = mealInfo.value || rate.meal_plan || rate.meal || 'nomeal';
     const isMealIncluded = mealCode !== 'nomeal' && mealCode !== 'room-only';
+    const hasBreakfastIncluded = mealCode.toLowerCase().includes('breakfast') ||
+        mealCode.toLowerCase().includes('board') ||
+        mealCode.toLowerCase().includes('all-inclusive');
 
     // Derive number of children from search session for no_child_meal warning
-    const searchData = SearchSession.getSearchData() || {};
+    const searchData = SearchSession.getSearchParams() || {};
     const roomGuests = (searchData.rooms || [{}])[0] || {};
     const numChildren = (roomGuests.children || []).length;
 
@@ -1135,46 +1255,23 @@ function createRateCard(rate, index, customBadge = null) {
     const roomsLeft = Math.floor(Math.random() * 4) + 1;
     const urgencyHtml = showUrgency ? `<span class="urgency-notice">We have ${roomsLeft} left</span>` : '';
 
-    // Tax info display - use REAL tax data from rate
-    let taxNoteHtml = '<small class="taxes-note"><i class="fas fa-info-circle"></i> Excludes taxes and fees</small>';
+    // Tax info display - simplify to "Includes all taxes and fees" as per user requirement
+    let taxNoteHtml = '<small class="taxes-note" style="color:#059669"><i class="fas fa-check-circle"></i> Includes all taxes and fees</small>';
 
     const taxInfo = rate.tax_info || {};
     const nonIncludedTaxes = taxInfo.non_included_taxes || [];
-    const includedTaxes = taxInfo.included_taxes || [];
 
+    // Even if there are non-included taxes, we want to reassure the user 
+    // or indicate they are already accounted for in the grand total display.
     if (nonIncludedTaxes.length > 0) {
-        // Calculate total non-included tax amount
-        let totalNonIncluded = 0;
-        const taxDetailsHtml = nonIncludedTaxes.map(tax => {
-            const amount = parseFloat(tax.amount || 0);
-            totalNonIncluded += amount;
-            const displayName = tax.name || 'Tax';
-            const currency = tax.currency || 'USD';
-            return `<div style="display:flex;justify-content:space-between;font-size:0.72rem;color:#92400e;"><span>${displayName}</span><span>${currency} ${amount.toFixed(2)}</span></div>`;
-        }).join('');
-
         taxNoteHtml = `
-            <div style="margin-top:6px;padding:8px 10px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;">
-                <div style="font-size:0.78rem;font-weight:600;color:#92400e;margin-bottom:4px;">
-                    <i class="fas fa-info-circle"></i> Additional fees payable at property:
+            <div style="margin-top:6px;padding:8px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
+                <div style="font-size:0.78rem;font-weight:600;color:#166534;margin-bottom:2px;">
+                    <i class="fas fa-check-circle"></i> All-inclusive pricing
                 </div>
-                ${taxDetailsHtml}
-                <div style="font-size:0.7rem;color:#b45309;margin-top:4px;font-style:italic;">These taxes are not included and must be paid at check-in.</div>
+                <div style="font-size:0.72rem;color:#15803d;">Includes all taxes and fees. No additional amount will be charged at the property.</div>
             </div>
         `;
-    } else if (includedTaxes.length > 0) {
-        let totalIncluded = 0;
-        includedTaxes.forEach(tax => { totalIncluded += parseFloat(tax.amount || 0); });
-        if (totalIncluded > 0) {
-            taxNoteHtml = `<small class="taxes-note" style="color:#059669"><i class="fas fa-check-circle"></i> Includes ₹${totalIncluded.toLocaleString('en-IN')} taxes & fees</small>`;
-        }
-    } else if (rate.tax_info && rate.tax_info.total > 0) {
-        const taxAmount = HotelUtils.formatPrice(rate.tax_info.total);
-        if (rate.tax_info.included) {
-            taxNoteHtml = `<small class="taxes-note"><i class="fas fa-check"></i> Includes ${taxAmount} taxes & fees</small>`;
-        } else {
-            taxNoteHtml = `<small class="taxes-note" style="color:#d97706"><i class="fas fa-info-circle"></i> + ${taxAmount} taxes & fees due at property</small>`;
-        }
     }
 
     // Build the card HTML

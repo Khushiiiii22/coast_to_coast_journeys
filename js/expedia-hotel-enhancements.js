@@ -29,19 +29,19 @@ const ACCESSIBILITY_FEATURES = {
 function generatePropertyHighlights(hotelData) {
     const highlightsGrid = document.getElementById('highlightsGrid');
     if (!highlightsGrid) return;
-    
+
     const highlights = [];
-    
+
     // Location-based highlight
-    if (hotelData.address) {
-        const city = hotelData.address.city || hotelData.address.locality;
+    if (hotelData.address || hotelData.city) {
+        const city = extractCity(hotelData);
         highlights.push({
             icon: 'fa-map-marker-alt',
             title: `Prime ${city} Location`,
             description: `Conveniently located near major attractions and landmarks in ${city}`
         });
     }
-    
+
     // WiFi highlight
     const hasWifi = checkAmenity(hotelData, ['wifi', 'internet', 'wireless']);
     if (hasWifi) {
@@ -51,7 +51,7 @@ function generatePropertyHighlights(hotelData) {
             description: 'Stay connected with complimentary high-speed internet throughout the property'
         });
     }
-    
+
     // Front desk highlight
     const has24HourDesk = checkAmenity(hotelData, ['24-hour', '24 hour', 'front desk']);
     if (has24HourDesk) {
@@ -61,7 +61,7 @@ function generatePropertyHighlights(hotelData) {
             description: 'Professional staff available around the clock to assist with your needs'
         });
     }
-    
+
     // Parking highlight
     const hasParking = checkAmenity(hotelData, ['parking', 'valet', 'garage']);
     if (hasParking) {
@@ -71,7 +71,7 @@ function generatePropertyHighlights(hotelData) {
             description: 'Convenient parking options for guests with vehicles'
         });
     }
-    
+
     // Pool/Spa highlight
     const hasPool = checkAmenity(hotelData, ['pool', 'swimming']);
     const hasSpa = checkAmenity(hotelData, ['spa', 'wellness', 'massage']);
@@ -82,7 +82,7 @@ function generatePropertyHighlights(hotelData) {
             description: hasPool ? 'Relax and unwind in the refreshing swimming pool' : 'Indulge in rejuvenating spa treatments and wellness services'
         });
     }
-    
+
     // Restaurant highlight
     const hasRestaurant = checkAmenity(hotelData, ['restaurant', 'dining', 'bar']);
     if (hasRestaurant) {
@@ -92,7 +92,7 @@ function generatePropertyHighlights(hotelData) {
             description: 'Enjoy delicious meals at the hotel\'s restaurant and bar'
         });
     }
-    
+
     // Render highlights
     highlightsGrid.innerHTML = highlights.map(h => `
         <div class="highlight-card fade-in fade-in-up">
@@ -108,11 +108,28 @@ function generatePropertyHighlights(hotelData) {
 }
 
 /**
+ * Extraction utility for city/locality
+ */
+function extractCity(hotelData) {
+    if (hotelData.city) return hotelData.city;
+    if (hotelData.address) {
+        if (typeof hotelData.address === 'object') {
+            return hotelData.address.city || hotelData.address.locality || hotelData.address.town || 'the area';
+        }
+        if (typeof hotelData.address === 'string') {
+            const parts = hotelData.address.split(',');
+            return parts.length > 1 ? parts[parts.length - 2].trim() : parts[0].trim();
+        }
+    }
+    return 'the area';
+}
+
+/**
  * Helper function to check if hotel has specific amenities
  */
 function checkAmenity(hotelData, keywords) {
-    if (!hotelData.amenities && !hotelData.amenity_groups) return false;
-    
+    if (!hotelData.amenities && !hotelData.amenity_groups && !hotelData.features) return false;
+
     const amenitiesText = JSON.stringify(hotelData).toLowerCase();
     return keywords.some(keyword => amenitiesText.includes(keyword.toLowerCase()));
 }
@@ -123,16 +140,17 @@ function checkAmenity(hotelData, keywords) {
 function populateAboutSection(hotelData) {
     const aboutNarrative = document.getElementById('aboutNarrative');
     const summaryAmenities = document.getElementById('summaryAmenities');
-    
+
     if (!aboutNarrative) return;
-    
+
     // Generate narrative description
-    const city = hotelData.address?.city || hotelData.address?.locality || 'the area';
+    const name = hotelData.name || 'this property';
+    const city = extractCity(hotelData);
     const propertyType = hotelData.property_type || 'hotel';
     const starRating = hotelData.star_rating ? `${hotelData.star_rating}-star ` : '';
-    
+
     const narrative = `
-        <p>Welcome to ${hotelData.name}, a ${starRating}${propertyType} located in the heart of ${city}. 
+        <p>Welcome to ${name}, a ${starRating}${propertyType} located in the heart of ${city}. 
         This property offers a perfect blend of comfort and convenience for both business and leisure travelers.</p>
         
         <p>The hotel features well-appointed rooms and suites, designed with your comfort in mind. 
@@ -141,12 +159,12 @@ function populateAboutSection(hotelData) {
         <p>Guests can enjoy a range of facilities and services during their visit. 
         The property's prime location provides easy access to major attractions, shopping areas, and dining options in ${city}.</p>
         
-        <p>Whether you're visiting for business or pleasure, ${hotelData.name} provides an ideal base 
+        <p>Whether you're visiting for business or pleasure, ${name} provides an ideal base 
         for exploring everything ${city} has to offer.</p>
     `;
-    
+
     aboutNarrative.innerHTML = narrative;
-    
+
     // Popular amenities summary
     if (summaryAmenities) {
         const topAmenities = getTopAmenities(hotelData, 6);
@@ -165,7 +183,7 @@ function populateAboutSection(hotelData) {
 function getTopAmenities(hotelData, count = 6) {
     const amenities = [];
     const priorityAmenities = ['wifi', 'parking', 'pool', 'restaurant', 'gym', 'spa', 'bar', 'breakfast', 'air conditioning', 'room service'];
-    
+
     if (hotelData.amenities) {
         hotelData.amenities.forEach(amenity => {
             const amenityText = amenity.toLowerCase();
@@ -174,7 +192,7 @@ function getTopAmenities(hotelData, count = 6) {
             }
         });
     }
-    
+
     // Add default amenities if not enough
     const defaults = ['Free WiFi', 'Air Conditioning', '24-Hour Front Desk', 'Housekeeping', 'Non-Smoking Rooms', 'Luggage Storage'];
     return [...amenities, ...defaults].slice(0, count);
@@ -184,15 +202,32 @@ function getTopAmenities(hotelData, count = 6) {
  * Categorize and Display Amenities
  */
 function categorizeAndDisplayAmenities(hotelData) {
-    const categorizedAmenities = {
+    const categories = {
+        popular: [],
+        general: [],
+        rooms: [],
+        meals: [],
         internet: [],
         parking: [],
-        food: [],
-        activities: [],
-        family: [],
-        services: []
+        accessibility: [],
+        business: [],
+        recreation: [],
+        healthSafety: []
     };
-    
+
+    // Extension of AMENITY_CATEGORIES for finer mapping
+    const MAPPING = {
+        internet: ['wifi', 'internet', 'wireless', 'connection', 'broadband'],
+        parking: ['parking', 'valet', 'garage', 'parking lot', 'car hire'],
+        meals: ['breakfast', 'restaurant', 'bar', 'lunch', 'dinner', 'snack', 'dining', 'buffet', 'coffee', 'kettle', 'tea'],
+        rooms: ['air conditioning', 'fan', 'heating', 'safe', 'tv', 'balcony', 'terrace', 'minibar', 'desk', 'iron', 'hairdryer', 'telephone', 'fridge'],
+        business: ['business center', 'meeting', 'conference', 'fax', 'photocopying', 'workspace'],
+        recreation: ['pool', 'spa', 'gym', 'fitness', 'sauna', 'massage', 'yoga', 'tennis', 'game', 'playground', 'club', 'entertainment'],
+        accessibility: ['accessible', 'wheelchair', 'braille', 'lowered', 'grab bar', 'elevator', 'lift'],
+        healthSafety: ['mask', 'sanitizer', 'disinfectant', 'social distancing', 'thermometer', 'first aid', 'doctor', 'smoke detector', 'fire extinguisher', 'security'],
+        popular: ['pool', 'wifi', 'parking', 'gym', 'ac', 'breakfast']
+    };
+
     // Get all amenities
     const allAmenities = [];
     if (hotelData.amenities) allAmenities.push(...hotelData.amenities);
@@ -201,36 +236,53 @@ function categorizeAndDisplayAmenities(hotelData) {
             if (group.amenities) allAmenities.push(...group.amenities);
         });
     }
-    
-    // Categorize amenities
+
+    // Categorize
     allAmenities.forEach(amenity => {
-        const amenityLower = amenity.toLowerCase();
-        let categorized = false;
-        
-        for (const [category, keywords] of Object.entries(AMENITY_CATEGORIES)) {
-            if (keywords.some(keyword => amenityLower.includes(keyword))) {
-                categorizedAmenities[category].push(amenity);
-                categorized = true;
-                break;
+        const lower = amenity.toLowerCase();
+        let matched = false;
+
+        // Check each mapping
+        for (const [cat, keywords] of Object.entries(MAPPING)) {
+            if (keywords.some(k => lower.includes(k))) {
+                categories[cat].push(amenity);
+                matched = true;
+                // Don't break because one amenity can be popular AND something else
             }
         }
-        
-        // If not categorized, add to services
-        if (!categorized) {
-            categorizedAmenities.services.push(amenity);
-        }
+
+        if (!matched) categories.general.push(amenity);
     });
-    
-    // Display categorized amenities
-    displayCategoryAmenities('amenitiesInternet', categorizedAmenities.internet);
-    displayCategoryAmenities('amenitiesParking', categorizedAmenities.parking);
-    displayCategoryAmenities('amenitiesFood', categorizedAmenities.food);
-    displayCategoryAmenities('amenitiesActivities', categorizedAmenities.activities);
-    displayCategoryAmenities('amenitiesFamily', categorizedAmenities.family);
-    displayCategoryAmenities('amenitiesServices', categorizedAmenities.services);
-    
-    // Setup show more functionality
-    setupShowMoreAmenities();
+
+    // Populate each list
+    const lists = {
+        'amenityPopularList': categories.popular,
+        'amenityGeneralList': categories.general,
+        'amenityRoomsList': categories.rooms,
+        'amenityMealsList': categories.meals,
+        'amenityInternetList': categories.internet,
+        'amenityParkingList': categories.parking,
+        'amenityAccessibilityList': categories.accessibility,
+        'amenityBusinessList': categories.business,
+        'amenityRecreationList': categories.recreation,
+        'amenityHealthSafetyList': categories.healthSafety
+    };
+
+    for (const [elementId, items] of Object.entries(lists)) {
+        const listEl = document.getElementById(elementId);
+        if (!listEl) continue;
+
+        if (items.length === 0) {
+            listEl.closest('.amenity-category').style.display = 'none';
+        } else {
+            listEl.closest('.amenity-category').style.display = 'block';
+            listEl.innerHTML = items.slice(0, 8).map(item => `
+                <div class="amenity-category-item">
+                    <span class="amenity-name">${item}</span>
+                </div>
+            `).join('');
+        }
+    }
 }
 
 /**
@@ -239,12 +291,12 @@ function categorizeAndDisplayAmenities(hotelData) {
 function displayCategoryAmenities(elementId, amenities) {
     const element = document.getElementById(elementId);
     if (!element) return;
-    
+
     if (amenities.length === 0) {
         element.closest('.amenity-category').style.display = 'none';
         return;
     }
-    
+
     element.innerHTML = amenities.slice(0, 6).map(amenity => {
         const fee = amenity.toLowerCase().includes('fee') || amenity.toLowerCase().includes('surcharge');
         return `<li ${fee ? 'class="with-fee"' : ''}>
@@ -252,7 +304,7 @@ function displayCategoryAmenities(elementId, amenities) {
             ${fee ? '<span class="amenity-fee">Additional charge may apply</span>' : ''}
         </li>`;
     }).join('');
-    
+
     // Store full list for "show more"
     element.dataset.fullList = JSON.stringify(amenities);
 }
@@ -263,12 +315,12 @@ function displayCategoryAmenities(elementId, amenities) {
 function setupShowMoreAmenities() {
     const showMoreBtn = document.getElementById('showMoreAmenities');
     if (!showMoreBtn) return;
-    
+
     let expanded = false;
-    
+
     showMoreBtn.addEventListener('click', () => {
         expanded = !expanded;
-        
+
         // Toggle all amenity lists
         document.querySelectorAll('.amenity-list').forEach(list => {
             if (list.dataset.fullList) {
@@ -292,9 +344,9 @@ function setupShowMoreAmenities() {
                 }
             }
         });
-        
+
         // Update button
-        showMoreBtn.innerHTML = expanded 
+        showMoreBtn.innerHTML = expanded
             ? '<i class="fas fa-chevron-up"></i> Show less amenities'
             : '<i class="fas fa-chevron-down"></i> Show all amenities';
         showMoreBtn.classList.toggle('expanded', expanded);
@@ -306,14 +358,14 @@ function setupShowMoreAmenities() {
  */
 function populateAccessibilitySection(hotelData) {
     const accessibilityData = extractAccessibilityFeatures(hotelData);
-    
+
     displayAccessibilityFeatures('accessibleBathroom', accessibilityData.bathroom);
     displayAccessibilityFeatures('rollInShower', accessibilityData.shower);
     displayAccessibilityFeatures('accessibleEntrance', accessibilityData.entrance);
     displayAccessibilityFeatures('sensoryEquipment', accessibilityData.sensory);
     displayAccessibilityFeatures('visualAids', accessibilityData.visual);
     displayAccessibilityFeatures('serviceAnimals', accessibilityData.service);
-    
+
     // Hide section if no accessibility features
     const hasFeatures = Object.values(accessibilityData).some(arr => arr.length > 0);
     const accessibilitySection = document.getElementById('accessibilitySection');
@@ -334,9 +386,9 @@ function extractAccessibilityFeatures(hotelData) {
         visual: [],
         service: []
     };
-    
+
     const allText = JSON.stringify(hotelData).toLowerCase();
-    
+
     // Check for accessibility keywords
     for (const [category, keywords] of Object.entries(ACCESSIBILITY_FEATURES)) {
         keywords.forEach(keyword => {
@@ -348,7 +400,7 @@ function extractAccessibilityFeatures(hotelData) {
             }
         });
     }
-    
+
     // Add default accessibility features if property is accessible
     if (allText.includes('accessible') || allText.includes('wheelchair')) {
         if (features.entrance.length === 0) {
@@ -361,7 +413,7 @@ function extractAccessibilityFeatures(hotelData) {
             features.service.push('Service animals welcome');
         }
     }
-    
+
     return features;
 }
 
@@ -371,12 +423,12 @@ function extractAccessibilityFeatures(hotelData) {
 function displayAccessibilityFeatures(elementId, features) {
     const element = document.getElementById(elementId);
     if (!element) return;
-    
+
     if (features.length === 0) {
         element.closest('.accessibility-feature').style.display = 'none';
         return;
     }
-    
+
     element.innerHTML = features.map(feature => `<li>${feature}</li>`).join('');
 }
 
@@ -406,16 +458,16 @@ function initializeExpediaEnhancements(hotelData) {
         console.warn('No hotel data provided for Expedia enhancements');
         return;
     }
-    
+
     try {
         // Add smooth scroll behavior
         document.documentElement.style.scrollBehavior = 'smooth';
-        
+
         generatePropertyHighlights(hotelData);
         populateAboutSection(hotelData);
         categorizeAndDisplayAmenities(hotelData);
         populateAccessibilitySection(hotelData);
-        
+
         console.log('✅ User-friendly enhancements initialized successfully');
     } catch (error) {
         console.error('❌ Error initializing enhancements:', error);

@@ -537,8 +537,34 @@ def search_by_destination():
                         except Exception as e:
                             print(f"⚠️ Failed to fetch static data: {e}")
                     
-                    # Pass target_currency to transform function for conversion if needed
-                    transformed_hotels = transform_etg_hotels(etg_hotels, location_name, static_hotel_map, target_currency)
+                    # Calculate nights for correct inclusive price display
+                    from datetime import datetime
+                    try:
+                        d1 = datetime.strptime(data['checkin'], '%Y-%m-%d')
+                        d2 = datetime.strptime(data['checkout'], '%Y-%m-%d')
+                        nights = (d2 - d1).days
+                    except:
+                        nights = 1
+
+                    # Enrich hotels with static data before transformation
+                    for h in etg_hotels:
+                        hid = h.get('id')
+                        if hid in static_hotel_map:
+                            h['static_data'] = static_hotel_map[hid]
+
+                    # Define conversion rates for search results
+                    CONVERSION_RATES = {
+                        'USD_TO_INR': 86.5,
+                        'EUR_TO_INR': 92.0,
+                        'GBP_TO_INR': 108.0
+                    }
+
+                    transformed_hotels = transform_etg_hotels(
+                        hotels_data=etg_hotels, 
+                        target_currency=target_currency,
+                        conversion_rates=CONVERSION_RATES,
+                        nights=nights
+                    )
                     
                     # Add ₹1 TEST hotel at the beginning for payment testing (only in dev mode)
                     import os
@@ -620,7 +646,26 @@ def search_by_destination():
                                 except Exception as e:
                                     print(f"⚠️ Failed to fetch static data for suggest hotels: {e}")
                             
-                            transformed_hotels = transform_etg_hotels(etg_hotels, location_name, suggest_static_map)
+                            # Calculate nights for correct inclusive price display
+                            from datetime import datetime
+                            try:
+                                d1 = datetime.strptime(data['checkin'], '%Y-%m-%d')
+                                d2 = datetime.strptime(data['checkout'], '%Y-%m-%d')
+                                nights = (d2 - d1).days
+                            except:
+                                nights = 1
+
+                            # Enrich hotels with static data before transformation
+                            for h in etg_hotels:
+                                hid = h.get('id')
+                                if hid in suggest_static_map:
+                                    h['static_data'] = suggest_static_map[hid]
+
+                            transformed_hotels = transform_etg_hotels(
+                                hotels_data=etg_hotels, 
+                                target_currency=target_currency,
+                                nights=nights
+                            )
                             return jsonify({
                                 'success': True,
                                 'data': {'hotels': transformed_hotels},
@@ -714,59 +759,7 @@ def process_etg_image_url(raw_url):
     return url
 
 
-def transform_etg_hotels(etg_hotels, destination, static_data=None, target_currency='INR'):
-    """Transform ETG hotel response to frontend format"""
-    transformed = []
-    if static_data is None:
-        static_data = {}
-    
-    # Simple fixed conversion rates (Fallback if API doesn't do it)
-    # RateHawk Sandbox often forces USD regardless of request
-    CONVERSION_RATES = {
-        'USD_TO_INR': 86.5,
-        'EUR_TO_INR': 92.0,
-        'GBP_TO_INR': 108.0
-    }
-    
-    # ETG Meal type mappings (official from RateHawk)
-    MEAL_TYPE_DISPLAY = {
-        'all-inclusive': 'All Inclusive',
-        'breakfast': 'Breakfast Included',
-        'breakfast-buffet': 'Breakfast Buffet',
-        'continental-breakfast': 'Continental Breakfast',
-        'dinner': 'Dinner Included',
-        'full-board': 'Full Board (All Meals)',
-        'half-board': 'Half Board (Breakfast & Dinner)',
-        'half-board-lunch': 'Half Board (Breakfast & Lunch)',
-        'half-board-dinner': 'Half Board (Breakfast & Dinner)',
-        'lunch': 'Lunch Included',
-        'nomeal': 'Room Only (No Meals)',
-        'some-meal': 'Some Meals Included',
-        'english-breakfast': 'English Breakfast',
-        'american-breakfast': 'American Breakfast',
-        'asian-breakfast': 'Asian Breakfast',
-        'chinese-breakfast': 'Chinese Breakfast',
-        'israeli-breakfast': 'Israeli Breakfast',
-        'japanese-breakfast': 'Japanese Breakfast',
-        'scandinavian-breakfast': 'Scandinavian Breakfast',
-        'scottish-breakfast': 'Scottish Breakfast',
-        'breakfast-for-1': 'Breakfast for 1 Guest',
-        'breakfast-for-2': 'Breakfast for 2 Guests',
-        'super-all-inclusive': 'Super All Inclusive',
-        'soft-all-inclusive': 'Soft All Inclusive',
-        'ultra-all-inclusive': 'Ultra All Inclusive',
-    }
-    
-    # Sample hotel images for demo ONLY when API returns no images
-    fallback_hotel_images = [
-        'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600',
-        'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600',
-        'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=600',
-        'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600',
-        'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=600',
-    ]
-
-def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=None, MEAL_TYPE_DISPLAY=None, room_groups=None):
+def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=None, MEAL_TYPE_DISPLAY=None, room_groups=None, nights=1):
     """
     Transform ETG search results into flattened hotel cards.
     Handles price calculation (Commission + Exclusive Taxes).
@@ -819,35 +812,28 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
         has_breakfast = False
         no_child_meal = False
         
-        # Determine lowest PRICE EXCLUSIVE OF TAXES
+        # Determine lowest price including taxes
         for rate in rates:
             payment_options = rate.get('payment_options', {})
             payment_types = payment_options.get('payment_types', [])
             rate_currency = payment_options.get('currency_code', 'USD')
             
-            # Get api total
             api_total = float(payment_types[0].get('amount', 0)) if payment_types else 0
             
-            # Get api included taxes
-            api_included_tax = 0
+            # Non-included Taxes (Property Fees)
+            api_non_included_tax = 0
             tax_data = payment_options.get('tax_data', {}) or {}
             for tax in tax_data.get('taxes', []):
-                if tax.get('included_by_supplier', True):
-                    api_included_tax += float(tax.get('amount', 0))
+                if not tax.get('included_by_supplier', True):
+                    api_non_included_tax += float(tax.get('amount', 0))
+
+            # Final display price inclusive of everything
+            # (api_total includes API_Net + API_Included_Tax)
+            display_total = (api_total * (1 + COMMISSION_RATE)) + api_non_included_tax
+            display_nightly = display_total / (nights if nights > 0 else 1)
             
-            api_net = api_total - api_included_tax
-            
-            # Currency conversion
-            if target_currency == 'INR' and rate_currency == 'USD':
-                api_net = api_net * conversion_rates['USD_TO_INR']
-            elif target_currency == 'INR' and rate_currency == 'EUR':
-                api_net = api_net * conversion_rates['EUR_TO_INR']
-            
-            # Apply commission on the net price for display
-            display_net = api_net * (1 + COMMISSION_RATE)
-            
-            if lowest_price == 0 or display_net < lowest_price:
-                lowest_price = display_net
+            if lowest_price == 0 or display_nightly < lowest_price:
+                lowest_price = display_nightly
                 best_rate = rate
                 # Also capture meal info for the best rate
                 meal_data = rate.get('meal_data', {})
@@ -938,11 +924,12 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
             'latitude': static_info.get('latitude') or hotel.get('latitude'),
             'longitude': static_info.get('longitude') or hotel.get('longitude'),
             'image': image_url,
-            'images': all_images,  # Include all images for gallery (ensure list)
+            'images': all_images,
+            'description': static_info.get('description') or hotel.get('description') or f"Experience exceptional comfort at {hotel_name}. This {star_rating}-star property offers world-class amenities and a prime location for your stay.",
             'price': round(lowest_price, 2),
             'original_price': round(lowest_price * 1.25, 2),
             'currency': target_currency, # Use real currency from API
-            'amenities': extract_amenities(rates),
+            'amenities': extract_amenities(rates) or static_info.get('amenities', []),
             'meal_plan': best_meal_value,
             'meal_info': {
                 'value': best_meal_value,
@@ -950,8 +937,9 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
                 'has_breakfast': has_breakfast,
                 'no_child_meal': no_child_meal
             },
+            'static_data': static_info,
             'discount': 15,
-            'rates': transform_rates(rates, target_currency, conversion_rates, MEAL_TYPE_DISPLAY, room_groups)
+            'rates': transform_rates(rates, target_currency, conversion_rates, MEAL_TYPE_DISPLAY, room_groups, nights)
         }
         
         transformed.append(transformed_hotel)
@@ -959,7 +947,7 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
     return transformed
 
 
-def transform_rates(rates, target_currency, conversion_rates, meal_display_map, room_groups=None):
+def transform_rates(rates, target_currency, conversion_rates, meal_display_map, room_groups=None, nights=1):
     """Transform rate data with proper meal_data, cancellation info, and optional room enrichment"""
     transformed_rates = []
     
@@ -971,53 +959,50 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map, 
         payment_types = payment_options.get('payment_types', [{}])
         rate_currency = payment_options.get('currency_code', 'USD')
         
-        # Original total amount from API
-        total_amount = float(payment_types[0].get('amount', 0)) if payment_types else 0
+        # 1. Start with API total (Net + Included Tax)
+        api_total = float(payment_types[0].get('amount', 0)) if payment_types else 0
         
-        # Currency conversion
-        if target_currency == 'INR' and rate_currency == 'USD':
-            total_amount = total_amount * conversion_rates['USD_TO_INR']
-        elif target_currency == 'INR' and rate_currency == 'EUR':
-            total_amount = total_amount * conversion_rates['EUR_TO_INR']
-        
-        # Apply commission to the total
-        total_with_commission = total_amount * (1 + COMMISSION_RATE)
-        
-        # Parse taxes
-        tax_info = parse_taxes(
-            payment_options.get('tax_data', {}), 
-            target_currency, 
-            rate_currency, 
-            conversion_rates
-        )
-        
-        # Calculate Net Price (Exclusive of included taxes)
-        # tax_info['total_included'] already has commission if parse_taxes followed the same logic?
-        # WAIT: parse_taxes doesn't know about commission. We need to add commission to taxes too 
-        # OR subtract taxes from the total BEFORE commission.
-        
-        # Better logic:
-        # 1. Total (Net + Tax) from API.
-        # 2. Split into API_Net and API_Tax.
-        # 3. Apply commission to both: Display_Net = API_Net * 1.15, Display_Tax = API_Tax * 1.15.
-        
+        # 2. Extract and Convert Included Taxes
         api_included_tax = 0
         for tax in payment_options.get('tax_data', {}).get('taxes', []):
             if tax.get('included_by_supplier', True):
                 val = float(tax.get('amount', 0))
+                # Currency conversion for taxes
                 if target_currency == 'INR' and rate_currency == 'USD':
                     val *= conversion_rates['USD_TO_INR']
                 elif target_currency == 'INR' and rate_currency == 'EUR':
                     val *= conversion_rates['EUR_TO_INR']
                 api_included_tax += val
         
-        display_included_tax = api_included_tax * (1 + COMMISSION_RATE)
-        display_net_price = total_with_commission - display_included_tax
+        # 3. Extract and Convert Non-Included Taxes (Property Fees)
+        # We add these to the display total to satisfy "Includes all taxes"
+        api_non_included_tax = 0
+        for tax in payment_options.get('tax_data', {}).get('taxes', []):
+            if not tax.get('included_by_supplier', True):
+                val = float(tax.get('amount', 0))
+                # Note: These are usually in local currency, but ETG often provides them in rate currency too
+                if target_currency == 'INR' and rate_currency == 'USD':
+                    val *= conversion_rates['USD_TO_INR']
+                elif target_currency == 'INR' and rate_currency == 'EUR':
+                    val *= conversion_rates['EUR_TO_INR']
+                api_non_included_tax += val
+
+        # 4. Calculate Final Display Values
+        # Apply commission only to what WE collect (API Total)
+        # But for user perception, we show one grand total
+        display_total_with_fees = (api_total * (1 + COMMISSION_RATE)) + api_non_included_tax
         
-        # Update tax_info to include commission on taxes
-        tax_info['total_included'] = round(display_included_tax, 2)
-        for t in tax_info.get('included_taxes', []):
-             t['amount'] = round(t['amount'] * (1 + COMMISSION_RATE), 2)
+        # Nightly inclusive price for display
+        display_nightly_inclusive = display_total_with_fees / (nights if nights > 0 else 1)
+        
+        # Update tax_info for frontend visibility if needed
+        tax_info = parse_taxes(
+            payment_options.get('tax_data', {}), 
+            target_currency, 
+            rate_currency, 
+            conversion_rates
+        )
+        tax_info['total_all_taxes'] = round(api_included_tax * (1 + COMMISSION_RATE) + api_non_included_tax, 2)
 
         # Get meal_data (preferred)
         meal_data = rate.get('meal_data', {})
@@ -1042,8 +1027,8 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map, 
         transformed_rate = {
             'book_hash': rate.get('match_hash', ''),
             'room_name': room_name,
-            'price': round(display_net_price, 2), # EXCLUSIVE OF TAX
-            'total_price': round(total_with_commission, 2), # INCLUSIVE OF TAX
+            'price': round(display_nightly_inclusive, 2), # ALL-INCLUSIVE NIGHTLY
+            'total_price': round(display_total_with_fees, 2), # ALL-INCLUSIVE TOTAL
             'currency': target_currency,
             'meal': meal_value,
             'meal_plan': meal_value,
@@ -1510,6 +1495,8 @@ def format_hotel_policies(policies):
     - metapolicy_struct provides structured policy data.
     """
     formatted = {
+        'check_in_time': policies.get('check_in_time'),
+        'check_out_time': policies.get('check_out_time'),
         'check_in_out': [],
         'early_late': [],
         'children': [],
@@ -2074,12 +2061,28 @@ def get_enriched_hotel_details():
         
         hotels = rates_data.get('hotels', [])
         
+        # Enrich each hotel with static data before transformation
+        if static_result.get('success'):
+            static_info = static_result.get('data', {}).get('data', {})
+            for hotel in hotels:
+                hotel['static_data'] = static_info
+        
+        # Calculate nights for correct inclusive price display
+        from datetime import datetime
+        try:
+            d1 = datetime.strptime(data['checkin'], '%Y-%m-%d')
+            d2 = datetime.strptime(data['checkout'], '%Y-%m-%d')
+            nights = (d2 - d1).days
+        except:
+            nights = 1
+
         transformed_hotels = transform_etg_hotels(
             hotels, 
             target_currency=data.get('currency', 'USD'), 
             conversion_rates=CONVERSION_RATES, 
             MEAL_TYPE_DISPLAY=MEAL_TYPE_DISPLAY,
-            room_groups=room_groups
+            room_groups=room_groups,
+            nights=nights
         )
         
         return jsonify({

@@ -129,9 +129,10 @@
                 <section class="tab-navigation-section">
                     <nav class="hotel-tabs">
                         <button class="tab-btn active" data-tab="overview">Overview</button>
-                        <button class="tab-btn" data-tab="about">About</button>
+                        <button class="tab-btn" data-tab="amenities">Amenities</button>
                         <button class="tab-btn" data-tab="rooms">Rooms</button>
                         <button class="tab-btn" data-tab="policies">Policies</button>
+                        <button class="tab-btn" data-tab="about">About</button>
                     </nav>
                     <button class="reserve-btn" id="quickReserveBtn">
                         Reserve
@@ -139,7 +140,7 @@
                 </section>
 
                 <!-- Hotel Info Section -->
-                <section class="hotel-info-section" id="overviewSection">
+                <section class="hotel-info-section" id="overview">
                     <div class="hotel-info-grid">
                         <!-- Left: Hotel Details -->
                         <div class="hotel-main-info">
@@ -177,6 +178,8 @@
                             <div class="key-amenities" id="keyAmenities">
                                 <h3><i class="fas fa-concierge-bell"></i> Popular amenities</h3>
                                 <div class="amenities-grid" id="amenitiesGrid"></div>
+                                <a href="#amenities" class="see-all-link">See all property amenities <i
+                                        class="fas fa-chevron-right"></i></a>
                             </div>
                         </div>
 
@@ -192,27 +195,111 @@
                                     <span>Loading address...</span>
                                 </p>
                             </div>
-                            <div class="nearby-places" id="nearbyPlaces">
-                                <!-- Nearby places will be inserted here -->
+                            <div id="surroundingsContainer" class="surroundings-grid">
+                                <!-- Categories will be inserted here -->
+                                <div class="surroundings-category" id="categoryNearby">
+                                    <h4><i class="fas fa-walking"></i> What's nearby</h4>
+                                    <div class="surroundings-list"></div>
+                                </div>
+                                <div class="surroundings-category" id="categoryInterest">
+                                    <h4><i class="fas fa-landmark"></i> Places of interest</h4>
+                                    <div class="surroundings-list"></div>
+                                </div>
+                                <div class="surroundings-category" id="categoryAirports">
+                                    <h4><i class="fas fa-plane"></i> Airports</h4>
+                                    <div class="surroundings-list"></div>
+                                </div>
+                                <div class="surroundings-category" id="categorySubway">
+                                    <h4><i class="fas fa-subway"></i> Subway</h4>
+                                    <div class="surroundings-list"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
                 <!-- Room Selection Section (Expedia Style) -->
-                <section class="rooms-section" id="roomsSection">
+                <section class="rooms-section" id="rooms">
                     <div class="rooms-header">
                         <h2><i class="fas fa-bed"></i> Choose your room</h2>
-                        <p class="rooms-subtitle">
-                            <span id="roomsNightsInfo">2 nights</span> · <span id="roomsGuestsInfo">2 adults</span>
-                        </p>
+                        <div class="rooms-subtitle">
+                            Showing prices for <span id="roomsGuestsInfo">1 guest</span>, <span id="roomsNightsInfo">1
+                                night</span>
+                        </div>
                     </div>
-
                     <div class="rooms-list" id="ratesList">
-                        <!-- Room cards will be inserted here -->
+                        <!-- Rates will be inserted here -->
                     </div>
                 </section>
 
+                <!-- Full Services & Amenities Section (Image 1 Style) -->
+                <section class="services-amenities-section" id="amenities">
+                    <h2><i class="fas fa-concierge-bell"></i> Services and amenities</h2>
+
+                    <div class="amenity-categories-grid" id="fullAmenitiesGrid">
+                        <!-- Popular -->
+                        <div class="amenity-category popular">
+                            <div class="amenity-popular-box">
+                                <h4><i class="fas fa-fire"></i> Popular</h4>
+                                <div class="amenity-category-list" id="amenityPopularList"></div>
+                            </div>
+                        </div>
+
+                        <!-- General -->
+                        <div class="amenity-category">
+                            <h4><i class="fas fa-hotel"></i> General</h4>
+                            <div class="amenity-category-list" id="amenityGeneralList"></div>
+                        </div>
+
+                        <!-- Rooms -->
+                        <div class="amenity-category">
+                            <h4><i class="fas fa-door-open"></i> Rooms</h4>
+                            <div class="amenity-category-list" id="amenityRoomsList"></div>
+                        </div>
+
+                        <!-- Meals -->
+                        <div class="amenity-category">
+                            <h4><i class="fas fa-utensils"></i> Meals</h4>
+                            <div class="amenity-category-list" id="amenityMealsList"></div>
+                        </div>
+
+                        <!-- Internet -->
+                        <div class="amenity-category">
+                            <h4><i class="fas fa-wifi"></i> Internet</h4>
+                            <div class="amenity-category-list" id="amenityInternetList"></div>
+                        </div>
+
+                        <!-- Parking -->
+                        <div class="amenity-category">
+                            <h4><i class="fas fa-parking"></i> Parking</h4>
+                            <div class="amenity-category-list" id="amenityParkingList"></div>
+                        </div>
+
+                        <!-- Accessibility -->
+                        <div class="amenity-category">
+                            <h4><i class="fas fa-wheelchair"></i> Accessibility</h4>
+                            <div class="amenity-category-list" id="amenityAccessibilityList"></div>
+                        </div>
+
+                        <!-- Business -->
+                        <div class="amenity-category">
+                            <h4><i class="fas fa-briefcase"></i> Business</h4>
+                            <div class="amenity-category-list" id="amenityBusinessList"></div>
+                        </div>
+
+                        <!-- Recreation -->
+                        <div class="amenity-category">
+                            <h4><i class="fas fa-swimmer"></i> Recreation</h4>
+                            <div class="amenity-category-list" id="amenityRecreationList"></div>
+                        </div>
+
+                        <!-- Health and Safety -->
+                        <div class="amenity-category">
+                            <h4><i class="fas fa-shield-virus"></i> Health and Safety</h4>
+                            <div class="amenity-category-list" id="amenityHealthSafetyList"></div>
+                        </div>
+                    </div>
+                </section>
                 <!-- Property Highlights Section -->
                 <section class="property-highlights-section" id="propertyHighlights">
                     <div class="highlights-header">
@@ -224,7 +311,7 @@
                 </section>
 
                 <!-- About Section -->
-                <section class="about-section" id="aboutSection">
+                <section class="about-section" id="about">
                     <h2><i class="fas fa-info-circle"></i> About this property</h2>
                     <div class="about-content-grid">
                         <div class="about-narrative" id="aboutNarrative">
@@ -239,62 +326,6 @@
                     </div>
                 </section>
 
-                <!-- Amenities Section (Categorized Expedia Style) -->
-                <section class="amenities-section" id="amenitiesSection">
-                    <h2><i class="fas fa-concierge-bell"></i> Amenities</h2>
-
-                    <!-- Internet & Connectivity -->
-                    <div class="amenity-category">
-                        <h3><i class="fas fa-wifi"></i> Internet & Connectivity</h3>
-                        <ul class="amenity-list" id="amenitiesInternet">
-                            <!-- Will be populated dynamically -->
-                        </ul>
-                    </div>
-
-                    <!-- Parking & Transportation -->
-                    <div class="amenity-category">
-                        <h3><i class="fas fa-parking"></i> Parking & Transportation</h3>
-                        <ul class="amenity-list" id="amenitiesParking">
-                            <!-- Will be populated dynamically -->
-                        </ul>
-                    </div>
-
-                    <!-- Food & Drink -->
-                    <div class="amenity-category">
-                        <h3><i class="fas fa-utensils"></i> Food & Drink</h3>
-                        <ul class="amenity-list" id="amenitiesFood">
-                            <!-- Will be populated dynamically -->
-                        </ul>
-                    </div>
-
-                    <!-- Things to Do -->
-                    <div class="amenity-category">
-                        <h3><i class="fas fa-swimming-pool"></i> Things to Do</h3>
-                        <ul class="amenity-list" id="amenitiesActivities">
-                            <!-- Will be populated dynamically -->
-                        </ul>
-                    </div>
-
-                    <!-- Family Friendly -->
-                    <div class="amenity-category">
-                        <h3><i class="fas fa-child"></i> Family Friendly</h3>
-                        <ul class="amenity-list" id="amenitiesFamily">
-                            <!-- Will be populated dynamically -->
-                        </ul>
-                    </div>
-
-                    <!-- Guest Services -->
-                    <div class="amenity-category">
-                        <h3><i class="fas fa-concierge"></i> Guest Services</h3>
-                        <ul class="amenity-list" id="amenitiesServices">
-                            <!-- Will be populated dynamically -->
-                        </ul>
-                    </div>
-
-                    <button class="show-more-btn" id="showMoreAmenities">
-                        <i class="fas fa-chevron-down"></i> Show all amenities
-                    </button>
-                </section>
 
                 <!-- Accessibility Section (WCAG 2.1 AA Compliant) -->
                 <section class="accessibility-section" id="accessibilitySection">
@@ -360,196 +391,87 @@
                 </section>
 
                 <!-- Policies Section (Expedia Style Enhanced) -->
-                <section class="policies-section" id="policiesSection">
+                <section class="policies-section" id="policies">
                     <h2><i class="fas fa-clipboard-list"></i> Policies</h2>
                     <p class="policies-intro">Please review the property's policies before making your reservation</p>
 
-                    <div class="policies-grid">
-                        <!-- Check-in/Check-out -->
-                        <div class="policy-card" id="policyCheckInOut">
-                            <div class="policy-icon">
-                                <i class="fas fa-clock"></i>
+                    <div class="policies-wrapper">
+                        <!-- Check-in Terms (Image 2 style) -->
+                        <div class="checkin-terms">
+                            <h4><i class="fas fa-clock"></i> Check-in terms and conditions</h4>
+
+                            <div class="checkin-row">
+                                <div class="checkin-label-row">
+                                    <div class="checkin-icon-text">
+                                        <i class="fas fa-sign-in-alt"></i>
+                                        <span>Check-in</span>
+                                    </div>
+                                    <span class="checkin-value" id="checkinValue">After 14:00</span>
+                                </div>
+                                <div class="checkin-progress-container">
+                                    <div class="checkin-progress-bar" id="checkinProgress" style="width: 60%"></div>
+                                </div>
+                                <div class="checkin-time-markers">
+                                    <span>00:00</span>
+                                    <span>14:00</span>
+                                    <span>24:00</span>
+                                </div>
                             </div>
-                            <div class="policy-content">
-                                <h4>Check-in & Check-out</h4>
-                                <div class="policy-items"></div>
+
+                            <div class="checkin-row">
+                                <div class="checkin-label-row">
+                                    <div class="checkin-icon-text">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        <span>Check-out</span>
+                                    </div>
+                                    <span class="checkin-value" id="checkoutValue">Until 11:00</span>
+                                </div>
+                                <div class="checkin-progress-container">
+                                    <div class="checkin-progress-bar" id="checkoutProgress"
+                                        style="width: 45%; background: #3b82f6;"></div>
+                                </div>
+                                <div class="checkin-time-markers">
+                                    <span>00:00</span>
+                                    <span>11:00</span>
+                                    <span>24:00</span>
+                                </div>
                             </div>
                         </div>
 
-
-                        <!-- Children Policy -->
-                        <div class="policy-card" id="policyChildren">
-                            <div class="policy-icon">
-                                <i class="fas fa-child"></i>
-                            </div>
-                            <div class="policy-content">
-                                <h4>Children & Extra Beds</h4>
-                                <div class="policy-items"></div>
-                            </div>
-                        </div>
-
-                        <!-- Pets Policy -->
-                        <div class="policy-card" id="policyPets">
-                            <div class="policy-icon">
-                                <i class="fas fa-paw"></i>
-                            </div>
-                            <div class="policy-content">
-                                <h4>Pets</h4>
-                                <div class="policy-items"></div>
-                            </div>
-                        </div>
-
-                        <!-- Mandatory Fees -->
-                        <div class="policy-card" id="policyMandatoryFees">
-                            <div class="policy-icon">
-                                <i class="fas fa-dollar-sign"></i>
-                            </div>
-                            <div class="policy-content">
-                                <h4>Mandatory Fees</h4>
-                                <div class="policy-items"></div>
+                        <!-- Paid on the spot / Special amenities -->
+                        <div class="paid-on-spot" id="paidOnSpot">
+                            <h3><i class="fas fa-wallet"></i> Paid on the spot</h3>
+                            <div class="paid-grid">
+                                <!-- Will be populated dynamically for Pets, Additional bed, Parking -->
+                                <div class="paid-item" id="paidPets">
+                                    <div class="paid-item-header">
+                                        <i class="fas fa-paw"></i>
+                                        <span>Pets</span>
+                                    </div>
+                                    <div class="paid-item-details"></div>
+                                </div>
+                                <div class="paid-item" id="paidExtraBed">
+                                    <div class="paid-item-header">
+                                        <i class="fas fa-bed"></i>
+                                        <span>Additional bed</span>
+                                    </div>
+                                    <div class="paid-item-details"></div>
+                                </div>
+                                <div class="paid-item" id="paidParking">
+                                    <div class="paid-item-header">
+                                        <i class="fas fa-parking"></i>
+                                        <span>Parking</span>
+                                    </div>
+                                    <div class="paid-item-details"></div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Optional Fees -->
-                        <div class="policy-card" id="policyOptionalFees">
-                            <div class="policy-icon">
-                                <i class="fas fa-money-bill-wave"></i>
-                            </div>
-                            <div class="policy-content">
-                                <h4>Optional Charges</h4>
-                                <div class="policy-items"></div>
-                            </div>
-                        </div>
-
-                        <!-- Payment -->
-                        <div class="policy-card" id="policyPayments">
-                            <div class="policy-icon">
-                                <i class="fas fa-credit-card"></i>
-                            </div>
-                            <div class="policy-content">
-                                <h4>Payment Options</h4>
-                                <div class="policy-items"></div>
-                            </div>
-                        </div>
-
-                        <!-- Internet -->
-                        <div class="policy-card" id="policyInternet">
-                            <div class="policy-icon">
-                                <i class="fas fa-wifi"></i>
-                            </div>
-                            <div class="policy-content">
-                                <h4>Internet</h4>
-                                <div class="policy-items"></div>
-                            </div>
-                        </div>
-
-                        <!-- Parking -->
-                        <div class="policy-card" id="policyParking">
-                            <div class="policy-icon">
-                                <i class="fas fa-parking"></i>
-                            </div>
-                            <div class="policy-content">
-                                <h4>Parking</h4>
-                                <div class="policy-items"></div>
-                            </div>
-                        </div>
-
-                        <!-- Meals -->
-                        <div class="policy-card" id="policyMeals">
-                            <div class="policy-icon">
-                                <i class="fas fa-utensils"></i>
-                            </div>
-                            <div class="policy-content">
-                                <h4>Food & Beverages</h4>
-                                <div class="policy-items"></div>
-                            </div>
-                        </div>
-
-                        <!-- Extra Beds -->
-                        <div class="policy-card" id="policyExtraBeds">
-                            <div class="policy-icon">
-                                <i class="fas fa-bed"></i>
-                            </div>
-                            <div class="policy-content">
-                                <h4>Extra Beds & Cots</h4>
-                                <div class="policy-items"></div>
-                            </div>
-                        </div>
-
-                        <!-- Special Instructions -->
-                        <div class="policy-card" id="policySpecial">
-                            <div class="policy-icon">
-                                <i class="fas fa-info-circle"></i>
-                            </div>
-                            <div class="policy-content">
-                                <h4>Special Instructions</h4>
-                                <div class="policy-items"></div>
-                            </div>
-                        </div>
-
-                        <!-- Other -->
-                        <div class="policy-card" id="policyOther">
-                            <div class="policy-icon">
-                                <i class="fas fa-list-check"></i>
-                            </div>
-                            <div class="policy-content">
-                                <h4>Other Policies</h4>
-                                <div class="policy-items"></div>
-                            </div>
-                        </div>
-
-                        <!-- Shuttle Service -->
-                        <div class="policy-card" id="policyShuttle">
-                            <div class="policy-icon">
-                                <i class="fas fa-shuttle-van"></i>
-                            </div>
-                            <div class="policy-content">
-                                <h4>Shuttle Service</h4>
-                                <div class="policy-items"></div>
-                            </div>
-                        </div>
-
-                        <!-- Smoking Policy -->
-                        <div class="policy-card" id="policySmoking">
-                            <div class="policy-icon">
-                                <i class="fas fa-smoking-ban"></i>
-                            </div>
-                            <div class="policy-content">
-                                <h4>Smoking Policy</h4>
-                                <div class="policy-items"></div>
-                            </div>
-                        </div>
-
-                        <!-- Age Restriction -->
-                        <div class="policy-card" id="policyAgeRestriction">
-                            <div class="policy-icon">
-                                <i class="fas fa-id-card"></i>
-                            </div>
-                            <div class="policy-content">
-                                <h4>Age Restriction</h4>
-                                <div class="policy-items"></div>
-                            </div>
-                        </div>
-
-                        <!-- Visa / Entry -->
-                        <div class="policy-card" id="policyVisa">
-                            <div class="policy-icon">
-                                <i class="fas fa-passport"></i>
-                            </div>
-                            <div class="policy-content">
-                                <h4>Visa &amp; Entry</h4>
-                                <div class="policy-items"></div>
-                            </div>
-                        </div>
-
-                        <!-- No-show Policy -->
-                        <div class="policy-card" id="policyNoShow">
-                            <div class="policy-icon">
-                                <i class="fas fa-calendar-times"></i>
-                            </div>
-                            <div class="policy-content">
-                                <h4>No-show Policy</h4>
-                                <div class="policy-items"></div>
+                        <!-- Additional Information -->
+                        <div class="additional-info" id="additionalInfoSection">
+                            <h3><i class="fas fa-info-circle"></i> Additional information</h3>
+                            <div class="info-content" id="additionalInfoContent">
+                                <!-- Will be populated dynamically -->
                             </div>
                         </div>
                     </div>
