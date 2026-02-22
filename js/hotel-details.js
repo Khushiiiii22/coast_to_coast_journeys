@@ -746,7 +746,9 @@ function displayDefaultPolicies() {
         children: [
             { icon: 'fa-child', label: 'Children', value: 'Children of all ages welcome' }
         ],
-        pets: [],
+        pets: [
+            { icon: 'fa-paw', label: 'Pets', value: 'Pet policy varies by property — some hotels allow pets with a fee, others do not' }
+        ],
         payments: [
             { icon: 'fa-credit-card', label: 'Payment', value: 'Credit/Debit cards accepted' }
         ],
