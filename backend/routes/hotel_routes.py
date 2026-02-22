@@ -765,58 +765,100 @@ def transform_etg_hotels(etg_hotels, destination, static_data=None, target_curre
         'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600',
         'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=600',
     ]
+
+def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=None, MEAL_TYPE_DISPLAY=None, room_groups=None):
+    """
+    Transform ETG search results into flattened hotel cards.
+    Handles price calculation (Commission + Exclusive Taxes).
     
-    for idx, hotel in enumerate(etg_hotels):
-        hotel_id = hotel.get('id')
-        static_info = static_data.get(hotel_id, {})
-        
+    room_groups: optional dict of static room data keyed by rg_ext.rg
+    """
+    if not MEAL_TYPE_DISPLAY:
+        MEAL_TYPE_DISPLAY = {
+            'all-inclusive': 'All Inclusive',
+            'breakfast': 'Breakfast Included',
+            'breakfast-buffet': 'Breakfast Buffet',
+            'continental-breakfast': 'Continental Breakfast',
+            'dinner': 'Dinner Included',
+            'full-board': 'Full Board (All Meals)',
+            'half-board': 'Half Board (Breakfast & Dinner)',
+            'half-board-lunch': 'Half Board (Breakfast & Lunch)',
+            'half-board-dinner': 'Half Board (Breakfast & Dinner)',
+            'lunch': 'Lunch Included',
+            'nomeal': 'Room Only (No Meals)',
+            'some-meal': 'Some Meals Included',
+            'english-breakfast': 'English Breakfast',
+            'american-breakfast': 'American Breakfast',
+            'asian-breakfast': 'Asian Breakfast',
+            'chinese-breakfast': 'Chinese Breakfast',
+            'israeli-breakfast': 'Israeli Breakfast',
+            'japanese-breakfast': 'Japanese Breakfast',
+            'scandinavian-breakfast': 'Scandinavian Breakfast',
+            'scottish-breakfast': 'Scottish Breakfast',
+            'breakfast-for-1': 'Breakfast for 1 Guest',
+            'breakfast-for-2': 'Breakfast for 2 Guests',
+            'super-all-inclusive': 'Super All Inclusive',
+            'soft-all-inclusive': 'Soft All Inclusive',
+            'ultra-all-inclusive': 'Ultra All Inclusive',
+        }
+    
+    transformed = []
+    
+    # 1. Total (Net + Tax) from API.
+    # 2. Split into API_Net and API_Tax.
+    # 3. Apply commission to both: Display_Net = API_Net * 1.15, Display_Tax = API_Tax * 1.15.
+    
+    for idx, hotel in enumerate(hotels_data):
+        hotel_id = hotel.get('hotel_id') or hotel.get('id')
         rates = hotel.get('rates', [])
         
-        # Get lowest price from rates
         lowest_price = 0
         best_rate = None
-        meal_data_info = None
-        currency = 'USD' # Default
+        best_meal_value = 'nomeal'
+        best_meal_display = 'Room Only'
+        has_breakfast = False
+        no_child_meal = False
         
+        # Determine lowest PRICE EXCLUSIVE OF TAXES
         for rate in rates:
             payment_options = rate.get('payment_options', {})
             payment_types = payment_options.get('payment_types', [])
             rate_currency = payment_options.get('currency_code', 'USD')
             
-            # Get included taxes from tax_data if available
+            # Get api total
+            api_total = float(payment_types[0].get('amount', 0)) if payment_types else 0
+            
+            # Get api included taxes
             api_included_tax = 0
             tax_data = payment_options.get('tax_data', {}) or {}
             for tax in tax_data.get('taxes', []):
                 if tax.get('included_by_supplier', True):
                     api_included_tax += float(tax.get('amount', 0))
             
-            # Get meal_data
-            rate_meal_data = rate.get('meal_data')
+            api_net = api_total - api_included_tax
             
-            for pt in payment_types:
-                api_total = float(pt.get('amount', 0))
-                api_net = api_total - api_included_tax
-                
-                # Check for currency mismatch and convert if needed
-                if target_currency == 'INR' and rate_currency == 'USD':
-                    api_net = api_net * CONVERSION_RATES['USD_TO_INR']
-                elif target_currency == 'INR' and rate_currency == 'EUR':
-                    api_net = api_net * CONVERSION_RATES['EUR_TO_INR']
-                
-                # Apply 15% Commission on the net price
-                display_net = api_net * (1 + COMMISSION_RATE)
-                
-                if lowest_price == 0 or display_net < lowest_price:
-                    lowest_price = display_net
-                    best_rate = rate
-                    meal_data_info = rate_meal_data
-        
-        # Extract star rating
-        rg_ext = rates[0].get('rg_ext', {}) if rates else {}
-        star_rating = static_info.get('star_rating') or rg_ext.get('class', 3)
+            # Currency conversion
+            if target_currency == 'INR' and rate_currency == 'USD':
+                api_net = api_net * conversion_rates['USD_TO_INR']
+            elif target_currency == 'INR' and rate_currency == 'EUR':
+                api_net = api_net * conversion_rates['EUR_TO_INR']
+            
+            # Apply commission on the net price for display
+            display_net = api_net * (1 + COMMISSION_RATE)
+            
+            if lowest_price == 0 or display_net < lowest_price:
+                lowest_price = display_net
+                best_rate = rate
+                # Also capture meal info for the best rate
+                meal_data = rate.get('meal_data', {})
+                best_meal_value = meal_data.get('value', rate.get('meal', 'nomeal'))
+                best_meal_display = MEAL_TYPE_DISPLAY.get(best_meal_value, best_meal_value.replace('-', ' ').title())
+                has_breakfast = 'breakfast' in best_meal_value.lower()
+                no_child_meal = meal_data.get('no_child_meal', False)
         
         # Use Static Data for Name/Image/Address if available
         # Fallback to search result data, then to safe defaults
+        static_info = hotel.get('static_data', {}) # Assuming static data is passed in or fetched
         hotel_name = static_info.get('name') or hotel.get('name') or (f"Hotel {hotel_id}" if hotel_id else "Unknown Hotel")
         
         # Clean up hotel name (RateHawk sometimes returns snake_case slugs as names)
@@ -826,7 +868,6 @@ def transform_etg_hotels(etg_hotels, destination, static_data=None, target_curre
         # Image logic - prioritize API images
         image_url = None
         all_images = []
-        
         
         # 1. Try static data images first (highest quality source)
         if static_info.get('images'):
@@ -863,36 +904,24 @@ def transform_etg_hotels(etg_hotels, destination, static_data=None, target_curre
         if all_images and not all_images[0].startswith('https://images.unsplash.com'):
             print(f"📸 Hotel {hotel_id}: {len(all_images)} ETG images, first: {all_images[0][:80]}...")
 
-        # Format meal display from meal_data
-        best_meal_display = 'Room Only'
-        best_meal_value = 'nomeal'
-        no_child_meal = False
-        has_breakfast = False
-        
-        if meal_data_info:
-            best_meal_value = meal_data_info.get('value', 'nomeal')
-            best_meal_display = MEAL_TYPE_DISPLAY.get(best_meal_value, best_meal_value.replace('-', ' ').title())
-            no_child_meal = meal_data_info.get('no_child_meal', False)
-            has_breakfast = meal_data_info.get('has_breakfast', False)
-        elif best_rate:
-            # Fallback to deprecated meal field
-            best_meal_value = best_rate.get('meal', 'nomeal')
-            best_meal_display = MEAL_TYPE_DISPLAY.get(best_meal_value, best_meal_value.replace('-', ' ').title())
+        # Extract star rating
+        star_rating = static_info.get('star_rating') or hotel.get('class') or 3
         
         # Extract city and country from address or destination
-        city = static_info.get('city')
-        country = static_info.get('country')
+        city = static_info.get('city') or hotel.get('city')
+        country = static_info.get('country') or hotel.get('country')
         
+        # Fallback for location if not found in static or hotel data
+        location_name = hotel.get('location_name', 'Unknown Location') # Assuming location_name is passed or derived
         if not city or not country:
-            # Try to parse from destination string if available
-            dest_parts = destination.split(',')
+            dest_parts = location_name.split(',')
             if not city:
-                city = dest_parts[0].strip() if dest_parts else destination.title()
+                city = dest_parts[0].strip() if dest_parts else location_name.title()
             if not country:
                 country = dest_parts[-1].strip() if len(dest_parts) > 1 else 'India'
         
         # Create full location string
-        location_str = f"{city}, {country}" if city and country else static_info.get('address') or destination.title()
+        location_str = f"{city}, {country}" if city and country else static_info.get('address') or location_name.title()
 
         # Create transformed hotel object
         transformed_hotel = {
@@ -902,7 +931,7 @@ def transform_etg_hotels(etg_hotels, destination, static_data=None, target_curre
             'star_rating': star_rating,
             'guest_rating': round(3.5 + (star_rating or 3) * 0.3, 1),
             'review_count': 50 + (idx * 23) % 500,
-            'address': static_info.get('address') or destination.title(),
+            'address': static_info.get('address') or hotel.get('address') or location_name.title(),
             'city': city,
             'country': country,
             'location': location_str,
@@ -912,7 +941,7 @@ def transform_etg_hotels(etg_hotels, destination, static_data=None, target_curre
             'images': all_images,  # Include all images for gallery (ensure list)
             'price': round(lowest_price, 2),
             'original_price': round(lowest_price * 1.25, 2),
-            'currency': currency, # Use real currency from API
+            'currency': target_currency, # Use real currency from API
             'amenities': extract_amenities(rates),
             'meal_plan': best_meal_value,
             'meal_info': {
@@ -922,7 +951,7 @@ def transform_etg_hotels(etg_hotels, destination, static_data=None, target_curre
                 'no_child_meal': no_child_meal
             },
             'discount': 15,
-            'rates': transform_rates(rates, target_currency, CONVERSION_RATES, MEAL_TYPE_DISPLAY)
+            'rates': transform_rates(rates, target_currency, conversion_rates, MEAL_TYPE_DISPLAY, room_groups)
         }
         
         transformed.append(transformed_hotel)
@@ -930,11 +959,14 @@ def transform_etg_hotels(etg_hotels, destination, static_data=None, target_curre
     return transformed
 
 
-def transform_rates(rates, target_currency, conversion_rates, meal_display_map):
-    """Transform rate data with proper meal_data and cancellation info"""
+def transform_rates(rates, target_currency, conversion_rates, meal_display_map, room_groups=None):
+    """Transform rate data with proper meal_data, cancellation info, and optional room enrichment"""
     transformed_rates = []
     
     for rate in rates[:20]:  # Increased limit to 20 rates to show more variety
+        # Enrich with room static data if provided
+        if room_groups:
+            rate = enrich_rate_with_room_data(rate, room_groups)
         payment_options = rate.get('payment_options', {})
         payment_types = payment_options.get('payment_types', [{}])
         rate_currency = payment_options.get('currency_code', 'USD')
@@ -1455,7 +1487,7 @@ def get_hotel_policies(hotel_id):
         return jsonify({
             'success': True,
             'data': {
-                'raw_policies': policies,
+                'policies': policies,
                 'formatted_policies': formatted_policies
             }
         })
@@ -1998,40 +2030,69 @@ def get_enriched_hotel_details():
                         rg_data_copy['rg_key'] = rg_val
                         room_groups[rg_val] = rg_data_copy
         
-        # 3. Enrich rates with room group data
+        # 3. Transform and enrich!
+        # transform_etg_hotels expects a list of hotels from the search response
+        # But it also calls transform_rates which uses room_groups now.
+        
+        # Define conversion rates and meal display map for transform_etg_hotels
+        CONVERSION_RATES = {
+            'USD_TO_INR': 86.5,
+            'EUR_TO_INR': 92.0,
+            'GBP_TO_INR': 108.0
+        }
+        MEAL_TYPE_DISPLAY = {
+            'all-inclusive': 'All Inclusive',
+            'breakfast': 'Breakfast Included',
+            'breakfast-buffet': 'Breakfast Buffet',
+            'continental-breakfast': 'Continental Breakfast',
+            'dinner': 'Dinner Included',
+            'full-board': 'Full Board (All Meals)',
+            'half-board': 'Half Board (Breakfast & Dinner)',
+            'half-board-lunch': 'Half Board (Breakfast & Lunch)',
+            'half-board-dinner': 'Half Board (Breakfast & Dinner)',
+            'lunch': 'Lunch Included',
+            'nomeal': 'Room Only (No Meals)',
+            'some-meal': 'Some Meals Included',
+            'english-breakfast': 'English Breakfast',
+            'american-breakfast': 'American Breakfast',
+            'asian-breakfast': 'Asian Breakfast',
+            'chinese-breakfast': 'Chinese Breakfast',
+            'israeli-breakfast': 'Israeli Breakfast',
+            'japanese-breakfast': 'Japanese Breakfast',
+            'scandinavian-breakfast': 'Scandinavian Breakfast',
+            'scottish-breakfast': 'Scottish Breakfast',
+            'breakfast-for-1': 'Breakfast for 1 Guest',
+            'breakfast-for-2': 'Breakfast for 2 Guests',
+            'super-all-inclusive': 'Super All Inclusive',
+            'soft-all-inclusive': 'Soft All Inclusive',
+            'ultra-all-inclusive': 'Ultra All Inclusive',
+        }
+
         rates_data = rates_result.get('data', {})
         if isinstance(rates_data, dict) and rates_data.get('data'):
             rates_data = rates_data['data']
         
         hotels = rates_data.get('hotels', [])
-        enriched_hotels = []
         
-        for hotel in hotels:
-            enriched_rates = []
-            for rate in hotel.get('rates', []):
-                enriched_rate = enrich_rate_with_room_data(rate, room_groups)
-                enriched_rates.append(enriched_rate)
-            
-            hotel['rates'] = enriched_rates
-            
-            # Ensure latitude/longitude are present (fetch from static data if missing in rates response)
-            if 'latitude' not in hotel and static_result.get('success'):
-                static_info = static_result.get('data', {}).get('data', {})
-                if static_info:
-                    hotel['latitude'] = static_info.get('latitude')
-                    hotel['longitude'] = static_info.get('longitude')
-                    
-            enriched_hotels.append(hotel)
+        transformed_hotels = transform_etg_hotels(
+            hotels, 
+            target_currency=data.get('currency', 'USD'), 
+            conversion_rates=CONVERSION_RATES, 
+            MEAL_TYPE_DISPLAY=MEAL_TYPE_DISPLAY,
+            room_groups=room_groups
+        )
         
         return jsonify({
             'success': True,
             'data': {
-                'hotels': enriched_hotels,
+                'hotels': transformed_hotels,
                 'room_groups_count': len(room_groups)
             }
         })
     
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
