@@ -2920,6 +2920,39 @@ def poll_booking_status():
                         partner_order_id,
                         {'status': 'confirmed', 'booking_response': result['data']}
                     )
+                    
+                    # Send confirmation email
+                    try:
+                        from services.email_service import email_service
+                        from flask import current_app
+                        email_service.init_app(current_app)
+                        
+                        # Fetch booking details from DB for email
+                        db_booking = supabase_service.get_booking_by_partner_order_id(partner_order_id)
+                        booking_data = db_booking.get('data') if db_booking else None
+                        
+                        if booking_data:
+                            customer_email = booking_data.get('customer_email') or booking_data.get('email')
+                            if customer_email:
+                                email_details = {
+                                    'booking_id': partner_order_id,
+                                    'customer_name': booking_data.get('guest_name') or f"{booking_data.get('first_name', '')} {booking_data.get('last_name', '')}",
+                                    'customer_email': customer_email,
+                                    'hotel_name': booking_data.get('hotel_name', 'Hotel'),
+                                    'checkin': booking_data.get('check_in') or booking_data.get('checkin'),
+                                    'checkout': booking_data.get('check_out') or booking_data.get('checkout'),
+                                    'amount': booking_data.get('total_amount', 0),
+                                    'currency': booking_data.get('currency', 'INR')
+                                }
+                                email_sent = email_service.send_booking_confirmation(customer_email, email_details)
+                                print(f"{'✅' if email_sent else '❌'} Confirmation email {'sent' if email_sent else 'FAILED'} to {customer_email}")
+                            else:
+                                print(f"⚠️ No customer email found for booking {partner_order_id}")
+                        else:
+                            print(f"⚠️ No booking data found in DB for {partner_order_id}")
+                    except Exception as email_err:
+                        print(f"❌ Error sending confirmation email: {email_err}")
+                    
                     return jsonify({
                         'success': True,
                         'status': 'confirmed',

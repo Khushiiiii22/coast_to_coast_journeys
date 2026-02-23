@@ -81,3 +81,4 @@ htmlcov/
 docs/HotelBeds_Certificate.html
 convert_to_pdf.py
 generate_pem.py
+env.yaml

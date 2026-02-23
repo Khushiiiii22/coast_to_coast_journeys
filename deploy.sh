@@ -70,6 +70,8 @@ gcloud run deploy $SERVICE_NAME \
     --cpu 2 \
     --concurrency 80 \
     --cpu-boost \
+    --vpc-connector c2c-conn \
+    --vpc-egress all-traffic \
     --project $PROJECT_ID
 
 if [ $? -ne 0 ]; then
