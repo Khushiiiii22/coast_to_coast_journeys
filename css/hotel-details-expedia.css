@@ -2303,3 +2303,404 @@
     color: #4b5563;
     line-height: 1.6;
 }
+
+/* ============================================
+   Cancellation Policy Section (Booking.com Style)
+   ============================================ */
+
+.cancellation-policy-section {
+    margin: 12px 0 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: #fafbfc;
+}
+
+.cp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.cp-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.cp-more-details {
+    font-size: 0.72rem;
+    color: #64748b;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.2s;
+}
+
+.cp-more-details:hover {
+    color: #2563eb;
+}
+
+.cp-more-details i {
+    font-size: 0.7rem;
+}
+
+.cp-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fff;
+    position: relative;
+}
+
+.cp-option:last-child {
+    margin-bottom: 0;
+}
+
+.cp-option:hover {
+    border-color: #93c5fd;
+    background: #f0f7ff;
+}
+
+.cp-option.selected {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.cp-radio {
+    display: none;
+}
+
+.cp-radio-circle {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border: 2px solid #cbd5e1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    transition: all 0.2s;
+}
+
+.cp-option.selected .cp-radio-circle {
+    border-color: #2563eb;
+    background: #2563eb;
+    box-shadow: inset 0 0 0 3px #fff;
+}
+
+.cp-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #1e293b;
+    flex: 1;
+}
+
+.cp-label-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.cp-sublabel {
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.cp-price {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #475569;
+    white-space: nowrap;
+    margin-left: auto;
+}
+
+/* ============================================
+   Cancellation Policy Modal
+   ============================================ */
+
+.cp-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.cp-modal-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.cp-modal {
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-width: 560px;
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.33, 1, 0.68, 1);
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.cp-modal-overlay.visible .cp-modal {
+    transform: translateY(0);
+}
+
+/* Desktop: center modal */
+@media (min-width: 768px) {
+    .cp-modal-overlay {
+        align-items: center;
+    }
+
+    .cp-modal {
+        border-radius: 16px;
+        max-height: 80vh;
+        transform: translateY(30px) scale(0.95);
+    }
+
+    .cp-modal-overlay.visible .cp-modal {
+        transform: translateY(0) scale(1);
+    }
+}
+
+.cp-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1;
+    border-radius: 20px 20px 0 0;
+}
+
+.cp-modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #2563eb;
+    padding: 4px;
+    display: flex;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.cp-modal-close:hover {
+    background: #eff6ff;
+}
+
+.cp-modal-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.cp-modal-body {
+    padding: 24px 20px 32px;
+}
+
+.cp-modal-heading {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0 0 20px;
+    letter-spacing: -0.5px;
+}
+
+/* Tabs */
+.cp-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 24px;
+}
+
+.cp-tab {
+    background: none;
+    border: none;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.cp-tab:hover {
+    color: #1e293b;
+}
+
+.cp-tab.active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+    font-weight: 600;
+}
+
+/* Tab Content */
+.cp-tab-content {
+    display: none;
+}
+
+.cp-tab-content.active {
+    display: block;
+}
+
+/* Timeline Box */
+.cp-timeline-box {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+}
+
+.cp-timeline-label {
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 12px;
+}
+
+.cp-timeline-label-split {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding: 0 8px;
+}
+
+.cp-tl-green {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #059669;
+}
+
+.cp-tl-red {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+/* Timeline Track */
+.cp-timeline-track {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.cp-timeline-dot {
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    border-radius: 50%;
+    border: 2px solid #cbd5e1;
+    background: #fff;
+    z-index: 1;
+}
+
+.cp-timeline-dot.filled {
+    background: #1e293b;
+    border-color: #1e293b;
+}
+
+.cp-timeline-dot.filled.green {
+    background: #059669;
+    border-color: #059669;
+}
+
+.cp-timeline-dot.filled.red-dot {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+.cp-timeline-line {
+    flex: 1;
+    height: 3px;
+    margin: 0 -2px;
+}
+
+.cp-timeline-line.red {
+    background: #e5e7eb;
+}
+
+.cp-timeline-line.green {
+    background: #86efac;
+}
+
+.cp-timeline-dates {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.cp-timeline-dates.three {
+    justify-content: space-between;
+}
+
+/* Policy Detail */
+.cp-policy-detail {
+    display: flex;
+    gap: 20px;
+    padding: 16px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.cp-policy-detail:last-child {
+    border-bottom: none;
+}
+
+.cp-policy-until {
+    display: flex;
+    flex-direction: column;
+    min-width: 60px;
+}
+
+.cp-until-label {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.cp-until-date {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.cp-policy-info h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 4px;
+}
+
+.cp-policy-info p {
+    font-size: 0.82rem;
+    color: #64748b;
+    line-height: 1.5;
+    margin: 0;
+}

@@ -1301,63 +1301,95 @@ function createRateCard(rate, index, customBadge = null) {
         `;
     }
 
-    // Cancellation info
+    // ── Cancellation Policy Section (Booking.com style) ───────────────────
     const cancellationInfo = rate.cancellation_info || {};
-    let refundableHtml = '';
-    let policyDetailsHtml = '';
+    const isFreeCancellation = cancellationInfo.is_free_cancellation;
+    const deadline = cancellationInfo.free_cancellation_formatted;
+    const dateStr = deadline ? (deadline.datetime || deadline) : '';
 
-    // Generate detailed policy tooltips/text
-    if (cancellationInfo.policies && cancellationInfo.policies.length > 0) {
-        const policyList = cancellationInfo.policies.map(p => {
-            if (p.type === 'free') return null;
-            const amount = parseFloat(p.penalty_amount);
-            const amountFormatted = HotelUtils.formatPrice(amount, p.currency || rate.currency);
+    // Compute the refundable price uplift (8% higher for the free-cancel option)
+    const refundableUplift = Math.round(price * 0.08);
+    const refundableUpliftFormatted = HotelUtils.formatPrice(refundableUplift);
 
-            if (p.type === 'full_penalty') {
-                return `<li>From ${p.start_formatted || 'booking'}: 100% penalty (${amountFormatted})</li>`;
+    // Determine the free-cancel date short label (e.g. "Mar 11")
+    let freeCancelShortDate = '';
+    if (dateStr) {
+        try {
+            const d = new Date(dateStr.replace(/\(UTC.*\)/, '').trim());
+            if (!isNaN(d.getTime())) {
+                freeCancelShortDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             } else {
-                return `<li>From ${p.start_formatted}: Penalty ${amountFormatted}</li>`;
+                // Try extracting from formatted string like "21 Mar 2026, 08:59 (UTC+0)"
+                const match = dateStr.match(/(\d{1,2}\s\w{3}\s\d{4})/);
+                if (match) {
+                    const d2 = new Date(match[1]);
+                    if (!isNaN(d2.getTime())) {
+                        freeCancelShortDate = d2.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    }
+                }
             }
-        }).filter(Boolean).join('');
-
-        if (policyList) {
-            policyDetailsHtml = `<ul class="cancellation-details-list">${policyList}</ul>`;
-        }
+        } catch (e) { }
+        if (!freeCancelShortDate) freeCancelShortDate = dateStr.split(',')[0] || dateStr;
     }
 
-    if (cancellationInfo.is_free_cancellation && cancellationInfo.free_cancellation_formatted) {
-        const deadline = cancellationInfo.free_cancellation_formatted;
-        // Use either the object (new format) or string (old format)
-        const dateStr = deadline.datetime || deadline;
+    // Build cancellation policy radio UI
+    let cancellationPolicyHtml = '';
 
-        refundableHtml = `
-            <div class="refundable-notice group">
-                <span class="refundable-text"><i class="fas fa-info-circle"></i> Fully refundable</span>
-                <small>Before ${dateStr}</small>
-                
-                <div class="cancellation-tooltip">
-                    <strong>Cancellation Policy:</strong>
-                    ${policyDetailsHtml || 'Free cancellation before deadline.'}
+    if (isFreeCancellation) {
+        // This rate is already the free-cancel variant → show both options
+        cancellationPolicyHtml = `
+            <div class="cancellation-policy-section">
+                <div class="cp-header">
+                    <span class="cp-title">Cancellation policy</span>
+                    <a class="cp-more-details" onclick="showCancellationModal(${index})">More details on all policy options <i class="fas fa-info-circle"></i></a>
                 </div>
-            </div>
-        `;
-    } else if (rate.cancellation === 'free') {
-        refundableHtml = `
-            <div class="refundable-notice">
-                <span class="refundable-text"><i class="fas fa-info-circle"></i> Fully refundable</span>
+                <label class="cp-option">
+                    <input type="radio" name="cancel_${index}" value="nonrefund" class="cp-radio">
+                    <span class="cp-radio-circle"></span>
+                    <span class="cp-label">Non-Refundable</span>
+                    <span class="cp-price">+ ₹0</span>
+                </label>
+                <label class="cp-option selected">
+                    <input type="radio" name="cancel_${index}" value="refundable" class="cp-radio" checked>
+                    <span class="cp-radio-circle"></span>
+                    <div class="cp-label-group">
+                        <span class="cp-label">Fully refundable before ${freeCancelShortDate}</span>
+                        <span class="cp-sublabel">Reserve now, pay later</span>
+                    </div>
+                    <span class="cp-price">+ ${refundableUpliftFormatted}</span>
+                </label>
             </div>
         `;
     } else {
-        refundableHtml = `
-            <div class="non-refundable-notice group">
-                <span class="non-refund-text"><i class="fas fa-ban"></i> Non-refundable</span>
-                <div class="cancellation-tooltip">
-                    <strong>Cancellation Policy:</strong>
-                    ${policyDetailsHtml || 'No refund upon cancellation.'}
+        // Non-refundable rate → show both options but non-refundable is selected
+        const fallbackDate = freeCancelShortDate || 'deadline';
+        cancellationPolicyHtml = `
+            <div class="cancellation-policy-section">
+                <div class="cp-header">
+                    <span class="cp-title">Cancellation policy</span>
+                    <a class="cp-more-details" onclick="showCancellationModal(${index})">More details on all policy options <i class="fas fa-info-circle"></i></a>
                 </div>
+                <label class="cp-option selected">
+                    <input type="radio" name="cancel_${index}" value="nonrefund" class="cp-radio" checked>
+                    <span class="cp-radio-circle"></span>
+                    <span class="cp-label">Non-Refundable</span>
+                    <span class="cp-price">+ ₹0</span>
+                </label>
+                <label class="cp-option">
+                    <input type="radio" name="cancel_${index}" value="refundable" class="cp-radio">
+                    <span class="cp-radio-circle"></span>
+                    <div class="cp-label-group">
+                        <span class="cp-label">Fully refundable before ${fallbackDate}</span>
+                        <span class="cp-sublabel">Reserve now, pay later</span>
+                    </div>
+                    <span class="cp-price">+ ${refundableUpliftFormatted}</span>
+                </label>
             </div>
         `;
     }
+
+    // Replace the old refundableHtml with the new styled section
+    let refundableHtml = cancellationPolicyHtml;
 
     // Extras section (Breakfast add-on) - uses mealInfo and hasBreakfastIncluded declared above
     const breakfastPrice = Math.floor(price * 0.05) + 10; // ~5% of room price + base
@@ -1673,6 +1705,189 @@ function showRoomDetails(rateIndex) {
     };
 }
 
+
+/**
+ * Show Cancellation Policies Modal (Booking.com style)
+ * Opens a modal with tabs for Non-refundable and Fully refundable options,
+ * each with a visual timeline and detailed policy description.
+ */
+function showCancellationModal(rateIndex) {
+    // Get rate data from the card
+    const card = document.querySelector(`.rate-card[data-rate-index="${rateIndex}"]`);
+    let rate = {};
+    try { rate = JSON.parse(card?.dataset?.rateJson || '{}'); } catch (e) { }
+
+    const cancellationInfo = rate.cancellation_info || {};
+    const deadline = cancellationInfo.free_cancellation_formatted;
+    const dateStr = deadline ? (deadline.datetime || deadline) : '';
+
+    // Parse free cancel date for display
+    let freeCancelShortDate = '';
+    let freeCancelFullDate = '';
+    let checkinShortDate = '';
+
+    if (dateStr) {
+        try {
+            const d = new Date(dateStr.replace(/\(UTC.*\)/, '').trim());
+            if (!isNaN(d.getTime())) {
+                freeCancelShortDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                freeCancelFullDate = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            } else {
+                const match = dateStr.match(/(\d{1,2}\s\w{3}\s\d{4})/);
+                if (match) {
+                    const d2 = new Date(match[1]);
+                    if (!isNaN(d2.getTime())) {
+                        freeCancelShortDate = d2.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        freeCancelFullDate = d2.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                    }
+                }
+            }
+        } catch (e) { }
+        if (!freeCancelShortDate) {
+            freeCancelShortDate = dateStr.split(',')[0] || dateStr;
+            freeCancelFullDate = dateStr;
+        }
+    }
+
+    if (searchParams?.checkin) {
+        try {
+            const ci = new Date(searchParams.checkin);
+            checkinShortDate = ci.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        } catch (e) { }
+    }
+
+    // Remove any existing modal
+    const existing = document.getElementById('cancellationPolicyModal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'cancellationPolicyModal';
+    modal.className = 'cp-modal-overlay';
+    modal.innerHTML = `
+        <div class="cp-modal">
+            <div class="cp-modal-header">
+                <button class="cp-modal-close" onclick="closeCancellationModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+                <span class="cp-modal-title">Cancellation policies</span>
+            </div>
+
+            <div class="cp-modal-body">
+                <h2 class="cp-modal-heading">Cancellation policies</h2>
+
+                <!-- Tabs -->
+                <div class="cp-tabs">
+                    <button class="cp-tab active" data-tab="nonrefund" onclick="switchCancellationTab(this, 'nonrefund')">Non-refundable</button>
+                    <button class="cp-tab" data-tab="refundable" onclick="switchCancellationTab(this, 'refundable')">Fully refundable</button>
+                </div>
+
+                <!-- Non-refundable Tab Content -->
+                <div class="cp-tab-content active" id="cpTabNonrefund">
+                    <div class="cp-timeline-box">
+                        <div class="cp-timeline-label">No refund</div>
+                        <div class="cp-timeline-track">
+                            <div class="cp-timeline-dot filled"></div>
+                            <div class="cp-timeline-line red"></div>
+                            <div class="cp-timeline-dot"></div>
+                        </div>
+                        <div class="cp-timeline-dates">
+                            <span>Today</span>
+                            <span>Check-in</span>
+                        </div>
+                    </div>
+
+                    <div class="cp-policy-detail">
+                        <div class="cp-policy-until">
+                            <span class="cp-until-label">Until</span>
+                            <span class="cp-until-date">${checkinShortDate || 'Check-in'}</span>
+                        </div>
+                        <div class="cp-policy-info">
+                            <h4>No refund</h4>
+                            <p>If you change or cancel your booking you will not get a refund or credit to use for a future stay.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fully refundable Tab Content -->
+                <div class="cp-tab-content" id="cpTabRefundable">
+                    <div class="cp-timeline-box">
+                        <div class="cp-timeline-label-split">
+                            <span class="cp-tl-green">Full refund</span>
+                            <span class="cp-tl-red">No refund</span>
+                        </div>
+                        <div class="cp-timeline-track">
+                            <div class="cp-timeline-dot filled green"></div>
+                            <div class="cp-timeline-line green" style="flex:1;"></div>
+                            <div class="cp-timeline-dot filled red-dot"></div>
+                            <div class="cp-timeline-line red" style="flex:0.5;"></div>
+                            <div class="cp-timeline-dot"></div>
+                        </div>
+                        <div class="cp-timeline-dates three">
+                            <span>Today</span>
+                            <span>${freeCancelShortDate || 'Deadline'}</span>
+                            <span>Check-in</span>
+                        </div>
+                    </div>
+
+                    <div class="cp-policy-detail">
+                        <div class="cp-policy-until">
+                            <span class="cp-until-label">Before</span>
+                            <span class="cp-until-date">${freeCancelShortDate || 'Deadline'}</span>
+                        </div>
+                        <div class="cp-policy-info">
+                            <h4>Full refund</h4>
+                            <p>You will get a full refund if you cancel before ${freeCancelFullDate || 'the deadline'}.</p>
+                        </div>
+                    </div>
+
+                    <div class="cp-policy-detail">
+                        <div class="cp-policy-until">
+                            <span class="cp-until-label">After</span>
+                            <span class="cp-until-date">${freeCancelShortDate || 'Deadline'}</span>
+                        </div>
+                        <div class="cp-policy-info">
+                            <h4>No refund</h4>
+                            <p>If you cancel after ${freeCancelFullDate || 'the deadline'}, you will not receive a refund.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Close on backdrop click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeCancellationModal();
+    });
+
+    // Animate in
+    requestAnimationFrame(() => modal.classList.add('visible'));
+}
+
+function closeCancellationModal() {
+    const modal = document.getElementById('cancellationPolicyModal');
+    if (modal) {
+        modal.classList.remove('visible');
+        setTimeout(() => modal.remove(), 300);
+    }
+}
+
+function switchCancellationTab(btn, tab) {
+    // Update tabs
+    btn.closest('.cp-tabs').querySelectorAll('.cp-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Update content
+    const modal = btn.closest('.cp-modal-body');
+    modal.querySelectorAll('.cp-tab-content').forEach(c => c.classList.remove('active'));
+    if (tab === 'nonrefund') {
+        modal.querySelector('#cpTabNonrefund').classList.add('active');
+    } else {
+        modal.querySelector('#cpTabRefundable').classList.add('active');
+    }
+}
 
 /**
  * Select a rate and proceed to booking
