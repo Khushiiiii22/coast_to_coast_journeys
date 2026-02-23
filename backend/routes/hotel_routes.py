@@ -3222,7 +3222,8 @@ def send_booking_confirmation():
         "checkin": "2026-02-01",
         "checkout": "2026-02-05",
         "guests": "John Doe, Jane Doe",
-        "total_amount": 5000
+        "total_amount": 5000,
+        "room_name": "Deluxe Room"
     }
     """
     try:
@@ -3237,21 +3238,54 @@ def send_booking_confirmation():
         # Initialize email service with Flask app config
         email_service.init_app(current_app)
         
+        # Get amount — if frontend sends 0 or missing, try to get from DB
+        amount = data.get('total_amount', 0)
+        hotel_name = data.get('hotel_name', 'Hotel')
+        checkin = data.get('checkin')
+        checkout = data.get('checkout')
+        customer_name = data.get('guests', 'Valued Customer')
+        room_name = data.get('room_name', '')
+        
+        if not amount or amount == 0:
+            # Try to get amount from database
+            try:
+                db_booking = supabase_service.get_booking_by_partner_order_id(data['partner_order_id'])
+                if db_booking.get('success') and db_booking.get('data'):
+                    db_data = db_booking['data']
+                    amount = db_data.get('total_amount', 0) or 0
+                    # Also fill in any missing fields from DB
+                    if not hotel_name or hotel_name == 'Hotel':
+                        hotel_name = db_data.get('hotel_name', hotel_name)
+                    if not checkin:
+                        checkin = db_data.get('check_in', checkin)
+                    if not checkout:
+                        checkout = db_data.get('check_out', checkout)
+                    if not customer_name or customer_name == 'Valued Customer':
+                        # Try to get guest name from guests JSON
+                        guests = db_data.get('guests', [])
+                        if guests and isinstance(guests, list) and len(guests) > 0:
+                            g = guests[0]
+                            if isinstance(g, dict):
+                                customer_name = f"{g.get('first_name', '')} {g.get('last_name', '')}".strip()
+                    print(f"📦 Pulled amount from DB: {amount}")
+            except Exception as db_err:
+                print(f"⚠️ Could not fetch booking from DB: {db_err}")
+        
         email_details = {
             'booking_id': data.get('partner_order_id'),
-            'customer_name': data.get('guests', 'Valued Customer'),
+            'customer_name': customer_name,
             'customer_email': data.get('email'),
-            'hotel_name': data.get('hotel_name', 'Hotel'),
-            'checkin': data.get('checkin'),
-            'checkout': data.get('checkout'),
-            'amount': data.get('total_amount', 0),
-            'currency': 'INR'
+            'hotel_name': hotel_name,
+            'room_name': room_name,
+            'checkin': checkin,
+            'checkout': checkout,
+            'amount': amount,
+            'currency': data.get('currency', 'INR')
         }
         
-        print(f"📧 Sending booking confirmation to {data.get('email')}")
+        print(f"📧 Sending booking confirmation to {data.get('email')} | Amount: {amount}")
         
-        # Send email SYNCHRONOUSLY to ensure it works on Render
-        # (Threading was silently failing on Gunicorn workers)
+        # Send email SYNCHRONOUSLY
         try:
             email_sent = email_service.send_booking_confirmation(data.get('email'), email_details)
             

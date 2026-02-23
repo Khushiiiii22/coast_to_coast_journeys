@@ -1127,7 +1127,9 @@
                             checkin: bookingData.search_params.checkin,
                             checkout: bookingData.search_params.checkout,
                             guests: `${guest.firstName || ''} ${guest.lastName || ''}`.trim() || 'Guest',
-                            total_amount: bookingData.total
+                            total_amount: bookingData.total || 0,
+                            room_name: bookingData.rate?.room_name || '',
+                            currency: 'INR'
                         };
                         console.log('📦 Email payload:', emailPayload);
 
