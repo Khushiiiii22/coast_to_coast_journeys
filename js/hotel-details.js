@@ -1048,6 +1048,7 @@ function createRateCard(rate, index, customBadge = null) {
     const card = document.createElement('div');
     card.className = 'rate-card';
     card.dataset.rateIndex = index;
+    card.dataset.basePrice = rate.price; // used by updateExtras when toggling add-ons
 
     const price = rate.price;
     const priceFormatted = HotelUtils.formatPrice(price);
@@ -1354,15 +1355,32 @@ function navigateRoomImage(btn, direction) {
     imageEl.style.backgroundImage = `url('${images[currentIndex]}')`;
 }
 
-// Update extras selection
+// Update extras selection and visually update card prices
 function updateExtras(rateIndex, extraType, extraPrice) {
     const card = document.querySelector(`.rate-card[data-rate-index="${rateIndex}"]`);
+    if (!card) return;
+
+    // Update selected state
     card.querySelectorAll('.extra-option').forEach(opt => opt.classList.remove('selected'));
-    card.querySelector(`input[value="${extraType}"]`).closest('.extra-option').classList.add('selected');
+    const selectedInput = card.querySelector(`input[value="${extraType}"]`);
+    if (selectedInput) selectedInput.closest('.extra-option').classList.add('selected');
 
     // Store extra selection for booking
     if (!window.rateExtras) window.rateExtras = {};
     window.rateExtras[rateIndex] = { type: extraType, price: extraPrice };
+
+    // Update the card's displayed prices to include the extra
+    const baseNightly = parseFloat(card.dataset.basePrice || 0);
+    if (!baseNightly) return;  // base price not set yet — card will read it on reserve
+
+    const nights = searchParams ? HotelUtils.calculateNights(searchParams.checkin, searchParams.checkout) : 1;
+    const newNightly = baseNightly + extraPrice;
+    const newTotal = newNightly * nights;
+
+    const nightlyEl = card.querySelector('.nightly-price');
+    const totalEl = card.querySelector('.total-price');
+    if (nightlyEl) nightlyEl.innerHTML = `${HotelUtils.formatPrice(newNightly)} <small>nightly</small>`;
+    if (totalEl) totalEl.innerHTML = `${HotelUtils.formatPrice(newTotal)} <small>total</small>`;
 }
 
 // Show room details modal
@@ -1381,27 +1399,41 @@ function selectRate(rate, index) {
     document.querySelectorAll('.rate-card').forEach(card => {
         card.classList.remove('selected');
     });
-    document.querySelector(`.rate-card[data-rate-index="${index}"]`).classList.add('selected');
+    const selectedCard = document.querySelector(`.rate-card[data-rate-index="${index}"]`);
+    if (selectedCard) selectedCard.classList.add('selected');
 
-    // Calculate total
+    // Pick up any extras the user selected (e.g. breakfast add-on)
+    const extras = (window.rateExtras && window.rateExtras[index]) || { type: 'none', price: 0 };
+
+    // Calculate totals including extras
     const nights = searchParams ? HotelUtils.calculateNights(searchParams.checkin, searchParams.checkout) : 1;
-    const totalPrice = rate.price * nights;
+    const baseNightlyPrice = rate.price;
+    const extraNightlyPrice = extras.price || 0;
+    const nightlyWithExtras = baseNightlyPrice + extraNightlyPrice;
+    const totalPrice = nightlyWithExtras * nights;
 
-    // Save selected rate
-    SearchSession.saveSelectedRate({
+    // Build the rate object that checkout pages will read
+    const rateForCheckout = {
         ...rate,
+        // Overwrite price fields to include the extras
+        price: nightlyWithExtras,
+        base_nightly_price: baseNightlyPrice,
+        extra_price: extraNightlyPrice,
+        extra_type: extras.type,
         total_price: totalPrice,
-        nights: nights
-    });
+        nights: nights,
+        // Meal plan may change if breakfast extra was added
+        meal_plan: extras.type === 'breakfast' ? 'breakfast' : rate.meal_plan,
+        meal_info: extras.type === 'breakfast'
+            ? { ...rate.meal_info, value: 'breakfast', display_name: 'Breakfast Included', has_breakfast: true }
+            : rate.meal_info,
+    };
 
-    // Save booking data for checkout page
+    // Save to session
+    SearchSession.saveSelectedRate(rateForCheckout);
     SearchSession.saveBookingData({
         hotel: currentHotel,
-        rate: {
-            ...rate,
-            total_price: totalPrice,
-            nights: nights
-        },
+        rate: rateForCheckout,
         search_params: searchParams
     });
 

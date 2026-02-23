@@ -440,13 +440,43 @@
             document.getElementById('checkout').textContent = formatDate(searchParams.checkout) || '-';
             document.getElementById('nights').textContent = rate.nights || calculateNights(searchParams.checkin, searchParams.checkout);
             document.getElementById('guests').textContent = `${searchParams.adults} Adults`;
-            document.getElementById('roomType').textContent = rate.room_name || 'Standard Room';
+            // roomType is set below (after meal info is computed)
 
-            // Price - total amount (includes commission and taxes)
+            // Price - total amount (includes commission, taxes, and any extras like breakfast)
             const basePrice = parseFloat(rate.total_price || (rate.price * (rate.nights || 1)) || 0);
             const totalPayableNow = basePrice;
+            const nightlyRate = parseFloat(rate.price || 0);
+            const extraPrice = parseFloat(rate.extra_price || 0);
+            const extraType = rate.extra_type || 'none';
+            const nightsCount = parseInt(rate.nights || 1);
+
+            // Room type line — show meal plan if breakfast was added
+            const mealLabel = (rate.meal_info && rate.meal_info.display_name) || '';
+            const roomLabel = rate.room_name || 'Standard Room';
+            document.getElementById('roomType').textContent = mealLabel
+                ? `${roomLabel} · ${mealLabel}`
+                : roomLabel;
 
             document.getElementById('totalAmount').textContent = `₹${Math.round(totalPayableNow).toLocaleString('en-IN')}`;
+
+            // Show breakfast line-item if it was added as an extra
+            if (extraType === 'breakfast' && extraPrice > 0) {
+                const priceSummary = document.querySelector('.price-summary');
+                const totalRow = priceSummary?.querySelector('.total-row');
+                if (totalRow) {
+                    const breakfastRow = document.createElement('div');
+                    breakfastRow.className = 'price-row';
+                    breakfastRow.innerHTML = `
+                        <span><i class="fas fa-utensils" style="margin-right:6px;color:#059669;"></i>Breakfast (${nightsCount} night${nightsCount > 1 ? 's' : ''})</span>
+                        <span style="color:#059669;">+₹${Math.round(extraPrice * nightsCount).toLocaleString('en-IN')}</span>
+                    `;
+                    totalRow.before(breakfastRow);
+                }
+            }
+
+            // Non-included taxes (payable at property)
+            const nonIncludedTaxes = (rate.tax_info && rate.tax_info.non_included_taxes) || [];
+            const includedTaxesAmount = 0;  // already bundled into the total
 
             // Show non-included tax notice if applicable (payable at property)
             if (nonIncludedTaxes.length > 0) {
