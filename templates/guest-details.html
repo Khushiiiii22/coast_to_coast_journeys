@@ -455,12 +455,9 @@
                 ? `${roomLabel} · ${mealLabel}`
                 : roomLabel;
 
-            // Format with correct currency symbol
-            const currencyCode = rate.currency || bookingData.currency || 'INR';
-            const currencySymbols = { 'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'AED': 'AED ' };
-            const currSymbol = currencySymbols[currencyCode] || currencyCode + ' ';
-            const locale = currencyCode === 'INR' ? 'en-IN' : 'en-US';
-            document.getElementById('totalAmount').textContent = `${currSymbol}${Math.round(totalPayableNow).toLocaleString(locale)}`;
+            // Format with correct currency symbol using HotelUtils
+            const originalCurrency = rate.currency || bookingData.currency || 'INR';
+            document.getElementById('totalAmount').innerHTML = HotelUtils.formatPrice(totalPayableNow, originalCurrency);
 
             // Breakfast extra is already included in totalPayableNow — no separate line item
 
