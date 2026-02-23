@@ -1301,95 +1301,17 @@ function createRateCard(rate, index, customBadge = null) {
         `;
     }
 
-    // ── Cancellation Policy Section (Booking.com style) ───────────────────
+    // ── Cancellation Policy Section (clean header only) ────────────────────
     const cancellationInfo = rate.cancellation_info || {};
-    const isFreeCancellation = cancellationInfo.is_free_cancellation;
-    const deadline = cancellationInfo.free_cancellation_formatted;
-    const dateStr = deadline ? (deadline.datetime || deadline) : '';
 
-    // Compute the refundable price uplift (8% higher for the free-cancel option)
-    const refundableUplift = Math.round(price * 0.08);
-    const refundableUpliftFormatted = HotelUtils.formatPrice(refundableUplift);
-
-    // Determine the free-cancel date short label (e.g. "Mar 11")
-    let freeCancelShortDate = '';
-    if (dateStr) {
-        try {
-            const d = new Date(dateStr.replace(/\(UTC.*\)/, '').trim());
-            if (!isNaN(d.getTime())) {
-                freeCancelShortDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            } else {
-                // Try extracting from formatted string like "21 Mar 2026, 08:59 (UTC+0)"
-                const match = dateStr.match(/(\d{1,2}\s\w{3}\s\d{4})/);
-                if (match) {
-                    const d2 = new Date(match[1]);
-                    if (!isNaN(d2.getTime())) {
-                        freeCancelShortDate = d2.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                    }
-                }
-            }
-        } catch (e) { }
-        if (!freeCancelShortDate) freeCancelShortDate = dateStr.split(',')[0] || dateStr;
-    }
-
-    // Build cancellation policy radio UI
-    let cancellationPolicyHtml = '';
-
-    if (isFreeCancellation) {
-        // This rate is already the free-cancel variant → show both options
-        cancellationPolicyHtml = `
-            <div class="cancellation-policy-section">
-                <div class="cp-header">
-                    <span class="cp-title">Cancellation policy</span>
-                    <a class="cp-more-details" onclick="showCancellationModal(${index})">More details on all policy options <i class="fas fa-info-circle"></i></a>
-                </div>
-                <label class="cp-option">
-                    <input type="radio" name="cancel_${index}" value="nonrefund" class="cp-radio">
-                    <span class="cp-radio-circle"></span>
-                    <span class="cp-label">Non-Refundable</span>
-                    <span class="cp-price">+ ₹0</span>
-                </label>
-                <label class="cp-option selected">
-                    <input type="radio" name="cancel_${index}" value="refundable" class="cp-radio" checked>
-                    <span class="cp-radio-circle"></span>
-                    <div class="cp-label-group">
-                        <span class="cp-label">Fully refundable before ${freeCancelShortDate}</span>
-                        <span class="cp-sublabel">Reserve now, pay later</span>
-                    </div>
-                    <span class="cp-price">+ ${refundableUpliftFormatted}</span>
-                </label>
+    let refundableHtml = `
+        <div class="cancellation-policy-section">
+            <div class="cp-header">
+                <span class="cp-title">Cancellation policy</span>
+                <a class="cp-more-details" onclick="showCancellationModal(${index})">More details on all policy options <i class="fas fa-info-circle"></i></a>
             </div>
-        `;
-    } else {
-        // Non-refundable rate → show both options but non-refundable is selected
-        const fallbackDate = freeCancelShortDate || 'deadline';
-        cancellationPolicyHtml = `
-            <div class="cancellation-policy-section">
-                <div class="cp-header">
-                    <span class="cp-title">Cancellation policy</span>
-                    <a class="cp-more-details" onclick="showCancellationModal(${index})">More details on all policy options <i class="fas fa-info-circle"></i></a>
-                </div>
-                <label class="cp-option selected">
-                    <input type="radio" name="cancel_${index}" value="nonrefund" class="cp-radio" checked>
-                    <span class="cp-radio-circle"></span>
-                    <span class="cp-label">Non-Refundable</span>
-                    <span class="cp-price">+ ₹0</span>
-                </label>
-                <label class="cp-option">
-                    <input type="radio" name="cancel_${index}" value="refundable" class="cp-radio">
-                    <span class="cp-radio-circle"></span>
-                    <div class="cp-label-group">
-                        <span class="cp-label">Fully refundable before ${fallbackDate}</span>
-                        <span class="cp-sublabel">Reserve now, pay later</span>
-                    </div>
-                    <span class="cp-price">+ ${refundableUpliftFormatted}</span>
-                </label>
-            </div>
-        `;
-    }
-
-    // Replace the old refundableHtml with the new styled section
-    let refundableHtml = cancellationPolicyHtml;
+        </div>
+    `;
 
     // Extras section (Breakfast add-on) - uses mealInfo and hasBreakfastIncluded declared above
     const breakfastPrice = Math.floor(price * 0.05) + 10; // ~5% of room price + base
@@ -1492,30 +1414,6 @@ function createRateCard(rate, index, customBadge = null) {
 
     card.querySelector('.reserve-btn').addEventListener('click', () => {
         selectRate(rate, index);
-    });
-
-    // Make cancellation policy radio buttons interactive and update prices
-    const cpNights = searchParams ? HotelUtils.calculateNights(searchParams.checkin, searchParams.checkout) : 1;
-    card.querySelectorAll('.cp-radio').forEach(radio => {
-        radio.addEventListener('change', function () {
-            const section = this.closest('.cancellation-policy-section');
-            section.querySelectorAll('.cp-option').forEach(opt => opt.classList.remove('selected'));
-            this.closest('.cp-option').classList.add('selected');
-
-            // Recalculate price based on cancellation option
-            const basePrice = parseFloat(card.dataset.basePrice);
-            const uplift = Math.round(basePrice * 0.08);
-            const isRefundable = this.value === 'refundable';
-            const newNightly = isRefundable ? basePrice + uplift : basePrice;
-            const newTotal = newNightly * cpNights;
-
-            // Update price display on the card
-            const priceDisplay = card.querySelector('.price-display');
-            if (priceDisplay) {
-                priceDisplay.querySelector('.nightly-price').innerHTML = `${HotelUtils.formatPrice(newNightly)} <small>nightly</small>`;
-                priceDisplay.querySelector('.total-price').innerHTML = `${HotelUtils.formatPrice(newTotal)} <small>total</small>`;
-            }
-        });
     });
 
     return card;
