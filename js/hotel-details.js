@@ -1494,12 +1494,27 @@ function createRateCard(rate, index, customBadge = null) {
         selectRate(rate, index);
     });
 
-    // Make cancellation policy radio buttons interactive
+    // Make cancellation policy radio buttons interactive and update prices
+    const cpNights = searchParams ? HotelUtils.calculateNights(searchParams.checkin, searchParams.checkout) : 1;
     card.querySelectorAll('.cp-radio').forEach(radio => {
         radio.addEventListener('change', function () {
             const section = this.closest('.cancellation-policy-section');
             section.querySelectorAll('.cp-option').forEach(opt => opt.classList.remove('selected'));
             this.closest('.cp-option').classList.add('selected');
+
+            // Recalculate price based on cancellation option
+            const basePrice = parseFloat(card.dataset.basePrice);
+            const uplift = Math.round(basePrice * 0.08);
+            const isRefundable = this.value === 'refundable';
+            const newNightly = isRefundable ? basePrice + uplift : basePrice;
+            const newTotal = newNightly * cpNights;
+
+            // Update price display on the card
+            const priceDisplay = card.querySelector('.price-display');
+            if (priceDisplay) {
+                priceDisplay.querySelector('.nightly-price').innerHTML = `${HotelUtils.formatPrice(newNightly)} <small>nightly</small>`;
+                priceDisplay.querySelector('.total-price').innerHTML = `${HotelUtils.formatPrice(newTotal)} <small>total</small>`;
+            }
         });
     });
 
