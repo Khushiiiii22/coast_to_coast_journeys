@@ -759,6 +759,9 @@
             const basePrice = parseFloat(rate.total_price || (rate.price * (rate.nights || 1)) || 0);
             const totalPayableNow = basePrice;
 
+            // Store total in bookingData so it's available during booking confirmation
+            bookingData.total = Math.round(totalPayableNow);
+
             document.getElementById('totalAmount').textContent = `₹${Math.round(totalPayableNow).toLocaleString('en-IN')}`;
 
 
@@ -1151,7 +1154,7 @@
                 document.getElementById('confirmHotelName').textContent = bookingData.hotel.name || '-';
                 document.getElementById('confirmCheckin').textContent = formatDate(bookingData.search_params.checkin);
                 document.getElementById('confirmCheckout').textContent = formatDate(bookingData.search_params.checkout);
-                document.getElementById('confirmAmount').textContent = `₹${bookingData.total.toLocaleString('en-IN')}`;
+                document.getElementById('confirmAmount').textContent = `₹${(bookingData.total || 0).toLocaleString('en-IN')}`;
                 document.getElementById('confirmEmail').textContent = bookingData.guest?.email || bookingData.email || '-';
 
                 document.getElementById('confirmationModal').style.display = 'block';
