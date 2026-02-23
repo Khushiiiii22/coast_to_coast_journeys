@@ -1494,6 +1494,15 @@ function createRateCard(rate, index, customBadge = null) {
         selectRate(rate, index);
     });
 
+    // Make cancellation policy radio buttons interactive
+    card.querySelectorAll('.cp-radio').forEach(radio => {
+        radio.addEventListener('change', function () {
+            const section = this.closest('.cancellation-policy-section');
+            section.querySelectorAll('.cp-option').forEach(opt => opt.classList.remove('selected'));
+            this.closest('.cp-option').classList.add('selected');
+        });
+    });
+
     return card;
 }
 
