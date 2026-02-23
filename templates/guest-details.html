@@ -360,7 +360,7 @@
             <div class="price-summary">
                 <div class="price-row total-row">
                     <span>Total Amount</span>
-                    <span id="totalAmount">₹0</span>
+                    <span id="totalAmount">--</span>
                 </div>
 
                 <button class="proceed-button" onclick="proceedToPayment()">
@@ -455,7 +455,12 @@
                 ? `${roomLabel} · ${mealLabel}`
                 : roomLabel;
 
-            document.getElementById('totalAmount').textContent = `₹${Math.round(totalPayableNow).toLocaleString('en-IN')}`;
+            // Format with correct currency symbol
+            const currencyCode = rate.currency || bookingData.currency || 'INR';
+            const currencySymbols = { 'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'AED': 'AED ' };
+            const currSymbol = currencySymbols[currencyCode] || currencyCode + ' ';
+            const locale = currencyCode === 'INR' ? 'en-IN' : 'en-US';
+            document.getElementById('totalAmount').textContent = `${currSymbol}${Math.round(totalPayableNow).toLocaleString(locale)}`;
 
             // Breakfast extra is already included in totalPayableNow — no separate line item
 
