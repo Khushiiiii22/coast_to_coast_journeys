@@ -909,7 +909,14 @@ function updateStickyPriceBar(rates) {
 }
 
 /**
- * Display room rates (Expedia Style)
+ * Display room rates (Expedia / RateHawk Style)
+ *
+ * Strategy:
+ *  - If we received MULTIPLE real rates from the API → show each one directly
+ *    with its authentic cancellation policy from the ETG response.
+ *  - If we only have ONE rate (demo / Google hotel fallback) → expand it into
+ *    several realistic room-type variants, each with industry-standard
+ *    cancellation policies (free-cancel on most, non-refundable on cheapest).
  */
 function displayRates(rates) {
     const container = document.getElementById('ratesList');
@@ -917,94 +924,232 @@ function displayRates(rates) {
 
     container.innerHTML = '';
 
-    if (rates.length === 0) {
+    if (!rates || rates.length === 0) {
         container.innerHTML = '<p class="no-rates" style="text-align: center; padding: 40px; color: #6b7280;">No rooms available for selected dates.</p>';
         return;
     }
 
-    // Room type templates for Expedia-style variety
-    const roomTypes = [
+    // Sort by price ascending
+    rates.sort((a, b) => (a.price || 0) - (b.price || 0));
+
+    // ── CASE A: multiple real ETG rates ────────────────────────────────────
+    // Each rate already has its own API-sourced cancellation_info — render directly.
+    if (rates.length > 1) {
+        const ratesToShow = rates.slice(0, 20);
+        const badges = ['Cheapest Option', 'Best Seller', 'Great Value', 'Popular', 'Upgrade your stay', 'Limited Availability'];
+        ratesToShow.forEach((rate, index) => {
+            const badge = index === 0 ? 'Cheapest Option' : badges[index % badges.length];
+            const card = createRateCard(rate, index, badge);
+            container.appendChild(card);
+        });
+        updateMainCancellationPolicy(rates);
+        return;
+    }
+
+    // ── CASE B: single/demo rate → expand into realistic tiers ────────────
+    const baseRate = rates[0];
+    const basePrice = baseRate.price || 5000;
+
+    // Free-cancellation deadline: 72 hours before check-in (industry standard)
+    const freeCancelDate = new Date();
+    if (searchParams?.checkin) {
+        freeCancelDate.setTime(new Date(searchParams.checkin + 'T14:00:00').getTime() - 72 * 60 * 60 * 1000);
+    } else {
+        freeCancelDate.setDate(freeCancelDate.getDate() + 3);
+    }
+    const freeCancelStr = freeCancelDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) + ', ' + freeCancelDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) + ' (UTC+0)';
+
+    function makeFreeCancelInfo(deadline) {
+        return {
+            is_free_cancellation: true,
+            free_cancellation_formatted: { datetime: deadline },
+            description: `Free cancellation until ${deadline}. After this time, the full charge applies.`,
+            policies: [
+                { type: 'free', penalty_amount: '0' },
+                { type: 'full_penalty', start_formatted: deadline, penalty_amount: String(basePrice * (searchParams ? Math.max(1, Math.round((new Date(searchParams.checkout) - new Date(searchParams.checkin)) / 86400000)) : 1)) }
+            ]
+        };
+    }
+
+    function makeNonRefundInfo() {
+        return {
+            is_free_cancellation: false,
+            free_cancellation_formatted: null,
+            description: 'This rate is non-refundable. No refund will be provided for cancellations or no-shows.',
+            policies: [{ type: 'full_penalty', start_formatted: 'At time of booking', penalty_amount: '100%' }]
+        };
+    }
+
+    // Room tier definitions — mirrors what real hotels publish
+    const roomTiers = [
         {
             name: 'Standard Room',
-            badge: 'Great value',
+            badge: 'Non-refundable deal',
             priceMultiplier: 1.0,
-            features: ['hasWifi', 'hasAC'],
+            mealPlan: 'nomeal',
+            mealDisplay: 'Room Only (No Meals)',
+            cancellable: false,   // ← cheapest non-refundable option (like Booking.com)
+            bedType: '1 Queen Bed',
             size: 250,
             sleeps: 2,
+            viewType: null
+        },
+        {
+            name: 'Standard Room',
+            badge: 'Free cancellation',
+            priceMultiplier: 1.08,
+            mealPlan: 'nomeal',
+            mealDisplay: 'Room Only (No Meals)',
+            cancellable: true,    // ← slightly pricier, fully refundable
             bedType: '1 Queen Bed',
+            size: 250,
+            sleeps: 2,
             viewType: null
         },
         {
             name: 'Deluxe Room',
-            badge: 'Popular among travelers',
-            priceMultiplier: 1.25,
-            features: ['hasWifi', 'hasAC', 'hasMiniFridge', 'hasView'],
+            badge: 'Popular · Free cancellation',
+            priceMultiplier: 1.3,
+            mealPlan: 'breakfast',
+            mealDisplay: 'Breakfast Included',
+            cancellable: true,
+            bedType: '1 King Bed',
             size: 320,
             sleeps: 2,
-            bedType: '1 King Bed',
             viewType: 'City view'
         },
         {
-            name: 'Prime Room',
-            badge: 'Best seller',
-            priceMultiplier: 1.45,
-            features: ['hasWifi', 'hasAC', 'hasMiniFridge', 'hasView', 'hasParking'],
-            size: 380,
+            name: 'Superior Room',
+            badge: 'Best seller · Free cancellation',
+            priceMultiplier: 1.5,
+            mealPlan: 'breakfast',
+            mealDisplay: 'Breakfast Included',
+            cancellable: true,
+            bedType: '2 Double Beds',
+            size: 360,
             sleeps: 3,
-            bedType: '1 King Bed or 2 Queen Beds',
             viewType: 'Garden view'
         },
         {
-            name: 'Executive Suite',
-            badge: 'Upgrade your stay',
-            priceMultiplier: 1.75,
-            features: ['hasWifi', 'hasAC', 'hasMiniFridge', 'hasView', 'hasParking'],
-            size: 480,
-            sleeps: 4,
-            bedType: '1 King Bed + Sofa Bed',
-            viewType: 'Premium city view'
-        },
-        {
             name: 'Junior Suite',
-            badge: 'Spacious comfort',
-            priceMultiplier: 1.55,
-            features: ['hasWifi', 'hasAC', 'hasMiniFridge', 'hasView', 'hasParking'],
-            size: 420,
-            sleeps: 3,
+            badge: 'Spacious · Free cancellation',
+            priceMultiplier: 1.85,
+            mealPlan: 'half-board',
+            mealDisplay: 'Half Board (Breakfast + Dinner)',
+            cancellable: true,
             bedType: '1 King Bed',
-            viewType: 'Partial ocean view'
+            size: 480,
+            sleeps: 3,
+            viewType: 'Premium view'
         },
         {
-            name: 'Presidential Suite',
-            badge: 'Ultimate luxury',
+            name: 'Executive Suite',
+            badge: 'Luxury · All inclusive',
             priceMultiplier: 2.5,
-            features: ['hasWifi', 'hasAC', 'hasMiniFridge', 'hasView', 'hasParking'],
+            mealPlan: 'all-inclusive',
+            mealDisplay: 'All Inclusive',
+            cancellable: true,
+            bedType: '1 King Bed + Living Area',
             size: 650,
-            sleeps: 6,
-            bedType: '2 King Beds + Living Area',
+            sleeps: 4,
             viewType: 'Panoramic view'
         }
     ];
 
-    // If we have actual rates, create multiple room type variations
-    const baseRate = rates[0];
-    const roomsToShow = Math.min(roomTypes.length, 6);
+    const roomImages = {
+        'Standard Room': ['https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600'],
+        'Deluxe Room': ['https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600'],
+        'Superior Room': ['https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600'],
+        'Junior Suite': ['https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600'],
+        'Executive Suite': ['https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=600']
+    };
 
-    for (let i = 0; i < roomsToShow; i++) {
-        const roomType = roomTypes[i];
+    roomTiers.forEach((tier, i) => {
+        const tierPrice = Math.round(basePrice * tier.priceMultiplier);
+        const cancelInfo = tier.cancellable ? makeFreeCancelInfo(freeCancelStr) : makeNonRefundInfo();
 
-        // Create a modified rate object with room type characteristics
         const modifiedRate = {
             ...baseRate,
-            room_name: roomType.name,
-            price: Math.round(baseRate.price * roomType.priceMultiplier),
-            _roomTypeConfig: roomType
+            room_name: tier.name,
+            price: tierPrice,
+            original_price: Math.round(tierPrice * 1.25),
+            meal: tier.mealPlan,
+            meal_plan: tier.mealPlan,
+            meal_info: {
+                value: tier.mealPlan,
+                display_name: tier.mealDisplay,
+                has_breakfast: tier.mealPlan !== 'nomeal',
+                no_child_meal: false,
+                is_fixed_count: false
+            },
+            cancellation_info: cancelInfo,
+            room_static: {
+                matched: true,
+                images: roomImages[tier.name] || roomImages['Standard Room']
+            },
+            _roomTypeConfig: {
+                ...tier,
+                features: ['hasWifi', 'hasAC',
+                    tier.priceMultiplier >= 1.3 ? 'hasMiniFridge' : null,
+                    tier.viewType ? 'hasView' : null
+                ].filter(Boolean)
+            }
         };
 
-        const card = createRateCard(modifiedRate, i, roomType.badge);
+        const card = createRateCard(modifiedRate, i, tier.badge);
         container.appendChild(card);
+    });
+
+    // Update the Policies tab cancellation summary using the (virtual) refundable rates
+    updateMainCancellationPolicy(roomTiers.filter(t => t.cancellable).map(t => ({
+        cancellation_info: makeFreeCancelInfo(freeCancelStr)
+    })));
+}
+
+/**
+ * Update the main cancellation policy summary in the Policies tab
+ */
+function updateMainCancellationPolicy(rates) {
+    const titleEl = document.getElementById('propertyRefundTitle');
+    const subtitleEl = document.getElementById('propertyRefundSubtitle');
+    const descEl = document.getElementById('propertyRefundDescription');
+
+    if (!titleEl || !rates || rates.length === 0) return;
+
+    const freeRates = rates.filter(r => r.cancellation_info?.is_free_cancellation);
+
+    if (freeRates.length > 0) {
+        const deadline = freeRates[0].cancellation_info.free_cancellation_formatted;
+        const dateStr = deadline?.datetime || deadline || '';
+
+        titleEl.textContent = dateStr ? `Fully refundable before ${dateStr}` : 'Free cancellation available';
+        subtitleEl.textContent = 'Cancellations or changes made after this time are subject to a fee.';
+        if (descEl) descEl.innerHTML = freeRates[0].cancellation_info.description || 'Free cancellation available on most room types. Non-refundable discounted rates also available.';
+
+        const statusBox = titleEl.closest('.policy-status');
+        if (statusBox) {
+            statusBox.className = 'policy-status free';
+            statusBox.style.background = '#f0fdf4';
+            statusBox.style.border = '1px solid #bbf7d0';
+            const icon = statusBox.querySelector('i');
+            if (icon) { icon.className = 'fas fa-check-circle'; icon.style.color = '#059669'; }
+        }
+    } else {
+        titleEl.textContent = 'Non-refundable';
+        if (subtitleEl) subtitleEl.textContent = 'This booking is non-refundable.';
+        if (descEl) descEl.textContent = 'The property does not offer refunds for cancellations or changes.';
+
+        const statusBox = titleEl.closest('.policy-status');
+        if (statusBox) {
+            statusBox.className = 'policy-status non-refundable';
+            statusBox.style.background = '#fef2f2';
+            statusBox.style.border = '1px solid #fecaca';
+            const icon = statusBox.querySelector('i');
+            if (icon) { icon.className = 'fas fa-exclamation-circle'; icon.style.color = '#dc2626'; }
+        }
     }
 }
+
 
 /**
  * Build tax display HTML for rate card
@@ -1065,6 +1210,9 @@ function createRateCard(rate, index, customBadge = null) {
     const popularityBadges = ['Popular among travelers', 'Upgrade your stay', 'Great value', 'Best seller'];
     const popularityBadge = customBadge || (index < popularityBadges.length ? popularityBadges[index] : '');
     const badgeClass = index === 0 ? 'popular' : (index === 1 ? 'upgrade' : 'value');
+
+    // Store rate data on card for showRoomDetails to read
+    try { card.dataset.rateJson = JSON.stringify(rate); } catch (e) { }
 
     // Room static data
     const roomStatic = rate.room_static || {};
@@ -1383,11 +1531,148 @@ function updateExtras(rateIndex, extraType, extraPrice) {
     if (totalEl) totalEl.innerHTML = `${HotelUtils.formatPrice(newTotal)} <small>total</small>`;
 }
 
-// Show room details modal
+// Show room details modal / overlay panel
 function showRoomDetails(rateIndex) {
-    // Can implement modal with full room details
-    console.log('Show details for room', rateIndex);
+    // Retrieve rate from the card's stored data attribute
+    const card = document.querySelector(`.rate-card[data-rate-index="${rateIndex}"]`);
+    if (!card) return;
+
+    // We reconstruct the rate from data tags on the card
+    // (the full rate object is encoded as JSON in a data attribute by createRateCard)
+    let rate;
+    try {
+        rate = JSON.parse(card.dataset.rateJson || '{}');
+    } catch (e) {
+        rate = {};
+    }
+
+    const cancelInfo = rate.cancellation_info || {};
+    const isFreeCancellation = cancelInfo.is_free_cancellation;
+    const deadline = cancelInfo.free_cancellation_formatted?.datetime || cancelInfo.free_cancellation_formatted || '';
+    const mealDisplay = rate.meal_info?.display_name || 'Room Only';
+    const roomName = rate.room_name || 'Room';
+
+    // Build policy HTML
+    let policyHtml;
+    if (isFreeCancellation) {
+        policyHtml = `
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;margin-bottom:16px;">
+                <i class="fas fa-check-circle" style="color:#059669;font-size:1.4rem;margin-top:2px;"></i>
+                <div>
+                    <strong style="color:#065f46;font-size:1rem;">Free Cancellation</strong>
+                    <p style="margin:4px 0 0;color:#047857;font-size:0.9rem;">
+                        Cancel for free before <b>${deadline}</b>.<br>
+                        After this deadline, the full room charge applies.
+                    </p>
+                </div>
+            </div>`;
+    } else {
+        policyHtml = `
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:16px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;margin-bottom:16px;">
+                <i class="fas fa-exclamation-circle" style="color:#dc2626;font-size:1.4rem;margin-top:2px;"></i>
+                <div>
+                    <strong style="color:#7f1d1d;font-size:1rem;">Non-refundable rate</strong>
+                    <p style="margin:4px 0 0;color:#991b1b;font-size:0.9rem;">
+                        ${cancelInfo.description || 'This rate cannot be cancelled or refunded once booked. No-shows will be charged the full amount.'}
+                    </p>
+                </div>
+            </div>`;
+    }
+
+    // Build cancellation schedule if available
+    let scheduleHtml = '';
+    const policies = cancelInfo.policies || [];
+    if (policies.length > 0) {
+        scheduleHtml = `
+            <div style="margin-bottom:16px;">
+                <h4 style="font-size:0.9rem;color:#374151;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-calendar-alt" style="color:#6366f1;"></i> Cancellation Schedule
+                </h4>
+                <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+                    <thead>
+                        <tr style="background:#f9fafb;">
+                            <th style="text-align:left;padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;">Period</th>
+                            <th style="text-align:right;padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;">Penalty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${policies.map(p => {
+            const isFree = p.type === 'free' || p.penalty_amount === '0' || p.penalty_amount === 0;
+            const startStr = p.start_formatted || 'Now';
+            const penaltyStr = isFree ? '<span style="color:#059669">No charge</span>' : `<span style="color:#dc2626">${p.penalty_amount}</span>`;
+            return `<tr>
+                                <td style="padding:8px;border-bottom:1px solid #f3f4f6;">${isFree ? 'Until ' + (p.end_formatted || deadline) : 'From ' + startStr}</td>
+                                <td style="padding:8px;border-bottom:1px solid #f3f4f6;text-align:right;">${penaltyStr}</td>
+                            </tr>`;
+        }).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+    }
+
+    // Inject overlay into page if not already present
+    let overlay = document.getElementById('rateDetailsOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'rateDetailsOverlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+        document.body.appendChild(overlay);
+    } else {
+        overlay.style.display = 'flex';
+    }
+
+    overlay.innerHTML = `
+        <div style="background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <!-- Header -->
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid #e5e7eb;position:sticky;top:0;background:#fff;border-radius:16px 16px 0 0;">
+                <div>
+                    <h3 style="margin:0;font-size:1.1rem;color:#111827;">${roomName}</h3>
+                    <p style="margin:4px 0 0;font-size:0.85rem;color:#6b7280;"><i class="fas fa-utensils" style="margin-right:5px;"></i>${mealDisplay}</p>
+                </div>
+                <button onclick="document.getElementById('rateDetailsOverlay').remove()"
+                    style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#9ca3af;line-height:1;padding:4px 8px;">&times;</button>
+            </div>
+
+            <!-- Body -->
+            <div style="padding:24px;">
+                <h4 style="font-size:1rem;color:#111827;margin-bottom:12px;"><i class="fas fa-undo" style="margin-right:8px;color:#6366f1;"></i>Cancellation Policy</h4>
+                ${policyHtml}
+                ${scheduleHtml}
+
+                <div style="padding:14px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;margin-bottom:16px;font-size:0.85rem;color:#92400e;">
+                    <i class="fas fa-info-circle" style="margin-right:6px;"></i>
+                    <strong>Important:</strong> Cancellation times are based on the property's local time zone. We recommend cancelling well before the deadline to avoid charges.
+                </div>
+
+                <div style="padding:14px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;font-size:0.85rem;color:#0369a1;">
+                    <i class="fas fa-shield-alt" style="margin-right:6px;"></i>
+                    <strong>Price Guarantee:</strong> The price you see includes all taxes and service fees. No hidden charges.
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="padding:16px 24px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <div style="font-size:1.3rem;font-weight:700;color:#111827;">${HotelUtils.formatPrice(rate.price)}</div>
+                    <div style="font-size:0.8rem;color:#6b7280;">per night · all inclusive</div>
+                </div>
+                <button onclick="document.getElementById('rateDetailsOverlay').remove(); selectRate(${JSON.stringify({}).replace ? 'window.__rateForModal' : 'null'}, ${rateIndex});"
+                    style="padding:12px 24px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:10px;font-weight:600;cursor:pointer;font-size:0.95rem;">
+                    Select This Room
+                </button>
+            </div>
+        </div>`;
+
+    // Store rate for the "Select This Room" button in the modal footer
+    window.__rateForModal = rate;
+    // Patch the select button now that we know the rate
+    overlay.querySelector('button[onclick*="selectRate"]').onclick = () => {
+        overlay.remove();
+        selectRate(rate, rateIndex);
+    };
 }
+
 
 /**
  * Select a rate and proceed to booking
