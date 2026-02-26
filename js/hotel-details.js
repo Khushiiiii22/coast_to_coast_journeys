@@ -311,6 +311,28 @@ function displayHotelDetails(hotel) {
     if (typeof ExpediaEnhancements !== 'undefined') {
         ExpediaEnhancements.initialize(hotel);
     }
+
+    // Track recently viewed hotel
+    try {
+        const RV_KEY = 'ctc_recently_viewed';
+        const MAX_VIEWED = 6;
+        const viewed = JSON.parse(localStorage.getItem(RV_KEY) || '[]');
+        const hotelEntry = {
+            id: hotel.id || hotel.hid,
+            name: hotel.name,
+            image: hotelImages[0] || '',
+            star_rating: hotel.star_rating || 0,
+            price: hotel.rates && hotel.rates[0] ? hotel.rates[0].price : null,
+            address: hotel.address || '',
+            timestamp: Date.now()
+        };
+        // Remove if already exists
+        const filtered = viewed.filter(v => v.id !== hotelEntry.id);
+        filtered.unshift(hotelEntry);
+        localStorage.setItem(RV_KEY, JSON.stringify(filtered.slice(0, MAX_VIEWED)));
+    } catch (e) {
+        console.log('Could not save recently viewed:', e);
+    }
 }
 
 /**

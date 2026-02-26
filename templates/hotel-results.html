@@ -443,18 +443,44 @@
 
                         <!-- Error State -->
                         <div class="error-state hidden" id="errorState">
-                            <i class="fas fa-exclamation-circle"></i>
+                            <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
                             <h3>Oops! Something went wrong</h3>
                             <p id="errorMessage">Unable to load hotels. Please try again.</p>
-                            <button class="btn btn-primary" id="retryBtn">Try Again</button>
+                            <div
+                                style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 8px;">
+                                <button class="btn btn-primary" id="retryBtn">
+                                    <i class="fas fa-redo"></i> Try Again
+                                </button>
+                                <a href="hotel-booking.html" class="btn btn-outline">
+                                    <i class="fas fa-search"></i> New Search
+                                </a>
+                            </div>
+                            <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 16px;">
+                                <i class="fas fa-headset" style="margin-right: 4px;"></i>
+                                Still having trouble? <a href="https://wa.me/919934547108" target="_blank"
+                                    style="color: #056cb9; text-decoration: underline;">Contact Support</a>
+                            </p>
                         </div>
 
                         <!-- No Results State -->
                         <div class="no-results-state hidden" id="noResultsState">
-                            <i class="fas fa-search"></i>
-                            <h3>No hotels found</h3>
-                            <p>Try adjusting your search criteria or filters</p>
-                            <button class="btn btn-primary" id="modifySearchBtn2">Modify Search</button>
+                            <i class="fas fa-map-marked-alt" style="color: #94a3b8;"></i>
+                            <h3>No hotels found for your search</h3>
+                            <p>Here are some suggestions to find availability:</p>
+                            <div
+                                style="text-align: left; max-width: 400px; margin: 0 auto 20px; color: #475569; font-size: 0.9rem; line-height: 1.8;">
+                                <p><i class="fas fa-check-circle" style="color: #22c55e; margin-right: 8px;"></i> Try
+                                    different check-in/check-out dates</p>
+                                <p><i class="fas fa-check-circle" style="color: #22c55e; margin-right: 8px;"></i> Search
+                                    for a nearby city or area</p>
+                                <p><i class="fas fa-check-circle" style="color: #22c55e; margin-right: 8px;"></i> Reduce
+                                    the number of rooms or guests</p>
+                                <p><i class="fas fa-check-circle" style="color: #22c55e; margin-right: 8px;"></i> Clear
+                                    any active filters</p>
+                            </div>
+                            <button class="btn btn-primary" id="modifySearchBtn2">
+                                <i class="fas fa-search"></i> Modify Search
+                            </button>
                         </div>
 
                         <!-- Hotels List - Expedia Style Cards -->

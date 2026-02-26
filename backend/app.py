@@ -251,8 +251,11 @@ def create_app():
                 'error': 'API Endpoint not found'
             }), 404
         
-        # Otherwise, return a text message (or it was already handled by serve_static)
-        return f"The page you are looking for ({request.path}) was not found.", 404
+        # Otherwise, serve custom 404 page
+        try:
+            return send_from_directory(templates_dir, '404.html'), 404
+        except:
+            return f"The page you are looking for ({request.path}) was not found.", 404
     
     @app.errorhandler(500)
     def internal_error(error):

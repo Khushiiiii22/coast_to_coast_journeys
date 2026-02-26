@@ -1064,6 +1064,9 @@ function init() {
     initScrollReveal();
     initEnhancedHovers();
     initBackToTop();
+    initCookieConsent();
+    initBookingTimer();
+    initRecentSearches();
 
     // Initial scroll check
     handleScroll();
@@ -1107,6 +1110,209 @@ function initBackToTop() {
         window.scrollTo({
             top: 0,
             behavior: 'smooth'
+        });
+    });
+
+    // Also ensure WhatsApp float exists on every page
+    if (!document.querySelector('.whatsapp-float') && !document.querySelector('[class*="whatsapp"]')) {
+        const waBtn = document.createElement('a');
+        waBtn.href = 'https://wa.me/919934547108?text=Hi%20C2C%20Journeys%2C%20I%20need%20help%20with%20my%20booking';
+        waBtn.target = '_blank';
+        waBtn.className = 'whatsapp-float';
+        waBtn.setAttribute('aria-label', 'Chat on WhatsApp');
+        waBtn.setAttribute('title', 'Chat with us on WhatsApp');
+        waBtn.innerHTML = '<i class="fab fa-whatsapp"></i>';
+        waBtn.style.cssText = 'position:fixed;bottom:30px;right:30px;z-index:9997;width:56px;height:56px;border-radius:50%;background:#25D366;color:white;display:flex;align-items:center;justify-content:center;font-size:1.8rem;box-shadow:0 4px 15px rgba(37,211,102,0.4);transition:all 0.3s;text-decoration:none;';
+        waBtn.onmouseover = function () { this.style.transform = 'scale(1.1)'; this.style.boxShadow = '0 6px 20px rgba(37,211,102,0.5)'; };
+        waBtn.onmouseout = function () { this.style.transform = ''; this.style.boxShadow = '0 4px 15px rgba(37,211,102,0.4)'; };
+        document.body.appendChild(waBtn);
+    }
+}
+
+// ========================================
+// Cookie Consent Banner
+// ========================================
+function initCookieConsent() {
+    // Skip if already accepted/declined
+    if (localStorage.getItem('ctc_cookie_consent')) return;
+    if (document.querySelector('.cookie-consent')) return;
+
+    const banner = document.createElement('div');
+    banner.className = 'cookie-consent';
+    banner.innerHTML = `
+        <div class="cookie-consent-inner">
+            <div class="cookie-consent-text">
+                <i class="fas fa-cookie-bite" style="margin-right: 8px; color: #fbbf24;"></i>
+                We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic.
+                By clicking "Accept All", you consent to our use of cookies.
+                <a href="privacy-policy.html">Privacy Policy</a>
+            </div>
+            <div class="cookie-consent-actions">
+                <button class="cookie-decline-btn" id="cookieDecline">Decline</button>
+                <button class="cookie-accept-btn" id="cookieAccept">Accept All</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(banner);
+
+    // Show with slight delay for smooth entrance
+    setTimeout(() => { banner.classList.add('visible'); }, 1000);
+
+    document.getElementById('cookieAccept').addEventListener('click', function () {
+        localStorage.setItem('ctc_cookie_consent', 'accepted');
+        banner.classList.remove('visible');
+        setTimeout(() => banner.remove(), 500);
+    });
+
+    document.getElementById('cookieDecline').addEventListener('click', function () {
+        localStorage.setItem('ctc_cookie_consent', 'declined');
+        banner.classList.remove('visible');
+        setTimeout(() => banner.remove(), 500);
+    });
+}
+
+// ========================================
+// Booking Countdown Timer
+// ========================================
+function initBookingTimer() {
+    // Only show on guest-details and payment pages
+    const isCheckoutPage = window.location.pathname.includes('guest-details') ||
+        window.location.pathname.includes('payment');
+    if (!isCheckoutPage) return;
+
+    // Use session-based timer (15 minutes)
+    const TIMER_KEY = 'ctc_booking_timer_start';
+    const TIMER_DURATION = 15 * 60; // 15 minutes in seconds
+
+    let startTime = sessionStorage.getItem(TIMER_KEY);
+    if (!startTime) {
+        startTime = Date.now();
+        sessionStorage.setItem(TIMER_KEY, startTime);
+    }
+    startTime = parseInt(startTime);
+
+    // Find the checkout container or progress bar to insert before
+    const container = document.querySelector('.checkout-container') ||
+        document.querySelector('.checkout-grid');
+    if (!container) return;
+
+    // Create timer element
+    const timerDiv = document.createElement('div');
+    timerDiv.className = 'booking-timer';
+    timerDiv.innerHTML = `
+        <i class="fas fa-clock"></i>
+        <span class="booking-timer-text">
+            Price held for <strong id="bookingCountdown">15:00</strong> minutes. Complete your booking to lock this rate!
+        </span>
+    `;
+    container.parentElement.insertBefore(timerDiv, container);
+
+    const countdownEl = document.getElementById('bookingCountdown');
+
+    function updateTimer() {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const remaining = Math.max(0, TIMER_DURATION - elapsed);
+        const mins = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        countdownEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+        if (remaining <= 0) {
+            timerDiv.style.background = 'linear-gradient(135deg, #fee2e2, #fecaca)';
+            timerDiv.style.borderColor = '#ef4444';
+            timerDiv.querySelector('i').style.color = '#dc2626';
+            timerDiv.querySelector('.booking-timer-text').innerHTML =
+                '<strong style="color: #dc2626;">Your price hold has expired.</strong> Prices may have changed. Please search again.';
+            clearInterval(timerInterval);
+        } else if (remaining <= 120) {
+            // Last 2 minutes - turn red
+            timerDiv.style.background = 'linear-gradient(135deg, #fee2e2, #fecaca)';
+            timerDiv.style.borderColor = '#ef4444';
+            countdownEl.style.color = '#dc2626';
+        }
+    }
+
+    updateTimer();
+    const timerInterval = setInterval(updateTimer, 1000);
+}
+
+// ========================================
+// Recent Hotel Searches
+// ========================================
+function initRecentSearches() {
+    const STORAGE_KEY = 'ctc_recent_searches';
+    const MAX_SEARCHES = 5;
+
+    // Only on hotel-booking page
+    const hotelForm = document.getElementById('hotelSearchForm');
+    if (!hotelForm) return;
+
+    // Save search on form submit
+    hotelForm.addEventListener('submit', function () {
+        const dest = document.getElementById('hotelDestination');
+        const checkin = document.getElementById('checkInDate');
+        const checkout = document.getElementById('checkOutDate');
+
+        if (dest && dest.value) {
+            const searches = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const newSearch = {
+                destination: dest.value,
+                checkin: checkin ? checkin.value : '',
+                checkout: checkout ? checkout.value : '',
+                timestamp: Date.now()
+            };
+
+            // Remove duplicates
+            const filtered = searches.filter(s => s.destination !== newSearch.destination);
+            filtered.unshift(newSearch);
+
+            // Keep max
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered.slice(0, MAX_SEARCHES)));
+        }
+    });
+
+    // Display recent searches
+    const searches = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    if (searches.length === 0) return;
+
+    const container = document.createElement('div');
+    container.className = 'recent-searches';
+    container.innerHTML = `
+        <div class="recent-searches-label">
+            <i class="fas fa-history"></i> Recent Searches
+        </div>
+        <div class="recent-searches-chips">
+            ${searches.map(s => `
+                <div class="recent-search-chip" data-dest="${s.destination}" data-in="${s.checkin}" data-out="${s.checkout}">
+                    <i class="fas fa-map-marker-alt"></i>
+                    ${s.destination}
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    // Insert after the search form
+    const searchContainer = hotelForm.closest('.booking-search-container') || hotelForm.parentElement;
+    if (searchContainer) {
+        searchContainer.appendChild(container);
+    }
+
+    // Click handler for chips
+    container.querySelectorAll('.recent-search-chip').forEach(chip => {
+        chip.addEventListener('click', function () {
+            const dest = document.getElementById('hotelDestination');
+            const checkin = document.getElementById('checkInDate');
+            const checkout = document.getElementById('checkOutDate');
+
+            if (dest) dest.value = this.dataset.dest;
+            if (checkin && this.dataset.in) checkin.value = this.dataset.in;
+            if (checkout && this.dataset.out) checkout.value = this.dataset.out;
+
+            // Scroll to search button
+            const searchBtn = hotelForm.querySelector('.btn-search') || hotelForm.querySelector('button[type="submit"]');
+            if (searchBtn) {
+                searchBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                searchBtn.style.animation = 'timerPulse 0.5s ease 2';
+            }
         });
     });
 }
