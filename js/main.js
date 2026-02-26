@@ -1063,6 +1063,7 @@ function init() {
     initEventListeners();
     initScrollReveal();
     initEnhancedHovers();
+    initBackToTop();
 
     // Initial scroll check
     handleScroll();
@@ -1076,6 +1077,38 @@ function init() {
     document.body.classList.add('loaded');
 
     console.log('C2C Journeys - Website Loaded Successfully!');
+}
+
+// ========================================
+// Back to Top Button
+// ========================================
+function initBackToTop() {
+    // Create the button dynamically so it works on every page
+    if (document.querySelector('.back-to-top')) return; // Already exists
+
+    const btn = document.createElement('button');
+    btn.className = 'back-to-top';
+    btn.setAttribute('aria-label', 'Back to top');
+    btn.setAttribute('title', 'Back to top');
+    btn.innerHTML = '<i class="fas fa-chevron-up"></i>';
+    document.body.appendChild(btn);
+
+    // Show/hide on scroll
+    window.addEventListener('scroll', function () {
+        if (window.scrollY > 300) {
+            btn.classList.add('visible');
+        } else {
+            btn.classList.remove('visible');
+        }
+    });
+
+    // Scroll to top on click
+    btn.addEventListener('click', function () {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
 }
 
 // Run when DOM is ready

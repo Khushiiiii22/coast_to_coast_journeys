@@ -22,6 +22,7 @@
 
     <!-- Stylesheets -->
     <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/hotel-booking.css">
 </head>
 
@@ -77,6 +78,17 @@
 
     <!-- Main Content -->
     <main class="hotel-results-main">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb-nav">
+            <div class="container">
+                <a href="index.html">Home</a>
+                <i class="fas fa-chevron-right separator"></i>
+                <a href="hotel-booking.html">Hotels</a>
+                <i class="fas fa-chevron-right separator"></i>
+                <span class="current">Search Results</span>
+            </div>
+        </nav>
+
         <!-- Search Bar Section - Expedia Style -->
         <section class="expedia-search-bar">
             <div class="container">
@@ -343,12 +355,90 @@
                             </div>
                         </div>
 
-                        <!-- Loading State -->
+                        <!-- Loading State with Skeleton Cards -->
                         <div class="loading-state" id="loadingState">
-                            <div class="loading-spinner">
-                                <i class="fas fa-spinner fa-spin"></i>
+                            <div class="skeleton-cards">
+                                <div class="skeleton-card">
+                                    <div class="skeleton-image skeleton-pulse"></div>
+                                    <div class="skeleton-body">
+                                        <div class="skeleton-line skeleton-pulse" style="width: 70%; height: 20px;">
+                                        </div>
+                                        <div class="skeleton-line skeleton-pulse"
+                                            style="width: 50%; height: 14px; margin-top: 8px;"></div>
+                                        <div class="skeleton-line skeleton-pulse"
+                                            style="width: 90%; height: 14px; margin-top: 12px;"></div>
+                                        <div class="skeleton-line skeleton-pulse"
+                                            style="width: 40%; height: 14px; margin-top: 6px;"></div>
+                                        <div class="skeleton-footer">
+                                            <div class="skeleton-line skeleton-pulse"
+                                                style="width: 60px; height: 28px; border-radius: 6px;"></div>
+                                            <div class="skeleton-line skeleton-pulse"
+                                                style="width: 100px; height: 24px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="skeleton-card">
+                                    <div class="skeleton-image skeleton-pulse"></div>
+                                    <div class="skeleton-body">
+                                        <div class="skeleton-line skeleton-pulse" style="width: 60%; height: 20px;">
+                                        </div>
+                                        <div class="skeleton-line skeleton-pulse"
+                                            style="width: 45%; height: 14px; margin-top: 8px;"></div>
+                                        <div class="skeleton-line skeleton-pulse"
+                                            style="width: 85%; height: 14px; margin-top: 12px;"></div>
+                                        <div class="skeleton-line skeleton-pulse"
+                                            style="width: 35%; height: 14px; margin-top: 6px;"></div>
+                                        <div class="skeleton-footer">
+                                            <div class="skeleton-line skeleton-pulse"
+                                                style="width: 60px; height: 28px; border-radius: 6px;"></div>
+                                            <div class="skeleton-line skeleton-pulse"
+                                                style="width: 100px; height: 24px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="skeleton-card">
+                                    <div class="skeleton-image skeleton-pulse"></div>
+                                    <div class="skeleton-body">
+                                        <div class="skeleton-line skeleton-pulse" style="width: 75%; height: 20px;">
+                                        </div>
+                                        <div class="skeleton-line skeleton-pulse"
+                                            style="width: 55%; height: 14px; margin-top: 8px;"></div>
+                                        <div class="skeleton-line skeleton-pulse"
+                                            style="width: 80%; height: 14px; margin-top: 12px;"></div>
+                                        <div class="skeleton-line skeleton-pulse"
+                                            style="width: 50%; height: 14px; margin-top: 6px;"></div>
+                                        <div class="skeleton-footer">
+                                            <div class="skeleton-line skeleton-pulse"
+                                                style="width: 60px; height: 28px; border-radius: 6px;"></div>
+                                            <div class="skeleton-line skeleton-pulse"
+                                                style="width: 100px; height: 24px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="skeleton-card">
+                                    <div class="skeleton-image skeleton-pulse"></div>
+                                    <div class="skeleton-body">
+                                        <div class="skeleton-line skeleton-pulse" style="width: 65%; height: 20px;">
+                                        </div>
+                                        <div class="skeleton-line skeleton-pulse"
+                                            style="width: 40%; height: 14px; margin-top: 8px;"></div>
+                                        <div class="skeleton-line skeleton-pulse"
+                                            style="width: 75%; height: 14px; margin-top: 12px;"></div>
+                                        <div class="skeleton-line skeleton-pulse"
+                                            style="width: 45%; height: 14px; margin-top: 6px;"></div>
+                                        <div class="skeleton-footer">
+                                            <div class="skeleton-line skeleton-pulse"
+                                                style="width: 60px; height: 28px; border-radius: 6px;"></div>
+                                            <div class="skeleton-line skeleton-pulse"
+                                                style="width: 100px; height: 24px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <p>Searching for the best hotels...</p>
+                            <p style="text-align: center; color: #64748b; margin-top: 20px;">
+                                <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Searching for the best
+                                hotels...
+                            </p>
                         </div>
 
                         <!-- Error State -->

@@ -205,6 +205,17 @@
         </div>
     </header>
 
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav">
+        <div class="container">
+            <a href="index.html">Home</a>
+            <i class="fas fa-chevron-right separator"></i>
+            <a href="hotel-booking.html">Hotels</a>
+            <i class="fas fa-chevron-right separator"></i>
+            <span class="current">Guest Details</span>
+        </div>
+    </nav>
+
     <div class="checkout-container">
         <!-- Booking Progress -->
         <div
@@ -420,8 +431,10 @@
         // Populate booking details
         async function loadBookingDetails() {
             if (!bookingData.hotel || !bookingData.rate) {
-                alert('No booking data found! Redirecting to home...');
-                window.location.href = 'index.html';
+                if (typeof showNotification === 'function') {
+                    showNotification('No booking data found! Redirecting to home...', 'warning');
+                }
+                setTimeout(() => { window.location.href = 'index.html'; }, 2000);
                 return;
             }
 
@@ -537,32 +550,79 @@
             return Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24));
         }
 
+        // Clear field error on input
+        document.querySelectorAll('#firstName, #lastName, #email, #phone').forEach(field => {
+            field.addEventListener('input', function () {
+                this.style.borderColor = '';
+                this.style.boxShadow = '';
+                const errMsg = this.parentElement.querySelector('.field-error');
+                if (errMsg) errMsg.remove();
+            });
+        });
+
+        function highlightField(field) {
+            field.style.borderColor = '#ef4444';
+            field.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.15)';
+            field.style.transition = 'all 0.3s ease';
+            // Add error message if not already present
+            if (!field.parentElement.querySelector('.field-error')) {
+                const msg = document.createElement('span');
+                msg.className = 'field-error';
+                msg.style.cssText = 'color: #ef4444; font-size: 0.8rem; margin-top: 4px; display: block;';
+                msg.innerHTML = '<i class="fas fa-exclamation-circle" style="margin-right: 4px;"></i>This field is required';
+                field.parentElement.appendChild(msg);
+            }
+        }
+
         function proceedToPayment() {
             // Validate form
-            const firstName = document.getElementById('firstName').value;
-            const lastName = document.getElementById('lastName').value;
-            const email = document.getElementById('email').value;
-            const phone = document.getElementById('phone').value;
+            const firstName = document.getElementById('firstName');
+            const lastName = document.getElementById('lastName');
+            const email = document.getElementById('email');
+            const phone = document.getElementById('phone');
             const specialRequests = document.getElementById('specialRequests').value;
 
-            if (!firstName || !lastName || !email || !phone) {
-                alert('Please fill in all required fields.');
+            const requiredFields = [firstName, lastName, email, phone];
+            let hasError = false;
+
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    highlightField(field);
+                    hasError = true;
+                }
+            });
+
+            // Email format validation
+            if (email.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+                highlightField(email);
+                const errMsg = email.parentElement.querySelector('.field-error');
+                if (errMsg) errMsg.innerHTML = '<i class="fas fa-exclamation-circle" style="margin-right: 4px;"></i>Please enter a valid email address';
+                hasError = true;
+            }
+
+            if (hasError) {
+                if (typeof showNotification === 'function') {
+                    showNotification('Please fill in all required fields.', 'warning');
+                }
+                // Scroll to first error
+                const firstError = document.querySelector('[style*="border-color: rgb(239, 68, 68)"]');
+                if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
 
             // Save details to booking data
             bookingData.guest = {
-                firstName: firstName,
-                lastName: lastName,
-                email: email,
-                phone: phone,
+                firstName: firstName.value.trim(),
+                lastName: lastName.value.trim(),
+                email: email.value.trim(),
+                phone: phone.value.trim(),
                 specialRequests: specialRequests
             };
 
             // Also store top-level for compat with old code if needed
-            bookingData.email = email;
-            bookingData.phone = phone;
-            bookingData.guestName = firstName + ' ' + lastName;
+            bookingData.email = email.value.trim();
+            bookingData.phone = phone.value.trim();
+            bookingData.guestName = firstName.value.trim() + ' ' + lastName.value.trim();
 
             sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
 
