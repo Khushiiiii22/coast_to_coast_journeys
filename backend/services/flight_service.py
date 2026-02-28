@@ -232,18 +232,39 @@ class FlightService:
         }
 
     def _generate_flights(self, origin, destination, date_str, adults, flight_class):
-        """Generate realistic mock flight options (moved from original implementation)"""
+        """Generate realistic mock flight options with INR pricing"""
         flights = []
-        num_flights = random.randint(5, 12)
-        base_price = random.randint(100, 800) if flight_class == 'economy' else random.randint(500, 2500)
+        num_flights = random.randint(6, 14)
+        
+        # Realistic INR base prices by class
+        if flight_class == 'economy':
+            base_price = random.randint(3000, 12000)
+        elif flight_class == 'premium':
+            base_price = random.randint(8000, 20000)
+        elif flight_class == 'business':
+            base_price = random.randint(18000, 45000)
+        else:  # first
+            base_price = random.randint(35000, 80000)
+        
+        # International routes cost more
+        domestic_codes = {'DEL', 'BOM', 'BLR', 'MAA', 'CCU', 'HYD', 'GOI', 'JAI'}
+        is_international = origin not in domestic_codes or destination not in domestic_codes
+        if is_international:
+            base_price = int(base_price * random.uniform(2.5, 4.0))
         
         for i in range(num_flights):
             airline = random.choice(self.airlines)
             flight_num = f"{airline['code']}{random.randint(100, 999)}"
-            hour = random.randint(0, 23)
+            hour = random.randint(5, 23)  # Flights between 5 AM and 11 PM
             minute = random.choice([0, 15, 30, 45])
             depart_time = f"{hour:02d}:{minute:02d}"
-            duration_mins = random.randint(120, 600)
+            
+            # Duration based on domestic vs international
+            if is_international:
+                duration_mins = random.randint(180, 720)
+            else:
+                duration_mins = random.randint(90, 300)
+            
             duration_hours = duration_mins // 60
             duration_rem_mins = duration_mins % 60
             duration_str = f"{duration_hours}h {duration_rem_mins}m"
@@ -252,9 +273,16 @@ class FlightService:
             arr_min = arrival_mins_total % 60
             arrival_time = f"{arr_hour:02d}:{arr_min:02d}"
             next_day = arrival_mins_total >= 24 * 60
-            stops = random.choice([0, 0, 0, 1, 1, 2])
-            price = base_price * (1.2 if stops == 0 else 0.8)
-            price += random.randint(-50, 50)
+            
+            # Non-stop flights more common for short routes
+            if duration_mins < 180:
+                stops = random.choice([0, 0, 0, 0, 1])
+            else:
+                stops = random.choice([0, 0, 1, 1, 2])
+            
+            price = base_price * (1.15 if stops == 0 else 0.85 if stops == 1 else 0.7)
+            price += random.randint(-500, 2000)
+            price = max(2500, int(round(price / 100) * 100))  # Round to nearest 100
             
             flights.append({
                 'id': hashlib.md5(f"{flight_num}{date_str}{i}".encode()).hexdigest(),
@@ -268,7 +296,7 @@ class FlightService:
                 'next_day': next_day,
                 'stops': stops,
                 'price': int(price),
-                'currency': 'USD',
+                'currency': 'INR',
                 'class': flight_class
             })
         flights.sort(key=lambda x: x['price'])
