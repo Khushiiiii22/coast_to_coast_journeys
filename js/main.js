@@ -1067,6 +1067,8 @@ function init() {
     initCookieConsent();
     initBookingTimer();
     initRecentSearches();
+    initLazyLoading();
+    initAutoYear();
 
     // Initial scroll check
     handleScroll();
@@ -1317,5 +1319,71 @@ function initRecentSearches() {
     });
 }
 
+// ========================================
+// Lazy Loading for Images
+// ========================================
+function initLazyLoading() {
+    // Add loading="lazy" to all images that don't already have it
+    document.querySelectorAll('img:not([loading])').forEach(img => {
+        img.setAttribute('loading', 'lazy');
+    });
+}
+
+// ========================================
+// Auto-update Copyright Year
+// ========================================
+function initAutoYear() {
+    const currentYear = new Date().getFullYear();
+    document.querySelectorAll('.footer-bottom p, .sidebar-footer p').forEach(p => {
+        if (p.textContent.includes('©')) {
+            p.textContent = p.textContent.replace(/© \d{4}/, `© ${currentYear}`);
+        }
+    });
+}
+
+// ========================================
+// Newsletter Form Handler
+// ========================================
+function initNewsletter() {
+    const form = document.getElementById('newsletterForm');
+    if (!form) return;
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const emailInput = form.querySelector('input[type="email"]');
+        const email = emailInput ? emailInput.value.trim() : '';
+
+        if (!email) return;
+
+        // Save to localStorage
+        const subscribers = JSON.parse(localStorage.getItem('ctc_newsletter') || '[]');
+        if (!subscribers.includes(email)) {
+            subscribers.push(email);
+            localStorage.setItem('ctc_newsletter', JSON.stringify(subscribers));
+        }
+
+        // Show success
+        if (typeof showNotification === 'function') {
+            showNotification('🎉 You\'re subscribed! Watch for exclusive deals.', 'success');
+        } else {
+            // Inline success message
+            const btn = form.querySelector('button[type="submit"]');
+            const origText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> Subscribed!';
+            btn.style.background = '#22c55e';
+            setTimeout(() => {
+                btn.innerHTML = origText;
+                btn.style.background = '';
+            }, 3000);
+        }
+
+        // Clear input
+        emailInput.value = '';
+    });
+}
+
 // Run when DOM is ready
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', function () {
+    init();
+    initNewsletter();
+});
