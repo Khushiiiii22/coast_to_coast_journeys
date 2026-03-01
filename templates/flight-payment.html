@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="../assets/images/c2c-logo.png">
+    <title>Flight Payment | C2C Journeys</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        .checkout-container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .booking-summary {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .price-summary {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 100px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .total-row {
+            border-top: 2px solid #0066cc;
+            border-bottom: none;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0066cc;
+            padding: 20px 0;
+        }
+
+        .pay-button {
+            width: 100%;
+            padding: 16px;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .pay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .pay-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .secure-badge {
+            text-align: center;
+            margin-top: 15px;
+            color: #22c55e;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .guest-review-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .guest-review-icon {
+            width: 40px;
+            height: 40px;
+            background: #f0f9ff;
+            color: #0066cc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .guest-review-content h4 {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 0;
+        }
+
+        .guest-review-content p {
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Flight Summary Card */
+        .flight-summary-card {
+            background: linear-gradient(135deg, #eff6ff, #f0f7ff);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #dbeafe;
+            margin-top: 16px;
+        }
+
+        .flight-route {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .flight-route .time-block {
+            text-align: center;
+        }
+
+        .flight-route .time-block .time {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .flight-route .time-block .code {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .flight-route .path {
+            flex: 1;
+            text-align: center;
+        }
+
+        .flight-route .path .duration {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .flight-route .path .line {
+            height: 2px;
+            background: #cbd5e1;
+            margin: 6px 0;
+            position: relative;
+        }
+
+        .flight-route .path .line i {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #2563eb;
+            font-size: 0.65rem;
+            background: #eff6ff;
+            padding: 0 4px;
+        }
+
+        .flight-route .path .stops {
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .price-summary {
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar Menu -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
+            <span>Coast to Coast</span>
+            <button class="sidebar-close" id="sidebarClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
+            <a href="flight-booking.html" class="sidebar-link active"><i class="fas fa-plane"></i> Book Flights</a>
+            <a href="hotel-booking.html" class="sidebar-link"><i class="fas fa-hotel"></i> Book Hotels</a>
+            <a href="visa.html" class="sidebar-link"><i class="fas fa-passport"></i> Visa Services</a>
+            <div class="sidebar-divider"></div>
+            <a href="mailto:sales@c2cjourneys.com" class="sidebar-link"><i class="fas fa-envelope"></i> Email Us</a>
+            <a href="tel:+919934547108" class="sidebar-link"><i class="fas fa-phone"></i> Call Us</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-social">
+                <a href="https://www.facebook.com/people/Coast-to-Coast-Journeys/61574464089885/" target="_blank"><i
+                        class="fab fa-facebook-f"></i></a>
+                <a href="https://www.instagram.com/coasttocoastjourneys/" target="_blank"><i
+                        class="fab fa-instagram"></i></a>
+                <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"><i
+                        class="fab fa-linkedin-in"></i></a>
+            </div>
+            <p>C2C Journeys is a customer-facing brand operated by Coast to Coast Journeys</p>
+            <p>© 2026 C2C Journeys</p>
+        </div>
+    </aside>
+
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="container">
+            <div class="header-content">
+                <button class="hamburger-menu" id="hamburgerMenu">
+                    <span></span><span></span><span></span>
+                </button>
+                <a href="index.html" class="logo">
+                    <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
+                    <span class="logo-text">C2C Journeys</span>
+                </a>
+                <nav>
+                    <ul class="nav-menu" id="navMenu">
+                        <li><a href="flight-booking.html" class="nav-link active">Flights</a></li>
+                        <li><a href="hotel-booking.html" class="nav-link">Hotels</a></li>
+                        <li><a href="visa.html" class="nav-link">Visa</a></li>
+                        <li><a href="#contact" class="nav-link">Contact</a></li>
+                    </ul>
+                </nav>
+                <div class="header-actions">
+                    <a href="tel:+919934547108" class="phone-link">
+                        <i class="fas fa-phone"></i><span>+91 99345 47108</span>
+                    </a>
+                    <a href="auth.html" class="btn btn-outline">Sign In</a>
+                </div>
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav">
+        <div class="container">
+            <a href="index.html">Home</a>
+            <i class="fas fa-chevron-right separator"></i>
+            <a href="flight-booking.html">Flights</a>
+            <i class="fas fa-chevron-right separator"></i>
+            <span class="current">Payment</span>
+        </div>
+    </nav>
+
+    <div class="checkout-container">
+        <!-- Booking Progress -->
+        <div
+            style="margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #f8fafc, #e2e8f0); border-radius: 12px;">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; max-width: 600px; margin: 0 auto;">
+                <div style="text-align: center; flex: 1;">
+                    <div
+                        style="width: 36px; height: 36px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; color: white;">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <span style="font-size: 0.75rem; color: #64748b;">Search</span>
+                </div>
+                <div style="flex: 0.5; height: 2px; background: #22c55e;"></div>
+                <div style="text-align: center; flex: 1;">
+                    <div
+                        style="width: 36px; height: 36px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; color: white;">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <span style="font-size: 0.75rem; color: #64748b;">Select Flight</span>
+                </div>
+                <div style="flex: 0.5; height: 2px; background: #22c55e;"></div>
+                <div style="text-align: center; flex: 1;">
+                    <div
+                        style="width: 36px; height: 36px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; color: white;">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <span style="font-size: 0.75rem; color: #64748b;">Passenger Info</span>
+                </div>
+                <div style="flex: 0.5; height: 2px; background: #3b82f6;"></div>
+                <div style="text-align: center; flex: 1;">
+                    <div
+                        style="width: 36px; height: 36px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">
+                        <span style="font-weight: bold;">4</span>
+                    </div>
+                    <span style="font-size: 0.75rem; color: #3b82f6; font-weight: 600;">Payment</span>
+                </div>
+            </div>
+        </div>
+
+        <h1><i class="fas fa-credit-card"></i> Complete Payment</h1>
+
+        <div class="checkout-grid">
+            <div class="left-column">
+                <!-- Passenger Review -->
+                <div class="booking-summary" style="margin-bottom: 30px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2>Review Information</h2>
+                        <a href="flight-passenger-details.html"
+                            style="color: #0066cc; text-decoration: none; font-size: 0.9rem;"><i
+                                class="fas fa-edit"></i> Edit</a>
+                    </div>
+
+                    <div class="guest-review-item">
+                        <div class="guest-review-icon"><i class="fas fa-user"></i></div>
+                        <div class="guest-review-content">
+                            <h4>Passenger Name</h4>
+                            <p id="reviewName">-</p>
+                        </div>
+                    </div>
+                    <div class="guest-review-item">
+                        <div class="guest-review-icon"><i class="fas fa-envelope"></i></div>
+                        <div class="guest-review-content">
+                            <h4>Email Address</h4>
+                            <p id="reviewEmail">-</p>
+                        </div>
+                    </div>
+                    <div class="guest-review-item">
+                        <div class="guest-review-icon"><i class="fas fa-phone"></i></div>
+                        <div class="guest-review-content">
+                            <h4>Phone Number</h4>
+                            <p id="reviewPhone">-</p>
+                        </div>
+                    </div>
+                    <div id="reviewSpecialReqBox" class="guest-review-item" style="display: none;">
+                        <div class="guest-review-icon"><i class="fas fa-comment-alt"></i></div>
+                        <div class="guest-review-content">
+                            <h4>Special Requests</h4>
+                            <p id="reviewSpecialReq">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flight Summary -->
+                <div class="booking-summary">
+                    <h2>Flight Summary</h2>
+                    <div class="flight-summary-card">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span id="airlineName" style="font-weight: 700; color: #1e293b;">Loading...</span>
+                            <span id="flightNumber" style="font-size: 0.8rem; color: #64748b;"></span>
+                        </div>
+                        <div class="flight-route">
+                            <div class="time-block">
+                                <div class="time" id="departTime">--:--</div>
+                                <div class="code" id="originCode">---</div>
+                            </div>
+                            <div class="path">
+                                <div class="duration" id="flightDuration">--</div>
+                                <div class="line"><i class="fas fa-plane"></i></div>
+                                <div class="stops" id="flightStops">--</div>
+                            </div>
+                            <div class="time-block">
+                                <div class="time" id="arriveTime">--:--</div>
+                                <div class="code" id="destCode">---</div>
+                            </div>
+                        </div>
+                        <div
+                            style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; font-size: 0.82rem;">
+                            <span style="color: #64748b;"><i class="fas fa-calendar"
+                                    style="margin-right: 4px;"></i><span id="flightDate">--</span></span>
+                            <span style="color: #64748b;"><i class="fas fa-couch" style="margin-right: 4px;"></i><span
+                                    id="flightClass">Economy</span></span>
+                            <span style="color: #64748b;"><i class="fas fa-users" style="margin-right: 4px;"></i><span
+                                    id="travelerCount">1</span>
+                                traveler(s)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Price Summary + Payment Buttons -->
+            <div class="price-summary">
+                <h2>Price Breakdown</h2>
+
+                <div class="price-row total-row">
+                    <span>Total Amount</span>
+                    <span id="totalAmount">--</span>
+                </div>
+
+                <h3 style="margin: 30px 0 15px 0;">Select Payment Method</h3>
+
+                <button class="pay-button" style="background: linear-gradient(135deg, #0066cc, #00509e);"
+                    onclick="initiateRazorpayPayment()">
+                    <i class="fas fa-credit-card"></i> Pay with Razorpay (UPI/Cards)
+                </button>
+
+                <button class="pay-button"
+                    style="background: linear-gradient(135deg, #0070ba, #005ea6); margin-top: 15px;"
+                    onclick="initiatePayPalPayment()">
+                    <i class="fab fa-paypal"></i> Pay with PayPal
+                </button>
+
+                <button class="pay-button" id="testCardBtn"
+                    style="background: linear-gradient(135deg, #10b981, #059669); margin-top: 15px;"
+                    onclick="showTestCardForm()">
+                    <i class="fas fa-credit-card"></i> Pay with Credit/Debit Card (Test Mode)
+                </button>
+
+                <div class="secure-badge">
+                    <i class="fas fa-shield-alt"></i> 100% Secure Payment
+                </div>
+
+                <div
+                    style="margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 20px; align-items: center;">
+                    <img src="https://razorpay.com/assets/razorpay-glyph.svg" alt="Razorpay"
+                        style="height: 24px; opacity: 0.6;">
+                    <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg" alt="PayPal"
+                        style="height: 24px; opacity: 0.6;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa"
+                        style="height: 18px; opacity: 0.6;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard"
+                        style="height: 24px; opacity: 0.6;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Card Payment Modal -->
+    <div id="testCardModal"
+        style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; overflow-y: auto;">
+        <div
+            style="max-width: 600px; margin: 50px auto; background: white; border-radius: 16px; box-shadow: 0 25px 50px rgba(0,0,0,0.2);">
+            <!-- Modal Header -->
+            <div
+                style="padding: 24px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div
+                        style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-credit-card" style="color: white; font-size: 20px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #1f2937;">PAYMENT DETAILS
+                        </h3>
+                        <p style="margin: 0; font-size: 0.85rem; color: #6b7280;">All card information is fully
+                            encrypted, secure and protected.</p>
+                    </div>
+                </div>
+                <button onclick="hideTestCardForm()"
+                    style="width: 36px; height: 36px; border: none; background: #f3f4f6; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-times" style="color: #6b7280;"></i>
+                </button>
+            </div>
+
+            <!-- Billing Details -->
+            <div style="padding: 24px; border-bottom: 1px solid #e5e7eb;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                    <div
+                        style="width: 40px; height: 40px; background: #e0f2fe; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-map-marker-alt" style="color: #0284c7;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; font-weight: 600;">BILLING DETAILS</h4>
+                        <p style="margin: 0; font-size: 0.8rem; color: #6b7280;">As per Bank records or credit card
+                            company</p>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label
+                            style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 500;">Country<span
+                                style="color: #ef4444;">*</span></label>
+                        <select id="billingCountry"
+                            style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                            <option value="IN">India</option>
+                            <option value="US">United States</option>
+                            <option value="UK">United Kingdom</option>
+                            <option value="AE">United Arab Emirates</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 500;">Address<span
+                                style="color: #ef4444;">*</span></label>
+                        <input type="text" id="billingAddress" placeholder="Street Address"
+                            style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 500;">City<span
+                                style="color: #ef4444;">*</span></label>
+                        <input type="text" id="billingCity" placeholder="City"
+                            style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 500;">Postal
+                            Code<span style="color: #ef4444;">*</span></label>
+                        <input type="text" id="billingPostal" placeholder="Postal Code"
+                            style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Details -->
+            <div style="padding: 24px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                    <div
+                        style="width: 40px; height: 40px; background: #fef3c7; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-lock" style="color: #d97706;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; font-weight: 600;">CARD DETAILS</h4>
+                        <p style="margin: 0; font-size: 0.8rem; color: #6b7280;">All card information is encrypted.</p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 500;">Card
+                        Number<span style="color: #ef4444;">*</span></label>
+                    <input type="text" id="cardNumber" placeholder="4111 1111 1111 1111" maxlength="19"
+                        style="width: 100%; padding: 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1.05rem; letter-spacing: 1px;">
+                    <p style="margin: 6px 0 0; font-size: 0.75rem; color: #9ca3af;"><i class="fas fa-info-circle"></i>
+                        Use test card: 4111 1111 1111 1111</p>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 500;">Cardholder
+                        Name<span style="color: #ef4444;">*</span></label>
+                    <input type="text" id="cardName" placeholder="Name as on card"
+                        style="width: 100%; padding: 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 16px; align-items: end;">
+                    <div>
+                        <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 500;">Exp.
+                            Month<span style="color: #ef4444;">*</span></label>
+                        <select id="expMonth"
+                            style="width: 100%; padding: 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                            <option value="">Select</option>
+                            <option value="01">01</option>
+                            <option value="02">02</option>
+                            <option value="03">03</option>
+                            <option value="04">04</option>
+                            <option value="05">05</option>
+                            <option value="06">06</option>
+                            <option value="07">07</option>
+                            <option value="08">08</option>
+                            <option value="09">09</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 500;">Exp.
+                            Year<span style="color: #ef4444;">*</span></label>
+                        <select id="expYear"
+                            style="width: 100%; padding: 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                            <option value="">Select</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                            <option value="2029">2029</option>
+                            <option value="2030">2030</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 500;">CVV<span
+                                style="color: #ef4444;">*</span></label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="password" id="cvv" placeholder="CVV" maxlength="4"
+                                style="width: 100px; padding: 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;">
+                            <div
+                                style="display: flex; align-items: center; gap: 6px; color: #6b7280; font-size: 0.8rem;">
+                                <i class="fas fa-credit-card" style="font-size: 20px;"></i>
+                                3 Digit number
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Terms and Book Button -->
+                <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
+                    <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 12px;">
+                        <i class="fas fa-exclamation-circle" style="color: #f59e0b;"></i>
+                        Please ensure passenger details match your passport or photo ID
+                    </p>
+                    <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 20px;">
+                        By clicking Book Now, I agree to the
+                        <a href="terms.html" style="color: #3b82f6;">Terms & Conditions</a> and
+                        <a href="privacy-policy.html" style="color: #3b82f6;">Privacy Policy</a>
+                    </p>
+                    <button id="bookNowBtn" onclick="processTestCardPayment()"
+                        style="width: 100%; padding: 16px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: transform 0.2s;">
+                        <i class="fas fa-lock"></i> Book Now
+                    </button>
+                    <p style="text-align: center; margin-top: 12px; font-size: 0.8rem; color: #9ca3af;">
+                        <i class="fas fa-shield-alt"></i> Your payment details are secured via 256 Bit encryption
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Confirmation Modal -->
+    <div id="confirmationModal"
+        style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1001; overflow-y: auto;">
+        <div
+            style="max-width: 500px; margin: 100px auto; background: white; border-radius: 20px; text-align: center; padding: 40px; box-shadow: 0 25px 50px rgba(0,0,0,0.25);">
+            <div
+                style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+                <i class="fas fa-check" style="color: white; font-size: 36px;"></i>
+            </div>
+            <h2 style="margin: 0 0 12px; font-size: 1.75rem; color: #1f2937;">Booking Confirmed!</h2>
+            <p style="color: #6b7280; margin-bottom: 24px;">Your flight booking has been successfully confirmed.</p>
+
+            <div
+                style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 2px solid #22c55e; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                <p style="font-size: 0.9rem; color: #166534; margin: 0 0 8px;">Your Booking Reference ID</p>
+                <p id="confirmRefId"
+                    style="font-size: 1.5rem; font-weight: 700; color: #15803d; margin: 0; letter-spacing: 2px;">
+                    C2C-XXXXX</p>
+            </div>
+
+            <div style="background: #fef3c7; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                <p style="margin: 0; color: #92400e; font-size: 0.95rem;">
+                    <i class="fas fa-phone-alt" style="margin-right: 8px;"></i>
+                    <strong>You will receive a call from us shortly</strong> to confirm your flight details.
+                </p>
+            </div>
+
+            <div
+                style="text-align: left; background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                <h4 style="margin: 0 0 12px; color: #374151;">Booking Details</h4>
+                <p style="margin: 0 0 8px; font-size: 0.9rem;"><strong>Flight:</strong> <span
+                        id="confirmFlightInfo">-</span></p>
+                <p style="margin: 0 0 8px; font-size: 0.9rem;"><strong>Route:</strong> <span id="confirmRoute">-</span>
+                </p>
+                <p style="margin: 0 0 8px; font-size: 0.9rem;"><strong>Date:</strong> <span id="confirmDate">-</span>
+                </p>
+                <p style="margin: 0; font-size: 0.9rem;"><strong>Total Paid:</strong> <span id="confirmAmount">-</span>
+                </p>
+            </div>
+
+            <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 20px;">
+                A confirmation email has been sent to <strong id="confirmEmail">-</strong>
+            </p>
+
+            <button onclick="window.location.href='index.html'"
+                style="padding: 14px 32px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer;">
+                <i class="fas fa-home" style="margin-right: 8px;"></i> Return to Home
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer" style="margin-top: 50px; background: #0f172a; color: white; padding: 40px 0 20px;">
+        <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px; text-align: center;">
+            <div class="footer-payment-icons"
+                style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; align-items: center;">
+                <span style="color: #9ca3af; font-size: 0.9rem;">Payment Partners:</span>
+                <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Razorpay"
+                    style="height: 24px; filter: brightness(0) invert(1) opacity(0.8);">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
+                    style="height: 24px; background: white; padding: 3px 6px; border-radius: 4px;">
+            </div>
+            <div class="footer-bottom">
+                <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">C2C Journeys is a customer-facing
+                    brand operated by Coast to Coast Journeys</p>
+                <p style="color: #94a3b8; font-size: 0.9rem;">&copy; 2026 C2C Journeys. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Razorpay Checkout Script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <!-- PayPal SDK -->
+    <script
+        src="https://www.paypal.com/sdk/js?client-id=AWENm1iOqiuWw9I06eBvkfbGrFHrfy_z17v9luYkqW9WKaNtckFT_XaiMskICFNridYk_FepZBI0QErA&currency=USD"></script>
+
+    <!-- Supabase and Auth Guard -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/auth-guard.js"></script>
+    <script src="../js/hotel-api.js"></script>
+    <script src="../js/main.js"></script>
+
+    <script>
+        // Get flight booking data from sessionStorage
+        const flightBooking = JSON.parse(sessionStorage.getItem('ctc_flight_booking') || '{}');
+
+        function formatDateDisplay(dateStr) {
+            if (!dateStr) return '--';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function formatPrice(amount, currency) {
+            currency = currency || 'INR';
+            if (typeof HotelUtils !== 'undefined' && HotelUtils.formatPrice) {
+                return HotelUtils.formatPrice(amount, currency);
+            }
+            const symbols = { 'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'AED': 'AED ' };
+            const sym = symbols[currency] || currency + ' ';
+            const locale = currency === 'INR' ? 'en-IN' : 'en-US';
+            return `${sym}${Math.round(amount).toLocaleString(locale)}`;
+        }
+
+        // Load booking details
+        async function loadBookingDetails() {
+            if (!flightBooking.airline || !flightBooking.passenger) {
+                alert('No flight booking data found! Redirecting...');
+                window.location.href = 'flight-booking.html';
+                return;
+            }
+
+            const passenger = flightBooking.passenger;
+            const currency = flightBooking.currency || 'INR';
+            const totalPrice = parseFloat(flightBooking.totalPrice || flightBooking.price || 0);
+
+            // Passenger review
+            document.getElementById('reviewName').textContent = `${passenger.firstName} ${passenger.lastName}`;
+            document.getElementById('reviewEmail').textContent = passenger.email || '-';
+            document.getElementById('reviewPhone').textContent = passenger.phone || '-';
+            if (passenger.specialRequests) {
+                document.getElementById('reviewSpecialReqBox').style.display = 'flex';
+                document.getElementById('reviewSpecialReq').textContent = passenger.specialRequests;
+            }
+
+            // Flight summary
+            document.getElementById('airlineName').textContent = flightBooking.airline || 'Airline';
+            document.getElementById('flightNumber').textContent = flightBooking.flightNumber || '';
+            document.getElementById('departTime').textContent = flightBooking.departTime || '--:--';
+            document.getElementById('arriveTime').textContent = flightBooking.arriveTime || '--:--';
+            document.getElementById('originCode').textContent = flightBooking.origin || '---';
+            document.getElementById('destCode').textContent = flightBooking.destination || '---';
+            document.getElementById('flightDuration').textContent = flightBooking.duration || '--';
+            document.getElementById('flightDate').textContent = formatDateDisplay(flightBooking.date);
+            document.getElementById('travelerCount').textContent = flightBooking.travelers || '1';
+
+            const stops = parseInt(flightBooking.stops || '0');
+            const stopsText = stops === 0 ? 'Non-stop' : stops + (stops === 1 ? ' stop' : ' stops');
+            const stopsEl = document.getElementById('flightStops');
+            stopsEl.textContent = stopsText;
+            stopsEl.style.color = stops === 0 ? '#10b981' : '#ef4444';
+
+            const fc = flightBooking.flightClass || 'economy';
+            document.getElementById('flightClass').textContent = fc.charAt(0).toUpperCase() + fc.slice(1);
+
+            // Total price
+            flightBooking.total = Math.round(totalPrice);
+            document.getElementById('totalAmount').innerHTML = formatPrice(totalPrice, currency);
+        }
+
+        function generateReferenceId() {
+            const timestamp = Date.now().toString(36).toUpperCase();
+            const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+            return `C2C-F${timestamp.slice(-4)}${random}`;
+        }
+
+        // ===== RAZORPAY =====
+        async function initiateRazorpayPayment() {
+            const payButtons = document.querySelectorAll('.pay-button');
+            payButtons.forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent.includes('Razorpay')) {
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                }
+            });
+
+            try {
+                const response = await fetch('/api/payment/create-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: flightBooking.total,
+                        currency: 'INR',
+                        booking_details: {
+                            flight: `${flightBooking.airline} ${flightBooking.flightNumber}`,
+                            route: `${flightBooking.origin} → ${flightBooking.destination}`,
+                            date: flightBooking.date
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                if (!data.success) throw new Error(data.error || 'Failed to create order');
+
+                const passenger = flightBooking.passenger || {};
+                const options = {
+                    key: data.key_id,
+                    amount: data.amount,
+                    currency: data.currency,
+                    order_id: data.order_id,
+                    name: 'C2C Journeys',
+                    description: `Flight: ${flightBooking.airline} ${flightBooking.origin}→${flightBooking.destination}`,
+                    handler: async function (response) {
+                        await verifyRazorpayPayment(response);
+                    },
+                    prefill: {
+                        name: `${passenger.firstName} ${passenger.lastName}`,
+                        email: passenger.email || '',
+                        contact: passenger.phone || ''
+                    },
+                    theme: { color: '#0066cc' },
+                    modal: {
+                        ondismiss: function () {
+                            payButtons.forEach(btn => {
+                                btn.disabled = false;
+                                if (btn.textContent.includes('Razorpay')) {
+                                    btn.innerHTML = '<i class="fas fa-credit-card"></i> Pay with Razorpay (UPI/Cards)';
+                                }
+                            });
+                        }
+                    }
+                };
+
+                const razorpay = new Razorpay(options);
+                razorpay.open();
+
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('Payment failed: ' + error.message);
+                payButtons.forEach(btn => {
+                    btn.disabled = false;
+                    if (btn.textContent.includes('Razorpay')) {
+                        btn.innerHTML = '<i class="fas fa-credit-card"></i> Pay with Razorpay (UPI/Cards)';
+                    }
+                });
+            }
+        }
+
+        async function verifyRazorpayPayment(razorpayResponse) {
+            try {
+                const response = await fetch('/api/payment/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        razorpay_order_id: razorpayResponse.razorpay_order_id,
+                        razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+                        razorpay_signature: razorpayResponse.razorpay_signature
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showConfirmation(razorpayResponse.razorpay_payment_id);
+                } else {
+                    alert('Payment verification failed! Please contact support.');
+                }
+            } catch (error) {
+                console.error('Verification error:', error);
+                alert('Payment verification failed: ' + error.message);
+            }
+        }
+
+        // ===== PAYPAL =====
+        async function initiatePayPalPayment() {
+            const payButtons = document.querySelectorAll('.pay-button');
+            payButtons.forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent.includes('PayPal')) {
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                }
+            });
+
+            try {
+                const response = await fetch('/api/payment/paypal/create-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: flightBooking.total,
+                        currency: 'INR',
+                        description: `Flight: ${flightBooking.airline} ${flightBooking.origin}→${flightBooking.destination}`
+                    })
+                });
+
+                const data = await response.json();
+                if (!data.success || !data.approval_url) throw new Error(data.error || 'Failed to create PayPal order');
+
+                sessionStorage.setItem('paypal_order_id', data.order_id);
+                sessionStorage.setItem('flight_payment_pending', 'true');
+                window.location.href = data.approval_url;
+
+            } catch (error) {
+                console.error('PayPal error:', error);
+                alert('Payment failed: ' + error.message);
+                payButtons.forEach(btn => {
+                    btn.disabled = false;
+                    if (btn.textContent.includes('PayPal')) {
+                        btn.innerHTML = '<i class="fab fa-paypal"></i> Pay with PayPal';
+                    }
+                });
+            }
+        }
+
+        // ===== TEST CARD =====
+        function showTestCardForm() {
+            document.getElementById('testCardModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            const passenger = flightBooking.passenger || {};
+            if (passenger.firstName) {
+                document.getElementById('cardName').value = `${passenger.firstName} ${passenger.lastName || ''}`.trim();
+            }
+        }
+
+        function hideTestCardForm() {
+            document.getElementById('testCardModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        async function processTestCardPayment() {
+            const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+            const cardName = document.getElementById('cardName').value;
+            const expMonth = document.getElementById('expMonth').value;
+            const expYear = document.getElementById('expYear').value;
+            const cvv = document.getElementById('cvv').value;
+
+            if (!cardNumber || cardNumber.length < 15) { alert('Please enter a valid card number'); return; }
+            if (!cardName) { alert('Please enter cardholder name'); return; }
+            if (!expMonth || !expYear) { alert('Please select card expiry date'); return; }
+            if (!cvv || cvv.length < 3) { alert('Please enter CVV'); return; }
+
+            const bookNowBtn = document.getElementById('bookNowBtn');
+            const originalText = bookNowBtn.innerHTML;
+            bookNowBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Payment...';
+            bookNowBtn.disabled = true;
+
+            try {
+                // Simulate payment processing
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                const referenceId = generateReferenceId();
+
+                // Send confirmation email
+                const passenger = flightBooking.passenger || {};
+                if (passenger.email) {
+                    try {
+                        await fetch('/api/hotels/booking/send-confirmation', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                partner_order_id: referenceId,
+                                email: passenger.email,
+                                hotel_name: `Flight: ${flightBooking.airline} ${flightBooking.flightNumber}`,
+                                checkin: flightBooking.date,
+                                checkout: flightBooking.date,
+                                guests: `${passenger.firstName} ${passenger.lastName}`,
+                                total_amount: flightBooking.total || 0,
+                                room_name: `${flightBooking.origin} → ${flightBooking.destination}`,
+                                currency: flightBooking.currency || 'INR'
+                            })
+                        });
+                    } catch (emailError) {
+                        console.error('Email send error:', emailError);
+                    }
+                }
+
+                hideTestCardForm();
+                showConfirmation(`TEST_${referenceId}`);
+
+            } catch (error) {
+                console.error('Test payment error:', error);
+                alert('Booking failed: ' + error.message);
+                bookNowBtn.innerHTML = originalText;
+                bookNowBtn.disabled = false;
+            }
+        }
+
+        function showConfirmation(paymentId) {
+            const referenceId = generateReferenceId();
+            const currency = flightBooking.currency || 'INR';
+
+            document.getElementById('confirmRefId').textContent = referenceId;
+            document.getElementById('confirmFlightInfo').textContent = `${flightBooking.airline} ${flightBooking.flightNumber}`;
+            document.getElementById('confirmRoute').textContent = `${flightBooking.origin} → ${flightBooking.destination}`;
+            document.getElementById('confirmDate').textContent = formatDateDisplay(flightBooking.date);
+            document.getElementById('confirmAmount').innerHTML = formatPrice(flightBooking.total, currency);
+            document.getElementById('confirmEmail').textContent = flightBooking.passenger?.email || '-';
+
+            document.getElementById('confirmationModal').style.display = 'block';
+
+            // Store payment success
+            sessionStorage.setItem('paymentSuccess', JSON.stringify({
+                payment_id: paymentId,
+                reference_id: referenceId,
+                amount: flightBooking.total,
+                flight: `${flightBooking.airline} ${flightBooking.flightNumber}`,
+                type: 'flight'
+            }));
+        }
+
+        // Format card number with spaces
+        document.addEventListener('DOMContentLoaded', function () {
+            const cardInput = document.getElementById('cardNumber');
+            if (cardInput) {
+                cardInput.addEventListener('input', function (e) {
+                    let value = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
+                    let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
+                    e.target.value = formatted;
+                });
+            }
+        });
+
+        // Load on page ready
+        document.addEventListener('DOMContentLoaded', loadBookingDetails);
+    </script>
+</body>
+
+</html>

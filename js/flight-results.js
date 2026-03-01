@@ -374,7 +374,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div class="flight-price-action">
                             <span class="price-label">per traveler</span>
                             <span class="price">${priceDisplay}</span>
-                            <button class="btn-select-flight" data-flight-id="${flight.id}" data-airline="${flight.airline.name}" data-flight-num="${flight.flight_number}" data-origin="${flight.origin}" data-dest="${flight.destination}" data-depart="${flight.depart_time}" data-arrive="${flight.arrival_time}" data-price="${priceDisplay}" data-date="${departDate}" data-stops="${flight.stops}" data-duration="${flight.duration}" data-class="${flight.class || 'economy'}">
+                            <button class="btn-select-flight" data-flight-id="${flight.id}" data-airline="${flight.airline.name}" data-flight-num="${flight.flight_number}" data-origin="${flight.origin}" data-dest="${flight.destination}" data-depart="${flight.depart_time}" data-arrive="${flight.arrival_time}" data-price="${priceDisplay}" data-raw-price="${flight.price}" data-currency="${flight.currency || 'INR'}" data-date="${departDate}" data-stops="${flight.stops}" data-duration="${flight.duration}" data-class="${flight.class || 'economy'}">
                                 Select <i class="fas fa-arrow-right" style="font-size: 0.7rem;"></i>
                             </button>
                         </div>
@@ -514,142 +514,30 @@ document.addEventListener('DOMContentLoaded', function () {
         SupabaseDB.initAuthUI();
     }
 
-    // ========== Select Flight - Booking Modal ==========
+    // ========== Select Flight - Redirect to Passenger Details ==========
     function selectFlight(btn) {
-        const airline = btn.dataset.airline || '';
-        const flightNum = btn.dataset.flightNum || '';
-        const orig = btn.dataset.origin || '';
-        const dest = btn.dataset.dest || '';
-        const depart = btn.dataset.depart || '';
-        const arrive = btn.dataset.arrive || '';
-        const price = btn.dataset.price || '';
-        const date = btn.dataset.date || '';
-        const stops = btn.dataset.stops || '0';
-        const duration = btn.dataset.duration || '';
-        const flightClass = btn.dataset.class || 'economy';
-        const classLabel = flightClass.charAt(0).toUpperCase() + flightClass.slice(1);
+        const flightData = {
+            flightId: btn.dataset.flightId || '',
+            airline: btn.dataset.airline || '',
+            flightNumber: btn.dataset.flightNum || '',
+            origin: btn.dataset.origin || '',
+            destination: btn.dataset.dest || '',
+            departTime: btn.dataset.depart || '',
+            arriveTime: btn.dataset.arrive || '',
+            price: parseFloat(btn.dataset.rawPrice) || 0,
+            currency: btn.dataset.currency || 'INR',
+            date: btn.dataset.date || '',
+            stops: btn.dataset.stops || '0',
+            duration: btn.dataset.duration || '',
+            flightClass: btn.dataset.class || 'economy',
+            travelers: adults || 1
+        };
 
-        const stopsText = stops === '0' ? 'Non-stop' : stops + (stops === '1' ? ' stop' : ' stops');
+        // Save flight selection to sessionStorage
+        sessionStorage.setItem('ctc_flight_booking', JSON.stringify(flightData));
 
-        // WhatsApp message
-        const waMsg = encodeURIComponent(
-            `Hi C2C Journeys! I want to book this flight:\n\n` +
-            `✈️ ${airline} ${flightNum}\n` +
-            `📍 ${orig} → ${dest}\n` +
-            `📅 ${formatDateDisplay(date)}\n` +
-            `⏰ ${depart} - ${arrive} (${duration})\n` +
-            `🎫 ${classLabel} | ${stopsText}\n` +
-            `💰 ${price} per person\n\n` +
-            `Please confirm availability and assist with booking.`
-        );
-
-        // Remove any existing modal
-        const existing = document.getElementById('flightBookingModal');
-        if (existing) existing.remove();
-
-        // Create booking modal
-        const modal = document.createElement('div');
-        modal.id = 'flightBookingModal';
-        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:100000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:20px;';
-        modal.innerHTML = `
-            <div style="background:white;border-radius:16px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:slideUp 0.3s ease;">
-                <div style="padding:24px 24px 0;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-                        <h3 style="font-size:1.1rem;color:#1e293b;margin:0;">
-                            <i class="fas fa-plane" style="color:#2563eb;margin-right:8px;"></i>Flight Selected
-                        </h3>
-                        <button id="closeFlightModal" style="background:none;border:none;font-size:1.2rem;color:#94a3b8;cursor:pointer;padding:4px;">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-
-                    <div style="background:linear-gradient(135deg,#eff6ff,#f0f7ff);border-radius:12px;padding:16px;margin-bottom:20px;border:1px solid #dbeafe;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                            <span style="font-weight:700;color:#1e293b;">${airline}</span>
-                            <span style="font-size:0.8rem;color:#64748b;">${flightNum}</span>
-                        </div>
-                        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-                            <div style="text-align:center;">
-                                <div style="font-size:1.3rem;font-weight:700;color:#0f172a;">${depart}</div>
-                                <div style="font-size:0.8rem;color:#64748b;">${orig}</div>
-                            </div>
-                            <div style="flex:1;text-align:center;">
-                                <div style="font-size:0.72rem;color:#64748b;">${duration}</div>
-                                <div style="height:2px;background:#cbd5e1;margin:6px 0;position:relative;">
-                                    <i class="fas fa-plane" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#2563eb;font-size:0.65rem;background:#eff6ff;padding:0 4px;"></i>
-                                </div>
-                                <div style="font-size:0.72rem;font-weight:600;color:${stops === '0' ? '#10b981' : '#ef4444'};">${stopsText}</div>
-                            </div>
-                            <div style="text-align:center;">
-                                <div style="font-size:1.3rem;font-weight:700;color:#0f172a;">${arrive}</div>
-                                <div style="font-size:0.8rem;color:#64748b;">${dest}</div>
-                            </div>
-                        </div>
-                        <div style="margin-top:12px;padding-top:12px;border-top:1px dashed #cbd5e1;display:flex;justify-content:space-between;font-size:0.82rem;">
-                            <span style="color:#64748b;"><i class="fas fa-calendar" style="margin-right:4px;"></i>${formatDateDisplay(date)}</span>
-                            <span style="color:#64748b;"><i class="fas fa-couch" style="margin-right:4px;"></i>${classLabel}</span>
-                        </div>
-                    </div>
-
-                    <div style="text-align:center;margin-bottom:20px;">
-                        <div style="font-size:0.78rem;color:#64748b;">Total Price (per traveler)</div>
-                        <div style="font-size:1.6rem;font-weight:800;color:#1e40af;">${price}</div>
-                    </div>
-                </div>
-
-                <div style="padding:0 24px 24px;">
-                    <p style="font-size:0.82rem;color:#475569;text-align:center;margin-bottom:16px;line-height:1.5;">
-                        <i class="fas fa-info-circle" style="color:#2563eb;margin-right:4px;"></i>
-                        To complete your booking, contact our travel experts:
-                    </p>
-
-                    <a href="https://wa.me/919934547108?text=${waMsg}" target="_blank"
-                        style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:#25d366;color:white;border-radius:10px;font-weight:600;font-size:0.95rem;text-decoration:none;margin-bottom:10px;transition:transform 0.2s,background 0.2s;"
-                        onmouseover="this.style.background='#1fb855';this.style.transform='translateY(-1px)'"
-                        onmouseout="this.style.background='#25d366';this.style.transform=''">
-                        <i class="fab fa-whatsapp" style="font-size:1.2rem;"></i>
-                        Book via WhatsApp
-                    </a>
-
-                    <div style="display:flex;gap:10px;">
-                        <a href="tel:+919934547108"
-                            style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#f1f5f9;color:#1e293b;border-radius:10px;font-weight:600;font-size:0.85rem;text-decoration:none;transition:background 0.2s;"
-                            onmouseover="this.style.background='#e2e8f0'"
-                            onmouseout="this.style.background='#f1f5f9'">
-                            <i class="fas fa-phone"></i> Call Us
-                        </a>
-                        <a href="mailto:sales@c2cjourneys.com?subject=Flight Booking: ${orig} to ${dest}&body=${decodeURIComponent(waMsg).replace(/\n/g, '%0A')}"
-                            style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#f1f5f9;color:#1e293b;border-radius:10px;font-weight:600;font-size:0.85rem;text-decoration:none;transition:background 0.2s;"
-                            onmouseover="this.style.background='#e2e8f0'"
-                            onmouseout="this.style.background='#f1f5f9'">
-                            <i class="fas fa-envelope"></i> Email
-                        </a>
-                    </div>
-
-                    <p style="text-align:center;font-size:0.72rem;color:#94a3b8;margin-top:14px;">
-                        <i class="fas fa-lock" style="margin-right:4px;"></i>
-                        Secure booking • Best price guarantee • 24/7 support
-                    </p>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-
-        // CSS animation
-        const style = document.createElement('style');
-        style.textContent = '@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}';
-        if (!document.querySelector('style[data-flight-modal]')) {
-            style.setAttribute('data-flight-modal', '');
-            document.head.appendChild(style);
-        }
-
-        // Close handlers
-        document.getElementById('closeFlightModal').addEventListener('click', () => modal.remove());
-        modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
-        document.addEventListener('keydown', function escHandler(e) {
-            if (e.key === 'Escape') { modal.remove(); document.removeEventListener('keydown', escHandler); }
-        });
+        // Redirect to passenger details page
+        window.location.href = 'flight-passenger-details.html';
     }
 
     // Start search
