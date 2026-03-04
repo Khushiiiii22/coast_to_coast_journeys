@@ -14,7 +14,29 @@ This document outlines the resolutions implemented for all 16 items identified i
 ## 2. Content API Maintenance (Fix J)
 **Feedback:** `/info/dump/` was scheduled monthly instead of weekly.
 **Resolutions:**
-* **Weekly Scheduling:** Implemented the `sync_etg_static_data.py` script to run the Full Dump (`/hotel/dump/`) weekly and the Incremental Dump (`/hotel/dump/incremental/`) daily to prevent database staleness.
+* **Weekly Scheduling:** Implemented the `sync_etg_static_data.py` script to run the **Full Dump (`/hotel/dump/`) weekly** (every Sunday) and the **Incremental Dump (`/hotel/dump/incremental/`) daily** (Monday to Saturday). This addresses the auditor's request to prioritize database consistency over monthly refreshes.
+
+---
+
+## Hotel Static Sync Final Resolution
+
+### Issue: Hotel Static Dump Frequency
+**Auditor Comment:** *"It would be better to use this endpoint (/info/dump/) for a weekly update, so if ... /info/incremental_dump/ was missed you can update database."*
+
+**Resolution:**
+We have officially switched the schedule for the Content API Full Dump from monthly to **Weekly**. 
+- **Full Dump (`/hotel/dump/`):** Triggered automatically every **Sunday at 02:00 AM**.
+- **Incremental Dump (`/hotel/dump/incremental/`):** Triggered automatically **Daily (Mon-Sat) at 02:00 AM**.
+
+**Implementation:**
+The script `scripts/sync_etg_static_data.py` has been deployed and configured in the production crontab to ensure the local database is always within 24 hours of ETG’s source of truth.
+
+**Output Proof (Log from `sync_etg_static_data.py`):**
+```bash
+$ python3 scripts/sync_etg_static_data.py --type full
+2026-03-05 00:07:40 - etg_sync - INFO - Starting WEEKLY FULL /hotel/dump/ sync...
+🔄 ETG API Request: POST /hotel/dump/
+```
 
 ## 3. Hotel Policies (Fix E)
 **Feedback:** `metapolicy_extra_info` was not displayed, and `metapolicy_struct` was missing parameters like pet fees.
