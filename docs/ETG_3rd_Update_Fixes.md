@@ -38,3 +38,32 @@ This document outlines the resolutions implemented for all 16 items identified i
   * *Non-final (5xx, unknown, timeout):* Retries or drops into "pending" statuses while actively polling.
   * *Final (charge, block, soldout, booking_form_expired):* Terminate polling immediately, fail the booking, and show generalized, user-friendly UI errors.
 * **180-Second Timeout:** Polling loops (`finish_booking` -> `poll_booking_status`) are strictly capped at 72 iterations of 2.5 seconds. If the API never resolves, the booking silently falls back to pending.
+
+---
+
+## Detailed Audit Response (March 5th Updates)
+
+### Issue 1: RPM limit for `/hotel/info`
+**Auditor Comment:** *"I see that after /serp/region/ your system send multiple /hotel/info requests... you'll very quickly reach your RPM limit."*
+
+**Resolution:**
+We have fully disabled the behavior of calling `/hotel/info` for individual search results. The system now uses **Local Static Data Caching**.
+- **Source:** Weekly static dumps from `/hotel/dump/`.
+- **Logic:** The backend matches hotel IDs from the search results against the local database to retrieve names, addresses, and images.
+- **Evidence:** Network logs show only a single `/serp/region` or `/serp/geo` request per search. No subsequent `/hotel/info` calls are fired during the listing phase.
+
+### Issue 2: Missing Booking Flow Requests
+**Auditor Comment:** *"Only the initial search request... is being sent. After selecting a hotel, subsequent API calls (/search/hp/, /prebook, etc.) are not being triggered."*
+
+**Resolution:**
+The complete booking sequence is now verified as active. Each step in the user journey triggers the corresponding ETG API:
+
+| Step | User Action | Backend Endpoint | ETG API Triggered |
+| :--- | :--- | :--- | :--- |
+| **1** | Click Hotel | `/details-enriched` | `/search/hp/` |
+| **2** | Click Reserve | `/prebook` | `/hotel/prebook/` |
+| **3** | Submit Details | `/book` | `/hotel/order/booking/form/` |
+| **4** | Finalize | `/book/finish` | `/hotel/order/booking/finish/` |
+| **5** | Polling | `/book/poll` | `/hotel/order/booking/finish/status/` |
+
+**Verification:** All endpoints have been tested on localhost:5003. Selecting a hotel now correctly loads enriched data and allows proceeding to the checkout and final booking stages.
