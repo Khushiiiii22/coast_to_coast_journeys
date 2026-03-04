@@ -546,10 +546,25 @@ class ETGApiService:
         return f"CTC-{datetime.now().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:8].upper()}"
     
     @staticmethod
-    def format_guests_for_search(adults: int, children_ages: List[int] = None) -> List[Dict]:
+    def format_guests_for_search(adults: int, children_ages: List[int] = None, rooms: list = None) -> List[Dict]:
         """
-        Format guest configuration for search API
+        Format guest configuration for search API.
+        Supports multi-room: if 'rooms' is a list of dicts like
+        [{"adults": 2, "childAges": [5,10]}, {"adults": 1}],
+        each becomes a separate guest entry.
         """
+        if rooms and isinstance(rooms, list) and len(rooms) > 0 and isinstance(rooms[0], dict):
+            # Multi-room format: each room -> one guests entry
+            guests = []
+            for room in rooms:
+                entry = {"adults": room.get("adults", 1)}
+                child_ages = room.get("childAges", room.get("children_ages", []))
+                if child_ages and isinstance(child_ages, list):
+                    entry["children"] = [int(a) for a in child_ages]
+                guests.append(entry)
+            return guests
+
+        # Single-room fallback
         if children_ages is None:
             children_ages = []
         

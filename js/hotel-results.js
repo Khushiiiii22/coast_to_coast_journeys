@@ -22,19 +22,36 @@ async function initHotelResults() {
     // Check URL params first and save to session
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('destination')) {
+        const parsedRooms = parseRoomsParam(urlParams.get('rooms'));
+
+        // Extract children ages and total adults from rooms array
+        let totalAdults = parseInt(urlParams.get('adults')) || 2;
+        let allChildrenAges = [];
+
+        if (Array.isArray(parsedRooms)) {
+            totalAdults = parsedRooms.reduce((sum, r) => sum + (r.adults || 0), 0);
+            // Collect all children ages from every room
+            parsedRooms.forEach(room => {
+                if (room.childAges && Array.isArray(room.childAges)) {
+                    allChildrenAges = allChildrenAges.concat(room.childAges);
+                } else if (room.children && typeof room.children === 'number' && room.children > 0) {
+                    // If ages not specified, default to age 10 per child
+                    for (let i = 0; i < room.children; i++) {
+                        allChildrenAges.push(10);
+                    }
+                }
+            });
+        }
+
         const params = {
             destination: urlParams.get('destination'),
             checkin: urlParams.get('checkin'),
             checkout: urlParams.get('checkout'),
-            rooms: parseRoomsParam(urlParams.get('rooms')),
-            adults: parseInt(urlParams.get('adults')) || 2,
-            children_ages: [],
+            rooms: parsedRooms,
+            adults: totalAdults,
+            children_ages: allChildrenAges,
             residency: urlParams.get('residency') || 'in'
         };
-
-        if (Array.isArray(params.rooms)) {
-            params.adults = params.rooms.reduce((sum, r) => sum + (r.adults || 0), 0);
-        }
         SearchSession.saveSearchParams(params);
         SearchSession.remove(SearchSession.KEYS.SEARCH_RESULTS);
     }

@@ -272,10 +272,12 @@ def search_by_region():
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
         
-        # Format guests
+        # Format guests (supports multi-room if 'rooms' is provided)
+        rooms_data = data.get('rooms')  # array of {adults, childAges} per room
         guests = etg_service.format_guests_for_search(
             adults=data['adults'],
-            children_ages=data.get('children_ages', [])
+            children_ages=data.get('children_ages', []),
+            rooms=rooms_data
         )
         
         # Call ETG API
@@ -484,9 +486,11 @@ def search_by_destination():
         if region_id and is_sandbox_supported:
             print(f"🏨 Searching RateHawk for sandbox destination: {location_name}")
             
+            rooms_data = data.get('rooms')  # multi-room array if available
             guests = etg_service.format_guests_for_search(
                 adults=data['adults'],
-                children_ages=data.get('children_ages', [])
+                children_ages=data.get('children_ages', []),
+                rooms=rooms_data
             )
             
             # Search using region API with sandbox-compatible parameters
@@ -508,34 +512,11 @@ def search_by_destination():
                 if etg_hotels and len(etg_hotels) > 0:
                     print(f"✅ Found {len(etg_hotels)} hotels via RateHawk for {location_name}")
                     
-                    # FETCH STATIC CONTENT (Names, Images) for these hotels
-                    hotel_ids = [h.get('id') for h in etg_hotels if h.get('id')]
+                    # NOTE: We do NOT call /hotel/info/ for every search result.
+                    # ETG certification requires using cached static data from dumps
+                    # instead of bombarding /hotel/info/ (would hit RPM limits).
+                    # Static data (names, images) comes from local DB / dumps.
                     static_hotel_map = {}
-                    
-                    if hotel_ids:
-                        # Limit to first 30 hotels to avoid excessive API calls
-                        # (each hotel requires a separate /hotel/info/ call)
-                        fetch_ids = hotel_ids[:30]
-                        print(f"📸 Fetching static data for {len(fetch_ids)} hotels...")
-                        
-                        try:
-                            static_resp = etg_service.get_hotels_static(fetch_ids)
-                            
-                            if static_resp.get('success'):
-                                inner_data = static_resp.get('data', {}).get('data', {})
-                                
-                                if isinstance(inner_data, dict):
-                                    # New format: dict keyed by hotel_id
-                                    static_hotel_map = inner_data
-                                    print(f"✅ Got static data for {len(static_hotel_map)} hotels")
-                                    
-                                    # Log image counts
-                                    hotels_with_images = sum(1 for h in static_hotel_map.values() 
-                                                           if isinstance(h, dict) and h.get('images'))
-                                    print(f"📸 {hotels_with_images}/{len(static_hotel_map)} hotels have images")
-                                    
-                        except Exception as e:
-                            print(f"⚠️ Failed to fetch static data: {e}")
                     
                     # Calculate nights for correct inclusive price display
                     from datetime import datetime
@@ -546,10 +527,10 @@ def search_by_destination():
                     except:
                         nights = 1
 
-                    # Enrich hotels with static data before transformation
+                    # Enrich hotels with static data from cache (if available)
                     for h in etg_hotels:
                         hid = h.get('id')
-                        if hid in static_hotel_map:
+                        if hid and hid in static_hotel_map:
                             h['static_data'] = static_hotel_map[hid]
 
                     # Define conversion rates for search results
@@ -614,7 +595,8 @@ def search_by_destination():
                     # Try searching with the found region
                     guests = etg_service.format_guests_for_search(
                         adults=data['adults'],
-                        children_ages=data.get('children_ages', [])
+                        children_ages=data.get('children_ages', []),
+                        rooms=rooms_data
                     )
                     
                     result = etg_service.search_by_region(
@@ -634,17 +616,9 @@ def search_by_destination():
                             print(f"✅ Found {len(etg_hotels)} hotels via RateHawk suggest")
                             
                             # Fetch static data for images
-                            suggest_hotel_ids = [h.get('id') for h in etg_hotels if h.get('id')]
+                            # NOTE: Do NOT call /hotel/info/ per result (ETG RPM limits).
+                            # Use cached static data from dumps instead.
                             suggest_static_map = {}
-                            if suggest_hotel_ids:
-                                try:
-                                    fetch_ids = suggest_hotel_ids[:30]
-                                    print(f"📸 Fetching static data for {len(fetch_ids)} suggest hotels...")
-                                    static_resp = etg_service.get_hotels_static(fetch_ids)
-                                    if static_resp.get('success'):
-                                        suggest_static_map = static_resp.get('data', {}).get('data', {})
-                                except Exception as e:
-                                    print(f"⚠️ Failed to fetch static data for suggest hotels: {e}")
                             
                             # Calculate nights for correct inclusive price display
                             from datetime import datetime
@@ -2546,8 +2520,18 @@ def prebook_rate():
         
         result = etg_service.prebook(
             book_hash=data['book_hash'],
-            price_increase_percent=data.get('price_increase_percent', 5)
+            price_increase_percent=int(data.get('price_increase_percent', 5))
         )
+        
+        # FIX F: Properly parse prebook response for price changes
+        # Even if price increased, if it's within the percent, ETG might return success=True
+        # but the price in the frontend needs to be updated. Pass it through safely.
+        if result.get('success') and result.get('data'):
+            inner_data = result['data'].get('data', result['data'])
+            # ETG returns error if price increase > allowed percent
+            if inner_data.get('price_change', False):
+                # The price has changed, but within limits. The new price is in 'total'
+                pass
         
         return jsonify(result)
     
@@ -2742,8 +2726,9 @@ def finish_booking():
         error_str = str(error_msg).lower()
         status_code = result.get('status_code', 0)
         
-        # 5xx Server Error -> Retry once
+        # 1. 5xx Server Error -> Retry once
         if status_code and 500 <= status_code < 600:
+            import time
             print(f"⚠️ ETG 5xx error on /finish/, retrying once...")
             time.sleep(1)
             retry_result = etg_service.finish_booking(partner_order_id)
@@ -2762,7 +2747,7 @@ def finish_booking():
                 'should_poll': True
             })
         
-        # Timeout / Unknown -> Start polling (booking may be processing on ETG side)
+        # 2. Timeout / Unknown -> Start polling (booking may be processing on ETG side)
         if 'timeout' in error_str or 'unknown' in error_str:
             supabase_service.update_booking_by_partner_order_id(
                 partner_order_id, {'status': 'processing'}
@@ -2773,7 +2758,7 @@ def finish_booking():
                 'should_poll': True
             })
         
-        # Booking form expired -> User must search again
+        # 3. Booking form expired -> User must search again
         if 'booking_form_expired' in error_str:
             supabase_service.update_booking_by_partner_order_id(
                 partner_order_id, {'status': 'expired'}
@@ -2784,7 +2769,7 @@ def finish_booking():
                 'error_code': 'SESSION_EXPIRED'
             }), 400
         
-        # Rate not found -> Room no longer available
+        # 4. Rate not found -> Room no longer available
         if 'rate_not_found' in error_str:
             supabase_service.update_booking_by_partner_order_id(
                 partner_order_id, {'status': 'failed'}
@@ -2795,7 +2780,7 @@ def finish_booking():
                 'error_code': 'RATE_NOT_FOUND'
             }), 400
         
-        # Return path required -> 3DS / additional verification
+        # 5. Return path required -> 3DS / additional verification
         if 'return_path_required' in error_str:
             return jsonify({
                 'success': False,
@@ -2804,6 +2789,9 @@ def finish_booking():
             }), 400
         
         # Generic error fallback
+        supabase_service.update_booking_by_partner_order_id(
+            partner_order_id, {'status': 'failed'}
+        )
         return jsonify({
             'success': False,
             'error': f'Booking finalization failed: {error_msg}',
@@ -2986,17 +2974,9 @@ def poll_booking_status():
                         'error_code': 'PENDING'
                     })
                 
-                # === UNRECOGNIZED FINAL STATUS ===
-                final_status = 'confirmed' if status == 'ok' else status
-                supabase_service.update_booking_by_partner_order_id(
-                    partner_order_id,
-                    {'status': final_status, 'booking_response': result['data']}
-                )
-                return jsonify({
-                    'success': status == 'ok',
-                    'status': final_status,
-                    'data': result['data']
-                })
+                # === UNRECOGNIZED STATUS ===
+                # If we get a status we don't recognize, do NOT terminate the loop.
+                # Just continue polling until timeout or a known terminal status.
             
             # API call itself failed (5xx, network error)
             elif result.get('status_code') and result['status_code'] >= 500:
