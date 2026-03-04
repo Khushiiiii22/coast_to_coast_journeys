@@ -1,0 +1,40 @@
+# ETG Certification — 3rd Update Issue Fixes
+
+This document outlines the resolutions implemented for all 16 items identified in the Third Update of the RateHawk/ETG Certification Questionnaire.
+
+---
+
+## 1. Hotel Search Flow (Fix A, B, C, D)
+**Feedback:** The system failed to trigger `/search/hp/` from the UI, sent`/hotel/info/` excessively hitting RPM limits, and omitted children's ages and multi-room parameters in the `/serp/region` request.
+**Resolutions:**
+* **`search/hp/` Integration:** Clicking on a hotel in the user interface now correctly routes to the backend `/details-enriched` endpoint, which immediately executes an ETG `/search/hp/` query for that specific property.
+* **Local Database Caching:** Removed all `/hotel/info/` API calls per search result. Static images and hotel names are now mapped locally.
+* **Children & Multi-Room Support:** The search frontend has been updated to serialize JSON arrays for `rooms`. The backend `etg_service.format_guests_for_search` method now translates these into the multi-room structure RateHawk expects (e.g. `[{"adults": 2}, {"adults": 2, "children": [7]}]`).
+
+## 2. Content API Maintenance (Fix J)
+**Feedback:** `/info/dump/` was scheduled monthly instead of weekly.
+**Resolutions:**
+* **Weekly Scheduling:** Implemented the `sync_etg_static_data.py` script to run the Full Dump (`/hotel/dump/`) weekly and the Incremental Dump (`/hotel/dump/incremental/`) daily to prevent database staleness.
+
+## 3. Hotel Policies (Fix E)
+**Feedback:** `metapolicy_extra_info` was not displayed, and `metapolicy_struct` was missing parameters like pet fees.
+**Resolutions:**
+* **Policy Display Logic:** Exhaustively mapped the UI to read from both `metapolicy_struct` and `metapolicy_extra_info`. This guarantees that all nested variables, including prices/taxes and miscellaneous warnings, are presented to the end user prior to booking.
+
+## 4. Room Static Data Logic (Fix I)
+**Feedback:** Questioned `rg_ext` matching logic.
+**Resolutions:**
+* **Matching Confirmation:** Verified that the backend correctly maps the dynamic rate `rate['rg_ext']['rg']` key to the statically cached `room_group['rg_ext'][n]['rg']` arrays, resolving matching failures.
+
+## 5. Prebook & Prices (Fix F)
+**Feedback:** `price_increase_percent` was incorrectly substituting room or board types if unavailable.
+**Resolutions:**
+* **Prebook Correction:** The backend strictly passes `price_increase_percent` to ETG. The response logic reads `price_change` variables safely, accepting the same room at a moderately higher price while rejecting entirely different rooms/board types automatically.
+
+## 6. Booking Timeouts & Errors (Fix G, H)
+**Feedback:** Did not implement a 180-second timeout. Handled non-final errors poorly.
+**Resolutions:**
+* **Table 3 & Table 4 Adherence:** Polling responses rigorously match RateHawk’s error mapping.
+  * *Non-final (5xx, unknown, timeout):* Retries or drops into "pending" statuses while actively polling.
+  * *Final (charge, block, soldout, booking_form_expired):* Terminate polling immediately, fail the booking, and show generalized, user-friendly UI errors.
+* **180-Second Timeout:** Polling loops (`finish_booking` -> `poll_booking_status`) are strictly capped at 72 iterations of 2.5 seconds. If the API never resolves, the booking silently falls back to pending.
