@@ -638,6 +638,7 @@ def search_by_destination():
                             transformed_hotels = transform_etg_hotels(
                                 hotels_data=etg_hotels, 
                                 target_currency=target_currency,
+                                conversion_rates=CONVERSION_RATES,
                                 nights=nights
                             )
                             return jsonify({
@@ -856,9 +857,9 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
         
         # 3. Use fallback only as last resort
         if not all_images:
-            all_images = [fallback_hotel_images[idx % len(fallback_hotel_images)]]
+            all_images = ['https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600']
         
-        image_url = all_images[0] if all_images else fallback_hotel_images[0]
+        image_url = all_images[0]
         
         # Log image info for debugging
         if all_images and not all_images[0].startswith('https://images.unsplash.com'):
