@@ -1586,12 +1586,38 @@ def format_hotel_policies(policies):
                 if allowed is not None:
                     formatted['pets'].append({'icon': 'fa-paw', 'label': 'Pets',
                                               'value': 'Pets Allowed' if allowed else 'No Pets Allowed'})
-                if pets.get('fee'):
-                    formatted['pets'].append({'icon': 'fa-money-bill', 'label': 'Pet Fee', 'value': str(pets['fee'])})
+                
+                parts = []
+                if pets.get('fee') or pets.get('price'):
+                    val = pets.get('fee') or pets.get('price')
+                    cur = pets.get('currency', '')
+                    item = f"{val} {cur}".strip()
+                    parts.append(f"Fee: {item}")
                 if pets.get('type'):
-                    formatted['pets'].append({'icon': 'fa-paw', 'label': 'Pet Types', 'value': str(pets['type'])})
+                    parts.append(f"Types: {pets['type']}")
+                
+                if parts:
+                    formatted['pets'].append({'icon': 'fa-money-bill', 'label': 'Pet Details', 'value': ' · '.join(parts)})
+            elif isinstance(pets, list):
+                for p in pets:
+                    if isinstance(p, dict):
+                        parts = []
+                        if p.get('pets_allowed') is not None or p.get('allowed') is not None:
+                            allowed = p.get('pets_allowed', p.get('allowed'))
+                            parts.append('Allowed' if allowed else 'Not Allowed')
+                        if p.get('fee') or p.get('price'):
+                            val = p.get('fee') or p.get('price')
+                            cur = p.get('currency', '')
+                            parts.append(f"Fee: {val} {cur}".strip())
+                        if p.get('type'):
+                            parts.append(f"Type: {p['type']}")
+                        
+                        val_str = ' · '.join(parts) if parts else str(p)
+                        formatted['pets'].append({'icon': 'fa-paw', 'label': 'Pet Policy', 'value': val_str})
+                    else:
+                        formatted['pets'].append({'icon': 'fa-paw', 'label': 'Pets', 'value': str(p)})
             else:
-                _parse_policy_list(pets, 'fa-paw', 'Pets Policy', 'pets')
+                formatted['pets'].append({'icon': 'fa-paw', 'label': 'Pets', 'value': str(pets)})
 
         # 5. Internet / WiFi
         internet = metapolicy.get('internet')
@@ -1802,47 +1828,51 @@ def format_hotel_policies(policies):
     }
 
     if extra_info:
-        # extra_info can be a dict or a list of dicts
-        items_to_process = []
-        if isinstance(extra_info, dict):
-            items_to_process = extra_info.items()
-        elif isinstance(extra_info, list):
-            for entry in extra_info:
-                if isinstance(entry, dict):
-                    for k, v in entry.items():
-                        items_to_process.append((k, v))
-                else:
-                    items_to_process.append(('Extra Info', str(entry)))
-
-        for category, info in items_to_process:
-            if not info:
-                continue
-            cat_lower = str(category).lower()
-            target_category = 'other'
-            icon = 'fa-info-circle'
-            for keyword, (tcat, tico) in EXTRA_INFO_MAP.items():
-                if keyword in cat_lower:
-                    target_category = tcat
-                    icon = tico
-                    break
-
-            label = str(category).replace('_', ' ').title()
-            if isinstance(info, list):
-                for item in info:
-                    if isinstance(item, dict):
-                        text = item.get('text') or item.get('description') or item.get('value') or str(item)
+        # ETG might send this as a raw string instead of a dict mapping categories
+        if isinstance(extra_info, str):
+            formatted['special'].append({'icon': 'fa-info-circle', 'label': 'Important Information', 'value': extra_info})
+        else:
+            # extra_info can be a dict or a list of dicts
+            items_to_process = []
+            if isinstance(extra_info, dict):
+                items_to_process = extra_info.items()
+            elif isinstance(extra_info, list):
+                for entry in extra_info:
+                    if isinstance(entry, dict):
+                        for k, v in entry.items():
+                            items_to_process.append((k, v))
                     else:
-                        text = str(item)
-                    formatted[target_category].append({'icon': icon, 'label': label, 'value': text})
-            elif isinstance(info, dict):
-                for sub_key, sub_val in info.items():
-                    formatted[target_category].append({
-                        'icon': icon,
-                        'label': f'{label} – {str(sub_key).replace("_"," ").title()}',
-                        'value': str(sub_val)
-                    })
-            else:
-                formatted[target_category].append({'icon': icon, 'label': label, 'value': str(info)})
+                        items_to_process.append(('Extra Info', str(entry)))
+    
+            for category, info in items_to_process:
+                if not info:
+                    continue
+                cat_lower = str(category).lower()
+                target_category = 'other'
+                icon = 'fa-info-circle'
+                for keyword, (tcat, tico) in EXTRA_INFO_MAP.items():
+                    if keyword in cat_lower:
+                        target_category = tcat
+                        icon = tico
+                        break
+    
+                label = str(category).replace('_', ' ').title()
+                if isinstance(info, list):
+                    for item in info:
+                        if isinstance(item, dict):
+                            text = item.get('text') or item.get('description') or item.get('value') or str(item)
+                        else:
+                            text = str(item)
+                        formatted[target_category].append({'icon': icon, 'label': label, 'value': text})
+                elif isinstance(info, dict):
+                    for sub_key, sub_val in info.items():
+                        formatted[target_category].append({
+                            'icon': icon,
+                            'label': f'{label} – {str(sub_key).replace("_"," ").title()}',
+                            'value': str(sub_val)
+                        })
+                else:
+                    formatted[target_category].append({'icon': icon, 'label': label, 'value': str(info)})
 
     return formatted
 
