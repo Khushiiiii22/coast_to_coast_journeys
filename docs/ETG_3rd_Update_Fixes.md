@@ -71,7 +71,34 @@ $ python3 scripts/verify_etg_policies.py
 ## 4. Room Static Data Logic (Fix I)
 **Feedback:** Questioned `rg_ext` matching logic.
 **Resolutions:**
-* **Matching Confirmation:** Verified that the backend correctly maps the dynamic rate `rate['rg_ext']['rg']` key to the statically cached `room_group['rg_ext'][n]['rg']` arrays, resolving matching failures.
+* **Matching Confirmation:** Verified that the backend correctly maps the dynamic rate `rate['rg_ext']['rg']` key to the statically cached `room_group['rg_ext'][n]['rg']` values.
+* **Per-Hotel Isolation:** The matching logic is scoped strictly to the specific hotel ID requested. This prevents any possibility of room groups from one hotel being accidentally matched with another.
+* **Fallback Grouping:** If a dynamic rate does not exist in the static data, the system does not fail; instead, it creates a "dynamic room group" based on the `rg_ext.rg` value, ensuring the auditor can see all rates even if static data is incomplete.
+
+---
+
+## Detailed Audit Response: Room Static Data
+
+### Issue: `rg_ext` Matching & Uniqueness
+**Auditor Comment:** *"Am I correct in understanding that you index all room groups (rg_ext) uniquely for each hotel? ... If you can't match... you should group these rates into a new block."*
+
+**Resolution:**
+The logic has been implemented exactly as requested:
+1. **Per-Hotel Build:** The `room_groups` lookup dictionary is built fresh for every hotel details request. It only contains the `rg_ext` values associated with that specific hotel ID. 
+2. **rg_ext Join:** Rates are enriched using the `rg` key from the rate's `rg_ext` object to pull images and amenities.
+3. **Automatic Fallback:** If no static match is found, the system automatically falls back to grouping by the dynamic `rg` value, preserving the "room blocks" in the UI.
+
+**Technical Verification:**
+```bash
+$ python3 scripts/verify_room_matching.py
+--- TEST CASE A: Matching rg_ext ---
+Match status: True
+Matched Room Name: Superior Double Room
+
+--- TEST CASE B: Fallback (No Match) ---
+Match status: False  <-- Fallback to grouping by rg_ext.rg 99999
+Fallback Room Name: Fallback Room Name
+```
 
 ## 5. Prebook & Prices (Fix F)
 **Feedback:** `price_increase_percent` was incorrectly substituting room or board types if unavailable.
