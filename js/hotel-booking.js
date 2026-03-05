@@ -240,6 +240,27 @@ async function processRealBooking(guests, email, phone, specialRequests) {
             return { success: false, error: 'Room is no longer available at this price' };
         }
 
+        // FIX F: Handle price_changed during prebook
+        if (prebookResult.price_changed) {
+            hideLoadingOverlay();
+
+            // Calculate new total in INR (assuming 86.5 conversion if not provided)
+            const newTotalUSD = prebookResult.new_total || 0;
+            const conversionRate = 86.5;
+            const newTotalINR = Math.round(newTotalUSD * (1.15) * conversionRate); // Total with commission
+
+            // Update the summary UI
+            document.getElementById('totalAmountValue').textContent = `₹${newTotalINR.toLocaleString('en-IN')}`;
+            document.getElementById('btnTotalPrice').textContent = newTotalINR.toLocaleString('en-IN');
+
+            showNotification(`The price has changed to ₹${newTotalINR.toLocaleString('en-IN')}. Please click "Confirm Booking" again to proceed.`, 'warning');
+
+            // Update global state so next click uses new data
+            bookingData.total_amount = newTotalINR;
+
+            return { success: false, error: 'Price updated. Please confirm again.' };
+        }
+
         // Step 2: Create booking
         updateLoadingMessage('Creating your reservation...');
         const bookingParams = {

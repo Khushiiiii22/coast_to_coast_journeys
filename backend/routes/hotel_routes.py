@@ -2559,10 +2559,23 @@ def prebook_rate():
         # but the price in the frontend needs to be updated. Pass it through safely.
         if result.get('success') and result.get('data'):
             inner_data = result['data'].get('data', result['data'])
-            # ETG returns error if price increase > allowed percent
-            if inner_data.get('price_change', False):
-                # The price has changed, but within limits. The new price is in 'total'
-                pass
+            
+            # Check for price change flag from ETG
+            price_changed = inner_data.get('price_changed', False)
+            
+            if price_changed:
+                print(f"⚠️ Price changed during prebook for {data['book_hash']}")
+                # Extract new price if available
+                new_total = 0
+                payment_options = inner_data.get('payment_options', {})
+                payment_types = payment_options.get('payment_types', [])
+                if payment_types:
+                    new_total = float(payment_types[0].get('amount', 0))
+                
+                # Add our flags for the frontend
+                result['price_changed'] = True
+                result['new_total'] = new_total
+                result['new_currency'] = payment_options.get('currency_code', 'USD')
         
         return jsonify(result)
     
