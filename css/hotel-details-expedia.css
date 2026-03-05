@@ -2104,27 +2104,35 @@
 
 /* Paid on the spot section */
 .paid-on-spot {
-    background: #f9fafb;
+    background: #ffffff;
     border-radius: 12px;
-    padding: 24px;
-    margin-top: 24px;
+    padding: 32px;
+    margin-top: 32px;
+    margin-bottom: 32px;
     border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .paid-on-spot h3 {
     font-size: 1.25rem;
     font-weight: 700;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     color: #111827;
 }
 
 .paid-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 32px;
+}
+
+@media (max-width: 1024px) {
+    .paid-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 768px) {
@@ -2136,7 +2144,10 @@
 .paid-item {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
+    padding: 16px;
+    background: #f9fafb;
+    border-radius: 10px;
 }
 
 .paid-item-header {
@@ -2145,36 +2156,41 @@
     gap: 10px;
     font-weight: 700;
     color: #111827;
-    font-size: 1rem;
+    font-size: 1.05rem;
 }
 
 .paid-item-header i {
-    color: #374151;
+    color: #1e40af;
     width: 20px;
     text-align: center;
+    font-size: 1.1rem;
 }
 
 .paid-item-details {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding-left: 30px;
+    gap: 8px;
+    padding-left: 0;
 }
 
 .paid-detail-row {
     display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.95rem;
     color: #4b5563;
 }
 
 .paid-label {
     color: #6b7280;
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 
 .paid-value {
-    font-weight: 600;
+    font-weight: 400;
     color: #111827;
+    line-height: 1.5;
 }
 
 /* Full Services & Amenities Layout (Image 1) */

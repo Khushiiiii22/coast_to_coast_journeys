@@ -831,7 +831,10 @@ function displayHotelPolicies(policies) {
         if (petsPolicy.length > 0) {
             petsSection.style.display = 'flex';
             petsSection.querySelector('.paid-item-details').innerHTML = petsPolicy.map(p => `
-                <div class="paid-detail-row"><span class="paid-text">${p.value || p}</span></div>
+                <div class="paid-detail-row">
+                    <span class="paid-label">${p.label || 'Details'}:</span>
+                    <span class="paid-value">${p.value || p}</span>
+                </div>
             `).join('');
             hasAnyPaid = true;
         } else {
@@ -843,7 +846,10 @@ function displayHotelPolicies(policies) {
         if (extraBedsPolicy.length > 0) {
             extraBedsSection.style.display = 'flex';
             extraBedsSection.querySelector('.paid-item-details').innerHTML = extraBedsPolicy.map(p => `
-                <div class="paid-detail-row"><span class="paid-text">${p.value || p}</span></div>
+                <div class="paid-detail-row">
+                    <span class="paid-label">${p.label || 'Details'}:</span>
+                    <span class="paid-value">${p.value || p}</span>
+                </div>
             `).join('');
             hasAnyPaid = true;
         } else {
@@ -855,7 +861,10 @@ function displayHotelPolicies(policies) {
         if (parkingPolicy.length > 0) {
             parkingSection.style.display = 'flex';
             parkingSection.querySelector('.paid-item-details').innerHTML = parkingPolicy.map(p => `
-                <div class="paid-detail-row"><span class="paid-text">${p.value || p}</span></div>
+                <div class="paid-detail-row">
+                    <span class="paid-label">${p.label || 'Details'}:</span>
+                    <span class="paid-value">${p.value || p}</span>
+                </div>
             `).join('');
             hasAnyPaid = true;
         } else {
@@ -874,10 +883,15 @@ function displayHotelPolicies(policies) {
             { title: 'Mandatory Fees', data: policies.mandatory_fees },
             { title: 'Optional Charges', data: policies.optional_fees },
             { title: 'Special Instructions', data: policies.special },
-            { title: 'Internet', data: policies.internet },
+            { title: 'Important Information', data: policies.other },
+            { title: 'Meals & Dining', data: policies.meals },
+            { title: 'Internet & Connectivity', data: policies.internet },
             { title: 'Smoking Policy', data: policies.smoking },
             { title: 'Age Restriction', data: policies.age_restriction },
-            { title: 'Other Policies', data: policies.other }
+            { title: 'Shuttle & Transfers', data: policies.shuttle },
+            { title: 'Visa & Documents', data: policies.visa },
+            { title: 'Check-in Policy', data: policies.early_late },
+            { title: 'Payment Methods', data: policies.payments }
         ];
 
         let additionalHtml = '';
@@ -886,8 +900,13 @@ function displayHotelPolicies(policies) {
                 additionalHtml += `
                     <div class="info-block" style="margin-bottom: 16px;">
                         <strong style="display: block; margin-bottom: 4px; color: #111827;">${section.title}</strong>
-                        <ul style="padding-left: 20px; color: #4b5563;">
-                            ${section.data.map(item => `<li>${item.value || item}</li>`).join('')}
+                        <ul style="padding-left: 20px; color: #4b5563; list-style-type: disc;">
+                            ${section.data.map(item => `
+                                <li style="margin-bottom: 8px;">
+                                    ${item.label && item.label !== section.title ? `<strong>${item.label}:</strong> ` : ''}
+                                    ${item.value || item}
+                                </li>
+                            `).join('')}
                         </ul>
                     </div>
                 `;
@@ -896,6 +915,7 @@ function displayHotelPolicies(policies) {
 
         if (additionalHtml) {
             additionalInfoContainer.innerHTML = additionalHtml;
+            document.getElementById('additionalInfoSection').style.display = 'block';
         } else {
             document.getElementById('additionalInfoSection').style.display = 'none';
         }
