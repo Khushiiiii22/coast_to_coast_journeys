@@ -1,0 +1,159 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{enumitem}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={ETG Certification Fixes - Coast to Coast Journeys},
+}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{ETG Certification Status Report \\ \large Coast to Coast Journeys - 3rd Update Audit}
+\author{Development Team}
+\date{March 5, 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+This report details the implementation and verification of all fixes requested during the 3rd update of the ETG / RateHawk certification process for Coast to Coast Journeys. Every point marked as "Pending" or "Adjustments" has been addressed with technical proof provided.
+
+\section{Core Workflow \& API Integration}
+The system has been configured to trigger the complete ETG API sequence.
+
+\begin{longtable}{lllp{6cm}}
+\toprule
+\textbf{Step} & \textbf{User Action} & \textbf{Backend Endpoint} & \textbf{ETG API Triggered} \\
+\midrule
+1 & Search & /api/hotels/search & /search/serp/hotels/ or /serp/region/ \\
+2 & View Hotel & /api/hotels/details-enriched & /search/hp/ \\
+3 & Reserve & /api/hotels/prebook & /hotel/prebook/ \\
+4 & Submit Guests & /api/hotels/book & /hotel/order/booking/form/ \\
+5 & Finalize & /api/hotels/book/finish & /hotel/order/booking/finish/ \\
+6 & Poll Status & /api/hotels/book/poll & /hotel/order/booking/finish/status/ \\
+7 & Voucher & /api/hotels/order-info & /hotel/order/info/ \\
+\bottomrule
+\end{longtable}
+
+\section{Critical Audit Fixes}
+
+\subsection{RPM Limit Optimization (Fix 8, 1)}
+\textbf{Auditor Comment:} \textit{"I see that your system sends multiple /hotel/info requests... you should tag the information from your database."}
+
+\textbf{Resolution:}
+We have fully shifted to a Local Static Data Cache for the Search results phase.
+\begin{itemize}
+    \item \textbf{Action}: Removed all real-time \texttt{/hotel/info} calls during search.
+    \item \textbf{Logic}: Search results parse hotel IDs and match them against a local database (populated by weekly dumps) to show hotel names and images.
+    \item \textbf{Proof}: Network logs confirm \texttt{1 API call} per search results page.
+\end{itemize}
+
+\subsection{Hotel Static Dump Frequency (Fix 2)}
+\textbf{Auditor Comment:} \textit{"Better to use this endpoint (/info/dump/) for a weekly update."}
+
+\textbf{Resolution:}
+The synchronization schedule has been officially updated:
+\begin{itemize}
+    \item \textbf{Full Dump (/hotel/dump/)}: Weekly refresh every Sunday at 02:00 AM IST.
+    \item \textbf{Incremental Dump}: Daily automated capture at 02:00 AM IST.
+\end{itemize}
+
+\begin{lstlisting}[language=bash, caption=Verification Log for Static Sync]
+$ python3 scripts/sync_etg_static_data.py --type full
+Starting WEEKLY FULL /hotel/dump/ sync...
+ETG API Request: POST /hotel/dump/ -> SUCCESS
+\end{lstlisting}
+
+\subsection{Hotel Important Information (Fix 3)}
+\textbf{Auditor Comment:} \textit{"For hotel 10004834, metapolicy\_extra\_info is not displayed... Pet policy price parameter not displayed."}
+
+\textbf{Resolution:}
+Backend logic in \texttt{hotel\_routes.py} was hardened to parse nested price objects and raw advisory strings.
+\begin{itemize}
+    \item \textbf{Pet Fees}: Now explicitly pulls \texttt{price} and \texttt{currency} from characters \texttt{metapolicy\_struct.pets}.
+    \item \textbf{Extra Info}: Re-routed raw strings passed in \texttt{metapolicy\_extra\_info} to the "Important Information" block.
+\end{itemize}
+
+\begin{lstlisting}[language=bash, caption=Verification Log for Policy Parsing]
+--- PET POLICIES ---
+[Pets]: Pets Allowed
+[Pet Details]: Fee: 50 USD
+--- SPECIAL/EXTRA INFO ---
+[Important Information]: This is a critical advisory...
+\end{lstlisting}
+
+\subsection{Room Static Matching (Fix 4)}
+\textbf{Auditor Comment:} \textit{"Am I correct in understanding that you index all room groups (rg\_ext) uniquely for each hotel?"}
+
+\textbf{Resolution:}
+\begin{itemize}
+    \item \textbf{Isolation}: The \texttt{room\_groups} lookup is built fresh for every hotel ID request. No cross-hotel matching is possible.
+    \item \textbf{Logic}: Joins \texttt{rate['rg\_ext']['rg']} with static \texttt{room\_group['rg\_ext']['rg']}.
+    \item \textbf{Fallback}: If no static match exists, the system groups rates based on the dynamic \texttt{rg} value.
+\end{itemize}
+
+\subsection{Prebook Price Notifications (Fix 5)}
+\textbf{Auditor Comment:} \textit{"If you receive 'price\_changed': True then your system should notify the client."}
+
+\textbf{Resolution:}
+If a price change occurs within the 5\% limit:
+\begin{enumerate}
+    \item System halts the automated flow.
+    \item User is notified via a warning message: \textit{"The price has changed to [New Price]. Please click 'Confirm Booking' again to proceed."}
+    \item Summary sidebar is dynamically updated with the latest price from ETG.
+\end{enumerate}
+
+\section{Guest Requirements \& Limits}
+
+\subsection{Children's Ages (Fix 6, 12)}
+\begin{itemize}
+    \item \textbf{Labeling}: Guests 18+ are Adults; 0-17 are Children.
+    \item \textbf{Age Selection}: Mandatory ages 0-17 provided in search.
+    \item \textbf{Request Format}: Correctly bundled as \texttt{"children": [2, 17]} in search JSON.
+\end{itemize}
+
+\subsection{Multi-Room Limits (Fix 12)}
+\begin{itemize}
+    \item \textbf{Maximums}: Max 6 Adults, 4 Children, 10 Total guests per room.
+    \item \textbf{Support}: UI supports up to 5 concurrent rooms, properly mapped to the ETG \texttt{"guests"} array.
+\end{itemize}
+
+\section{Summary}
+All identified issues are resolved. The system is ready for the final IP whitelisting (\textbf{136.116.198.82}) to proceed with live environment test bookings.
+
+\end{document}
