@@ -103,7 +103,33 @@ Fallback Room Name: Fallback Room Name
 ## 5. Prebook & Prices (Fix F)
 **Feedback:** `price_increase_percent` was incorrectly substituting room or board types if unavailable.
 **Resolutions:**
-* **Prebook Correction:** The backend strictly passes `price_increase_percent` to ETG. The response logic reads `price_change` variables safely, accepting the same room at a moderately higher price while rejecting entirely different rooms/board types automatically.
+* **Prebook Correction:** The backend strictly passes `price_increase_percent` to ETG. The response logic reads `price_changed` variables.
+* **Price Change Notification:** If the price changes during prebook (within the 5% limit), the system now halts the automated journey, updates the UI with the new price, and requires a second user confirmation before proceeding.
+
+---
+
+## Detailed Audit Response: Prebook & Prices
+
+### Issue: `price_increase_percent` & Notifications
+**Auditor Comment:** *"If you receive 'price_changed': True then your system should notify the client that price was increased. Could you please implement this logic?"*
+
+**Resolution:**
+We have correctly implemented the logic to detect price volatility during the prebook step and transparently notify the user.
+1. **Detection**: The backend `/api/hotels/prebook` endpoint now explicitly monitors the `price_changed: true` flag in the ETG response.
+2. **Notification**: If the flag is detected, the frontend `js/hotel-booking.js` triggers a warning notification: *"The price has changed... Please click 'Confirm Booking' again to proceed."*
+3. **UI Update**: The summary sidebar is dynamically updated with the new total before the user re-confirms.
+
+**Technical Verification:**
+```bash
+$ python3 scripts/verify_prebook_price_change.py
+--- PREBOOK PRICE CHANGE RESPONSE ---
+{
+  "price_changed": true,
+  "new_total": 105.0,
+  "success": true
+}
+✅ PREBOOK PRICE CHANGE LOGIC VERIFIED!
+```
 
 ## 6. Booking Timeouts & Errors (Fix G, H)
 **Feedback:** Did not implement a 180-second timeout. Handled non-final errors poorly.
