@@ -778,7 +778,7 @@ function displayDefaultPolicies() {
             { icon: 'fa-wifi', label: 'WiFi', value: 'Free WiFi available' }
         ],
         parking: [
-            { icon: 'fa-parking', label: 'Parking', value: 'Subject to availability' }
+            { icon: 'fa-parking', label: 'Parking', value: 'Parking available' }
         ],
         mandatory_fees: [],
         optional_fees: [],
@@ -860,12 +860,18 @@ function displayHotelPolicies(policies) {
     if (parkingSection) {
         if (parkingPolicy.length > 0) {
             parkingSection.style.display = 'flex';
-            parkingSection.querySelector('.paid-item-details').innerHTML = parkingPolicy.map(p => `
+            parkingSection.querySelector('.paid-item-details').innerHTML = parkingPolicy.map(p => {
+                let val = p.value || p;
+                if (val.toLowerCase().includes('subject to availability')) {
+                    val = 'Parking available';
+                }
+                return `
                 <div class="paid-detail-row">
                     <span class="paid-label">${p.label || 'Details'}:</span>
-                    <span class="paid-value">${p.value || p}</span>
+                    <span class="paid-value">${val}</span>
                 </div>
-            `).join('');
+            `;
+            }).join('');
             hasAnyPaid = true;
         } else {
             parkingSection.style.display = 'none';
