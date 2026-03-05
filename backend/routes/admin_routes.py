@@ -124,14 +124,19 @@ def get_booking_details(booking_id):
         payment = supabase.table('payments').select('*').eq('booking_id', booking_id).execute()
         
         # Get cancellation if exists
-        cancellation = supabase.table('cancellation_requests').select('*').eq('booking_id', booking_id).execute()
+        cancellation_data = None
+        try:
+            cancellation = supabase.table('cancellation_requests').select('*').eq('booking_id', booking_id).execute()
+            cancellation_data = cancellation.data[0] if cancellation.data else None
+        except Exception:
+            pass  # Table may not exist or query may fail
         
         return jsonify({
             'success': True,
             'data': {
                 'booking': booking.data[0],
                 'payment': payment.data[0] if payment.data else None,
-                'cancellation': cancellation.data[0] if cancellation.data else None
+                'cancellation': cancellation_data
             }
         }), 200
         

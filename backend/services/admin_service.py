@@ -116,29 +116,58 @@ class AdminService:
                 }
 
             # Total bookings
-            total_bookings = self.supabase.table('hotel_bookings').select('id', count='exact').execute()
+            total_bookings_count = 0
+            try:
+                total_bookings = self.supabase.table('hotel_bookings').select('id', count='exact').execute()
+                total_bookings_count = total_bookings.count or 0
+            except Exception:
+                pass
             
             # Confirmed bookings
-            confirmed = self.supabase.table('hotel_bookings').select('id', count='exact').eq('status', 'confirmed').execute()
+            confirmed_count = 0
+            try:
+                confirmed = self.supabase.table('hotel_bookings').select('id', count='exact').eq('status', 'confirmed').execute()
+                confirmed_count = confirmed.count or 0
+            except Exception:
+                pass
             
             # Total revenue (sum of total_amount for confirmed bookings)
-            revenue_result = self.supabase.table('hotel_bookings').select('total_amount').eq('status', 'confirmed').execute()
-            total_revenue = sum(float(b.get('total_amount', 0) or 0) for b in revenue_result.data)
+            total_revenue = 0
+            try:
+                revenue_result = self.supabase.table('hotel_bookings').select('total_amount').eq('status', 'confirmed').execute()
+                total_revenue = sum(float(b.get('total_amount', 0) or 0) for b in revenue_result.data)
+            except Exception:
+                pass
             
             # Pending cancellations
-            pending_cancellations = self.supabase.table('cancellation_requests').select('id', count='exact').eq('refund_status', 'pending').execute()
+            pending_cancellations_count = 0
+            try:
+                pending_cancellations = self.supabase.table('cancellation_requests').select('id', count='exact').eq('refund_status', 'pending').execute()
+                pending_cancellations_count = pending_cancellations.count or 0
+            except Exception:
+                # Table may not exist yet — fall back to bookings with cancelled status
+                try:
+                    cancelled = self.supabase.table('hotel_bookings').select('id', count='exact').eq('status', 'cancelled').execute()
+                    pending_cancellations_count = cancelled.count or 0
+                except Exception:
+                    pass
             
             # Recent bookings
-            recent = self.supabase.table('hotel_bookings').select('*').order('created_at', desc=True).limit(10).execute()
+            recent_data = []
+            try:
+                recent = self.supabase.table('hotel_bookings').select('*').order('created_at', desc=True).limit(10).execute()
+                recent_data = recent.data
+            except Exception:
+                pass
             
             return {
                 'success': True,
                 'data': {
-                    'total_bookings': total_bookings.count or 0,
-                    'confirmed_bookings': confirmed.count or 0,
+                    'total_bookings': total_bookings_count,
+                    'confirmed_bookings': confirmed_count,
                     'total_revenue': round(total_revenue, 2),
-                    'pending_cancellations': pending_cancellations.count or 0,
-                    'recent_bookings': recent.data,
+                    'pending_cancellations': pending_cancellations_count,
+                    'recent_bookings': recent_data,
                     'new_customers': 0 # Fallback
                 }
             }
