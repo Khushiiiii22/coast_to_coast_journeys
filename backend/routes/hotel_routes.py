@@ -1501,16 +1501,35 @@ def format_hotel_policies(policies):
         if isinstance(items, list):
             for item in items:
                 if isinstance(item, dict):
-                    text = item.get('text') or item.get('description') or item.get('price') or str(item)
-                    # Enrich with structured sub-fields when available
+                    # 1. Primary descriptive text
+                    text = item.get('text') or item.get('description') or ''
+                    
+                    # 2. Enrich with ALL possible structured sub-fields
                     parts = []
-                    for k in ('inclusion', 'type', 'availability', 'price', 'currency',
-                              'price_unit', 'work_area', 'from', 'until', 'max_age'):
+                    # Broadened key matching for price/fee/amounts and currencies
+                    p_val = item.get('price') or item.get('fee') or item.get('amount')
+                    p_cur = item.get('currency') or item.get('currency_code') or item.get('currency_symbol', '')
+                    
+                    if p_val and p_val != '0':
+                        parts.append(f'Price: {p_val} {p_cur}'.strip())
+                    
+                    for k in ('inclusion', 'type', 'availability', 'price_unit', 'work_area', 'from', 'until', 'max_age'):
                         v = item.get(k)
-                        if v is not None:
+                        if v is not None and v != '':
                             parts.append(f'{k.replace("_"," ").title()}: {v}')
-                    formatted[target].append({'icon': icon, 'label': label,
-                                              'value': text if not parts else '; '.join(parts)})
+                    
+                    # Combine text and parts
+                    val_str = text
+                    if parts:
+                        if val_str:
+                            val_str += f" ({'; '.join(parts)})"
+                        else:
+                            val_str = '; '.join(parts)
+                    
+                    if not val_str:
+                        val_str = str(item)
+
+                    formatted[target].append({'icon': icon, 'label': label, 'value': val_str})
                 else:
                     formatted[target].append({'icon': icon, 'label': label, 'value': str(item)})
         elif isinstance(items, dict):
@@ -1578,7 +1597,6 @@ def format_hotel_policies(policies):
         # 3. Children
         _parse_policy_list(metapolicy.get('children'), 'fa-child', 'Children Policy', 'children')
 
-        # 4. Pets
         pets = metapolicy.get('pets')
         if pets:
             if isinstance(pets, dict):
@@ -1588,13 +1606,14 @@ def format_hotel_policies(policies):
                                               'value': 'Pets Allowed' if allowed else 'No Pets Allowed'})
                 
                 parts = []
-                if pets.get('fee') or pets.get('price'):
-                    val = pets.get('fee') or pets.get('price')
-                    cur = pets.get('currency', '')
-                    item = f"{val} {cur}".strip()
-                    parts.append(f"Fee: {item}")
-                if pets.get('type'):
-                    parts.append(f"Types: {pets['type']}")
+                p_val = pets.get('fee') or pets.get('price') or pets.get('amount')
+                p_cur = pets.get('currency') or pets.get('currency_code') or ''
+                
+                if p_val and p_val != '0':
+                    parts.append(f"Fee: {p_val} {p_cur}".strip())
+                
+                if pets.get('type') or pets.get('pets_type'):
+                    parts.append(f"Types: {pets.get('type') or pets.get('pets_type')}")
                 
                 if parts:
                     formatted['pets'].append({'icon': 'fa-money-bill', 'label': 'Pet Details', 'value': ' · '.join(parts)})
@@ -1602,15 +1621,18 @@ def format_hotel_policies(policies):
                 for p in pets:
                     if isinstance(p, dict):
                         parts = []
-                        if p.get('pets_allowed') is not None or p.get('allowed') is not None:
-                            allowed = p.get('pets_allowed', p.get('allowed'))
+                        if p.get('allowed') is not None or p.get('pets_allowed') is not None:
+                            allowed = p.get('allowed', p.get('pets_allowed'))
                             parts.append('Allowed' if allowed else 'Not Allowed')
-                        if p.get('fee') or p.get('price'):
-                            val = p.get('fee') or p.get('price')
-                            cur = p.get('currency', '')
-                            parts.append(f"Fee: {val} {cur}".strip())
-                        if p.get('type'):
-                            parts.append(f"Type: {p['type']}")
+                        
+                        p_val = p.get('fee') or p.get('price') or p.get('amount')
+                        p_cur = p.get('currency') or p.get('currency_code') or ''
+                        if p_val and p_val != '0':
+                            parts.append(f"Fee: {p_val} {p_cur}".strip())
+                            
+                        p_type = p.get('type') or p.get('pets_type')
+                        if p_type:
+                            parts.append(f"Type: {p_type}")
                         
                         val_str = ' · '.join(parts) if parts else str(p)
                         formatted['pets'].append({'icon': 'fa-paw', 'label': 'Pet Policy', 'value': val_str})
