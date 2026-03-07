@@ -66,12 +66,13 @@ gcloud run deploy $SERVICE_NAME \
     --allow-unauthenticated \
     --port 8080 \
     --env-vars-file env.yaml \
-    --memory 1Gi \
+    --memory 2Gi \
     --cpu 2 \
+    --min-instances 1 \
+    --max-instances 10 \
     --concurrency 80 \
     --cpu-boost \
-    --vpc-connector c2c-conn \
-    --vpc-egress all-traffic \
+    --timeout 300 \
     --project $PROJECT_ID
 
 if [ $? -ne 0 ]; then

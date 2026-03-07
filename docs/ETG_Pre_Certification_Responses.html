@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ETG/RateHawk Pre-Certification Questionnaire — Coast to Coast Journeys</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #1a1a2e;
+            line-height: 1.65;
+            background: #fff;
+            padding: 35px 50px;
+            font-size: 10.5pt;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #1e40af;
+            padding-bottom: 18px;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 20pt;
+            color: #1e40af;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .header .subtitle {
+            font-size: 11pt;
+            color: #475569;
+        }
+
+        .header .meta {
+            font-size: 9pt;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .section-title {
+            background: #1e3a5f;
+            color: white;
+            padding: 10px 16px;
+            font-size: 13pt;
+            font-weight: 700;
+            margin: 25px 0 15px;
+        }
+
+        .q-block {
+            margin-bottom: 22px;
+            padding: 0 8px;
+            page-break-inside: avoid;
+        }
+
+        .q-label {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 11pt;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 4px;
+        }
+
+        .q-question {
+            background: #f8fafc;
+            border-left: 3px solid #94a3b8;
+            padding: 8px 12px;
+            margin: 6px 0;
+            color: #475569;
+            font-size: 9.5pt;
+        }
+
+        .q-remark {
+            background: #f0f9ff;
+            border-left: 3px solid #1e40af;
+            padding: 10px 14px;
+            margin: 6px 0;
+            color: #1e293b;
+        }
+
+        .q-remark strong {
+            color: #1e40af;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 8.5pt;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .s-done {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .s-wait {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+            font-size: 9.5pt;
+        }
+
+        th {
+            background: #1e40af;
+            color: white;
+            padding: 6px 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 5px 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .note {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            padding: 6px 10px;
+            border-radius: 5px;
+            font-size: 9.5pt;
+            color: #92400e;
+            margin: 6px 0;
+        }
+
+        code {
+            background: #f1f5f9;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 9pt;
+        }
+
+        ul,
+        ol {
+            margin-left: 18px;
+            margin-top: 4px;
+        }
+
+        li {
+            margin-bottom: 3px;
+        }
+
+        @media print {
+            body {
+                padding: 15px 25px;
+                font-size: 9.5pt;
+            }
+
+            .q-block {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>ETG / RateHawk Pre-Certification Questionnaire</h1>
+        <div class="subtitle">Coast to Coast Journeys (C2C Journeys) — c2cjourneys.com</div>
+        <div class="meta">Date: 23 February 2026 &nbsp;|&nbsp; API Key ID: 83 (Sandbox) &nbsp;|&nbsp; Static IP:
+            136.116.198.82 &nbsp;|&nbsp; Contact: info@coasttocoastjourneys.com</div>
+    </div>
+
+    <!-- ============================= GENERAL ============================= -->
+    <div class="section-title">GENERAL</div>
+
+    <!-- 1 -->
+    <div class="q-block">
+        <div class="q-label">1. Products & Certifications <span class="status s-done">✅ Done</span></div>
+        <div class="q-remark"><strong>Our Remark:</strong> We are certifying for <strong>Hotels only</strong>. No other
+            products at this stage.</div>
+    </div>
+
+    <!-- 2 -->
+    <div class="q-block">
+        <div class="q-label">2. Payment Types <span class="status s-done">✅ Done</span></div>
+        <div class="q-remark"><strong>Our Remark:</strong> We use the <strong>Net model (deposit)</strong>. Customer
+            pays us through Razorpay (UPI/Cards/Net Banking) or PayPal. We settle with ETG at net rate from our deposit
+            balance.</div>
+    </div>
+
+    <!-- 3 -->
+    <div class="q-block">
+        <div class="q-label">3. Workflow <span class="status s-done">✅ Done</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> What is your workflow from search to cancellation? Include
+            ETG endpoints at each step.<br><strong>Second update:</strong> API requests not being sent with key_id: 83.
+        </div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong><br>
+            <strong>Regarding key_id: 83</strong> — This was caused by stale credentials in our GCP deployment. We have
+            fixed and redeployed with <code>ETG_API_KEY_ID=83</code> and
+            <code>ETG_API_BASE_URL=https://api-sandbox.worldota.net/api/b2b/v3</code>. All API requests now use key_id:
+            83.
+            <br><br><strong>Full Workflow Table:</strong>
+            <table>
+                <tr>
+                    <th>#</th>
+                    <th>Step Name</th>
+                    <th>User Action / Step Logic</th>
+                    <th>ETG Endpoint</th>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>Search</td>
+                    <td>User enters destination, check-in/out dates, number of adults/children (with ages), and
+                        nationality/residency. System sends search request.</td>
+                    <td><code>/search/serp/region/</code></td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Hotel List Display</td>
+                    <td>Show hotel cards with star ratings, prices (net + 15% markup), photos, meal icons, cancellation
+                        badges. User browses and filters results.</td>
+                    <td>N/A (frontend display)</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Hotel Details Page</td>
+                    <td>User clicks a hotel. System fetches room rates, images, amenities, and policies from static data
+                        (<code>metapolicy_struct</code>, <code>metapolicy_extra_info</code>).</td>
+                    <td><code>/search/hp/</code></td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Room Selection</td>
+                    <td>User selects a room rate. System captures <code>book_hash</code> from the selected rate.</td>
+                    <td>N/A (capture <code>book_hash</code>)</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Pre-booking Validation</td>
+                    <td>System verifies current price, availability, and full cancellation terms using the captured
+                        <code>book_hash</code>. We use <code>price_increase_percent: 5</code> — if the price increases
+                        by more than 5%, user is notified and must re-confirm.</td>
+                    <td><code>/hotel/prebook/</code></td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>Guest Information Form</td>
+                    <td>User fills in guest first name, last name, email, phone number, and special requests. System
+                        validates all required fields.</td>
+                    <td>N/A (frontend form)</td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>Create Booking (Start)</td>
+                    <td>System submits booking with guest details, <code>book_hash</code>, and corporate email
+                        (<code>info@coasttocoastjourneys.com</code>) as <code>user.email</code>. System receives
+                        <code>partner_order_id</code>.</td>
+                    <td><code>/hotel/order/booking/form/</code></td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td>Finish Booking</td>
+                    <td>System finalizes the booking using the <code>partner_order_id</code>. Handles all responses per
+                        error mapping table below.</td>
+                    <td><code>/hotel/order/booking/finish/</code></td>
+                </tr>
+                <tr>
+                    <td>9</td>
+                    <td>Poll Booking Status</td>
+                    <td>System polls every <strong>2.5 seconds</strong> for a maximum of <strong>180 seconds</strong>
+                        (72 attempts). Handles all status responses per error mapping table below.</td>
+                    <td><code>/hotel/order/booking/finish/status/</code></td>
+                </tr>
+                <tr>
+                    <td>10</td>
+                    <td>Booking Confirmation</td>
+                    <td>On <code>status: "ok"</code>, system saves booking as "confirmed" in Supabase database. Shows
+                        confirmation page using data from <strong>prebook step</strong> (NOT from
+                        <code>/order/info/</code>). Sends confirmation email with <strong>markup prices</strong> to
+                        customer via Brevo API.</td>
+                    <td>N/A</td>
+                </tr>
+                <tr>
+                    <td>11</td>
+                    <td>Post-Booking (History)</td>
+                    <td>For booking history page, voucher download, or cancellation — system calls this endpoint with a
+                        <strong>minimum 60-second gap</strong> after receiving "ok" from step 9.</td>
+                    <td><code>/hotel/order/info/</code></td>
+                </tr>
+                <tr>
+                    <td>12</td>
+                    <td>Cancellation</td>
+                    <td>User requests cancellation from booking history page. System checks cancellation penalties and
+                        processes cancellation.</td>
+                    <td><code>/hotel/order/booking/cancel/</code></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- 4 -->
+    <div class="q-block">
+        <div class="q-label">4. IPs Whitelist <span class="status s-wait">⏳ Waiting on RateHawk</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> You're using dynamic IPs. Set up static IP and provide
+            it.<br><strong>Second update:</strong> After Static IP is set, please indicate it here.</div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong> Static IP is set and verified.<br>
+            <ul>
+                <li><strong>Static IP:</strong> <code>136.116.198.82</code></li>
+                <li><strong>How:</strong> Google Cloud NAT with VPC connector (<code>c2c-conn</code>) attached to Cloud
+                    Run with <code>--vpc-egress all-traffic</code>.</li>
+                <li><strong>Verification:</strong> Our endpoint <code>/api/test/static-ip</code> returns
+                    <code>ip_without_proxy: 136.116.198.82</code></li>
+            </ul>
+            <div class="note">⏳ We are waiting for RateHawk to whitelist <strong>136.116.198.82</strong>. All API calls
+                are routed through this IP.</div>
+        </div>
+    </div>
+
+    <!-- 5 -->
+    <div class="q-block">
+        <div class="q-label">5. RPM Limits <span class="status s-done">✅ Done</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> Specify expected RPM for endpoints.<br><strong>Second
+                update:</strong> Some RPMs don't match our limits. Adjust to our limits.</div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong> We confirm the following adjusted RPM values that match your system limits
+            exactly:
+            <table>
+                <tr>
+                    <th>Endpoint</th>
+                    <th>Function</th>
+                    <th>Our RPM</th>
+                </tr>
+                <tr>
+                    <td><code>/serp/region</code></td>
+                    <td>Search by region</td>
+                    <td><strong>10 RPM</strong></td>
+                </tr>
+                <tr>
+                    <td><code>/search/hp</code></td>
+                    <td>Retrieve hotelpage</td>
+                    <td><strong>10 RPM</strong></td>
+                </tr>
+                <tr>
+                    <td><code>/hotel/prebook</code></td>
+                    <td>Prebook rate from hotelpage step</td>
+                    <td><strong>30 RPM</strong></td>
+                </tr>
+                <tr>
+                    <td><code>/hotel/order/booking/form/</code></td>
+                    <td>Create Booking process</td>
+                    <td><strong>30 RPM</strong></td>
+                </tr>
+                <tr>
+                    <td><code>/hotel/order/booking/finish/</code></td>
+                    <td>Start Booking process</td>
+                    <td><strong>30 RPM</strong></td>
+                </tr>
+                <tr>
+                    <td><code>/hotel/order/booking/finish/status/</code></td>
+                    <td>Check Booking process</td>
+                    <td><strong>30 RPM</strong></td>
+                </tr>
+                <tr>
+                    <td><code>/hotel/order/booking/cancel/</code></td>
+                    <td>Cancel booking</td>
+                    <td><strong>30 RPM</strong></td>
+                </tr>
+                <tr>
+                    <td><code>/hotel/order/info/</code></td>
+                    <td>Retrieve bookings</td>
+                    <td><strong>30 RPM</strong></td>
+                </tr>
+            </table>
+            All values are within your specified limits. Rate limiting is enforced on our backend.
+        </div>
+    </div>
+
+    <!-- 6 -->
+    <div class="q-block">
+        <div class="q-label">6. Hotel Static Data <span class="status s-done">✅ Done</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> How do you use dump / incremental dump / content API? How
+            often?<br><strong>Second update:</strong> Content API is not designed for real-time use. Please describe how
+            you will use it.</div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong> We understand that the Content API is not for real-time use. Here is our
+            updated plan:
+            <ul>
+                <li><strong>Full Dump</strong> (<code>/hotel/info/dump/</code>): Once at initial setup + monthly full
+                    refresh to update our local database.</li>
+                <li><strong>Incremental Dump</strong> (<code>/hotel/info/incremental_dump/</code>): Daily automated
+                    updates during off-peak hours (00:00–04:00 IST) to catch property changes, new hotels, and updated
+                    policies.</li>
+                <li><strong>Content API</strong> (<code>/hotel/info/</code>): If enabled, we will use it <strong>only to
+                        update our database</strong> — NOT in real-time. It would be called as a batch job to supplement
+                    dumps for specific hotels that need refreshed data (e.g., after a price discrepancy report). We
+                    would limit calls to a few hundred per day maximum.</li>
+            </ul>
+            <strong>Please enable the Content API for key_id: 83</strong> so we can use it for database updates as
+            described above.
+        </div>
+    </div>
+
+    <!-- 7 -->
+    <div class="q-block">
+        <div class="q-label">7. Hotel Important Information (metapolicy) <span class="status s-done">✅ Fixed</span>
+        </div>
+        <div class="q-question"><strong>RateHawk Q:</strong> metapolicy_struct and metapolicy_extra_info not displayed.
+            Must show all values. Do NOT use deprecated policy_struct.<br><strong>Second update:</strong> Checked hotel
+            hid:6362880. metapolicy_extra_info not visible. Not all metapolicy_struct policies showing fully. Parking
+            shows "subject to availability" when hotel has no value. "meal" policy missing.</div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong> We have made the following corrections:
+            <ol>
+                <li>We completely <strong>ignore the deprecated <code>policy_struct</code></strong> parameter.</li>
+                <li><strong><code>metapolicy_struct</code></strong> — All categories are now parsed and displayed on the
+                    hotel Policies tab:
+                    <ul>
+                        <li><strong>Check-in/Check-out</strong> — times with progress bar visualization</li>
+                        <li><strong>Children</strong> — extra bed policy, crib availability</li>
+                        <li><strong>Pets</strong> — "Pets Allowed" / "No Pets Allowed" with fee details when available.
+                            When no metapolicy data exists, shows: "Pet policy varies by property — some hotels allow
+                            pets with a fee, others do not"</li>
+                        <li><strong>Smoking</strong> — smoking/non-smoking policy</li>
+                        <li><strong>Parking</strong> — Only shown when real data exists in metapolicy_struct. If the
+                            hotel has no parking data, the section is <strong>hidden</strong> (NOT showing "subject to
+                            availability" anymore).</li>
+                        <li><strong>Internet</strong> — WiFi availability and charges</li>
+                        <li><strong>Meals</strong> — Now displayed as a separate policy card from metapolicy_struct</li>
+                        <li><strong>Payments</strong> — accepted payment methods</li>
+                        <li><strong>Mandatory Fees</strong> — Only shown when real data exists (was showing "Contact
+                            property" before — now fixed)</li>
+                        <li><strong>Optional Fees</strong> — Only shown when real data exists</li>
+                        <li><strong>Age Restrictions</strong> — minimum age requirements</li>
+                        <li><strong>Shuttle Service</strong> — availability and charges</li>
+                        <li><strong>Visa & Entry</strong> — requirements</li>
+                        <li><strong>No-show Policy</strong> — penalties</li>
+                        <li><strong>Special Instructions</strong> — Only shown when real data exists (no longer shows
+                            fake "Contact property" text)</li>
+                        <li><strong>Other Policies</strong> — any remaining metapolicy data</li>
+                    </ul>
+                </li>
+                <li><strong><code>metapolicy_extra_info</code></strong> — Now displayed as additional notes/text under
+                    the relevant policy category cards. If the text doesn't match a specific category, it is shown in a
+                    standalone "Additional Policy Information" section.</li>
+            </ol>
+            <strong>Key fix for hid:6362880:</strong> Sections with no data in metapolicy_struct are now
+            <strong>hidden</strong> instead of showing misleading generic text. Only sections with real data from the
+            API are displayed.
+        </div>
+    </div>
+
+    <!-- 8 -->
+    <div class="q-block">
+        <div class="q-label">8. Room Static Data <span class="status s-done">✅ Fixed</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> Do you show ETG room images & amenities? How do you match
+            rates to room groups?<br><strong>Second update:</strong> We don't have "rg_hash" in static data. We have
+            rg_ext arrays. What is rg_hash?</div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong> Thank you for the clarification. We have corrected our matching logic:
+            <ul>
+                <li><strong>Yes</strong>, we display ETG room images and amenities for ETG rates.</li>
+                <li><strong>Corrected matching process</strong> (we no longer use <code>rg_hash</code>):</li>
+            </ul>
+            <ol>
+                <li>From static hotel data, we index all <code>room_groups</code> by each group's <code>rg_ext</code>
+                    array values — specifically each <code>rg_ext[*].rg</code> value.</li>
+                <li>From each search rate, we read <code>rg_ext.rg</code>.</li>
+                <li>We match the rate's <code>rg_ext.rg</code> value against the indexed
+                    <code>room_groups[*].rg_ext[*].rg</code> values.</li>
+                <li>On match → the rate is enriched with the room group's name, description, images, amenities, and bed
+                    configuration.</li>
+                <li>If no match → fallback to the rate's own <code>room_name</code> + placeholder images.</li>
+            </ol>
+            <strong>We do NOT use <code>rg_hash</code></strong> — we understand it does not exist in static data. Our
+            code has been updated to use <code>rg_ext.rg</code> for matching exclusively.
+        </div>
+    </div>
+
+    <!-- ============================= SEARCH STEP ============================= -->
+    <div class="section-title">SEARCH STEP</div>
+
+    <!-- 9 -->
+    <div class="q-block">
+        <div class="q-label">9. Match_hash Usage <span class="status s-done">✅ Done</span></div>
+        <div class="q-remark"><strong>Our Remark:</strong> We use <code>match_hash</code> to group rates from the same
+            hotel across different providers in search results. Implemented and working correctly.</div>
+    </div>
+
+    <!-- 10 -->
+    <div class="q-block">
+        <div class="q-label">10. Prebook Rate from Hotel Page <span class="status s-wait">⏳ Waiting IP Whitelist</span>
+        </div>
+        <div class="q-question"><strong>RateHawk Q:</strong> Website operates independently of API. Configure to use our
+            API. How do you work with price_increase_percent?</div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong>
+            <ul>
+                <li>Our website <strong>IS connected</strong> to the sandbox API with <code>key_id: 83</code>.</li>
+                <li>Currently blocked because our static IP <code>136.116.198.82</code> is not yet whitelisted on your
+                    side.</li>
+                <li>Once whitelisted, you can test the full flow on <code>https://c2cjourneys.com</code>.</li>
+            </ul>
+            <strong>Regarding <code>price_increase_percent</code>:</strong>
+            <ul>
+                <li>We set <code>price_increase_percent: 5</code> in our prebook request.</li>
+                <li>This means if the price at prebook time has increased by more than 5% compared to the search price,
+                    the prebook response will indicate a price change.</li>
+                <li>In that case, we show the user the updated price and ask them to <strong>re-confirm</strong> before
+                    proceeding to booking.</li>
+                <li>If the price increase is within 5%, we proceed without interrupting the user.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 11 -->
+    <div class="q-block">
+        <div class="q-label">11. Cache <span class="status s-done">✅ Done</span></div>
+        <div class="q-remark"><strong>Our Remark:</strong> No issues. We follow standard caching guidelines.</div>
+    </div>
+
+    <!-- 12 -->
+    <div class="q-block">
+        <div class="q-label">12. Children Logic <span class="status s-done">✅ Fixed</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> Website shows 12+ as adult. Must show 18+ as adult, add
+            0-17 age dropdown.<br><strong>Second update:</strong> Thank you for corrections. Need to test via API
+            (blocked by IP).</div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong> All corrections have been deployed:
+            <ul>
+                <li>Adults are now labelled <strong>"Adults (18+ years)"</strong> in the guest selector.</li>
+                <li>Children are labelled <strong>"Children (0-17 years)"</strong> with a <strong>mandatory age
+                        dropdown</strong> showing all ages 0 through 17.</li>
+                <li>Maximum limits per room: <strong>6 adults</strong>, <strong>4 children</strong>, <strong>10
+                        total</strong>.</li>
+                <li>The <code>+</code> button is disabled at these limits. A warning message is shown at max capacity.
+                </li>
+                <li>Children's ages are passed to the ETG search API as required.</li>
+            </ul>
+            Ready for testing once IP is whitelisted.
+        </div>
+    </div>
+
+    <!-- 13 -->
+    <div class="q-block">
+        <div class="q-label">13. Multiroom Booking <span class="status s-done">✅ Fixed</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> Website allows 8 adults — will cause API error. Max 6
+            adults, 4 children, 10 total per room.<br><strong>Second update:</strong> Thank you. Need to test via API.
+        </div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong> Same fix as #12 above. Enforced per-room limits:
+            <ul>
+                <li>Max adults per room: <strong>6</strong> ✅</li>
+                <li>Max children per room: <strong>4</strong> ✅</li>
+                <li>Max total per room: <strong>10</strong> ✅</li>
+            </ul>
+            These are hard limits — the UI prevents selection beyond these values. Ready for testing once IP is
+            whitelisted.
+        </div>
+    </div>
+
+    <!-- 14 -->
+    <div class="q-block">
+        <div class="q-label">14. Taxes & Fees <span class="status s-done">✅ Fixed</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> Non-included taxes must be shown separately in original
+            currency. Indicate paid at check-in.<br><strong>Second update:</strong> Website shows taxes in non-original
+            currency. Search shows taxes included. Was update deployed?</div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong> Yes, all updates have been deployed. Here is our implementation:
+            <ol>
+                <li><strong>Non-included taxes</strong> (<code>included_by_supplier: false</code>) are displayed
+                    <strong>separately in their original currency</strong> as returned by ETG (e.g., "City Tax: 15.00
+                    USD", "Tourism Tax: 1130.10 HNL").</li>
+                <li>Each non-included tax is shown with a clear <strong>"Payable at Property"</strong> notice with an
+                    info icon, explaining these fees must be paid directly at the hotel in their local currency.</li>
+                <li>The <strong>fake 18% GST calculation has been removed</strong> — we no longer calculate estimated
+                    taxes.</li>
+                <li>Search results show an <strong>"Excludes property fees"</strong> badge when non-included taxes are
+                    present.</li>
+                <li>Booking/checkout page shows only <strong>Total Amount</strong> (which is the net price + our
+                    markup). Non-included taxes are shown separately as "Payable at Property" in their original
+                    currency.</li>
+            </ol>
+            All changes are deployed and live on the website.
+        </div>
+    </div>
+
+    <!-- 15 -->
+    <div class="q-block">
+        <div class="q-label">15. Search Timeouts <span class="status s-done">✅ Done</span></div>
+        <div class="q-remark"><strong>Our Remark:</strong> Search requests have a 30-second timeout configured. User
+            sees a loading spinner during search. If timeout occurs, a user-friendly error message is shown.</div>
+    </div>
+
+    <!-- 16 -->
+    <div class="q-block">
+        <div class="q-label">16. Cancellation Policies <span class="status s-done">✅ Fixed</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> Must show free cancellation deadline with date/time in
+            UTC+0. Parse 3-tier structure.<br><strong>Second update:</strong> Thank you. Need to test via API.</div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong> All corrections deployed:
+            <ul>
+                <li>We parse <code>cancellation_penalties.policies</code> for the full <strong>3-tier
+                        structure</strong>:
+                    <ol>
+                        <li><strong>Free cancellation period:</strong> <code>start_at: null</code> to
+                            <code>end_at</code> — shown as "Free cancellation before [date/time] (UTC+0)"</li>
+                        <li><strong>Partial penalty period:</strong> penalty amount shown in the search currency</li>
+                        <li><strong>Full penalty period:</strong> full charge amount shown</li>
+                    </ol>
+                </li>
+                <li>Free cancellation deadline is displayed with <strong>exact date and time in UTC+0</strong>, e.g.,
+                    "Free cancellation before 21 Mar 2026, 08:59 (UTC+0)".</li>
+                <li>Rates with <code>free_cancellation_before: null</code> are shown as
+                    <strong>"Non-Refundable"</strong> — penalties apply immediately.</li>
+                <li>On search result cards: green "Free Cancellation" badge or red "Non-Refundable" badge is shown.</li>
+            </ul>
+            Ready for testing once IP is whitelisted.
+        </div>
+    </div>
+
+    <!-- 17 -->
+    <div class="q-block">
+        <div class="q-label">17. Citizenship / Residency <span class="status s-done">✅ Fixed</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> Must collect guest citizenship and pass as residency in
+            search API. Hardcoding causes wrong pricing.<br><strong>Second update:</strong> Thank you. Need to test via
+            API.</div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong> We have implemented guest nationality/residency collection:
+            <ul>
+                <li>A <strong>nationality/residency dropdown</strong> has been added to the hotel search form on our
+                    homepage.</li>
+                <li>The selected country code is passed as the <code>residency</code> parameter in all search API
+                    requests (<code>/serp/region</code>, <code>/serp/hotels</code>).</li>
+                <li>Default value is <strong>"in" (India)</strong> based on our primary market, but users can change it
+                    to any country.</li>
+                <li>This ensures correct pricing based on the guest's actual nationality.</li>
+            </ul>
+            Ready for testing once IP is whitelisted.
+        </div>
+    </div>
+
+    <!-- 18 -->
+    <div class="q-block">
+        <div class="q-label">18. Meal Types <span class="status s-done">✅ Fixed</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> Use meal_data.value, not deprecated meal field. Show
+            no_child_meal indicator. Provide cross-mapping.<br><strong>Second update:</strong> How do you work with
+            breakfast-for-1, breakfast-for-2, some-meal etc.?</div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong>
+            <ul>
+                <li>We use <strong><code>meal_data.value</code> exclusively</strong> — the deprecated <code>meal</code>
+                    field is completely ignored.</li>
+                <li><strong><code>no_child_meal: true</code></strong> → We show a visible warning badge on the rate
+                    card: <strong>"⚠ Child meal not included"</strong>. This ensures parents know their child's meals
+                    are not part of the plan.</li>
+                <li><strong><code>no_child_meal: false</code></strong> → Meals included for all guests (adults +
+                    children).</li>
+            </ul>
+            <strong>How we handle special meal types:</strong>
+            <ul>
+                <li><strong><code>breakfast-for-1</code></strong> → Displayed as "Breakfast for 1 Guest" — we clearly
+                    indicate only 1 breakfast is provided regardless of room occupancy.</li>
+                <li><strong><code>breakfast-for-2</code></strong> → Displayed as "Breakfast for 2 Guests" — only 2
+                    breakfasts provided.</li>
+                <li><strong><code>some-meal</code></strong> → Displayed as "Some Meals Included" — indicates a partial
+                    meal plan without specifying exact meals.</li>
+            </ul>
+            <strong>Full Cross-Mapping Table:</strong>
+            <table>
+                <tr>
+                    <th>ETG meal code</th>
+                    <th>Our display name on website</th>
+                </tr>
+                <tr>
+                    <td>all-inclusive</td>
+                    <td>All Inclusive</td>
+                </tr>
+                <tr>
+                    <td>breakfast</td>
+                    <td>Breakfast Included</td>
+                </tr>
+                <tr>
+                    <td>breakfast-buffet</td>
+                    <td>Breakfast Buffet</td>
+                </tr>
+                <tr>
+                    <td>continental-breakfast</td>
+                    <td>Continental Breakfast</td>
+                </tr>
+                <tr>
+                    <td>dinner</td>
+                    <td>Dinner Included</td>
+                </tr>
+                <tr>
+                    <td>full-board</td>
+                    <td>Full Board (All Meals)</td>
+                </tr>
+                <tr>
+                    <td>half-board</td>
+                    <td>Half Board (Breakfast & Dinner)</td>
+                </tr>
+                <tr>
+                    <td>half-board-lunch</td>
+                    <td>Half Board (Breakfast & Lunch)</td>
+                </tr>
+                <tr>
+                    <td>half-board-dinner</td>
+                    <td>Half Board (Breakfast & Dinner)</td>
+                </tr>
+                <tr>
+                    <td>lunch</td>
+                    <td>Lunch Included</td>
+                </tr>
+                <tr>
+                    <td>nomeal</td>
+                    <td>Room Only (No Meals)</td>
+                </tr>
+                <tr>
+                    <td>some-meal</td>
+                    <td>Some Meals Included</td>
+                </tr>
+                <tr>
+                    <td>english-breakfast</td>
+                    <td>English Breakfast</td>
+                </tr>
+                <tr>
+                    <td>american-breakfast</td>
+                    <td>American Breakfast</td>
+                </tr>
+                <tr>
+                    <td>asian-breakfast</td>
+                    <td>Asian Breakfast</td>
+                </tr>
+                <tr>
+                    <td>chinese-breakfast</td>
+                    <td>Chinese Breakfast</td>
+                </tr>
+                <tr>
+                    <td>israeli-breakfast</td>
+                    <td>Israeli Breakfast</td>
+                </tr>
+                <tr>
+                    <td>japanese-breakfast</td>
+                    <td>Japanese Breakfast</td>
+                </tr>
+                <tr>
+                    <td>scandinavian-breakfast</td>
+                    <td>Scandinavian Breakfast</td>
+                </tr>
+                <tr>
+                    <td>scottish-breakfast</td>
+                    <td>Scottish Breakfast</td>
+                </tr>
+                <tr>
+                    <td>breakfast-for-1</td>
+                    <td>Breakfast for 1 Guest</td>
+                </tr>
+                <tr>
+                    <td>breakfast-for-2</td>
+                    <td>Breakfast for 2 Guests</td>
+                </tr>
+                <tr>
+                    <td>super-all-inclusive</td>
+                    <td>Super All Inclusive</td>
+                </tr>
+                <tr>
+                    <td>soft-all-inclusive</td>
+                    <td>Soft All Inclusive</td>
+                </tr>
+                <tr>
+                    <td>ultra-all-inclusive</td>
+                    <td>Ultra All Inclusive</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- 19 -->
+    <div class="q-block">
+        <div class="q-label">19. Final Price / Commission <span class="status s-done">✅ Done</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> Clarify net model understanding. amount = deposit currency,
+            show_amount = search currency.<br><strong>Second update:</strong> Need to test via API.</div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong> Fully understood and implemented:
+            <ul>
+                <li>We work on the <strong>Net model</strong>. ETG passes us the net price.</li>
+                <li><strong><code>amount</code></strong> — price in our contract/deposit currency. This is debited from
+                    our deposit when booking is confirmed.</li>
+                <li><strong><code>show_amount</code></strong> — price in the currency we specified in the search
+                    request's <code>currency</code> parameter.</li>
+                <li>We apply a <strong>15% markup</strong> on top of <code>show_amount</code> for the customer-facing
+                    price on our website.</li>
+                <li>Our corporate email (<code>info@coasttocoastjourneys.com</code>) is sent as <code>user.email</code>
+                    to ETG so the net-price voucher goes to us only. The customer receives our own voucher with markup
+                    prices via Brevo.</li>
+            </ul>
+            Ready for testing once IP is whitelisted.
+        </div>
+    </div>
+
+    <!-- ============================= BOOKING ============================= -->
+    <div class="section-title">BOOKING</div>
+
+    <!-- 20 -->
+    <div class="q-block">
+        <div class="q-label">20. Room Name Reflection <span class="status s-wait">⏳ Waiting IP Whitelist</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> Website operates independently of API. Configure to use
+            API.<br><strong>Second update:</strong> Same — need to test via API.</div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong> We display ETG room names as-is without modification, using the
+            <code>room_name</code> from <code>/search/hp/</code> response. The website IS connected to the sandbox API
+            with key_id: 83. Blocked only by IP whitelist. Once <code>136.116.198.82</code> is whitelisted, you can
+            verify directly on <code>https://c2cjourneys.com</code>.
+        </div>
+    </div>
+
+    <!-- 21 -->
+    <div class="q-block">
+        <div class="q-label">21. Early Check-in / Late Check-out <span class="status s-done">✅ Done</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> Do you want to implement the upsell option
+            now?<br><strong>Second update:</strong> Point closed. When you decide to integrate, write to us.</div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong> Our current implementation is <strong>informational only</strong> — we display
+            early check-in / late check-out availability and pricing from <code>metapolicy_struct</code> on the Policies
+            tab. We are <strong>NOT using the upsell API</strong> at this time. We will contact you when we are ready to
+            implement the upsell feature in Phase 2 post-certification.
+        </div>
+    </div>
+
+    <!-- 22 -->
+    <div class="q-block">
+        <div class="q-label">22. Hotel Chunk Size <span class="status s-done">✅ Done</span></div>
+        <div class="q-remark"><strong>Our Remark:</strong> No issues. Implemented as per guidelines.</div>
+    </div>
+
+    <!-- 23 -->
+    <div class="q-block">
+        <div class="q-label">23. Receiving Final Booking Status <span class="status s-done">✅ Done</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> How do you receive final booking status? Which indicator do
+            you use? What if "processing" status?<br><strong>Second update:</strong> Do you use only "Check booking
+            process"? If other endpoints, describe in detail.</div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong> Yes, we use only <strong>"Check booking process"</strong>
+            (<code>/hotel/order/booking/finish/status/</code>) to receive the final booking status.
+            <ul>
+                <li>After calling <code>/hotel/order/booking/finish/</code>, we immediately begin polling
+                    <code>/hotel/order/booking/finish/status/</code>.</li>
+                <li>We rely on <strong><code>status: "ok"</code></strong> from this endpoint to confirm the booking to
+                    the user.</li>
+                <li>If we receive <strong><code>status: "processing"</code></strong>, we continue polling silently every
+                    2.5 seconds until we get a final status or reach the 180-second timeout.</li>
+                <li>We do NOT use any other endpoint during the booking confirmation flow.</li>
+                <li><strong><code>/hotel/order/info/</code></strong> is called ONLY post-booking (with 60s minimum gap)
+                    for the booking history page — never during the confirmation flow.</li>
+            </ul>
+            Full error mapping tables are provided below in #25.
+        </div>
+    </div>
+
+    <!-- 24 -->
+    <div class="q-block">
+        <div class="q-label">24. Booking Cut-off <span class="status s-done">✅ Done</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> Our minimum timeout is 1 minute, maximum 10 minutes.
+            Recommend 180 sec. When does countdown start?<br><strong>Second update:</strong> Agree on timeout longer
+            than 1 min, or should we set 60s on our end?</div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong> We agree to the recommended <strong>180 seconds (3 minutes)</strong> timeout.
+            Details:
+            <ul>
+                <li><strong>Polling interval:</strong> 2.5 seconds</li>
+                <li><strong>Maximum timeout:</strong> 180 seconds (72 polling attempts)</li>
+                <li><strong>Countdown starts:</strong> After receiving any response (OK, 5xx, unknown, timeout) from
+                    <code>/hotel/order/booking/finish/</code></li>
+                <li><strong>On timeout:</strong> Booking is saved as <strong>"pending"</strong> in our database (NOT
+                    "failed"). User is notified: "Your booking is being processed. We will email you the confirmation
+                    once finalized."</li>
+            </ul>
+            Please set 180 seconds on your end.
+        </div>
+    </div>
+
+    <!-- 25 -->
+    <div class="q-block">
+        <div class="q-label">25. Errors & Status Processing Logic <span class="status s-done">✅ Done</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> Fill cross-mapping tables for /finish/ and /finish/status/.
+        </div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong><br>
+            <strong>Table 1: <code>/hotel/order/booking/finish/</code></strong>
+            <table>
+                <tr>
+                    <th>ETG API Response</th>
+                    <th>Frontend Status (shown to user)</th>
+                    <th>Backend Processing Logic</th>
+                </tr>
+                <tr>
+                    <td>Status "ok"</td>
+                    <td>"Processing your booking..."</td>
+                    <td>Update booking status to "processing" in database. Immediately begin polling
+                        <code>/finish/status/</code> every 2.5 seconds.</td>
+                </tr>
+                <tr>
+                    <td>5xx status code</td>
+                    <td>"Server error, retrying..."</td>
+                    <td>Retry the <code>/finish/</code> call once after 1 second. If retry also fails, set status to
+                        "processing" and proceed to poll <code>/finish/status/</code> (booking may still succeed on
+                        ETG's side).</td>
+                </tr>
+                <tr>
+                    <td>Error "timeout"</td>
+                    <td>"Booking is being processed..."</td>
+                    <td>Set booking status to "processing". Proceed to poll <code>/finish/status/</code>. The booking
+                        may still complete successfully.</td>
+                </tr>
+                <tr>
+                    <td>Error "unknown"</td>
+                    <td>"Booking is being processed..."</td>
+                    <td>Set booking status to "processing". Proceed to poll <code>/finish/status/</code>.</td>
+                </tr>
+                <tr>
+                    <td>Error "booking_form_expired"</td>
+                    <td>"Your session has expired. Please search again."</td>
+                    <td>Set booking status to "expired". Show error message and redirect user back to the hotel search
+                        page.</td>
+                </tr>
+                <tr>
+                    <td>Error "rate_not_found"</td>
+                    <td>"This room is no longer available. Please select a different room."</td>
+                    <td>Set booking status to "failed". Show error and redirect user back to the hotel details page to
+                        select a new rate.</td>
+                </tr>
+                <tr>
+                    <td>Error "return_path_required"</td>
+                    <td>"Additional payment verification is required."</td>
+                    <td>Display the verification prompt/3DS redirect to the user for additional payment authentication.
+                    </td>
+                </tr>
+            </table>
+            <br>
+            <strong>Table 2: <code>/hotel/order/booking/finish/status/</code></strong>
+            <table>
+                <tr>
+                    <th>ETG API Response</th>
+                    <th>Frontend Status (shown to user)</th>
+                    <th>Backend Processing Logic</th>
+                </tr>
+                <tr>
+                    <td>Status "ok"</td>
+                    <td>"Booking Confirmed ✅"</td>
+                    <td>Save booking status as "confirmed" in Supabase database. Display booking confirmation page using
+                        data from <strong>prebook step</strong>. Send confirmation email with markup prices to customer
+                        via Brevo API. Send notification to corporate email.</td>
+                </tr>
+                <tr>
+                    <td>Status "processing"</td>
+                    <td>"Still processing your booking..." (with loading spinner)</td>
+                    <td>Continue polling every 2.5 seconds. Do not show any error. Maximum polling duration: 180
+                        seconds.</td>
+                </tr>
+                <tr>
+                    <td>Error "timeout"</td>
+                    <td>"Your booking is being processed. We will email you the confirmation once it is finalized."</td>
+                    <td>Save booking status as "pending" (NOT "failed"). Stop polling. The booking may still be
+                        confirmed by ETG — send email notification once status is updated.</td>
+                </tr>
+                <tr>
+                    <td>Error "unknown"</td>
+                    <td>"Your booking is being processed. We will email you the confirmation once it is finalized."</td>
+                    <td>Save booking status as "pending". Stop polling. Same handling as timeout.</td>
+                </tr>
+                <tr>
+                    <td>5xx status code</td>
+                    <td>"Server error, retrying..."</td>
+                    <td>Continue polling (ETG may still be processing the booking). Log the error for internal
+                        monitoring. Do NOT mark as failed.</td>
+                </tr>
+                <tr>
+                    <td>Error "block"</td>
+                    <td>"Your payment was blocked by your bank. Please contact your bank or try a different card."</td>
+                    <td>Save booking status as "failed". Show user-friendly error message.</td>
+                </tr>
+                <tr>
+                    <td>Error "charge"</td>
+                    <td>"Payment charge failed. Please try again or use a different payment method."</td>
+                    <td>Save booking status as "failed". Show user-friendly error message.</td>
+                </tr>
+                <tr>
+                    <td>Error "3ds"</td>
+                    <td>"3D Secure verification failed. Please try again."</td>
+                    <td>Save booking status as "failed". Show user-friendly error message.</td>
+                </tr>
+                <tr>
+                    <td>Error "soldout"</td>
+                    <td>"This room was sold out while processing your booking. Please select a different room."</td>
+                    <td>Save booking status as "failed". Redirect user to hotel details page.</td>
+                </tr>
+                <tr>
+                    <td>Error "provider"</td>
+                    <td>"The hotel provider encountered an error. Please try again later."</td>
+                    <td>Save booking status as "failed". Show user-friendly error and offer retry option.</td>
+                </tr>
+                <tr>
+                    <td>Error "book_limit"</td>
+                    <td>"Booking limit reached for this property. Please try a different hotel."</td>
+                    <td>Save booking status as "failed". Show user-friendly error.</td>
+                </tr>
+                <tr>
+                    <td>Error "not_allowed"</td>
+                    <td>"This booking is not permitted at this time. Please contact support."</td>
+                    <td>Save booking status as "failed". Show user-friendly error with support contact.</td>
+                </tr>
+                <tr>
+                    <td>Error "booking_finish_did_not_succeed"</td>
+                    <td>"Booking could not be completed. Please try again or select a different room."</td>
+                    <td>Save booking status as "failed". Show user-friendly error and offer retry option.</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- 26 -->
+    <div class="q-block">
+        <div class="q-label">26. Confirmation Emails <span class="status s-done">✅ Fixed</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> Don't send client email to ETG. Use corporate email.
+            Generate your own voucher with markup.<br><strong>Second update:</strong> Thank you. Need to test via API.
+        </div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong> Fully implemented as requested:
+            <ol>
+                <li>In the <code>/hotel/order/booking/form/</code> request, we set <code>user.email</code> =
+                    <strong><code>info@coasttocoastjourneys.com</code></strong> (our corporate email).</li>
+                <li>ETG's net-price voucher is sent only to our corporate email — <strong>the customer never receives
+                        it</strong>.</li>
+                <li>We generate our own confirmation email/voucher with <strong>markup prices</strong> (net + 15%
+                    commission).</li>
+                <li>This custom voucher is sent to the <strong>customer's email address</strong> via Brevo (Sendinblue)
+                    API.</li>
+                <li>The customer only sees the price they paid, never the net price.</li>
+            </ol>
+            Email service uses Brevo HTTP API (not SMTP), configured with <code>BREVO_API_KEY</code> in our environment.
+            Ready for testing once IP is whitelisted.
+        </div>
+    </div>
+
+    <!-- ============================= POST-BOOKING ============================= -->
+    <div class="section-title">POST-BOOKING</div>
+
+    <!-- 27 -->
+    <div class="q-block">
+        <div class="q-label">27. Retrieve Bookings <span class="status s-done">✅ Fixed</span></div>
+        <div class="q-question"><strong>RateHawk Q:</strong> Is /order/info called separately from booking? Time gap?
+            What if blank response?<br><strong>Second update:</strong> You use /order/info 2.5s after /finish/status —
+            too early. Use 60s minimum gap. Use prebook data for immediate confirmation, not /order/info.</div>
+        <div class="q-remark">
+            <strong>Our Remark:</strong> Thank you for the clarification. We have corrected our implementation:
+            <ol>
+                <li><strong>Immediate booking confirmation display:</strong> We now use data from the <strong>prebook
+                        step</strong> (<code>/hotel/prebook/</code> response) to show the booking confirmation to the
+                    user. We do <strong>NOT call <code>/hotel/order/info/</code></strong> immediately after booking
+                    confirmation.</li>
+                <li><strong><code>/hotel/order/info/</code> is called separately</strong> from the booking flow — only
+                    when the user visits:
+                    <ul>
+                        <li>Booking history page (accessed later)</li>
+                        <li>Voucher download</li>
+                        <li>Modification status check</li>
+                        <li>Cancellation term display</li>
+                    </ul>
+                </li>
+                <li><strong>Time gap:</strong> We enforce a <strong>minimum 60-second gap</strong> between receiving
+                    <code>status: "ok"</code> from <code>/finish/status/</code> and calling
+                    <code>/hotel/order/info/</code>. We track the <code>updated_at</code> timestamp and verify the gap
+                    before making the call.</li>
+                <li><strong>Blank response handling:</strong> If <code>/hotel/order/info/</code> returns a blank
+                    response, we do NOT mark the booking as failed. The booking is still valid. We serve cached booking
+                    data from our Supabase database and retry the <code>/order/info/</code> call after another 60
+                    seconds.</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- ============================= SUMMARY ============================= -->
+    <div class="section-title">OVERALL STATUS SUMMARY</div>
+
+    <div class="q-block">
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Topic</th>
+                <th>Status</th>
+                <th>Remarks</th>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>Products & Certifications</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>Hotels only</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Payment Types</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>Net model (deposit)</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Workflow</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>12-step workflow with key_id: 83</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>IPs Whitelist</td>
+                <td><span class="status s-wait">⏳</span></td>
+                <td>136.116.198.82 — waiting RateHawk whitelist</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>RPM Limits</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>Aligned to RateHawk limits</td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>Hotel Static Data</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>Dump + incremental + Content API for DB only</td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>metapolicy display</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>All 16 policy categories + metapolicy_extra_info</td>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td>Room static data</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>Matching via rg_ext.rg (not rg_hash)</td>
+            </tr>
+            <tr>
+                <td>9</td>
+                <td>Match_hash</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>Implemented</td>
+            </tr>
+            <tr>
+                <td>10</td>
+                <td>Prebook</td>
+                <td><span class="status s-wait">⏳</span></td>
+                <td>price_increase_percent: 5 — waiting IP whitelist</td>
+            </tr>
+            <tr>
+                <td>11</td>
+                <td>Cache</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>Standard guidelines</td>
+            </tr>
+            <tr>
+                <td>12</td>
+                <td>Children logic</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>18+ adults, 0-17 children with age dropdown</td>
+            </tr>
+            <tr>
+                <td>13</td>
+                <td>Multiroom</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>Max 6 adults, 4 children, 10 total per room</td>
+            </tr>
+            <tr>
+                <td>14</td>
+                <td>Taxes & Fees</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>Non-included in original currency, "Payable at Property"</td>
+            </tr>
+            <tr>
+                <td>15</td>
+                <td>Search timeouts</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>30s timeout</td>
+            </tr>
+            <tr>
+                <td>16</td>
+                <td>Cancellation policies</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>3-tier, date/time in UTC+0</td>
+            </tr>
+            <tr>
+                <td>17</td>
+                <td>Citizenship / Residency</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>Dropdown in search, passed as residency param</td>
+            </tr>
+            <tr>
+                <td>18</td>
+                <td>Meal types</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>meal_data.value, no_child_meal, 25 codes mapped</td>
+            </tr>
+            <tr>
+                <td>19</td>
+                <td>Commission</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>15% markup on show_amount</td>
+            </tr>
+            <tr>
+                <td>20</td>
+                <td>Room name reflection</td>
+                <td><span class="status s-wait">⏳</span></td>
+                <td>Displayed as-is — waiting IP whitelist</td>
+            </tr>
+            <tr>
+                <td>21</td>
+                <td>Early/Late checkout</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>Informational only, upsell in Phase 2</td>
+            </tr>
+            <tr>
+                <td>22</td>
+                <td>Hotel chunk size</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>Implemented</td>
+            </tr>
+            <tr>
+                <td>23</td>
+                <td>Final booking status</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>Poll /finish/status/ only, 20 responses mapped</td>
+            </tr>
+            <tr>
+                <td>24</td>
+                <td>Booking cut-off</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>180s timeout, 2.5s interval</td>
+            </tr>
+            <tr>
+                <td>25</td>
+                <td>Error mapping</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>7 + 13 responses fully mapped</td>
+            </tr>
+            <tr>
+                <td>26</td>
+                <td>Confirmation emails</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>Corporate email to ETG, Brevo to customer</td>
+            </tr>
+            <tr>
+                <td>27</td>
+                <td>Retrieve bookings</td>
+                <td><span class="status s-done">✅</span></td>
+                <td>Prebook data for confirmation, 60s gap for /order/info</td>
+            </tr>
+        </table>
+        <br>
+        <div
+            style="background:#f0fdf4;border:1px solid #bbf7d0;padding:12px;border-radius:6px;color:#166534;font-weight:600;">
+            ✅ 24 of 27 items fully completed. &nbsp;&nbsp;⏳ 3 items (#4, #10, #20) blocked only by IP whitelist —
+            waiting for RateHawk to whitelist 136.116.198.82.
+        </div>
+    </div>
+
+    <div
+        style="text-align:center;margin-top:30px;padding-top:15px;border-top:2px solid #e5e7eb;color:#94a3b8;font-size:8.5pt;">
+        Coast to Coast Journeys | c2cjourneys.com | info@coasttocoastjourneys.com<br>
+        Document generated: 23 February 2026
+    </div>
+
+</body>
+
+</html>

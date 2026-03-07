@@ -19,7 +19,6 @@ ENV PYTHONUNBUFFERED=1
 ENV PORT=8080
 
 # Run the application with Gunicorn
-# Adjust the path to app:app based on your structure. 
-# Since app.py is in backend/app.py, user runs "python backend/app.py"
-# We need to make sure gunicorn can find the app factory or instance.
-CMD ["gunicorn", "--bind", ":8080", "--workers", "1", "--threads", "8", "--timeout", "180", "--chdir", "backend", "app:create_app()"]
+# app.py has both create_app() factory and app instance at module level
+# Use app:app to reference the pre-created instance for faster startup
+CMD ["gunicorn", "--bind", ":8080", "--workers", "2", "--threads", "4", "--timeout", "300", "--preload", "--chdir", "backend", "app:app"]

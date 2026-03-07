@@ -1,0 +1,12 @@
+ERROR: (gcloud.run) Invalid choice: 'logs'.
+Maybe you meant:
+  gcloud run jobs logs read
+  gcloud run services logs read
+  gcloud alpha run worker-pools revisions logs read
+  gcloud beta run jobs executions logs read
+  gcloud beta run revisions logs read
+  gcloud beta run worker-pools logs read
+  gcloud run deploy
+
+To search the help text of gcloud commands, run:
+  gcloud help -- SEARCH_TERMS
