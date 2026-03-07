@@ -63,6 +63,94 @@ def suggest_airports():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@flight_bp.route('/send-confirmation', methods=['POST'])
+def send_flight_confirmation_email():
+    """
+    Send flight booking confirmation email (used by test card payment).
+    POST /api/flights/send-confirmation
+    {
+        "booking_id": "C2C-F...",
+        "flight": { airline, flightNumber, origin, destination, ... },
+        "passenger": { firstName, lastName, email, phone },
+        "amount": 45000,
+        "currency": "INR"
+    }
+    """
+    try:
+        data = request.get_json()
+        flight = data.get('flight', {})
+        passenger = data.get('passenger', {})
+        booking_id = data.get('booking_id', '')
+        amount = data.get('amount', 0)
+        currency = data.get('currency', 'INR')
+
+        if not passenger.get('email'):
+            return jsonify({'success': False, 'error': 'Passenger email required'}), 400
+
+        # Save to Supabase if available
+        try:
+            from config import Config
+            if hasattr(Config, 'SUPABASE_URL') and Config.SUPABASE_URL:
+                from supabase import create_client
+                supabase = create_client(Config.SUPABASE_URL, Config.SUPABASE_KEY)
+                import time, random
+                timestamp = hex(int(time.time()))[2:].upper()
+                rand_part = ''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=4))
+                ref = booking_id or f"C2C-F{timestamp[-4:]}{rand_part}"
+                supabase.table('flight_bookings').insert({
+                    'reference_id': ref,
+                    'airline': flight.get('airline', ''),
+                    'flight_number': flight.get('flightNumber', ''),
+                    'origin': flight.get('origin', ''),
+                    'destination': flight.get('destination', ''),
+                    'date': flight.get('date', ''),
+                    'flight_class': flight.get('flightClass', 'economy'),
+                    'travelers': flight.get('travelers', 1),
+                    'total_amount': amount,
+                    'currency': currency,
+                    'passenger_name': f"{passenger.get('firstName', '')} {passenger.get('lastName', '')}".strip(),
+                    'passenger_email': passenger.get('email', ''),
+                    'passenger_phone': passenger.get('phone', ''),
+                    'special_requests': passenger.get('specialRequests', ''),
+                    'payment_method': 'card',
+                    'status': 'confirmed'
+                }).execute()
+        except Exception as db_err:
+            print(f"[Flight Confirmation] DB save skipped: {db_err}")
+
+        # Send email
+        try:
+            from flask import current_app
+            from services.email_service import email_service
+            email_service.init_app(current_app)
+            email_details = {
+                'booking_id': booking_id,
+                'airline': flight.get('airline', ''),
+                'flight_number': flight.get('flightNumber', ''),
+                'origin': flight.get('origin', ''),
+                'destination': flight.get('destination', ''),
+                'date': flight.get('date', ''),
+                'flight_class': flight.get('flightClass', 'economy'),
+                'travelers': flight.get('travelers', 1),
+                'customer_name': f"{passenger.get('firstName', '')} {passenger.get('lastName', '')}".strip(),
+                'customer_email': passenger.get('email', ''),
+                'customer_phone': passenger.get('phone', ''),
+                'amount': amount,
+                'currency': currency,
+                'depart_time': flight.get('departTime', ''),
+                'arrive_time': flight.get('arriveTime', ''),
+                'duration': flight.get('duration', ''),
+            }
+            email_service.send_flight_confirmation(passenger.get('email', ''), email_details)
+        except Exception as email_err:
+            print(f"[Flight Confirmation] Email error: {email_err}")
+
+        return jsonify({'success': True, 'booking_id': booking_id})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @flight_bp.route('/create-booking', methods=['POST'])
 def create_flight_booking():
     """

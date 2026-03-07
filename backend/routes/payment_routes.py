@@ -272,7 +272,9 @@ def create_paypal_order():
     {
         "amount": 100.00,
         "currency": "USD",
-        "description": "Hotel Booking"
+        "description": "Hotel Booking",
+        "return_url": "https://...",
+        "cancel_url": "https://..."
     }
     """
     try:
@@ -289,11 +291,172 @@ def create_paypal_order():
         result = paypal_service.create_order(
             amount=float(data['amount']),
             currency=data.get('currency', 'USD'),
-            description=data.get('description', 'Hotel Booking')
+            description=data.get('description', 'Hotel Booking'),
+            return_url=data.get('return_url'),
+            cancel_url=data.get('cancel_url')
         )
         
         return jsonify(result), 200 if result['success'] else 500
         
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ===== Flight-Specific Payment Routes =====
+
+def _create_flight_booking_record(flight, passenger, amount, payment_method, payment_id):
+    """Helper: Generate a flight booking record dict with reference ID"""
+    import time, random
+    timestamp = hex(int(time.time()))[2:].upper()
+    rand_part = ''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=4))
+    booking_ref = f"C2C-F{timestamp[-4:]}{rand_part}"
+    return booking_ref, {
+        'reference_id': booking_ref,
+        'flight_id': flight.get('flightId', ''),
+        'airline': flight.get('airline', ''),
+        'flight_number': flight.get('flightNumber', ''),
+        'origin': flight.get('origin', ''),
+        'destination': flight.get('destination', ''),
+        'date': flight.get('date', ''),
+        'flight_class': flight.get('flightClass', 'economy'),
+        'travelers': flight.get('travelers', 1),
+        'total_amount': amount,
+        'currency': flight.get('currency', 'INR'),
+        'passenger_name': f"{passenger.get('firstName', '')} {passenger.get('lastName', '')}".strip(),
+        'passenger_email': passenger.get('email', ''),
+        'passenger_phone': passenger.get('phone', ''),
+        'special_requests': passenger.get('specialRequests', ''),
+        'payment_method': payment_method,
+        'payment_id': payment_id,
+        'status': 'confirmed'
+    }
+
+
+def _save_and_email_flight_booking(booking_ref, booking_record, flight, passenger, amount):
+    """Helper: Save flight booking to Supabase and send confirmation email"""
+    supabase = current_app.config.get('SUPABASE')
+    if supabase:
+        try:
+            supabase.table('flight_bookings').insert(booking_record).execute()
+            print(f"✅ Flight booking saved: {booking_ref}")
+        except Exception as db_err:
+            print(f"Flight booking DB error: {db_err}")
+
+    try:
+        from services.email_service import email_service
+        email_service.init_app(current_app)
+        email_details = {
+            'booking_id': booking_ref,
+            'airline': flight.get('airline', ''),
+            'flight_number': flight.get('flightNumber', ''),
+            'origin': flight.get('origin', ''),
+            'destination': flight.get('destination', ''),
+            'date': flight.get('date', ''),
+            'flight_class': flight.get('flightClass', 'economy'),
+            'travelers': flight.get('travelers', 1),
+            'customer_name': booking_record.get('passenger_name', ''),
+            'customer_email': passenger.get('email', ''),
+            'customer_phone': passenger.get('phone', ''),
+            'amount': amount,
+            'currency': flight.get('currency', 'INR'),
+            'depart_time': flight.get('departTime', ''),
+            'arrive_time': flight.get('arriveTime', ''),
+            'duration': flight.get('duration', ''),
+        }
+        email_service.send_flight_confirmation(passenger.get('email', ''), email_details)
+        print(f"✅ Flight confirmation email sent to {passenger.get('email', '')}")
+    except Exception as email_err:
+        print(f"Flight email error: {email_err}")
+
+
+@payment_bp.route('/flight/verify', methods=['POST'])
+def verify_flight_payment():
+    """
+    Verify Razorpay payment for flight booking and save booking record.
+    POST /api/payment/flight/verify
+    {
+        "razorpay_order_id": "order_xxx",
+        "razorpay_payment_id": "pay_xxx",
+        "razorpay_signature": "sig_xxx",
+        "amount": 45000,
+        "flight": { airline, flightNumber, origin, destination, date, ... },
+        "passenger": { firstName, lastName, email, phone, specialRequests }
+    }
+    """
+    try:
+        data = request.get_json()
+
+        required_fields = ['razorpay_order_id', 'razorpay_payment_id', 'razorpay_signature']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'success': False, 'error': f'{field} is required'}), 400
+
+        razorpay_service = current_app.config.get('RAZORPAY_SERVICE')
+        if not razorpay_service:
+            return jsonify({'success': False, 'error': 'Payment service not configured'}), 500
+
+        is_valid = razorpay_service.verify_payment_signature(
+            data['razorpay_order_id'],
+            data['razorpay_payment_id'],
+            data['razorpay_signature']
+        )
+
+        if is_valid:
+            flight = data.get('flight', {})
+            passenger = data.get('passenger', {})
+            amount = data.get('amount', 0)
+
+            booking_ref, booking_record = _create_flight_booking_record(
+                flight, passenger, amount, 'razorpay', data['razorpay_payment_id']
+            )
+            _save_and_email_flight_booking(booking_ref, booking_record, flight, passenger, amount)
+
+            return jsonify({
+                'success': True,
+                'booking_id': booking_ref,
+                'message': 'Payment verified and flight booking confirmed'
+            }), 200
+        else:
+            return jsonify({'success': False, 'error': 'Invalid payment signature'}), 400
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@payment_bp.route('/paypal/flight/capture/<order_id>', methods=['POST'])
+def capture_paypal_flight_order(order_id):
+    """
+    Capture PayPal order for flight booking.
+    POST /api/payment/paypal/flight/capture/{order_id}
+    {
+        "flight": { ... },
+        "passenger": { ... },
+        "amount": 45000
+    }
+    """
+    try:
+        paypal_service = current_app.config.get('PAYPAL_SERVICE')
+        if not paypal_service:
+            return jsonify({'success': False, 'error': 'PayPal service not configured'}), 500
+
+        result = paypal_service.capture_order(order_id)
+
+        if result['success']:
+            data = request.get_json() or {}
+            flight = data.get('flight', {})
+            passenger = data.get('passenger', {})
+            amount = data.get('amount', 0)
+
+            booking_ref, booking_record = _create_flight_booking_record(
+                flight, passenger, amount, 'paypal', order_id
+            )
+            _save_and_email_flight_booking(booking_ref, booking_record, flight, passenger, amount)
+
+            result['booking_id'] = booking_ref
+            result['message'] = 'PayPal payment captured and flight booking confirmed'
+
+        return jsonify(result), 200 if result['success'] else 500
+
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 

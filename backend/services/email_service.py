@@ -76,6 +76,264 @@ class EmailService:
             print(f"❌ Failed to send email: {str(e)}")
             return False
 
+    def send_flight_confirmation(self, to_email, booking_details):
+        """Send flight booking confirmation with professional invoice"""
+        airline = booking_details.get('airline', 'Airline')
+        flight_number = booking_details.get('flight_number', '')
+        subject = f"Flight Booking Confirmed ✅ — {airline} {flight_number} | C2C Journeys"
+
+        invoice_html = self._generate_flight_invoice_html(booking_details)
+
+        amount = booking_details.get('amount', 0)
+        currency = booking_details.get('currency', 'INR')
+        body = f"""
+Dear {booking_details.get('customer_name', 'Passenger')},
+
+Your flight booking has been confirmed!
+
+Booking ID: {booking_details.get('booking_id', 'N/A')}
+Flight: {airline} {flight_number}
+Route: {booking_details.get('origin', '')} → {booking_details.get('destination', '')}
+Date: {self._format_date(booking_details.get('date', ''))}
+Total Amount: {self._format_amount(amount, currency)}
+
+Thank you for choosing C2C Journeys!
+        """
+
+        customer_email_sent = self.send_email(to_email, subject, body, html_body=invoice_html)
+        self._send_flight_owner_notification(to_email, booking_details)
+        return customer_email_sent
+
+    def _send_flight_owner_notification(self, guest_email, booking_details):
+        """Send flight booking notification to owner/admin"""
+        owner_email = os.getenv('CORPORATE_EMAIL', os.getenv('OWNER_EMAIL', 'info@coasttocoastjourneys.com'))
+        subject = f"✈️ New Flight Booking — {booking_details.get('airline')} {booking_details.get('flight_number', '')} | {booking_details.get('booking_id', 'N/A')}"
+        amount = booking_details.get('amount', 0)
+        currency = booking_details.get('currency', 'INR')
+        body = f"""
+New Flight Booking Confirmed!
+
+══════════════════════════════════════
+BOOKING DETAILS
+══════════════════════════════════════
+
+Booking ID: {booking_details.get('booking_id', 'N/A')}
+
+PASSENGER INFORMATION:
+• Name: {booking_details.get('customer_name', 'N/A')}
+• Email: {guest_email}
+• Phone: {booking_details.get('customer_phone', 'N/A')}
+
+FLIGHT DETAILS:
+• Airline: {booking_details.get('airline', 'N/A')} {booking_details.get('flight_number', '')}
+• Route: {booking_details.get('origin', '')} → {booking_details.get('destination', '')}
+• Date: {booking_details.get('date', 'N/A')}
+• Departure: {booking_details.get('depart_time', 'N/A')} | Arrival: {booking_details.get('arrive_time', 'N/A')}
+• Class: {booking_details.get('flight_class', 'Economy')}
+• Travelers: {booking_details.get('travelers', 1)}
+
+PAYMENT:
+• Amount: {self._format_amount(amount, currency)}
+
+══════════════════════════════════════
+
+This is an automated notification from C2C Journeys.
+        """
+        print(f"📧 Sending flight owner notification to {owner_email}")
+        self.send_email(owner_email, subject, body)
+
+    def _generate_flight_invoice_html(self, booking):
+        """Generate professional HTML invoice email for flight bookings"""
+        date_str = datetime.now().strftime("%d %B %Y")
+        booking_id = booking.get('booking_id', 'N/A')
+        customer_name = booking.get('customer_name', 'Valued Passenger')
+        airline = booking.get('airline', 'Airline')
+        flight_number = booking.get('flight_number', '')
+        origin = booking.get('origin', '')
+        destination = booking.get('destination', '')
+        depart_time = booking.get('depart_time', '')
+        arrive_time = booking.get('arrive_time', '')
+        duration = booking.get('duration', '')
+        flight_class = booking.get('flight_class', 'Economy').capitalize()
+        travelers = booking.get('travelers', 1)
+        flight_date = self._format_date(booking.get('date', ''))
+        amount = booking.get('amount', 0)
+        currency = booking.get('currency', 'INR')
+        formatted_amount = self._format_amount(amount, currency)
+
+        return f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 30px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%); padding: 32px 40px; text-align: center;">
+                            <h1 style="color: #ffffff; font-size: 24px; margin: 0 0 4px; font-weight: 700;">C2C Journeys</h1>
+                            <p style="color: rgba(255,255,255,0.8); font-size: 13px; margin: 0;">✈️ Flight Booking Confirmation</p>
+                        </td>
+                    </tr>
+                    <!-- Success Banner -->
+                    <tr>
+                        <td style="padding: 30px 40px 20px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #ecfdf5, #d1fae5); border-radius: 12px; border: 1px solid #a7f3d0;">
+                                <tr>
+                                    <td style="padding: 20px 24px; text-align: center;">
+                                        <div style="font-size: 36px; margin-bottom: 8px;">✅</div>
+                                        <h2 style="color: #065f46; font-size: 18px; margin: 0 0 4px; font-weight: 700;">Flight Booking Confirmed!</h2>
+                                        <p style="color: #047857; font-size: 13px; margin: 0;">Your flight has been successfully booked</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Greeting -->
+                    <tr>
+                        <td style="padding: 10px 40px 20px;">
+                            <p style="color: #334155; font-size: 15px; line-height: 1.6; margin: 0;">
+                                Dear <strong>{customer_name}</strong>,<br>
+                                Thank you for choosing C2C Journeys! Your flight booking details are below:
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Booking Reference -->
+                    <tr>
+                        <td style="padding: 0 40px 20px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
+                                <tr>
+                                    <td style="padding: 16px 20px;">
+                                        <table width="100%">
+                                            <tr>
+                                                <td style="color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Booking Reference</td>
+                                                <td style="color: #1e293b; font-size: 15px; font-weight: 700; text-align: right; font-family: 'Courier New', monospace;">{booking_id}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; padding-top: 8px;">Booking Date</td>
+                                                <td style="color: #475569; font-size: 13px; text-align: right; padding-top: 8px;">{date_str}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Route Visual -->
+                    <tr>
+                        <td style="padding: 0 40px 20px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border-radius: 12px; border: 1px solid #bfdbfe; padding: 20px;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <div style="text-align: center; margin-bottom: 8px; font-size: 12px; font-weight: 600; color: #1e40af; text-transform: uppercase; letter-spacing: 1px;">{airline} · {flight_number}</div>
+                                        <table width="100%" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="text-align: center; width: 35%;">
+                                                    <div style="font-size: 28px; font-weight: 800; color: #0f172a;">{depart_time}</div>
+                                                    <div style="font-size: 20px; font-weight: 700; color: #1e40af;">{origin}</div>
+                                                </td>
+                                                <td style="text-align: center; width: 30%;">
+                                                    <div style="font-size: 11px; color: #64748b; margin-bottom: 6px;">{duration}</div>
+                                                    <div style="height: 2px; background: linear-gradient(to right, #2563eb, #7c3aed); border-radius: 2px; position: relative;">
+                                                        <span style="position: absolute; top: -8px; left: 50%; transform: translateX(-50%); font-size: 14px;">✈️</span>
+                                                    </div>
+                                                    <div style="font-size: 11px; color: #10b981; font-weight: 600; margin-top: 8px;">Non-stop</div>
+                                                </td>
+                                                <td style="text-align: center; width: 35%;">
+                                                    <div style="font-size: 28px; font-weight: 800; color: #0f172a;">{arrive_time}</div>
+                                                    <div style="font-size: 20px; font-weight: 700; color: #1e40af;">{destination}</div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Flight Details -->
+                    <tr>
+                        <td style="padding: 0 40px 20px;">
+                            <h3 style="color: #1e3a5f; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 12px; border-bottom: 2px solid #2563eb; padding-bottom: 8px;">✈️ Flight Details</h3>
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td style="padding: 12px 0; color: #64748b; border-bottom: 1px solid #f1f5f9;">Travel Date</td>
+                                    <td style="padding: 12px 0; color: #1e293b; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">📅 {flight_date}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px 0; color: #64748b; border-bottom: 1px solid #f1f5f9;">Class</td>
+                                    <td style="padding: 12px 0; color: #1e293b; font-weight: 500; text-align: right; border-bottom: 1px solid #f1f5f9;">🪑 {flight_class}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px 0; color: #64748b; border-bottom: 1px solid #f1f5f9;">Travelers</td>
+                                    <td style="padding: 12px 0; color: #1e293b; font-weight: 500; text-align: right; border-bottom: 1px solid #f1f5f9;">👥 {travelers} Passenger(s)</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Amount -->
+                    <tr>
+                        <td style="padding: 0 40px 25px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #1e3a5f 0%, #1e40af 100%); border-radius: 12px;">
+                                <tr>
+                                    <td style="padding: 20px 24px;">
+                                        <table width="100%">
+                                            <tr>
+                                                <td style="color: rgba(255,255,255,0.8); font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Total Amount Paid</td>
+                                                <td style="color: #ffffff; font-size: 26px; font-weight: 700; text-align: right; letter-spacing: -0.5px;">{formatted_amount}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Important Info -->
+                    <tr>
+                        <td style="padding: 0 40px 25px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fffbeb; border-radius: 10px; border: 1px solid #fde68a;">
+                                <tr>
+                                    <td style="padding: 16px 20px;">
+                                        <h4 style="color: #92400e; font-size: 13px; margin: 0 0 8px; font-weight: 600;">⚠️ Important Information</h4>
+                                        <ul style="color: #78350f; font-size: 12px; line-height: 1.8; margin: 0; padding-left: 16px;">
+                                            <li>Please arrive at the airport at least 2 hours before departure</li>
+                                            <li>Carry a valid government-issued photo ID / Passport</li>
+                                            <li>Our team will call you shortly to confirm your booking</li>
+                                            <li>Check airline website for baggage policy and web check-in</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Support -->
+                    <tr>
+                        <td style="padding: 0 40px 30px; text-align: center;">
+                            <p style="color: #64748b; font-size: 13px; line-height: 1.6; margin: 0;">
+                                Need help? Contact us at<br>
+                                <a href="mailto:info@coasttocoastjourneys.com" style="color: #2563eb; text-decoration: none; font-weight: 600;">info@coasttocoastjourneys.com</a>
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8fafc; padding: 20px 40px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            <p style="color: #94a3b8; font-size: 11px; margin: 0 0 4px;">© 2026 Coast to Coast Journeys. All Rights Reserved.</p>
+                            <p style="color: #cbd5e1; font-size: 10px; margin: 0;">coasttocoastjourneys.com</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+"""
+
     def send_booking_confirmation(self, to_email, booking_details):
         """Send booking confirmation with professional invoice"""
         hotel_name = booking_details.get('hotel_name', 'Hotel')

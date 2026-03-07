@@ -846,7 +846,7 @@
                         ondismiss: function () {
                             payButtons.forEach(btn => {
                                 btn.disabled = false;
-                                if (btn.textContent.includes('Razorpay')) {
+                                if (btn.textContent.includes('Razorpay') || btn.innerHTML.includes('Razorpay')) {
                                     btn.innerHTML = '<i class="fas fa-credit-card"></i> Pay with Razorpay (UPI/Cards)';
                                 }
                             });
@@ -862,7 +862,7 @@
                 alert('Payment failed: ' + error.message);
                 payButtons.forEach(btn => {
                     btn.disabled = false;
-                    if (btn.textContent.includes('Razorpay')) {
+                    if (btn.textContent.includes('Razorpay') || btn.innerHTML.includes('Razorpay')) {
                         btn.innerHTML = '<i class="fas fa-credit-card"></i> Pay with Razorpay (UPI/Cards)';
                     }
                 });
@@ -871,19 +871,43 @@
 
         async function verifyRazorpayPayment(razorpayResponse) {
             try {
-                const response = await fetch('/api/payment/verify', {
+                const passenger = flightBooking.passenger || {};
+                const response = await fetch('/api/payment/flight/verify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         razorpay_order_id: razorpayResponse.razorpay_order_id,
                         razorpay_payment_id: razorpayResponse.razorpay_payment_id,
-                        razorpay_signature: razorpayResponse.razorpay_signature
+                        razorpay_signature: razorpayResponse.razorpay_signature,
+                        amount: flightBooking.total,
+                        flight: {
+                            flightId: flightBooking.flightId || '',
+                            airline: flightBooking.airline || '',
+                            flightNumber: flightBooking.flightNumber || '',
+                            origin: flightBooking.origin || '',
+                            destination: flightBooking.destination || '',
+                            date: flightBooking.date || '',
+                            flightClass: flightBooking.flightClass || 'economy',
+                            travelers: flightBooking.travelers || 1,
+                            currency: flightBooking.currency || 'INR',
+                            departTime: flightBooking.departTime || '',
+                            arriveTime: flightBooking.arriveTime || '',
+                            duration: flightBooking.duration || '',
+                            stops: flightBooking.stops || '0'
+                        },
+                        passenger: {
+                            firstName: passenger.firstName || '',
+                            lastName: passenger.lastName || '',
+                            email: passenger.email || '',
+                            phone: passenger.phone || '',
+                            specialRequests: passenger.specialRequests || ''
+                        }
                     })
                 });
 
                 const data = await response.json();
                 if (data.success) {
-                    showConfirmation(razorpayResponse.razorpay_payment_id);
+                    showConfirmation(data.booking_id || razorpayResponse.razorpay_payment_id);
                 } else {
                     alert('Payment verification failed! Please contact support.');
                 }
@@ -898,27 +922,31 @@
             const payButtons = document.querySelectorAll('.pay-button');
             payButtons.forEach(btn => {
                 btn.disabled = true;
-                if (btn.textContent.includes('PayPal')) {
+                if (btn.innerHTML.includes('PayPal')) {
                     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
                 }
             });
 
             try {
+                const returnUrl = `${window.location.origin}/templates/flight-payment.html?paypal_return=1`;
+                const cancelUrl = `${window.location.origin}/templates/flight-payment.html?paypal_cancel=1`;
+
                 const response = await fetch('/api/payment/paypal/create-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         amount: flightBooking.total,
-                        currency: 'INR',
-                        description: `Flight: ${flightBooking.airline} ${flightBooking.origin}→${flightBooking.destination}`
+                        currency: 'USD',
+                        description: `Flight: ${flightBooking.airline} ${flightBooking.origin}→${flightBooking.destination}`,
+                        return_url: returnUrl,
+                        cancel_url: cancelUrl
                     })
                 });
 
                 const data = await response.json();
                 if (!data.success || !data.approval_url) throw new Error(data.error || 'Failed to create PayPal order');
 
-                sessionStorage.setItem('paypal_order_id', data.order_id);
-                sessionStorage.setItem('flight_payment_pending', 'true');
+                sessionStorage.setItem('paypal_flight_order_id', data.order_id);
                 window.location.href = data.approval_url;
 
             } catch (error) {
@@ -926,11 +954,89 @@
                 alert('Payment failed: ' + error.message);
                 payButtons.forEach(btn => {
                     btn.disabled = false;
-                    if (btn.textContent.includes('PayPal')) {
+                    if (btn.innerHTML.includes('PayPal') || btn.innerHTML.includes('fa-spin')) {
                         btn.innerHTML = '<i class="fab fa-paypal"></i> Pay with PayPal';
                     }
                 });
             }
+        }
+
+        // Handle PayPal return from redirect
+        async function handlePayPalReturn() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isReturn = urlParams.get('paypal_return');
+            const token = urlParams.get('token'); // PayPal order ID in URL
+
+            if (!isReturn || !token) return;
+
+            // Restore state from sessionStorage
+            const storedBooking = JSON.parse(sessionStorage.getItem('ctc_flight_booking') || '{}');
+            if (!storedBooking.airline) {
+                showStatus('Could not restore booking data. Please contact support.', 'error');
+                return;
+            }
+
+            showStatus('<i class="fas fa-spinner fa-spin"></i> Completing PayPal payment...', 'info');
+
+            try {
+                const passenger = storedBooking.passenger || {};
+                const response = await fetch(`/api/payment/paypal/flight/capture/${token}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: Math.round(parseFloat(storedBooking.totalPrice || storedBooking.price || 0)),
+                        flight: {
+                            flightId: storedBooking.flightId || '',
+                            airline: storedBooking.airline || '',
+                            flightNumber: storedBooking.flightNumber || '',
+                            origin: storedBooking.origin || '',
+                            destination: storedBooking.destination || '',
+                            date: storedBooking.date || '',
+                            flightClass: storedBooking.flightClass || 'economy',
+                            travelers: storedBooking.travelers || 1,
+                            currency: storedBooking.currency || 'INR',
+                            departTime: storedBooking.departTime || '',
+                            arriveTime: storedBooking.arriveTime || '',
+                            duration: storedBooking.duration || '',
+                            stops: storedBooking.stops || '0'
+                        },
+                        passenger: {
+                            firstName: passenger.firstName || '',
+                            lastName: passenger.lastName || '',
+                            email: passenger.email || '',
+                            phone: passenger.phone || '',
+                            specialRequests: passenger.specialRequests || ''
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    // Remove paypal params from URL cleanly
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    showConfirmation(data.booking_id || token);
+                } else {
+                    showStatus('PayPal payment capture failed. Please contact support.', 'error');
+                }
+            } catch (err) {
+                console.error('PayPal capture error:', err);
+                showStatus('Error completing PayPal payment: ' + err.message, 'error');
+            }
+        }
+
+        function showStatus(message, type) {
+            let el = document.getElementById('paypalStatusMsg');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'paypalStatusMsg';
+                el.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);padding:16px 28px;border-radius:10px;font-weight:600;z-index:9999;max-width:90%;text-align:center;';
+                document.body.appendChild(el);
+            }
+            const colors = { info: '#2563eb', error: '#ef4444', success: '#10b981' };
+            el.style.background = colors[type] || '#2563eb';
+            el.style.color = 'white';
+            el.innerHTML = message;
+            el.style.display = 'block';
         }
 
         // ===== TEST CARD =====
@@ -966,37 +1072,50 @@
             bookNowBtn.disabled = true;
 
             try {
-                // Simulate payment processing
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
                 const referenceId = generateReferenceId();
-
-                // Send confirmation email
                 const passenger = flightBooking.passenger || {};
-                if (passenger.email) {
-                    try {
-                        await fetch('/api/hotels/booking/send-confirmation', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                partner_order_id: referenceId,
-                                email: passenger.email,
-                                hotel_name: `Flight: ${flightBooking.airline} ${flightBooking.flightNumber}`,
-                                checkin: flightBooking.date,
-                                checkout: flightBooking.date,
-                                guests: `${passenger.firstName} ${passenger.lastName}`,
-                                total_amount: flightBooking.total || 0,
-                                room_name: `${flightBooking.origin} → ${flightBooking.destination}`,
-                                currency: flightBooking.currency || 'INR'
-                            })
-                        });
-                    } catch (emailError) {
-                        console.error('Email send error:', emailError);
-                    }
+
+                // Send confirmation email via flight endpoint
+                try {
+                    await fetch('/api/flights/send-confirmation', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            booking_id: referenceId,
+                            amount: flightBooking.total || 0,
+                            currency: flightBooking.currency || 'INR',
+                            flight: {
+                                flightId: flightBooking.flightId || '',
+                                airline: flightBooking.airline || '',
+                                flightNumber: flightBooking.flightNumber || '',
+                                origin: flightBooking.origin || '',
+                                destination: flightBooking.destination || '',
+                                date: flightBooking.date || '',
+                                flightClass: flightBooking.flightClass || 'economy',
+                                travelers: flightBooking.travelers || 1,
+                                currency: flightBooking.currency || 'INR',
+                                departTime: flightBooking.departTime || '',
+                                arriveTime: flightBooking.arriveTime || '',
+                                duration: flightBooking.duration || '',
+                                stops: flightBooking.stops || '0'
+                            },
+                            passenger: {
+                                firstName: passenger.firstName || '',
+                                lastName: passenger.lastName || '',
+                                email: passenger.email || '',
+                                phone: passenger.phone || '',
+                                specialRequests: passenger.specialRequests || ''
+                            }
+                        })
+                    });
+                } catch (emailError) {
+                    console.error('Email send error:', emailError);
                 }
 
                 hideTestCardForm();
-                showConfirmation(`TEST_${referenceId}`);
+                showConfirmation(referenceId);
 
             } catch (error) {
                 console.error('Test payment error:', error);
@@ -1006,22 +1125,21 @@
             }
         }
 
-        function showConfirmation(paymentId) {
-            const referenceId = generateReferenceId();
+        function showConfirmation(paymentIdOrRef) {
+            const referenceId = (paymentIdOrRef && paymentIdOrRef.startsWith('C2C-')) ? paymentIdOrRef : generateReferenceId();
             const currency = flightBooking.currency || 'INR';
 
             document.getElementById('confirmRefId').textContent = referenceId;
-            document.getElementById('confirmFlightInfo').textContent = `${flightBooking.airline} ${flightBooking.flightNumber}`;
-            document.getElementById('confirmRoute').textContent = `${flightBooking.origin} → ${flightBooking.destination}`;
+            document.getElementById('confirmFlightInfo').textContent = `${flightBooking.airline || ''} ${flightBooking.flightNumber || ''}`;
+            document.getElementById('confirmRoute').textContent = `${flightBooking.origin || ''} → ${flightBooking.destination || ''}`;
             document.getElementById('confirmDate').textContent = formatDateDisplay(flightBooking.date);
             document.getElementById('confirmAmount').innerHTML = formatPrice(flightBooking.total, currency);
             document.getElementById('confirmEmail').textContent = flightBooking.passenger?.email || '-';
 
             document.getElementById('confirmationModal').style.display = 'block';
 
-            // Store payment success
             sessionStorage.setItem('paymentSuccess', JSON.stringify({
-                payment_id: paymentId,
+                payment_id: paymentIdOrRef,
                 reference_id: referenceId,
                 amount: flightBooking.total,
                 flight: `${flightBooking.airline} ${flightBooking.flightNumber}`,
@@ -1039,10 +1157,13 @@
                     e.target.value = formatted;
                 });
             }
-        });
 
-        // Load on page ready
-        document.addEventListener('DOMContentLoaded', loadBookingDetails);
+            // Handle PayPal return from redirect
+            handlePayPalReturn();
+
+            // Then load booking details normally
+            loadBookingDetails();
+        });
     </script>
 </body>
 

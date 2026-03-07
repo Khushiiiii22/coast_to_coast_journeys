@@ -92,15 +92,17 @@ class PayPalService:
             print(f'PayPal auth error: {e}')
             return None
     
-    def create_order(self, amount, currency='USD', description='Hotel Booking'):
+    def create_order(self, amount, currency='USD', description='Hotel Booking', return_url=None, cancel_url=None):
         """
         Create a PayPal order
-        
+
         Args:
             amount: Amount in decimal (e.g., 100.00)
             currency: Currency code (USD, EUR, INR, etc.)
             description: Order description
-        
+            return_url: URL to redirect after PayPal approval
+            cancel_url: URL to redirect if user cancels
+
         Returns:
             dict: Order details including order_id
         """
@@ -131,8 +133,8 @@ class PayPalService:
                     }
                 }],
                 'application_context': {
-                    'return_url': 'http://localhost:5000/payment-success.html',
-                    'cancel_url': 'http://localhost:5000/payment-checkout.html'
+                    'return_url': return_url or 'https://coasttocoastjourneys.com/flight-payment.html',
+                    'cancel_url': cancel_url or 'https://coasttocoastjourneys.com/flight-payment.html'
                 }
             }
             
