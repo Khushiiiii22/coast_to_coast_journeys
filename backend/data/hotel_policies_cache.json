@@ -1,0 +1,93 @@
+{
+    "_description": "Local cache of hotel metapolicy data from ETG /hotel/info/dump/. Updated by sync_etg_static_data.py. In sandbox, seeded with representative sample data.",
+    "10004834": {
+        "metapolicy_struct": {
+            "check_in": {
+                "available": true,
+                "time": "14:00"
+            },
+            "check_out": {
+                "available": true,
+                "time": "12:00"
+            },
+            "children": [
+                {
+                    "text": "Children of all ages are welcome",
+                    "type": "age_policy",
+                    "max_age": 12
+                }
+            ],
+            "pets": [
+                {
+                    "pets_type": "all",
+                    "inclusion": "surcharge",
+                    "price": "50",
+                    "currency": "USD",
+                    "price_unit": "per_stay"
+                }
+            ],
+            "internet": [
+                {
+                    "type": "wifi",
+                    "inclusion": "included",
+                    "work_area": "entire_property"
+                }
+            ],
+            "parking": [
+                {
+                    "type": "on_site",
+                    "inclusion": "surcharge",
+                    "price": "25",
+                    "currency": "USD",
+                    "price_unit": "per_day"
+                },
+                {
+                    "type": "public_nearby",
+                    "inclusion": "surcharge",
+                    "price": "15",
+                    "currency": "USD",
+                    "price_unit": "per_day"
+                }
+            ],
+            "deposit": {
+                "availability": "required",
+                "payment_type": "credit_card",
+                "type": "property_decides"
+            },
+            "meal": [
+                {
+                    "type": "breakfast",
+                    "inclusion": true,
+                    "price": "0",
+                    "currency": "USD"
+                }
+            ],
+            "add_fee": [
+                {
+                    "type": "extra_bed",
+                    "inclusion": "surcharge",
+                    "price": "30",
+                    "currency": "USD",
+                    "price_unit": "per_night"
+                },
+                {
+                    "type": "crib",
+                    "inclusion": "included",
+                    "max_age": 2
+                }
+            ],
+            "smoking": false,
+            "age_restriction": {
+                "min_age": 18
+            }
+        },
+        "metapolicy_extra_info": {
+            "pets": "Pets are allowed on request. Charges may apply - $50 per stay. Only small dogs are permitted (under 10 kg).",
+            "parking": "Private parking is available on site (reservation needed). Costs $25 per day. Public parking nearby at $15 per day.",
+            "important": "Government-issued photo ID and a credit card are required at check-in. Special requests are subject to availability upon check-in.",
+            "resort_fee": "A tourism/city tax of approximately $3.50 per person per night is payable locally. This tax is not included in the room rate."
+        },
+        "check_in_time": "14:00",
+        "check_out_time": "12:00"
+    }
+}

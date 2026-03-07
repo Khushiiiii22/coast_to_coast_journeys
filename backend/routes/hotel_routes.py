@@ -8,6 +8,7 @@ from services.supabase_service import supabase_service
 from services.google_maps_service import google_maps_service
 from datetime import datetime
 import time
+import os
 from routes.cancellation_helper import format_cancellation_policies
 
 hotel_bp = Blueprint('hotels', __name__, url_prefix='/api/hotels')
@@ -1409,49 +1410,96 @@ def get_hotel_info(hotel_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@hotel_bp.route('/test-policies', methods=['GET'])
+def test_policies():
+    return jsonify({"success": True, "message": "Routes are working"})
+
 @hotel_bp.route('/policies/<hotel_id>', methods=['GET'])
 def get_hotel_policies(hotel_id):
     """
-    Get hotel policies from static data
-    Returns metapolicy_extra_info and metapolicy_struct fields
+    Get hotel policies from static data.
+    Returns metapolicy_extra_info and metapolicy_struct fields.
+    
+    Data source strategy:
+    1. /hotel/info/ — richest source, contains metapolicy_struct and metapolicy_extra_info
+    2. /hotel/static/ — fallback, contains room/bed data but NOT metapolicies
     
     IMPORTANT: policy_struct is deprecated and should be ignored (per RateHawk)
     """
     try:
-        # Fetch static hotel data
-        result = etg_service.get_hotel_static(hotel_id)
-        
-        if not result.get('success'):
-            return jsonify({
-                'success': False,
-                'error': result.get('error', 'Failed to fetch hotel static data')
-            }), 400
-        
-        hotel_data = result.get('data', {})
-        if isinstance(hotel_data, dict) and hotel_data.get('data'):
-            hotel_data = hotel_data['data']
-        
+        hotel_data = {}
+
+        # ── Strategy 0: Local cache from ETG dump (fastest, most reliable) ──
+        try:
+            import json as _json
+            cache_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'hotel_policies_cache.json')
+            print(f"DEBUG: Checking local cache at: {cache_path}")
+            if os.path.exists(cache_path):
+                with open(cache_path, 'r') as f:
+                    cache = _json.load(f)
+                print(f"DEBUG: Cache loaded, looking for hotel_id: '{str(hotel_id)}'")
+                cached_hotel = cache.get(str(hotel_id))
+                if cached_hotel and (cached_hotel.get('metapolicy_struct') or cached_hotel.get('metapolicy_extra_info')):
+                    hotel_data = cached_hotel
+                    print(f"✅ Policies for {hotel_id}: sourced from local dump cache")
+                else:
+                    print(f"DEBUG: Hotel {hotel_id} not found in cache or lacks policy data")
+            else:
+                print(f"DEBUG: Cache file does not exist at {cache_path}")
+        except Exception as e:
+            print(f"⚠️ Local cache read failed for {hotel_id}: {e}")
+
+        # ── Strategy 1: Try /hotel/info/ API (contains metapolicy_struct) ──
+        if not hotel_data:
+            try:
+                info_result = etg_service._make_request('/hotel/info/', {'id': hotel_id, 'language': 'en'}, timeout=15)
+                if info_result.get('success'):
+                    info_data = info_result.get('data', {})
+                    if isinstance(info_data, dict) and 'data' in info_data and info_data['data']:
+                        info_data = info_data['data']
+                    if isinstance(info_data, dict) and (info_data.get('metapolicy_struct') or info_data.get('metapolicy_extra_info')):
+                        hotel_data = info_data
+                        print(f"✅ Policies for {hotel_id}: sourced from /hotel/info/")
+            except Exception as e:
+                print(f"⚠️ /hotel/info/ failed for {hotel_id}: {e}")
+
+        # ── Strategy 2: Fall back to /hotel/static/ ──
+        if not hotel_data:
+            try:
+                static_result = etg_service.get_hotel_static(hotel_id)
+                if static_result.get('success'):
+                    static_data = static_result.get('data', {})
+                    if isinstance(static_data, dict) and static_data.get('data'):
+                        static_data = static_data['data']
+                    hotel_data = static_data if isinstance(static_data, dict) else {}
+                    print(f"⚠️ Policies for {hotel_id}: fell back to /hotel/static/")
+            except Exception as e:
+                print(f"⚠️ /hotel/static/ also failed for {hotel_id}: {e}")
+
         # Extract policy information
         # NOTE: policy_struct is deprecated - we only use metapolicy_struct and metapolicy_extra_info
         policies = {
-            'metapolicy_struct': hotel_data.get('metapolicy_struct', {}),
-            'metapolicy_extra_info': hotel_data.get('metapolicy_extra_info', {}),
+            'metapolicy_struct': hotel_data.get('metapolicy_struct') or {},
+            'metapolicy_extra_info': hotel_data.get('metapolicy_extra_info') or {},
             # Additional useful info
             'check_in_time': hotel_data.get('check_in_time'),
             'check_out_time': hotel_data.get('check_out_time'),
         }
-        
+
         # Format policies for frontend display
         formatted_policies = format_hotel_policies(policies)
-        
+
+        has_data = bool(policies['metapolicy_struct'] or policies['metapolicy_extra_info'])
+
         return jsonify({
             'success': True,
             'data': {
                 'policies': policies,
-                'formatted_policies': formatted_policies
+                'formatted_policies': formatted_policies,
+                'has_policy_data': has_data
             }
         })
-    
+
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
