@@ -120,6 +120,11 @@ def create_app():
     def serve_static(filename):
         print(f"🔍 Requesting: {filename}")
         
+        # Redirect trailing slash if present to fix page reload 404s and relative assets
+        if filename.endswith('/'):
+            from flask import redirect, request
+            return redirect(request.path.rstrip('/'), code=301)
+        
         # 1. Try to serve from templates if it's an HTML file or has no extension  
         if filename.endswith('.html') or '.' not in filename:
             target = filename if filename.endswith('.html') else f"{filename}.html"
