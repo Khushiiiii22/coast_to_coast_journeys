@@ -124,23 +124,98 @@ document.addEventListener('DOMContentLoaded', function () {
     // Focus listener to show dropdown again if value exists? 
     // Maybe not needed for now.
 
-    // Fetch suggestions from backend
+    // Fetch suggestions from ETG multicomplete API
     async function fetchSuggestions(query) {
         showLoading();
 
         try {
-            // Updated to use Google Places Autocomplete for worldwide coverage
-            const response = await fetch(`/api/hotels/autocomplete?query=${encodeURIComponent(query)}`);
+            // Use ETG /search/multicomplete/ endpoint for live API calls (required for certification)
+            const response = await fetch(`/api/hotels/suggest?query=${encodeURIComponent(query)}&language=en`);
             const result = await response.json();
 
-            if (result.success && result.predictions && result.predictions.length > 0) {
-                displayResults(result.predictions);
+            if (result.success && result.data) {
+                const inner = result.data.data || result.data;
+                const regions = inner.regions || [];
+                const hotels = inner.hotels || [];
+
+                if (regions.length > 0 || hotels.length > 0) {
+                    displayETGResults(regions, hotels);
+                } else {
+                    showEmpty();
+                }
             } else {
                 showEmpty();
             }
         } catch (error) {
             console.error('❌ Autocomplete error:', error);
             showEmpty();
+        }
+    }
+
+    // Display ETG multicomplete results
+    function displayETGResults(regions, hotels) {
+        if (resultsContainer) resultsContainer.innerHTML = '';
+        hideLoading();
+        if (empty) empty.style.display = 'none';
+        if (resultsContainer) resultsContainer.style.display = 'block';
+        dropdown.classList.add('active');
+
+        // Regions section
+        if (regions.length > 0) {
+            const header = document.createElement('div');
+            header.className = 'dropdown-header-home';
+            header.textContent = 'Destinations';
+            resultsContainer.appendChild(header);
+
+            regions.forEach(region => {
+                const item = document.createElement('div');
+                item.className = 'location-item-home';
+                const name = region.name || 'Unknown';
+                const country = region.country || '';
+
+                item.innerHTML = `
+                    <div class="location-icon-home">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="location-details-home">
+                        <div class="location-name-home">${name}</div>
+                        <div class="location-country-home">${country}</div>
+                    </div>
+                `;
+                item.addEventListener('click', () => {
+                    selectLocation(`${name}${country ? ', ' + country : ''}`, region.id, 'region');
+                });
+                resultsContainer.appendChild(item);
+            });
+        }
+
+        // Hotels section
+        if (hotels.length > 0) {
+            const header = document.createElement('div');
+            header.className = 'dropdown-header-home';
+            header.textContent = 'Hotels';
+            resultsContainer.appendChild(header);
+
+            hotels.slice(0, 5).forEach(hotel => {
+                const item = document.createElement('div');
+                item.className = 'location-item-home';
+                const name = hotel.name || hotel.label || 'Hotel';
+                const regionName = hotel.region_name || '';
+
+                item.innerHTML = `
+                    <div class="location-icon-home">
+                        <i class="fas fa-hotel"></i>
+                    </div>
+                    <div class="location-details-home">
+                        <div class="location-name-home">${name}</div>
+                        <div class="location-country-home">${regionName}</div>
+                    </div>
+                `;
+                item.addEventListener('click', () => {
+                    selectLocation(name, hotel.id, 'hotel');
+                });
+                resultsContainer.appendChild(item);
+            });
         }
     }
 
@@ -201,10 +276,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function selectLocation(name, id, type) {
         input.value = name;
         if (regionIdInput) {
-            // We don't have a RateHawk region ID from Google directly,
-            // the backend will resolve the name to a region ID during search
-            regionIdInput.value = '';
-            console.log(`✅ Selected Location: ${name}`);
+            // Store the ETG region ID from multicomplete results
+            regionIdInput.value = id || '';
+            console.log(`✅ Selected: ${name} | Region ID: ${id || 'none'} | Type: ${type}`);
         }
 
         hideDropdown();

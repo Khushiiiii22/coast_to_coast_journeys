@@ -79,13 +79,9 @@ async function initHotelResults() {
     // Generate price histogram
     generatePriceHistogram();
 
-    // Check for cached results first
-    const cachedResults = SearchSession.getSearchResults();
-    if (cachedResults && cachedResults.hotels) {
-        displayResults(cachedResults);
-    } else {
-        await performSearch(searchParams);
-    }
+    // ALWAYS perform a live search — never use cached results
+    // (ETG certification requires live API requests for every search)
+    await performSearch(searchParams);
 }
 
 /**
@@ -147,14 +143,6 @@ async function performSearch(params) {
     showLoading();
 
     try {
-        try {
-            await HotelAPI.healthCheck();
-        } catch (e) {
-            console.log('Backend server not reachable, using demo data');
-            showDemoResults(params);
-            return;
-        }
-
         const result = await HotelAPI.searchByDestination(params);
 
         if (result.success && result.data?.hotels?.length > 0) {
@@ -170,12 +158,13 @@ async function performSearch(params) {
                 showNotification(`${hotelCount} verified hotels loaded from global partners.`, 'success');
             }
         } else {
-            console.log('No hotels found from API, showing demo');
-            showDemoResults(params);
+            console.log('No hotels found from API');
+            showNoResults();
         }
     } catch (error) {
         console.error('Search error:', error);
-        showDemoResults(params);
+        showNoResults();
+        showNotification('Search failed: ' + error.message, 'error');
     }
 }
 
@@ -457,7 +446,7 @@ function createHotelCardHorizontal(hotel) {
                         ${originalPrice ? `<span class="price-original">${originalPrice}</span>` : ''}
                         <span class="price-total">${totalPrice} <span class="total-label">total</span></span>
                         <span class="price-includes" style="color:#059669">
-                            <i class="fas fa-check-circle"></i> Includes all taxes and fees
+                            <i class="fas fa-check-circle"></i> Includes taxes & fees
                         </span>
                     </div>
                     ${hotel.is_refundable ? '<span class="refundable-badge"><i class="fas fa-check-circle"></i> Fully refundable</span>' : ''}

@@ -1,7 +1,23 @@
 from flask import Blueprint, request, jsonify
 from services.flight_service import flight_service
+from datetime import datetime
+import json
 
 flight_bp = Blueprint('flight', __name__, url_prefix='/api/flights')
+
+
+def _build_datetime(date_str, time_str=None):
+    """Build an ISO datetime string from a date and optional time."""
+    if not date_str:
+        return None
+    try:
+        if 'T' in str(date_str):  # Already ISO
+            return str(date_str)
+        if time_str:
+            return f"{date_str}T{time_str}:00"
+        return f"{date_str}T00:00:00"
+    except Exception:
+        return str(date_str)
 
 @flight_bp.route('/search', methods=['POST'])
 def search_flights():
@@ -97,23 +113,54 @@ def send_flight_confirmation_email():
                 timestamp = hex(int(time.time()))[2:].upper()
                 rand_part = ''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=4))
                 ref = booking_id or f"C2C-F{timestamp[-4:]}{rand_part}"
+
+                origin_code = flight.get('origin', '')
+                dest_code = flight.get('destination', '')
+                dep_dt = _build_datetime(flight.get('date', ''), flight.get('departTime'))
+                arr_dt = _build_datetime(flight.get('date', ''), flight.get('arriveTime'))
+
+                # Parse duration to minutes
+                duration_minutes = None
+                dur_str = flight.get('duration', '')
+                if dur_str:
+                    try:
+                        parts = dur_str.replace('h', '').replace('m', '').split()
+                        duration_minutes = int(parts[0]) * 60 + (int(parts[1]) if len(parts) > 1 else 0)
+                    except Exception:
+                        pass
+
+                passengers_json = [{
+                    'first_name': passenger.get('firstName', ''),
+                    'last_name': passenger.get('lastName', ''),
+                    'email': passenger.get('email', ''),
+                    'phone': passenger.get('phone', ''),
+                    'type': 'adult'
+                }]
+
                 supabase.table('flight_bookings').insert({
-                    'reference_id': ref,
-                    'airline': flight.get('airline', ''),
+                    'booking_id': ref,
+                    'flight_type': flight.get('tripType', 'one_way'),
+                    'origin_code': origin_code,
+                    'origin_city': flight.get('originCity', origin_code),
+                    'destination_code': dest_code,
+                    'destination_city': flight.get('destinationCity', dest_code),
+                    'airline_code': flight.get('airlineCode', ''),
+                    'airline_name': flight.get('airline', ''),
                     'flight_number': flight.get('flightNumber', ''),
-                    'origin': flight.get('origin', ''),
-                    'destination': flight.get('destination', ''),
-                    'date': flight.get('date', ''),
-                    'flight_class': flight.get('flightClass', 'economy'),
-                    'travelers': flight.get('travelers', 1),
+                    'departure_datetime': dep_dt,
+                    'arrival_datetime': arr_dt,
+                    'duration_minutes': duration_minutes,
+                    'stops': int(flight.get('stops', 0)),
+                    'cabin_class': flight.get('flightClass', 'economy'),
+                    'passengers': json.dumps(passengers_json),
+                    'total_passengers': int(flight.get('travelers', 1)),
+                    'base_fare': amount,
                     'total_amount': amount,
                     'currency': currency,
-                    'passenger_name': f"{passenger.get('firstName', '')} {passenger.get('lastName', '')}".strip(),
-                    'passenger_email': passenger.get('email', ''),
-                    'passenger_phone': passenger.get('phone', ''),
-                    'special_requests': passenger.get('specialRequests', ''),
                     'payment_method': 'card',
-                    'status': 'confirmed'
+                    'payment_status': 'paid',
+                    'status': 'confirmed',
+                    'booking_source': 'website'
                 }).execute()
         except Exception as db_err:
             print(f"[Flight Confirmation] DB save skipped: {db_err}")
@@ -189,23 +236,40 @@ def create_flight_booking():
         rand_part = ''.join(_rand.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=4))
         booking_ref = f"C2C-F{timestamp[-4:]}{rand_part}"
 
+        origin_code = data.get('origin', '')
+        dest_code = data.get('destination', '')
+        dep_dt = _build_datetime(data.get('date', ''), data.get('depart_time'))
+        arr_dt = _build_datetime(data.get('date', ''), data.get('arrive_time'))
+
+        passengers_json = [{
+            'first_name': passenger.get('firstName', ''),
+            'last_name': passenger.get('lastName', ''),
+            'email': passenger.get('email', ''),
+            'phone': passenger.get('phone', ''),
+            'type': 'adult'
+        }]
+
         booking_record = {
-            'reference_id': booking_ref,
-            'flight_id': data.get('flight_id', ''),
-            'airline': data.get('airline', ''),
+            'booking_id': booking_ref,
+            'flight_type': data.get('flight_type', 'one_way'),
+            'origin_code': origin_code,
+            'origin_city': data.get('origin_city', origin_code),
+            'destination_code': dest_code,
+            'destination_city': data.get('destination_city', dest_code),
+            'airline_code': data.get('airline_code', ''),
+            'airline_name': data.get('airline', ''),
             'flight_number': data.get('flight_number', ''),
-            'origin': data.get('origin', ''),
-            'destination': data.get('destination', ''),
-            'date': data.get('date', ''),
-            'flight_class': data.get('class', 'economy'),
-            'travelers': data.get('travelers', 1),
+            'departure_datetime': dep_dt,
+            'arrival_datetime': arr_dt,
+            'cabin_class': data.get('class', 'economy'),
+            'passengers': json.dumps(passengers_json),
+            'total_passengers': int(data.get('travelers', 1)),
+            'base_fare': data.get('total_amount', 0),
             'total_amount': data.get('total_amount', 0),
             'currency': data.get('currency', 'INR'),
-            'passenger_name': f"{passenger.get('firstName', '')} {passenger.get('lastName', '')}".strip(),
-            'passenger_email': passenger.get('email', ''),
-            'passenger_phone': passenger.get('phone', ''),
-            'special_requests': passenger.get('specialRequests', ''),
-            'status': 'confirmed'
+            'status': 'confirmed',
+            'payment_status': 'pending',
+            'booking_source': 'website'
         }
 
         # Try to store in Supabase if available

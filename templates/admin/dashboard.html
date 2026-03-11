@@ -41,8 +41,12 @@
                     </a>
                     <a href="bookings.html" class="nav-item">
                         <i class="fas fa-calendar-check"></i>
-                        <span>Bookings</span>
+                        <span>Hotel Bookings</span>
                         <span class="nav-badge">12</span>
+                    </a>
+                    <a href="flights.html" class="nav-item">
+                        <i class="fas fa-plane"></i>
+                        <span>Flight Bookings</span>
                     </a>
                 </div>
 
@@ -287,12 +291,28 @@
 
         async function loadDashboardData() {
             try {
-                const response = await apiRequest('/dashboard');
-                if (response.success && response.data) {
-                    updateStats(response.data);
-                    updateCharts(response.data);
-                    renderRecentBookings(response.data.recent_bookings || []);
-                }
+                // Fetch hotel dashboard stats and flight stats in parallel
+                const [hotelRes, flightRes] = await Promise.allSettled([
+                    apiRequest('/dashboard'),
+                    apiRequest('/flight-bookings/stats')
+                ]);
+
+                const hotelData = (hotelRes.status === 'fulfilled' && hotelRes.value.success) ? hotelRes.value.data : {};
+                const flightData = (flightRes.status === 'fulfilled' && flightRes.value.success) ? flightRes.value.data : {};
+
+                // Combine stats
+                const combined = {
+                    total_bookings: (hotelData.total_bookings || 0) + (flightData.total || 0),
+                    confirmed_bookings: (hotelData.confirmed_bookings || 0) + (flightData.confirmed || 0),
+                    total_revenue: (hotelData.total_revenue || 0) + (flightData.revenue || 0),
+                    pending_cancellations: (hotelData.pending_cancellations || 0) + (flightData.cancelled || 0),
+                    recent_bookings: hotelData.recent_bookings || [],
+                    new_customers: hotelData.new_customers || 0
+                };
+
+                updateStats(combined);
+                updateCharts(combined);
+                renderRecentBookings(combined.recent_bookings);
             } catch (error) {
                 console.error('Error loading dashboard:', error);
                 showNotification('Failed to load dashboard data: ' + error.message, 'error');

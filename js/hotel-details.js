@@ -1400,21 +1400,28 @@ function createRateCard(rate, index, customBadge = null) {
     const roomsLeft = Math.floor(Math.random() * 4) + 1;
     const urgencyHtml = showUrgency ? `<span class="urgency-notice">We have ${roomsLeft} left</span>` : '';
 
-    // Tax info display - simplify to "Includes all taxes and fees" as per user requirement
-    let taxNoteHtml = '<small class="taxes-note" style="color:#059669"><i class="fas fa-check-circle"></i> Includes all taxes and fees</small>';
+    // Tax info display - ETG-compliant: distinguish included vs non-included taxes
+    let taxNoteHtml = '<small class="taxes-note" style="color:#059669"><i class="fas fa-check-circle"></i> Includes taxes & fees</small>';
 
     const taxInfo = rate.tax_info || {};
     const nonIncludedTaxes = taxInfo.non_included_taxes || [];
 
-    // Even if there are non-included taxes, we want to reassure the user 
-    // or indicate they are already accounted for in the grand total display.
+    // If there are non-included taxes, show them clearly (ETG certification requirement)
     if (nonIncludedTaxes.length > 0) {
+        const taxItems = nonIncludedTaxes.map(tax => {
+            const amount = parseFloat(tax.amount || 0);
+            const currency = tax.currency_code || 'USD';
+            const displayName = tax.display_name || tax.name || 'Property Fee';
+            return `<div style="display:flex;justify-content:space-between;font-size:0.72rem;padding:2px 0"><span>${displayName}</span><span>${currency} ${amount.toFixed(2)}</span></div>`;
+        }).join('');
+
         taxNoteHtml = `
-            <div style="margin-top:6px;padding:8px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
-                <div style="font-size:0.78rem;font-weight:600;color:#166534;margin-bottom:2px;">
-                    <i class="fas fa-check-circle"></i> All-inclusive pricing
+            <div style="margin-top:6px;padding:8px 10px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;">
+                <div style="font-size:0.78rem;font-weight:600;color:#92400e;margin-bottom:4px;">
+                    <i class="fas fa-info-circle"></i> Additional fees payable at property:
                 </div>
-                <div style="font-size:0.72rem;color:#15803d;">Includes all taxes and fees. No additional amount will be charged at the property.</div>
+                ${taxItems}
+                <div style="font-size:0.72rem;color:#b45309;margin-top:4px;">These fees are not included in the price shown and must be paid at check-in.</div>
             </div>
         `;
     }
@@ -1649,7 +1656,7 @@ function showRoomDetails(rateIndex) {
 
                 <div style="padding:14px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;font-size:0.85rem;color:#0369a1;">
                     <i class="fas fa-shield-alt" style="margin-right:6px;"></i>
-                    <strong>Price Guarantee:</strong> The price you see includes all taxes and service fees. No hidden charges.
+                    <strong>Price Guarantee:</strong> The price includes taxes and service fees. Non-included property fees, if any, are shown separately.
                 </div>
             </div>
 
@@ -1657,7 +1664,7 @@ function showRoomDetails(rateIndex) {
             <div style="padding:16px 24px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
                 <div>
                     <div style="font-size:1.3rem;font-weight:700;color:#111827;">${HotelUtils.formatPrice(rate.price)}</div>
-                    <div style="font-size:0.8rem;color:#6b7280;">per night · all inclusive</div>
+                    <div style="font-size:0.8rem;color:#6b7280;">per night · incl. taxes & fees</div>
                 </div>
                 <button onclick="document.getElementById('rateDetailsOverlay').remove(); selectRate(${JSON.stringify({}).replace ? 'window.__rateForModal' : 'null'}, ${rateIndex});"
                     style="padding:12px 24px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:10px;font-weight:600;cursor:pointer;font-size:0.95rem;">

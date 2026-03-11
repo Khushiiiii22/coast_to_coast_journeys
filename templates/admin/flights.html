@@ -724,7 +724,7 @@
                             <i class="fas fa-plane-departure"></i>
                         </div>
                         <div>
-                            <div class="flight-stat-value">856</div>
+                            <div class="flight-stat-value" id="statTotal">0</div>
                             <div class="flight-stat-label">Total Flight Bookings</div>
                         </div>
                     </div>
@@ -733,7 +733,7 @@
                             <i class="fas fa-check-circle"></i>
                         </div>
                         <div>
-                            <div class="flight-stat-value">724</div>
+                            <div class="flight-stat-value" id="statConfirmed">0</div>
                             <div class="flight-stat-label">Confirmed</div>
                         </div>
                     </div>
@@ -742,7 +742,7 @@
                             <i class="fas fa-clock"></i>
                         </div>
                         <div>
-                            <div class="flight-stat-value">89</div>
+                            <div class="flight-stat-value" id="statPending">0</div>
                             <div class="flight-stat-label">Pending</div>
                         </div>
                     </div>
@@ -751,7 +751,7 @@
                             <i class="fas fa-times-circle"></i>
                         </div>
                         <div>
-                            <div class="flight-stat-value">43</div>
+                            <div class="flight-stat-value" id="statCancelled">0</div>
                             <div class="flight-stat-label">Cancelled</div>
                         </div>
                     </div>
@@ -760,7 +760,7 @@
                             <i class="fas fa-rupee-sign"></i>
                         </div>
                         <div>
-                            <div class="flight-stat-value">₹42.5L</div>
+                            <div class="flight-stat-value" id="statRevenue">₹0</div>
                             <div class="flight-stat-label">Revenue (This Month)</div>
                         </div>
                     </div>
@@ -771,22 +771,22 @@
                     <button class="booking-tab active" onclick="filterByType('all')">
                         <i class="fas fa-list"></i>
                         All Bookings
-                        <span class="count">856</span>
+                        <span class="count" id="tabAll">0</span>
                     </button>
                     <button class="booking-tab" onclick="filterByType('domestic')">
                         <i class="fas fa-flag"></i>
                         Domestic
-                        <span class="count">612</span>
+                        <span class="count" id="tabDomestic">0</span>
                     </button>
                     <button class="booking-tab" onclick="filterByType('international')">
                         <i class="fas fa-globe"></i>
                         International
-                        <span class="count">244</span>
+                        <span class="count" id="tabInternational">0</span>
                     </button>
                     <button class="booking-tab" onclick="filterByType('roundtrip')">
                         <i class="fas fa-exchange-alt"></i>
                         Round Trip
-                        <span class="count">387</span>
+                        <span class="count" id="tabRoundtrip">0</span>
                     </button>
                 </div>
 
@@ -850,296 +850,18 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id=\"flightBookingsBody\">
                             <tr>
-                                <td><span class="booking-id">#FLT-50001</span></td>
-                                <td>
-                                    <div class="flight-route">
-                                        <div class="flight-route-cities">
-                                            <span class="flight-route-main">DEL <i class="fas fa-arrow-right"></i>
-                                                BOM</span>
-                                            <span class="flight-route-details">Jan 25, 2026 • 06:30 - 08:45</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="airline-info">
-                                        <div class="airline-logo">6E</div>
-                                        <div>
-                                            <div class="airline-name">IndiGo</div>
-                                            <div class="flight-number">6E-2158</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="passenger-info">
-                                        <span class="passenger-name">Rajesh Kumar</span>
-                                        <span class="passenger-contact">+91 98765 43210</span>
-                                    </div>
-                                </td>
-                                <td><span class="pnr-code">ABC123</span></td>
-                                <td class="amount-cell">
-                                    <div class="amount-main">₹8,500</div>
-                                    <div class="amount-margin">+₹850 margin</div>
-                                </td>
-                                <td><span class="status-badge confirmed">Confirmed</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Details"
-                                            onclick="viewFlightBooking('FLT-50001')">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="E-Ticket">
-                                            <i class="fas fa-ticket-alt"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="Email">
-                                            <i class="fas fa-envelope"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><span class="booking-id">#FLT-50002</span></td>
-                                <td>
-                                    <div class="flight-route">
-                                        <div class="flight-route-cities">
-                                            <span class="flight-route-main">BLR <i class="fas fa-arrow-right"></i>
-                                                DEL</span>
-                                            <span class="flight-route-details">Jan 26, 2026 • 10:15 - 12:45</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="airline-info">
-                                        <div class="airline-logo">AI</div>
-                                        <div>
-                                            <div class="airline-name">Air India</div>
-                                            <div class="flight-number">AI-505</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="passenger-info">
-                                        <span class="passenger-name">Priya Sharma</span>
-                                        <span class="passenger-contact">+91 87654 32109</span>
-                                    </div>
-                                </td>
-                                <td><span class="pnr-code">XYZ789</span></td>
-                                <td class="amount-cell">
-                                    <div class="amount-main">₹12,300</div>
-                                    <div class="amount-margin">+₹1,230 margin</div>
-                                </td>
-                                <td><span class="status-badge confirmed">Confirmed</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Details"
-                                            onclick="viewFlightBooking('FLT-50002')">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="E-Ticket">
-                                            <i class="fas fa-ticket-alt"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="Email">
-                                            <i class="fas fa-envelope"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><span class="booking-id">#FLT-50003</span></td>
-                                <td>
-                                    <div class="flight-route">
-                                        <div class="flight-route-cities">
-                                            <span class="flight-route-main">MAA <i class="fas fa-arrow-right"></i>
-                                                DXB</span>
-                                            <span class="flight-route-details">Jan 28, 2026 • 14:00 - 18:30</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="airline-info">
-                                        <div class="airline-logo">EK</div>
-                                        <div>
-                                            <div class="airline-name">Emirates</div>
-                                            <div class="flight-number">EK-545</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="passenger-info">
-                                        <span class="passenger-name">Mohammed Ali</span>
-                                        <span class="passenger-contact">+91 99887 76655</span>
-                                    </div>
-                                </td>
-                                <td><span class="pnr-code">EK7H2P</span></td>
-                                <td class="amount-cell">
-                                    <div class="amount-main">₹28,500</div>
-                                    <div class="amount-margin">+₹2,850 margin</div>
-                                </td>
-                                <td><span class="status-badge pending">Pending</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Details"
-                                            onclick="viewFlightBooking('FLT-50003')">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="Confirm">
-                                            <i class="fas fa-check"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><span class="booking-id">#FLT-50004</span></td>
-                                <td>
-                                    <div class="flight-route">
-                                        <div class="flight-route-cities">
-                                            <span class="flight-route-main">DEL <i class="fas fa-arrow-right"></i>
-                                                GOI</span>
-                                            <span class="flight-route-details">Jan 30, 2026 • 08:00 - 10:30</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="airline-info">
-                                        <div class="airline-logo">UK</div>
-                                        <div>
-                                            <div class="airline-name">Vistara</div>
-                                            <div class="flight-number">UK-857</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="passenger-info">
-                                        <span class="passenger-name">Anita Desai</span>
-                                        <span class="passenger-contact">+91 95678 12345</span>
-                                    </div>
-                                </td>
-                                <td><span class="pnr-code">VT4K9L</span></td>
-                                <td class="amount-cell">
-                                    <div class="amount-main">₹9,800</div>
-                                    <div class="amount-margin">+₹980 margin</div>
-                                </td>
-                                <td><span class="status-badge cancelled">Cancelled</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Details"
-                                            onclick="viewFlightBooking('FLT-50004')">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="Refund Status">
-                                            <i class="fas fa-undo"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><span class="booking-id">#FLT-50005</span></td>
-                                <td>
-                                    <div class="flight-route">
-                                        <div class="flight-route-cities">
-                                            <span class="flight-route-main">BOM <i class="fas fa-exchange-alt"></i>
-                                                SIN</span>
-                                            <span class="flight-route-details">Feb 1-5, 2026 • Round Trip</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="airline-info">
-                                        <div class="airline-logo">SQ</div>
-                                        <div>
-                                            <div class="airline-name">Singapore Airlines</div>
-                                            <div class="flight-number">SQ-423 / SQ-424</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="passenger-info">
-                                        <span class="passenger-name">Vikram Mehta (+1)</span>
-                                        <span class="passenger-contact">+91 88776 54321</span>
-                                    </div>
-                                </td>
-                                <td><span class="pnr-code">SQ8F3M</span></td>
-                                <td class="amount-cell">
-                                    <div class="amount-main">₹86,400</div>
-                                    <div class="amount-margin">+₹8,640 margin</div>
-                                </td>
-                                <td><span class="status-badge confirmed">Confirmed</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Details"
-                                            onclick="viewFlightBooking('FLT-50005')">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="E-Ticket">
-                                            <i class="fas fa-ticket-alt"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="Email">
-                                            <i class="fas fa-envelope"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><span class="booking-id">#FLT-50006</span></td>
-                                <td>
-                                    <div class="flight-route">
-                                        <div class="flight-route-cities">
-                                            <span class="flight-route-main">HYD <i class="fas fa-arrow-right"></i>
-                                                CCU</span>
-                                            <span class="flight-route-details">Feb 3, 2026 • 11:30 - 14:00</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="airline-info">
-                                        <div class="airline-logo">SG</div>
-                                        <div>
-                                            <div class="airline-name">SpiceJet</div>
-                                            <div class="flight-number">SG-245</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="passenger-info">
-                                        <span class="passenger-name">Suresh Patel</span>
-                                        <span class="passenger-contact">+91 91234 56789</span>
-                                    </div>
-                                </td>
-                                <td><span class="pnr-code">SJ2N8P</span></td>
-                                <td class="amount-cell">
-                                    <div class="amount-main">₹5,600</div>
-                                    <div class="amount-margin">+₹560 margin</div>
-                                </td>
-                                <td><span class="status-badge processing">Processing</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Details"
-                                            onclick="viewFlightBooking('FLT-50006')">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="Check Status">
-                                            <i class="fas fa-sync"></i>
-                                        </button>
-                                    </div>
+                                <td colspan=\"8\" style=\"text-align: center; padding: 2rem;\">
+                                    <i class=\"fas fa-spinner fa-spin\"></i> Loading flight bookings...
                                 </td>
                             </tr>
                         </tbody>
                     </table>
 
-                    <div class="pagination">
-                        <div class="pagination-info">
-                            Showing 1-6 of 856 flight bookings
-                        </div>
-                        <div class="pagination-buttons">
-                            <button class="page-btn"><i class="fas fa-chevron-left"></i></button>
-                            <button class="page-btn active">1</button>
-                            <button class="page-btn">2</button>
-                            <button class="page-btn">3</button>
-                            <button class="page-btn">...</button>
-                            <button class="page-btn">143</button>
-                            <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
-                        </div>
+                    <div class=\"pagination\" id=\"flightPagination\">
+                        <div class=\"pagination-info\" id=\"paginationInfo\">Showing 0 flight bookings</div>
+                        <div class=\"pagination-buttons\" id=\"paginationButtons\"></div>
                     </div>
                 </div>
             </div>
@@ -1396,110 +1118,332 @@
     <!-- Admin JavaScript -->
     <script src="../../admin/js/admin.js"></script>
     <script>
+        let currentPage = 0;
+        const PAGE_SIZE = 20;
+        let currentTripFilter = 'all';
+
         // Check authentication
         document.addEventListener('DOMContentLoaded', function () {
             const session = localStorage.getItem('admin_session');
-            if (!session) {
-                window.location.href = 'login.html';
-                return;
-            }
-
+            if (!session) { window.location.href = 'login.html'; return; }
             try {
-                const sessionData = JSON.parse(session);
-                if (new Date(sessionData.expiresAt) <= new Date()) {
+                const s = JSON.parse(session);
+                if (new Date(s.expiresAt) <= new Date()) {
                     localStorage.removeItem('admin_token');
                     localStorage.removeItem('admin_user');
                     localStorage.removeItem('admin_session');
                     window.location.href = 'login.html';
+                    return;
                 }
-            } catch (e) {
-                window.location.href = 'login.html';
-            }
+            } catch (e) { window.location.href = 'login.html'; return; }
 
-            // Initialize search
-            initFlightSearch();
+            loadFlightStats();
+            loadFlightBookings();
+
+            // Debounced search
+            let searchTimer;
+            document.getElementById('flightSearch').addEventListener('input', function () {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(() => { currentPage = 0; loadFlightBookings(); }, 400);
+            });
         });
 
-        // Initialize search functionality
-        function initFlightSearch() {
-            const searchInput = document.getElementById('flightSearch');
-            if (searchInput) {
-                searchInput.addEventListener('input', function () {
-                    const filter = this.value.toLowerCase();
-                    const rows = document.querySelectorAll('#flightBookingsTable tbody tr');
+        // ── Helpers ──
+        function formatCurrency(amount) {
+            return '₹' + Math.round(amount || 0).toLocaleString('en-IN');
+        }
+        function formatRevenue(amount) {
+            if (amount >= 10000000) return '₹' + (amount / 10000000).toFixed(1) + 'Cr';
+            if (amount >= 100000) return '₹' + (amount / 100000).toFixed(1) + 'L';
+            if (amount >= 1000) return '₹' + (amount / 1000).toFixed(1) + 'K';
+            return '₹' + Math.round(amount);
+        }
+        function formatDateTime(dt) {
+            if (!dt) return '--';
+            const d = new Date(dt);
+            return d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+        function formatTime(dt) {
+            if (!dt) return '--:--';
+            const d = new Date(dt);
+            return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false });
+        }
+        function getPassengerName(b) {
+            try {
+                const p = typeof b.passengers === 'string' ? JSON.parse(b.passengers) : b.passengers;
+                if (Array.isArray(p) && p.length > 0) {
+                    const name = `${p[0].first_name || ''} ${p[0].last_name || ''}`.trim();
+                    return (b.total_passengers || 1) > 1 ? `${name} (+${(b.total_passengers - 1)})` : name;
+                }
+            } catch (e) { }
+            return 'Guest';
+        }
+        function getPassengerContact(b) {
+            try {
+                const p = typeof b.passengers === 'string' ? JSON.parse(b.passengers) : b.passengers;
+                if (Array.isArray(p) && p.length > 0) return p[0].phone || p[0].email || '';
+            } catch (e) { }
+            return '';
+        }
+        function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
 
-                    rows.forEach(row => {
-                        const text = row.textContent.toLowerCase();
-                        row.style.display = text.includes(filter) ? '' : 'none';
-                    });
-                });
+        // ── Load Stats ──
+        async function loadFlightStats() {
+            try {
+                const res = await apiRequest('/flight-bookings/stats');
+                if (res.success && res.data) {
+                    const d = res.data;
+                    document.getElementById('statTotal').textContent = d.total;
+                    document.getElementById('statConfirmed').textContent = d.confirmed;
+                    document.getElementById('statPending').textContent = d.pending;
+                    document.getElementById('statCancelled').textContent = d.cancelled;
+                    document.getElementById('statRevenue').textContent = formatRevenue(d.revenue);
+                    document.getElementById('tabAll').textContent = d.total;
+                    document.getElementById('tabDomestic').textContent = d.domestic || 0;
+                    document.getElementById('tabInternational').textContent = d.international || 0;
+                    document.getElementById('tabRoundtrip').textContent = d.roundtrip || 0;
+                }
+            } catch (e) { console.error('Stats error:', e); }
+        }
+
+        // ── Load Bookings ──
+        async function loadFlightBookings() {
+            const tbody = document.getElementById('flightBookingsBody');
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
+
+            try {
+                const params = new URLSearchParams();
+                params.set('limit', PAGE_SIZE);
+                params.set('offset', currentPage * PAGE_SIZE);
+
+                const status = document.getElementById('statusFilter').value;
+                const airline = document.getElementById('airlineFilter').value;
+                const fromDate = document.getElementById('fromDate').value;
+                const toDate = document.getElementById('toDate').value;
+                const search = document.getElementById('flightSearch').value.trim();
+
+                if (status) params.set('status', status);
+                if (airline) params.set('airline', airline);
+                if (fromDate) params.set('from_date', fromDate);
+                if (toDate) params.set('to_date', toDate);
+                if (search) params.set('search', search);
+                if (currentTripFilter !== 'all') params.set('trip_type', currentTripFilter);
+
+                const res = await apiRequest('/flight-bookings?' + params.toString());
+
+                if (!res.success) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem">Error loading bookings</td></tr>'; return; }
+
+                const bookings = res.data || [];
+                const totalCount = res.count || bookings.length;
+
+                if (bookings.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem"><i class="fas fa-plane" style="font-size:2rem;color:#cbd5e1;margin-bottom:0.5rem;display:block"></i>No flight bookings found</td></tr>';
+                    document.getElementById('paginationInfo').textContent = 'Showing 0 flight bookings';
+                    document.getElementById('paginationButtons').innerHTML = '';
+                    return;
+                }
+
+                tbody.innerHTML = bookings.map(b => `
+                    <tr>
+                        <td><span class="booking-id">#${b.booking_id || b.id?.substring(0, 8).toUpperCase()}</span></td>
+                        <td>
+                            <div class="flight-route"><div class="flight-route-cities">
+                                <span class="flight-route-main">${b.origin_code} <i class="fas fa-arrow-right"></i> ${b.destination_code}</span>
+                                <span class="flight-route-details">${formatDateTime(b.departure_datetime)} • ${formatTime(b.departure_datetime)} - ${formatTime(b.arrival_datetime)}</span>
+                            </div></div>
+                        </td>
+                        <td>
+                            <div class="airline-info">
+                                <div class="airline-logo">${b.airline_code || '--'}</div>
+                                <div>
+                                    <div class="airline-name">${b.airline_name || 'Unknown'}</div>
+                                    <div class="flight-number">${b.flight_number || ''}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="passenger-info">
+                                <span class="passenger-name">${getPassengerName(b)}</span>
+                                <span class="passenger-contact">${getPassengerContact(b)}</span>
+                            </div>
+                        </td>
+                        <td><span class="pnr-code">${b.pnr || '--'}</span></td>
+                        <td class="amount-cell">
+                            <div class="amount-main">${formatCurrency(b.total_amount)}</div>
+                            ${b.markup_amount ? `<div class="amount-margin">+${formatCurrency(b.markup_amount)} margin</div>` : ''}
+                        </td>
+                        <td><span class="status-badge ${b.status || 'pending'}">${capitalize(b.status || 'pending')}</span></td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="btn btn-secondary btn-icon" title="View Details" onclick="viewFlightBooking('${b.id}')"><i class="fas fa-eye"></i></button>
+                                <button class="btn btn-secondary btn-icon" title="Email"><i class="fas fa-envelope"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+
+                // Pagination
+                const start = currentPage * PAGE_SIZE + 1;
+                const end = Math.min(start + bookings.length - 1, totalCount);
+                document.getElementById('paginationInfo').textContent = `Showing ${start}-${end} of ${totalCount} flight bookings`;
+
+                const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+                let pagBtns = '';
+                if (currentPage > 0) pagBtns += `<button class="page-btn" onclick="goToPage(${currentPage - 1})"><i class="fas fa-chevron-left"></i></button>`;
+                for (let i = 0; i < Math.min(totalPages, 5); i++) {
+                    pagBtns += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i + 1}</button>`;
+                }
+                if (totalPages > 5) pagBtns += `<button class="page-btn">...</button><button class="page-btn" onclick="goToPage(${totalPages - 1})">${totalPages}</button>`;
+                if (currentPage < totalPages - 1) pagBtns += `<button class="page-btn" onclick="goToPage(${currentPage + 1})"><i class="fas fa-chevron-right"></i></button>`;
+                document.getElementById('paginationButtons').innerHTML = pagBtns;
+
+            } catch (e) {
+                console.error('Load bookings error:', e);
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:#ef4444">Failed to load bookings: ' + e.message + '</td></tr>';
             }
         }
 
-        // Filter by booking type
+        function goToPage(page) { currentPage = page; loadFlightBookings(); }
+
+        // ── Filter by Type Tab ──
         function filterByType(type) {
-            document.querySelectorAll('.booking-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.booking-tab').forEach(t => t.classList.remove('active'));
             event.target.closest('.booking-tab').classList.add('active');
-
-            // In real implementation, this would filter the table data
-            showNotification(`Filtering by: ${type}`, 'info');
+            currentTripFilter = type;
+            currentPage = 0;
+            loadFlightBookings();
         }
 
-        // Apply filters
-        function applyFilters() {
-            const status = document.getElementById('statusFilter').value;
-            const airline = document.getElementById('airlineFilter').value;
-            const fromDate = document.getElementById('fromDate').value;
-            const toDate = document.getElementById('toDate').value;
-
-            // In real implementation, this would send a request to the server
-            showNotification('Filters applied successfully', 'success');
-        }
-
-        // Clear filters
+        // ── Apply / Clear Filters ──
+        function applyFilters() { currentPage = 0; loadFlightBookings(); showNotification('Filters applied', 'success'); }
         function clearFilters() {
             document.getElementById('statusFilter').value = '';
             document.getElementById('airlineFilter').value = '';
             document.getElementById('fromDate').value = '';
             document.getElementById('toDate').value = '';
             document.getElementById('flightSearch').value = '';
-
+            currentTripFilter = 'all';
+            currentPage = 0;
+            document.querySelectorAll('.booking-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector('.booking-tab').classList.add('active');
+            loadFlightBookings();
             showNotification('Filters cleared', 'info');
         }
 
-        // View flight booking details
-        function viewFlightBooking(bookingId) {
+        // ── View Flight Booking Detail ──
+        async function viewFlightBooking(bookingId) {
             openModal('flightDetailModal');
-            // In real implementation, this would fetch booking details from server
-        }
+            const body = document.querySelector('#flightDetailModal .modal-body');
+            body.innerHTML = '<div style="text-align:center;padding:2rem"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Loading details...</p></div>';
 
-        // Export flight bookings
-        function exportFlightBookings() {
-            showNotification('Exporting flight bookings...', 'info');
-            // In real implementation, this would generate and download a CSV/Excel file
-        }
+            try {
+                const res = await apiRequest('/flight-bookings/' + bookingId);
+                if (!res.success || !res.data) { body.innerHTML = '<p style="text-align:center;color:#ef4444">Booking not found</p>'; return; }
+                const b = res.data;
+                const passengers = typeof b.passengers === 'string' ? JSON.parse(b.passengers) : (b.passengers || []);
+                const pax = passengers[0] || {};
 
-        // Save manual flight booking
-        function saveManualFlightBooking() {
-            // Validate form
-            const form = document.getElementById('manualFlightForm');
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
+                body.innerHTML = `
+                    <div class="flight-detail-card">
+                        <div class="flight-detail-header">
+                            <div class="flight-detail-airline">
+                                <div class="flight-detail-airline-logo">${b.airline_code || '--'}</div>
+                                <div class="flight-detail-airline-info">
+                                    <h4>${b.airline_name || 'Airline'}</h4>
+                                    <span>Flight ${b.flight_number || '--'} • ${capitalize(b.cabin_class || 'economy')}</span>
+                                </div>
+                            </div>
+                            <div class="flight-detail-pnr">${b.pnr || 'N/A'}</div>
+                        </div>
+                        <div class="flight-detail-route">
+                            <div class="flight-detail-city"><div class="time">${formatTime(b.departure_datetime)}</div><div class="city">${b.origin_code} - ${b.origin_city}</div><div class="date">${formatDateTime(b.departure_datetime)}</div></div>
+                            <div class="flight-detail-divider"><div class="flight-detail-duration">${b.duration_minutes ? Math.floor(b.duration_minutes / 60) + 'h ' + (b.duration_minutes % 60) + 'm' : '--'}</div><div class="flight-detail-line"></div><div class="flight-detail-stops">${(b.stops || 0) === 0 ? 'Non-stop' : b.stops + ' stop(s)'}</div></div>
+                            <div class="flight-detail-city"><div class="time">${formatTime(b.arrival_datetime)}</div><div class="city">${b.destination_code} - ${b.destination_city}</div><div class="date">${formatDateTime(b.arrival_datetime)}</div></div>
+                        </div>
+                    </div>
+                    <div class="info-section"><div class="info-section-title"><i class="fas fa-user"></i> Passenger Information</div>
+                        <div class="info-grid">
+                            <div class="info-item"><div class="info-item-label">Name</div><div class="info-item-value">${pax.first_name || ''} ${pax.last_name || ''}</div></div>
+                            <div class="info-item"><div class="info-item-label">Phone</div><div class="info-item-value">${pax.phone || '--'}</div></div>
+                            <div class="info-item"><div class="info-item-label">Email</div><div class="info-item-value">${pax.email || '--'}</div></div>
+                            <div class="info-item"><div class="info-item-label">Passengers</div><div class="info-item-value">${b.total_passengers || 1}</div></div>
+                        </div>
+                    </div>
+                    <div class="info-section"><div class="info-section-title"><i class="fas fa-rupee-sign"></i> Payment Details</div>
+                        <div class="info-grid">
+                            <div class="info-item"><div class="info-item-label">Base Fare</div><div class="info-item-value">${formatCurrency(b.base_fare)}</div></div>
+                            <div class="info-item"><div class="info-item-label">Taxes & Fees</div><div class="info-item-value">${formatCurrency(b.taxes_fees)}</div></div>
+                            <div class="info-item"><div class="info-item-label">Markup</div><div class="info-item-value" style="color:#10b981">${formatCurrency(b.markup_amount)}</div></div>
+                            <div class="info-item"><div class="info-item-label">Total</div><div class="info-item-value" style="font-weight:700;font-size:1.1rem">${formatCurrency(b.total_amount)}</div></div>
+                            <div class="info-item"><div class="info-item-label">Payment</div><div class="info-item-value">${capitalize(b.payment_method || '--')}</div></div>
+                            <div class="info-item"><div class="info-item-label">Status</div><div class="info-item-value"><span class="status-badge ${b.payment_status || 'pending'}">${capitalize(b.payment_status || 'pending')}</span></div></div>
+                        </div>
+                    </div>
+                    <div class="info-section"><div class="info-section-title"><i class="fas fa-info-circle"></i> Booking Info</div>
+                        <div class="info-grid">
+                            <div class="info-item"><div class="info-item-label">Booking ID</div><div class="info-item-value">${b.booking_id || '--'}</div></div>
+                            <div class="info-item"><div class="info-item-label">Booked On</div><div class="info-item-value">${formatDateTime(b.created_at)}</div></div>
+                            <div class="info-item"><div class="info-item-label">Source</div><div class="info-item-value">${capitalize(b.booking_source || 'website')}</div></div>
+                            <div class="info-item"><div class="info-item-label">Supplier</div><div class="info-item-value">${b.supplier_name || 'N/A'}</div></div>
+                        </div>
+                    </div>`;
+            } catch (e) {
+                body.innerHTML = '<p style="text-align:center;color:#ef4444">Error: ' + e.message + '</p>';
             }
+        }
 
-            // Log activity
-            const activityLog = JSON.parse(localStorage.getItem('admin_activity_log') || '[]');
-            activityLog.push({
-                action: 'create_flight_booking',
-                user: JSON.parse(localStorage.getItem('admin_user')).username,
-                timestamp: new Date().toISOString(),
-                details: 'Created manual flight booking'
-            });
-            localStorage.setItem('admin_activity_log', JSON.stringify(activityLog.slice(-100)));
+        // ── Export ──
+        async function exportFlightBookings() {
+            showNotification('Preparing export...', 'info');
+            try {
+                const res = await apiRequest('/flight-bookings?limit=1000');
+                if (!res.success || !res.data?.length) { showNotification('No data to export', 'error'); return; }
+                const headers = ['Booking ID', 'Route', 'Airline', 'Flight', 'Passenger', 'PNR', 'Amount', 'Status', 'Date'];
+                const rows = res.data.map(b => [
+                    b.booking_id, `${b.origin_code}-${b.destination_code}`, b.airline_name, b.flight_number,
+                    getPassengerName(b), b.pnr || '', b.total_amount, b.status, formatDateTime(b.departure_datetime)
+                ]);
+                const csv = [headers, ...rows].map(r => r.map(c => '"' + String(c || '').replace(/"/g, '""') + '"').join(',')).join('\n');
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = 'flight_bookings.csv'; a.click();
+                URL.revokeObjectURL(url);
+                showNotification('Exported successfully!', 'success');
+            } catch (e) { showNotification('Export failed: ' + e.message, 'error'); }
+        }
 
-            showNotification('Flight booking created successfully!', 'success');
-            closeModal('manualFlightModal');
+        // ── Manual Booking ──
+        async function saveManualFlightBooking() {
+            const form = document.getElementById('manualFlightForm');
+            if (!form.checkValidity()) { form.reportValidity(); return; }
+            const inputs = form.querySelectorAll('input, select');
+            const data = {};
+            inputs.forEach(inp => { if (inp.name) data[inp.name] = inp.value; });
+
+            // Map form fields
+            const payload = {
+                origin_code: data.from_city || '', destination_code: data.to_city || '',
+                airline_code: data.airline || '', airline_name: data.airline ? form.querySelector(`option[value="${data.airline}"]`)?.textContent : '',
+                flight_number: data.flight_number || '', departure_date: data.departure_date || '',
+                pnr: data.pnr || '', passenger_name: data.passenger_name || '',
+                passenger_phone: data.passenger_phone || '', passenger_email: data.passenger_email || '',
+                base_fare: parseFloat(data.base_fare || 0), taxes_fees: parseFloat(data.taxes_fees || 0),
+                markup_amount: parseFloat(data.markup || 0), payment_status: data.payment_status || 'paid',
+                cabin_class: 'economy', flight_type: 'one_way'
+            };
+
+            try {
+                const res = await apiRequest('/flight-bookings', { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } });
+                if (res.success) {
+                    showNotification('Flight booking created: ' + res.booking_id, 'success');
+                    closeModal('manualFlightModal');
+                    form.reset();
+                    loadFlightStats();
+                    loadFlightBookings();
+                } else {
+                    showNotification('Error: ' + (res.error || 'Unknown error'), 'error');
+                }
+            } catch (e) { showNotification('Failed: ' + e.message, 'error'); }
         }
     </script>
 </body>

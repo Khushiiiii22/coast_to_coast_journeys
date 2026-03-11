@@ -255,3 +255,267 @@ def get_activity_logs():
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ─── Flight Bookings Admin Endpoints ─────────────────────────────────────────
+
+@admin_bp.route('/flight-bookings', methods=['GET'])
+@require_auth()
+def get_flight_bookings():
+    """
+    Get all flight bookings with filters
+    GET /api/admin/flight-bookings?status=confirmed&airline=AI&from_date=2026-01-01&to_date=2026-12-31&search=ABC&limit=50&offset=0
+    """
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+
+        if not supabase:
+            return jsonify({'success': True, 'data': [], 'count': 0, 'message': 'Database not initialized'}), 200
+
+        status = request.args.get('status')
+        airline = request.args.get('airline')
+        trip_type = request.args.get('trip_type')
+        from_date = request.args.get('from_date')
+        to_date = request.args.get('to_date')
+        search = request.args.get('search', '').strip()
+        limit = int(request.args.get('limit', 50))
+        offset = int(request.args.get('offset', 0))
+
+        query = supabase.table('flight_bookings').select('*', count='exact')
+
+        if status:
+            query = query.eq('status', status)
+        if airline:
+            query = query.eq('airline_code', airline)
+        if trip_type and trip_type != 'all':
+            if trip_type == 'roundtrip':
+                query = query.not_.is_('return_flight_number', 'null')
+            elif trip_type in ('domestic', 'international'):
+                query = query.eq('trip_type', trip_type)
+        if from_date:
+            query = query.gte('departure_datetime', from_date)
+        if to_date:
+            query = query.lte('departure_datetime', to_date + 'T23:59:59')
+        if search:
+            # Search by booking_id, pnr, or passenger name via ilike on booking_id
+            query = query.or_(
+                f"booking_id.ilike.%{search}%,pnr.ilike.%{search}%,airline_name.ilike.%{search}%,flight_number.ilike.%{search}%"
+            )
+
+        query = query.order('created_at', desc=True).limit(limit).offset(offset)
+        result = query.execute()
+
+        return jsonify({
+            'success': True,
+            'data': result.data,
+            'count': result.count or len(result.data),
+            'limit': limit,
+            'offset': offset
+        }), 200
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/flight-bookings/stats', methods=['GET'])
+@require_auth()
+def get_flight_booking_stats():
+    """Get aggregate stats for flight bookings"""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+
+        if not supabase:
+            return jsonify({
+                'success': True,
+                'data': {
+                    'total': 0, 'confirmed': 0, 'pending': 0,
+                    'cancelled': 0, 'revenue': 0
+                }
+            }), 200
+
+        # Total
+        total_res = supabase.table('flight_bookings').select('id', count='exact').execute()
+        total = total_res.count or 0
+
+        # Confirmed
+        confirmed_res = supabase.table('flight_bookings').select('id', count='exact').eq('status', 'confirmed').execute()
+        confirmed = confirmed_res.count or 0
+
+        # Pending
+        pending_res = supabase.table('flight_bookings').select('id', count='exact').eq('status', 'pending').execute()
+        pending = pending_res.count or 0
+
+        # Cancelled
+        cancelled_res = supabase.table('flight_bookings').select('id', count='exact').eq('status', 'cancelled').execute()
+        cancelled = cancelled_res.count or 0
+
+        # Revenue from confirmed bookings
+        revenue_res = supabase.table('flight_bookings').select('total_amount').eq('status', 'confirmed').execute()
+        revenue = sum(float(b.get('total_amount', 0) or 0) for b in revenue_res.data)
+
+        # Domestic vs International counts
+        domestic_res = supabase.table('flight_bookings').select('id', count='exact').eq('trip_type', 'domestic').execute()
+        domestic = domestic_res.count or 0
+        international = max(0, total - domestic)
+
+        # Round trip count
+        roundtrip_res = supabase.table('flight_bookings').select('id', count='exact').not_.is_('return_flight_number', 'null').execute()
+        roundtrip = roundtrip_res.count or 0
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'total': total,
+                'confirmed': confirmed,
+                'pending': pending,
+                'cancelled': cancelled,
+                'revenue': round(revenue, 2),
+                'domestic': domestic,
+                'international': international,
+                'roundtrip': roundtrip
+            }
+        }), 200
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/flight-bookings/<booking_id>', methods=['GET'])
+@require_auth()
+def get_flight_booking_details(booking_id):
+    """Get single flight booking details"""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+
+        if not supabase:
+            return jsonify({'success': False, 'error': 'Database not initialized'}), 500
+
+        booking = supabase.table('flight_bookings').select('*').eq('id', booking_id).execute()
+
+        if not booking.data:
+            # Try by booking_id field too
+            booking = supabase.table('flight_bookings').select('*').eq('booking_id', booking_id).execute()
+
+        if not booking.data:
+            return jsonify({'success': False, 'error': 'Flight booking not found'}), 404
+
+        return jsonify({
+            'success': True,
+            'data': booking.data[0]
+        }), 200
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/flight-bookings/<booking_id>/status', methods=['PUT'])
+@require_auth(required_role=['super_admin', 'operations'])
+def update_flight_booking_status(booking_id):
+    """Update flight booking status"""
+    try:
+        data = request.get_json()
+        new_status = data.get('status')
+
+        if not new_status or new_status not in ('confirmed', 'pending', 'cancelled', 'processing', 'completed'):
+            return jsonify({'success': False, 'error': 'Invalid status'}), 400
+
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+
+        update_data = {'status': new_status, 'updated_at': 'now()'}
+
+        if new_status == 'cancelled':
+            import datetime as dt
+            update_data['cancelled_at'] = dt.datetime.utcnow().isoformat()
+            update_data['cancellation_reason'] = data.get('reason', '')
+
+        result = supabase.table('flight_bookings').update(update_data).eq('id', booking_id).execute()
+
+        if not result.data:
+            return jsonify({'success': False, 'error': 'Booking not found'}), 404
+
+        return jsonify({'success': True, 'data': result.data[0]}), 200
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/flight-bookings', methods=['POST'])
+@require_auth(required_role=['super_admin', 'operations'])
+def create_manual_flight_booking():
+    """Create a manual flight booking from admin panel"""
+    try:
+        data = request.get_json()
+        import time, random, json
+
+        timestamp = hex(int(time.time()))[2:].upper()
+        rand_part = ''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=4))
+        booking_ref = f"C2C-F{timestamp[-4:]}{rand_part}"
+
+        passengers_json = [{
+            'first_name': data.get('passenger_name', '').split(' ')[0],
+            'last_name': ' '.join(data.get('passenger_name', '').split(' ')[1:]),
+            'email': data.get('passenger_email', ''),
+            'phone': data.get('passenger_phone', ''),
+            'type': 'adult'
+        }]
+
+        dep_dt = data.get('departure_date')
+        if dep_dt and not 'T' in dep_dt:
+            dep_dt = f"{dep_dt}T00:00:00"
+
+        booking_record = {
+            'booking_id': booking_ref,
+            'flight_type': data.get('flight_type', 'one_way'),
+            'trip_type': data.get('trip_type', 'domestic'),
+            'origin_code': data.get('origin_code', ''),
+            'origin_city': data.get('origin_city', data.get('origin_code', '')),
+            'destination_code': data.get('destination_code', ''),
+            'destination_city': data.get('destination_city', data.get('destination_code', '')),
+            'airline_code': data.get('airline_code', ''),
+            'airline_name': data.get('airline_name', ''),
+            'flight_number': data.get('flight_number', ''),
+            'departure_datetime': dep_dt,
+            'arrival_datetime': dep_dt,
+            'cabin_class': data.get('cabin_class', 'economy'),
+            'passengers': json.dumps(passengers_json),
+            'total_passengers': int(data.get('total_passengers', 1)),
+            'pnr': data.get('pnr', ''),
+            'base_fare': float(data.get('base_fare', 0)),
+            'taxes_fees': float(data.get('taxes_fees', 0)),
+            'markup_amount': float(data.get('markup_amount', 0)),
+            'total_amount': float(data.get('base_fare', 0)) + float(data.get('taxes_fees', 0)) + float(data.get('markup_amount', 0)),
+            'currency': data.get('currency', 'INR'),
+            'status': data.get('status', 'confirmed'),
+            'payment_status': data.get('payment_status', 'paid'),
+            'booking_source': 'admin_manual'
+        }
+
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        result = supabase.table('flight_bookings').insert(booking_record).execute()
+
+        # Log activity
+        try:
+            admin_service = current_app.config.get('ADMIN_SERVICE')
+            admin_service.log_activity(
+                admin_id=request.admin_user['admin_id'],
+                action='create_flight_booking',
+                target_type='flight_booking',
+                target_id=booking_ref,
+                ip_address=request.remote_addr
+            )
+        except Exception:
+            pass
+
+        return jsonify({
+            'success': True,
+            'data': result.data[0] if result.data else None,
+            'booking_id': booking_ref
+        }), 201
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
