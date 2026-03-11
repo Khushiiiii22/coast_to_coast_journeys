@@ -445,9 +445,18 @@ function createHotelCardHorizontal(hotel) {
                         <span class="price-per-night"><span class="amount">${price}</span> nightly</span>
                         ${originalPrice ? `<span class="price-original">${originalPrice}</span>` : ''}
                         <span class="price-total">${totalPrice} <span class="total-label">total</span></span>
-                        <span class="price-includes" style="color:#059669">
-                            <i class="fas fa-check-circle"></i> Includes taxes & fees
-                        </span>
+                        <span class="price-includes">${(() => {
+                            const firstRate = hotel.rates && hotel.rates[0];
+                            const taxInfo = firstRate && firstRate.tax_info;
+                            const nonIncluded = taxInfo && taxInfo.non_included_taxes;
+                            if (nonIncluded && nonIncluded.length > 0) {
+                                return '<i class="fas fa-info-circle" style="color:#d97706"></i> + taxes payable at property';
+                            } else if (taxInfo) {
+                                return '<i class="fas fa-check-circle" style="color:#059669"></i> Incl. taxes &amp; fees';
+                            } else {
+                                return '<i class="fas fa-info-circle"></i> Excl. taxes &amp; fees';
+                            }
+                        })()}</span>
                     </div>
                     ${hotel.is_refundable ? '<span class="refundable-badge"><i class="fas fa-check-circle"></i> Fully refundable</span>' : ''}
                 </div>

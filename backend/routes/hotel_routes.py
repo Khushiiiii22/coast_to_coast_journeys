@@ -466,25 +466,14 @@ def search_by_destination():
                 print(f"📍 Matched destination: {location_name}, Sandbox: {is_sandbox_supported}")
                 break
         
-        # Step 2: For non-sandbox destinations, skip RateHawk and go to Google directly
-        # This avoids unnecessary API calls that will return empty results
-        if region_id and not is_sandbox_supported:
-            print(f"⚠️ {location_name} is not sandbox-supported, using Google Places")
-            google_hotels = search_hotels_via_google(data['destination'], data['checkin'], data['checkout'])
-            
-            if google_hotels:
-                print(f"✅ Found {len(google_hotels)} hotels via Google Places for {location_name}")
-                return jsonify({
-                    'success': True,
-                    'data': {'hotels': google_hotels},
-                    'location': {'name': location_name},
-                    'hotels_count': len(google_hotels),
-                    'real_data': True,
-                    'source': 'google_places'
-                })
+        # Step 2: ALWAYS call ETG/RateHawk API for every search when we have a region_id.
+        # ETG certification requires a live /search/serp/region/ call for EVERY search action.
+        # Previously this step was bypassing ETG for non-sandbox Indian cities — that prevented
+        # Mikhail's team from seeing our API calls and blocked certification progress.
+        # Now ETG is always called first; Google Places is only used as a fallback if ETG returns 0.
         
-        # Step 3: If sandbox-supported, try RateHawk first
-        if region_id and is_sandbox_supported:
+        # Step 3: Try ETG/RateHawk for ALL destinations with a known region_id
+        if region_id:
             print(f"🏨 Searching RateHawk for sandbox destination: {location_name}")
             
             rooms_data = data.get('rooms')  # multi-room array if available
