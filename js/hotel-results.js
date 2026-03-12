@@ -451,10 +451,9 @@ function createHotelCardHorizontal(hotel) {
                             const nonIncluded = taxInfo && taxInfo.non_included_taxes;
                             if (nonIncluded && nonIncluded.length > 0) {
                                 return '<i class="fas fa-info-circle" style="color:#d97706"></i> + taxes payable at property';
-                            } else if (taxInfo) {
-                                return '<i class="fas fa-check-circle" style="color:#059669"></i> Incl. taxes &amp; fees';
                             } else {
-                                return '<i class="fas fa-info-circle"></i> Excl. taxes &amp; fees';
+                                // Taxes are always bundled into the displayed total by the backend
+                                return '<i class="fas fa-check-circle" style="color:#059669"></i> Incl. taxes &amp; fees';
                             }
                         })()}</span>
                     </div>
