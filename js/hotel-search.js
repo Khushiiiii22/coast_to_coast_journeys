@@ -140,14 +140,67 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (regions.length > 0 || hotels.length > 0) {
                     displayETGResults(regions, hotels);
-                } else {
-                    showEmpty();
+                    return;
                 }
-            } else {
-                showEmpty();
             }
+            // ETG returned nothing — try Google Places fallback
+            await fetchGoogleFallback(query);
         } catch (error) {
-            console.error('❌ Autocomplete error:', error);
+            console.error('❌ ETG Autocomplete error:', error);
+            // Fall back to Google Places
+            await fetchGoogleFallback(query);
+        }
+    }
+
+    // Fallback: Google Places autocomplete via /api/hotels/autocomplete
+    async function fetchGoogleFallback(query) {
+        try {
+            const response = await fetch(`/api/hotels/autocomplete?query=${encodeURIComponent(query)}`);
+            const data = await response.json();
+
+            if (data.success && data.predictions && data.predictions.length > 0) {
+                displayResults(data.predictions);
+                return;
+            }
+        } catch (e) {
+            // ignore
+        }
+
+        // Final fallback: filter popular destinations locally
+        const filtered = popularDestinations.filter(loc =>
+            loc.name.toLowerCase().includes(query.toLowerCase()) ||
+            loc.country.toLowerCase().includes(query.toLowerCase())
+        );
+
+        if (filtered.length > 0) {
+            if (resultsContainer) resultsContainer.innerHTML = '';
+            hideLoading();
+            if (empty) empty.style.display = 'none';
+
+            const header = document.createElement('div');
+            header.className = 'dropdown-header-home';
+            header.textContent = 'Matching Destinations';
+            resultsContainer.appendChild(header);
+
+            filtered.forEach(loc => {
+                const item = document.createElement('div');
+                item.className = 'location-item-home';
+                item.innerHTML = `
+                    <div class="location-icon-home"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="location-details-home">
+                        <div class="location-name-home">${loc.name}</div>
+                        <div class="location-country-home">${loc.country}</div>
+                    </div>
+                `;
+                item.addEventListener('click', () => {
+                    selectLocation(`${loc.name}, ${loc.country}`, null, 'region');
+                });
+                resultsContainer.appendChild(item);
+            });
+
+            resultsContainer.style.display = 'block';
+            dropdown.classList.add('active');
+        } else {
             showEmpty();
         }
     }
