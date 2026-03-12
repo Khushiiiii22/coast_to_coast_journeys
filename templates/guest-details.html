@@ -369,11 +369,50 @@
                 </div>
             </div>
 
-            <!-- Price Summary -->
+            <!-- Price Details -->
             <div class="price-summary">
-                <div class="price-row total-row">
-                    <span>Total Amount</span>
-                    <span id="totalAmount">--</span>
+                <h3 style="margin: 0 0 20px 0; font-size: 1.15rem; font-weight: 700; color: #1a1a2e;">Price details</h3>
+
+                <!-- Rate Breakdown Line -->
+                <div class="price-row" id="rateBreakdownRow">
+                    <span id="rateBreakdownLabel" style="color: #333; font-size: 0.95rem;">1 night × 1 room</span>
+                    <span id="rateBreakdownAmount" style="color: #333; font-weight: 600;">--</span>
+                </div>
+
+                <!-- Discount (if applicable) -->
+                <div class="price-row" id="discountRow" style="display: none;">
+                    <span style="color: #333; font-size: 0.95rem;">
+                        <span id="discountBadge"
+                            style="display: inline-block; background: #1a6b3c; color: white; font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-right: 6px;">--%
+                            off</span>
+                    </span>
+                    <span id="discountAmount" style="color: #1a6b3c; font-weight: 600;"></span>
+                </div>
+
+                <!-- Taxes & Fees -->
+                <div class="price-row" id="taxRow">
+                    <span style="color: #333; font-size: 0.95rem; text-decoration: underline; cursor: help;"
+                        title="Taxes and service charges included in the price">Taxes & fees</span>
+                    <span id="taxAmount" style="color: #333; font-weight: 600;">--</span>
+                </div>
+
+                <!-- Total -->
+                <div style="border-top: 2px solid #e2e8f0; margin-top: 8px; padding-top: 16px;">
+                    <div class="price-row" style="border-bottom: none; padding: 0;">
+                        <span style="font-size: 1.2rem; font-weight: 700; color: #1a1a2e;">Total</span>
+                        <span id="totalAmount" style="font-size: 1.2rem; font-weight: 700; color: #0066cc;">--</span>
+                    </div>
+                </div>
+
+                <!-- Currency Note -->
+                <p id="currencyNote" style="margin: 12px 0 0 0; font-size: 0.8rem; color: #64748b;">Rates are quoted in
+                    INR (₹).</p>
+
+                <!-- Price may increase warning -->
+                <div
+                    style="margin-top: 16px; padding: 12px 16px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-chart-line" style="color: #64748b; font-size: 1rem;"></i>
+                    <span style="font-size: 0.85rem; color: #475569;">This price may increase if you book later</span>
                 </div>
 
                 <button class="proceed-button" onclick="proceedToPayment()">
@@ -462,7 +501,8 @@
             const nightlyRate = parseFloat(rate.price || 0);
             const extraPrice = parseFloat(rate.extra_price || 0);
             const extraType = rate.extra_type || 'none';
-            const nightsCount = parseInt(rate.nights || 1);
+            const nightsCount = parseInt(rate.nights || calculateNights(searchParams.checkin, searchParams.checkout) || 1);
+            const roomsCount = parseInt(searchParams.rooms || 1);
 
             // Room type line — show meal plan if breakfast was added
             const mealLabel = (rate.meal_info && rate.meal_info.display_name) || '';
@@ -473,7 +513,40 @@
 
             // Format with correct currency symbol using HotelUtils
             const originalCurrency = rate.currency || bookingData.currency || 'INR';
+            const currencySymbol = originalCurrency === 'INR' ? '₹' : (originalCurrency === 'USD' ? '$' : originalCurrency + ' ');
+
+            // --- PRICE DETAILS BREAKDOWN ---
+            // 1. Rate breakdown: nights x rooms x per-night rate
+            const perNightDisplay = nightlyRate > 0 ? nightlyRate : (totalPayableNow / nightsCount);
+            const rateLabel = `${nightsCount} night${nightsCount > 1 ? 's' : ''} × ${roomsCount} room${roomsCount > 1 ? 's' : ''} × ${HotelUtils.formatPrice(perNightDisplay, originalCurrency)}`;
+            document.getElementById('rateBreakdownLabel').textContent = rateLabel;
+            document.getElementById('rateBreakdownAmount').innerHTML = HotelUtils.formatPrice(totalPayableNow, originalCurrency);
+
+            // 2. Taxes & fees
+            const taxTotal = (rate.tax_info && rate.tax_info.total_all_taxes) ? parseFloat(rate.tax_info.total_all_taxes) : 0;
+            if (taxTotal > 0) {
+                document.getElementById('taxAmount').innerHTML = HotelUtils.formatPrice(taxTotal, originalCurrency);
+            } else {
+                document.getElementById('taxAmount').textContent = 'Included';
+                document.getElementById('taxRow').querySelector('span').title = 'All taxes are already included in the price';
+            }
+
+            // 3. Discount (show original_price vs total if available)
+            const originalPrice = parseFloat(rate.original_price || bookingData.hotel.original_price || 0);
+            if (originalPrice > totalPayableNow && originalPrice > 0) {
+                const discountAmount = originalPrice - totalPayableNow;
+                const discountPercent = Math.round((discountAmount / originalPrice) * 100);
+                document.getElementById('discountRow').style.display = 'flex';
+                document.getElementById('discountBadge').textContent = `${discountPercent}% off`;
+                document.getElementById('discountAmount').innerHTML = '-' + HotelUtils.formatPrice(discountAmount, originalCurrency);
+            }
+
+            // 4. Total
             document.getElementById('totalAmount').innerHTML = HotelUtils.formatPrice(totalPayableNow, originalCurrency);
+
+            // 5. Currency note
+            const currencyNames = { 'INR': 'INR (₹)', 'USD': 'USD ($)', 'EUR': 'EUR (€)', 'GBP': 'GBP (£)' };
+            document.getElementById('currencyNote').textContent = `Rates are quoted in ${currencyNames[originalCurrency] || originalCurrency}.`;
 
             // Breakfast extra is already included in totalPayableNow — no separate line item
 

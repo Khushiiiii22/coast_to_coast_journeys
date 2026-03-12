@@ -950,9 +950,10 @@ function updateStickyPriceBar(rates) {
     if (!rates || rates.length === 0) return;
 
     const lowestPrice = Math.min(...rates.map(r => r.price));
+    const rateCurrency = rates[0]?.currency || currentHotel?.currency || 'USD';
     const stickyPrice = document.getElementById('stickyPrice');
     if (stickyPrice) {
-        stickyPrice.textContent = HotelUtils.formatPrice(lowestPrice);
+        stickyPrice.textContent = HotelUtils.formatPrice(lowestPrice, rateCurrency);
     }
 }
 
@@ -1242,17 +1243,19 @@ function createRateCard(rate, index, customBadge = null) {
     card.className = 'rate-card';
     card.dataset.rateIndex = index;
     card.dataset.basePrice = rate.price; // used by updateExtras when toggling add-ons
+    card.dataset.rateCurrency = rate.currency || currentHotel?.currency || 'USD'; // currency for price formatting
 
     const price = rate.price;
-    const priceFormatted = HotelUtils.formatPrice(price);
+    const rateCurrency = rate.currency || currentHotel?.currency || 'USD';
+    const priceFormatted = HotelUtils.formatPrice(price, rateCurrency);
     const originalPrice = rate.original_price || Math.round(price * 1.15);
-    const originalPriceFormatted = HotelUtils.formatPrice(originalPrice);
+    const originalPriceFormatted = HotelUtils.formatPrice(originalPrice, rateCurrency);
     const discount = originalPrice - price;
-    const discountFormatted = HotelUtils.formatPrice(discount);
+    const discountFormatted = HotelUtils.formatPrice(discount, rateCurrency);
 
     const nights = searchParams ? HotelUtils.calculateNights(searchParams.checkin, searchParams.checkout) : 1;
-    const totalPrice = HotelUtils.formatPrice(price * nights);
-    const originalTotal = HotelUtils.formatPrice(originalPrice * nights);
+    const totalPrice = HotelUtils.formatPrice(price * nights, rateCurrency);
+    const originalTotal = HotelUtils.formatPrice(originalPrice * nights, rateCurrency);
 
     // Use custom badge if provided, otherwise use defaults
     const popularityBadges = ['Popular among travelers', 'Upgrade your stay', 'Great value', 'Best seller'];
@@ -1363,7 +1366,7 @@ function createRateCard(rate, index, customBadge = null) {
 
     // Extras section (Breakfast add-on) - uses mealInfo and hasBreakfastIncluded declared above
     const breakfastPrice = Math.floor(price * 0.05) + 10; // ~5% of room price + base
-    const breakfastPriceFormatted = HotelUtils.formatPrice(breakfastPrice);
+    const breakfastPriceFormatted = HotelUtils.formatPrice(breakfastPrice, rateCurrency);
 
     let extrasHtml = '';
     if (!hasBreakfastIncluded) {
@@ -1536,8 +1539,9 @@ function updateExtras(rateIndex, extraType, extraPrice) {
 
     const nightlyEl = card.querySelector('.nightly-price');
     const totalEl = card.querySelector('.total-price');
-    if (nightlyEl) nightlyEl.innerHTML = `${HotelUtils.formatPrice(newNightly)} <small>nightly</small>`;
-    if (totalEl) totalEl.innerHTML = `${HotelUtils.formatPrice(newTotal)} <small>total</small>`;
+    const extraCurrency = card.dataset.rateCurrency || currentHotel?.currency || 'USD';
+    if (nightlyEl) nightlyEl.innerHTML = `${HotelUtils.formatPrice(newNightly, extraCurrency)} <small>nightly</small>`;
+    if (totalEl) totalEl.innerHTML = `${HotelUtils.formatPrice(newTotal, extraCurrency)} <small>total</small>`;
 }
 
 // Show room details modal / overlay panel
@@ -1663,7 +1667,7 @@ function showRoomDetails(rateIndex) {
             <!-- Footer -->
             <div style="padding:16px 24px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
                 <div>
-                    <div style="font-size:1.3rem;font-weight:700;color:#111827;">${HotelUtils.formatPrice(rate.price)}</div>
+                    <div style="font-size:1.3rem;font-weight:700;color:#111827;">${HotelUtils.formatPrice(rate.price, rate.currency || currentHotel?.currency || 'USD')}</div>
                     <div style="font-size:0.8rem;color:#6b7280;">per night · incl. taxes & fees</div>
                 </div>
                 <button onclick="document.getElementById('rateDetailsOverlay').remove(); selectRate(${JSON.stringify({}).replace ? 'window.__rateForModal' : 'null'}, ${rateIndex});"

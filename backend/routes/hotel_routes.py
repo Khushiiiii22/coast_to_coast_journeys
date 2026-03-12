@@ -994,6 +994,7 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map, 
             'room_name': room_name,
             'price': round(display_nightly_inclusive, 2), # ALL-INCLUSIVE NIGHTLY
             'total_price': round(display_total_with_fees, 2), # ALL-INCLUSIVE TOTAL
+            'nights': nights,
             'currency': target_currency,
             'meal': meal_value,
             'meal_plan': meal_value,
