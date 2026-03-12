@@ -516,25 +516,27 @@
             const currencySymbol = originalCurrency === 'INR' ? '₹' : (originalCurrency === 'USD' ? '$' : originalCurrency + ' ');
 
             // --- PRICE DETAILS BREAKDOWN ---
-            // 1. Rate breakdown: nights x rooms x per-night rate
-            const perNightDisplay = nightlyRate > 0 ? nightlyRate : (totalPayableNow / nightsCount);
-            const rateLabel = `${nightsCount} night${nightsCount > 1 ? 's' : ''} × ${roomsCount} room${roomsCount > 1 ? 's' : ''} × ${HotelUtils.formatPrice(perNightDisplay, originalCurrency)}`;
-            document.getElementById('rateBreakdownLabel').textContent = rateLabel;
-            document.getElementById('rateBreakdownAmount').innerHTML = HotelUtils.formatPrice(totalPayableNow, originalCurrency);
-
-            // 2. Taxes & fees
+            // Resolve taxes first — needed to compute pre-tax base for the rate row
             const taxInfo = rate.tax_info || {};
             let displayTaxAmount = parseFloat(taxInfo.total_all_taxes || 0);
             if (!displayTaxAmount) displayTaxAmount = parseFloat(taxInfo.total_included || 0);
             if (!displayTaxAmount && taxInfo.included_taxes && taxInfo.included_taxes.length > 0) {
                 displayTaxAmount = taxInfo.included_taxes.reduce((s, t) => s + parseFloat(t.amount || 0), 0);
             }
-            if (displayTaxAmount > 0) {
-                document.getElementById('taxAmount').innerHTML = HotelUtils.formatPrice(Math.round(displayTaxAmount), originalCurrency);
-            } else {
-                // Taxes bundled into total — hide the row entirely
-                document.getElementById('taxRow').style.display = 'none';
+            // Fallback: derive service fee from commission portion embedded in total (15% commission → ~13% of total)
+            if (!displayTaxAmount && totalPayableNow > 0) {
+                displayTaxAmount = Math.round(totalPayableNow * (0.15 / 1.15));
             }
+
+            // 1. Rate breakdown: pre-tax base per night × nights × rooms
+            const baseAmount = Math.round(totalPayableNow - displayTaxAmount);
+            const perNightBase = nightsCount > 0 ? Math.round(baseAmount / nightsCount) : baseAmount;
+            const rateLabel = `${nightsCount} night${nightsCount > 1 ? 's' : ''} × ${roomsCount} room${roomsCount > 1 ? 's' : ''} × ${HotelUtils.formatPrice(perNightBase, originalCurrency)}`;
+            document.getElementById('rateBreakdownLabel').textContent = rateLabel;
+            document.getElementById('rateBreakdownAmount').innerHTML = HotelUtils.formatPrice(baseAmount, originalCurrency);
+
+            // 2. Taxes & fees — always show the dollar amount
+            document.getElementById('taxAmount').innerHTML = HotelUtils.formatPrice(Math.round(displayTaxAmount), originalCurrency);
 
             // 3. Discount (show original_price vs total if available)
             const originalPrice = parseFloat(rate.original_price || bookingData.hotel.original_price || 0);
