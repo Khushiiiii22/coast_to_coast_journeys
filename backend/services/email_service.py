@@ -440,6 +440,7 @@ This is an automated notification from C2C Journeys.
         customer_email = booking.get('customer_email', '')
         hotel_name = booking.get('hotel_name', 'Hotel')
         room_name = booking.get('room_name', '')
+        meal_plan = booking.get('meal_plan', '') or booking.get('meal_info', '')
         checkin = self._format_date(booking.get('checkin', ''))
         checkout = self._format_date(booking.get('checkout', ''))
         nights = booking.get('nights', '')
@@ -466,6 +467,15 @@ This is an automated notification from C2C Journeys.
             <tr>
                 <td style="padding: 12px 0; color: #64748b; border-bottom: 1px solid #f1f5f9;">Room Type</td>
                 <td style="padding: 12px 0; color: #1e293b; font-weight: 500; text-align: right; border-bottom: 1px solid #f1f5f9;">{room_name}</td>
+            </tr>"""
+
+        # Meal plan row (only if not nomeal)
+        meal_row = ''
+        if meal_plan and meal_plan.lower() not in ('nomeal', 'room only', 'no meal', 'none', ''):
+            meal_row = f"""
+            <tr>
+                <td style="padding: 12px 0; color: #64748b; border-bottom: 1px solid #f1f5f9;">Meal Plan</td>
+                <td style="padding: 12px 0; color: #065f46; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">🍽️ {meal_plan}</td>
             </tr>"""
         
         # Guests info row (only if available)
@@ -555,7 +565,7 @@ This is an automated notification from C2C Journeys.
                                 <tr>
                                     <td style="padding: 12px 0; color: #64748b; border-bottom: 1px solid #f1f5f9;">Hotel</td>
                                     <td style="padding: 12px 0; color: #1e293b; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9; font-size: 15px;">{hotel_name}</td>
-                                </tr>{room_row}
+                                </tr>{room_row}{meal_row}
                                 <tr>
                                     <td style="padding: 12px 0; color: #64748b; border-bottom: 1px solid #f1f5f9;">Check-in</td>
                                     <td style="padding: 12px 0; color: #1e293b; font-weight: 500; text-align: right; border-bottom: 1px solid #f1f5f9;">📅 {checkin}</td>

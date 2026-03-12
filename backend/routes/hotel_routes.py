@@ -3347,6 +3347,7 @@ def send_booking_confirmation():
         checkout = data.get('checkout')
         customer_name = data.get('guests', 'Valued Customer')
         room_name = data.get('room_name', '')
+        meal_plan = data.get('meal_plan', '') or data.get('meal_info', '')
         
         if not amount or amount == 0:
             # Try to get amount from database
@@ -3379,6 +3380,7 @@ def send_booking_confirmation():
             'customer_email': data.get('email'),
             'hotel_name': hotel_name,
             'room_name': room_name,
+            'meal_plan': meal_plan,
             'checkin': checkin,
             'checkout': checkout,
             'amount': amount,
