@@ -450,12 +450,16 @@
             document.getElementById('rateBreakdownAmount').textContent = fmtPrice(total);
 
             // 2. Taxes & fees
-            const taxTotal = (rate.tax_info && rate.tax_info.total_all_taxes) ? parseFloat(rate.tax_info.total_all_taxes) : 0;
-            if (taxTotal > 0) {
-                document.getElementById('taxAmount').textContent = fmtPrice(taxTotal);
+            const taxInfo = rate.tax_info || {};
+            let displayTaxAmount = parseFloat(taxInfo.total_all_taxes || 0);
+            if (!displayTaxAmount) displayTaxAmount = parseFloat(taxInfo.total_included || 0);
+            if (!displayTaxAmount && taxInfo.included_taxes && taxInfo.included_taxes.length > 0) {
+                displayTaxAmount = taxInfo.included_taxes.reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+            }
+            if (displayTaxAmount > 0) {
+                document.getElementById('taxAmount').textContent = fmtPrice(Math.round(displayTaxAmount));
             } else {
-                document.getElementById('taxAmount').textContent = 'Included';
-                document.getElementById('taxRow').querySelector('span').title = 'All taxes are already included in the price';
+                document.getElementById('taxAmount').innerHTML = '<span style="font-size:0.82em;color:#6b7280;">Included in rate</span>';
             }
 
             // 3. Discount (show original_price vs total if available)
