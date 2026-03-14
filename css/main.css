@@ -1259,7 +1259,7 @@ h6 {
 /* Search Form Grid */
 .search-form-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 120px 120px 1fr;
+    grid-template-columns: 1fr 1fr 160px 160px 1fr;
     gap: 16px;
     align-items: end;
 }
@@ -3045,10 +3045,8 @@ h6 {
 /* Ensure wrapper matches height */
 .search-form-grid .input-wrapper {
     display: flex;
-    /* Flex context for input to stretch? */
     align-items: center;
-    overflow: hidden;
-    /* Prevent spillover */
+    overflow: visible;
 }
 
 /* Icon positioning fix for this specific wrapper type */
