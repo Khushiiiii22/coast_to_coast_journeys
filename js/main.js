@@ -261,6 +261,56 @@ function extractAirportCode(value) {
 function setupFlightAutocomplete(inputEl) {
     if (!inputEl) return;
 
+    const fallbackAirports = [
+        { code: 'DEL', name: 'Indira Gandhi International Airport', city: 'New Delhi', country: 'IN' },
+        { code: 'BOM', name: 'Chhatrapati Shivaji Maharaj International Airport', city: 'Mumbai', country: 'IN' },
+        { code: 'BLR', name: 'Kempegowda International Airport', city: 'Bengaluru', country: 'IN' },
+        { code: 'MAA', name: 'Chennai International Airport', city: 'Chennai', country: 'IN' },
+        { code: 'CCU', name: 'Netaji Subhash Chandra Bose International Airport', city: 'Kolkata', country: 'IN' },
+        { code: 'HYD', name: 'Rajiv Gandhi International Airport', city: 'Hyderabad', country: 'IN' },
+        { code: 'GOI', name: 'Goa International Airport', city: 'Goa', country: 'IN' },
+        { code: 'JAI', name: 'Jaipur International Airport', city: 'Jaipur', country: 'IN' },
+        { code: 'DXB', name: 'Dubai International Airport', city: 'Dubai', country: 'AE' },
+        { code: 'LHR', name: 'Heathrow Airport', city: 'London', country: 'GB' }
+    ];
+
+    const renderFallback = (query) => {
+        const q = String(query || '').toUpperCase().trim();
+        const items = fallbackAirports.filter(a =>
+            a.code.includes(q) ||
+            a.city.toUpperCase().includes(q) ||
+            a.name.toUpperCase().includes(q)
+        ).slice(0, 8);
+
+        if (items.length === 0) {
+            menu.innerHTML = '';
+            menu.style.display = 'none';
+            return;
+        }
+
+        menu.innerHTML = items.map(s => `
+            <div class="flight-suggestion-item" data-code="${s.code}" data-label="${s.code} - ${s.name}, ${s.city}, ${s.country}">
+                <div style="display:flex;align-items:center;gap:8px;font-weight:600;color:#111827;">
+                    <i class="fas fa-plane" style="color:#2563eb;font-size:12px;"></i>
+                    <span>${s.code} - ${s.name}, ${s.city}, ${s.country}</span>
+                </div>
+            </div>
+        `).join('');
+
+        menu.querySelectorAll('.flight-suggestion-item').forEach(item => {
+            item.style.cssText = 'padding:12px 14px;cursor:pointer;border-bottom:1px solid #f3f4f6;';
+            item.addEventListener('mouseenter', () => item.style.background = '#f8fafc');
+            item.addEventListener('mouseleave', () => item.style.background = '#fff');
+            item.addEventListener('click', function () {
+                inputEl.value = this.dataset.label;
+                inputEl.dataset.airportCode = this.dataset.code || '';
+                menu.style.display = 'none';
+            });
+        });
+
+        menu.style.display = 'block';
+    };
+
     const menu = document.createElement('div');
     menu.className = 'flight-autocomplete-menu';
     menu.style.cssText = `
@@ -298,16 +348,11 @@ function setupFlightAutocomplete(inputEl) {
 
         debounce = setTimeout(async () => {
             try {
-                const response = await fetch('/api/flights/suggest', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query })
-                });
+                const response = await fetch(`/api/flights/suggest?q=${encodeURIComponent(query)}`);
                 const result = await response.json();
 
                 if (!result.success || !Array.isArray(result.data) || result.data.length === 0) {
-                    menu.innerHTML = '';
-                    menu.style.display = 'none';
+                    renderFallback(query);
                     return;
                 }
 
@@ -333,7 +378,7 @@ function setupFlightAutocomplete(inputEl) {
 
                 menu.style.display = 'block';
             } catch (err) {
-                menu.style.display = 'none';
+                renderFallback(query);
                 console.error('Flight autocomplete error:', err);
             }
         }, 250);

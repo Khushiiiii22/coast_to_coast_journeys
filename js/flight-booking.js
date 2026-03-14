@@ -212,6 +212,40 @@ function setupAutocomplete(input) {
     menu.className = 'autocomplete-menu';
     input.parentNode.appendChild(menu);
 
+    const fallbackAirports = [
+        { code: 'DEL', name: 'Indira Gandhi International Airport', city: 'New Delhi', country: 'IN' },
+        { code: 'BOM', name: 'Chhatrapati Shivaji Maharaj International Airport', city: 'Mumbai', country: 'IN' },
+        { code: 'BLR', name: 'Kempegowda International Airport', city: 'Bengaluru', country: 'IN' },
+        { code: 'MAA', name: 'Chennai International Airport', city: 'Chennai', country: 'IN' },
+        { code: 'CCU', name: 'Netaji Subhash Chandra Bose International Airport', city: 'Kolkata', country: 'IN' },
+        { code: 'HYD', name: 'Rajiv Gandhi International Airport', city: 'Hyderabad', country: 'IN' },
+        { code: 'GOI', name: 'Goa International Airport', city: 'Goa', country: 'IN' },
+        { code: 'DXB', name: 'Dubai International Airport', city: 'Dubai', country: 'AE' },
+        { code: 'LHR', name: 'Heathrow Airport', city: 'London', country: 'GB' }
+    ];
+
+    function showFallback(query) {
+        const q = String(query || '').toUpperCase();
+        const matches = fallbackAirports.filter(a =>
+            a.code.includes(q) || a.city.toUpperCase().includes(q) || a.name.toUpperCase().includes(q)
+        ).slice(0, 8);
+
+        if (matches.length === 0) {
+            menu.innerHTML = '';
+            menu.classList.remove('active');
+            return;
+        }
+
+        renderSuggestions(matches.map(a => ({
+            code: a.code,
+            name: a.name,
+            city: a.city,
+            country: a.country,
+            label: `${a.code} - ${a.name}, ${a.city}, ${a.country}`
+        })), menu, input);
+        menu.classList.add('active');
+    }
+
     input.addEventListener('input', function () {
         clearTimeout(timeout);
         const query = this.value.trim();
@@ -223,22 +257,18 @@ function setupAutocomplete(input) {
 
         timeout = setTimeout(async () => {
             try {
-                const response = await fetch('/api/flights/suggest', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query })
-                });
+                const response = await fetch(`/api/flights/suggest?q=${encodeURIComponent(query)}`);
                 const result = await response.json();
 
                 if (result.success && result.data.length > 0) {
                     renderSuggestions(result.data, menu, input);
                     menu.classList.add('active');
                 } else {
-                    menu.innerHTML = '';
-                    menu.classList.remove('active');
+                    showFallback(query);
                 }
             } catch (err) {
                 console.error('Autocomplete error:', err);
+                showFallback(query);
             }
         }, 300);
     });
