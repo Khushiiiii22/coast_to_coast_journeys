@@ -10,11 +10,13 @@ from config import Config
 
 class FlightService:
     def __init__(self):
-        self.access_token = Config.DUFFEL_ACCESS_TOKEN
         self.client = None
-        if self.access_token:
+        if Config.DUFFEL_ACCESS_TOKEN:
+            self.access_token = Config.DUFFEL_ACCESS_TOKEN
             try:
-                self.client = Duffel(access_token=self.access_token)
+                # Duffel API SDK defaults to an old API version.
+                # Must specify 'v2' (v1 and beta are deprecated).
+                self.client = Duffel(access_token=self.access_token, api_version="v2")
                 print("✅ Duffel API client initialized")
             except Exception as e:
                 print(f"⚠️ Error initializing Duffel client: {e}")
@@ -108,7 +110,17 @@ class FlightService:
         }
 
     def _duffel_search(self, origin, destination, depart_date, return_date, adults, flight_class):
-        """Perform real search using Duffel API"""
+        """Perform real search using Duffel API directly via requests"""
+        import requests
+
+        headers = {
+            "Duffel-Version": "v2",
+            "Authorization": f"Bearer {self.access_token}",
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "User-Agent": "C2C-Journeys/1.0"
+        }
+
         slices = [
             {
                 "origin": origin,
@@ -133,34 +145,42 @@ class FlightService:
             'premium_economy': 'premium_economy'
         }
         
-        # Create offer request
-        offer_request = self.client.offer_requests.create() \
-            .slices(slices) \
-            .passengers(passengers) \
-            .cabin_class(cabin_class_map.get(flight_class, 'economy')) \
-            .execute()
+        payload = {
+            "data": {
+                "slices": slices,
+                "passengers": passengers,
+                "cabin_class": cabin_class_map.get(flight_class, 'economy')
+            }
+        }
 
-        # Retrieve offers
-        offers = self.client.offers.list(offer_request.id)
+        # 1. Create Offer Request
+        response = requests.post("https://api.duffel.com/air/offer_requests", json=payload, headers=headers)
+        if not response.ok:
+            raise Exception(f"Duffel offer_request failed: {response.text}")
+        
+        offer_request_data = response.json().get('data', {})
+        offers = offer_request_data.get('offers', [])
+        offer_request_id = offer_request_data.get('id')
         
         formatted_outbound = []
         formatted_inbound = []
 
         for offer in offers:
-            # We simplify for demo purposes, picking the first slice as outbound
-            # and second as inbound if round-trip
-            outbound_slice = offer.slices[0]
-            inbound_slice = offer.slices[1] if len(offer.slices) > 1 else None
+            try:
+                outbound_slice = offer['slices'][0]
+                inbound_slice = offer['slices'][1] if len(offer['slices']) > 1 else None
 
-            price_data = offer.total_amount
-            currency = offer.total_currency
+                price_data = offer['total_amount']
+                currency = offer['total_currency']
 
-            outbound_flight = self._format_duffel_slice(offer.id, outbound_slice, price_data, currency)
-            formatted_outbound.append(outbound_flight)
+                outbound_flight = self._format_duffel_slice(offer['id'], outbound_slice, price_data, currency)
+                formatted_outbound.append(outbound_flight)
 
-            if inbound_slice:
-                inbound_flight = self._format_duffel_slice(offer.id, inbound_slice, price_data, currency, is_inbound=True)
-                formatted_inbound.append(inbound_flight)
+                if inbound_slice:
+                    inbound_flight = self._format_duffel_slice(offer['id'], inbound_slice, price_data, currency, is_inbound=True)
+                    formatted_inbound.append(inbound_flight)
+            except Exception as loop_e:
+                print(f"Skipping an offer due to parsing error: {loop_e}")
 
         return {
             'success': True,
@@ -169,60 +189,75 @@ class FlightService:
                 'inbound': formatted_inbound,
                 'meta': {
                     'provider': 'duffel',
-                    'offer_request_id': offer_request.id
+                    'offer_request_id': offer_request_id
                 }
             }
         }
 
     def _format_duffel_slice(self, offer_id, fslice, price, currency, is_inbound=False):
-        """Format Duffel slice data to match frontend expectations"""
+        """Format Duffel slice data to match frontend expectations using raw JSON dicts"""
         # For simplicity, we take the first segment's details
-        segment = fslice.segments[0]
-        airline = segment.marketing_carrier
+        segments_data = fslice.get('segments', [])
+        if not segments_data:
+            raise KeyError("No segments found in Duffel slice")
+
+        first_segment = segments_data[0]
+        airline = first_segment.get('marketing_carrier', {})
 
         segments = []
-        for idx, seg in enumerate(fslice.segments):
-            dep_dt = datetime.fromisoformat(seg.departing_at)
-            arr_dt = datetime.fromisoformat(seg.arriving_at)
+        for idx, seg in enumerate(segments_data):
+            dep_dt = datetime.fromisoformat(seg.get('departing_at', '').replace('Z', '+00:00'))
+            arr_dt = datetime.fromisoformat(seg.get('arriving_at', '').replace('Z', '+00:00'))
             dur_mins = max(0, int((arr_dt - dep_dt).total_seconds() // 60))
             dur_str = f"{dur_mins // 60}h {dur_mins % 60}m"
 
             layover_mins = None
-            if idx < len(fslice.segments) - 1:
-                next_dep = datetime.fromisoformat(fslice.segments[idx + 1].departing_at)
+            if idx < len(segments_data) - 1:
+                next_dep = datetime.fromisoformat(segments_data[idx + 1].get('departing_at', '').replace('Z', '+00:00'))
                 layover_mins = max(0, int((next_dep - arr_dt).total_seconds() // 60))
 
+            carrier = seg.get('marketing_carrier', {})
+            origin_info = seg.get('origin', {})
+            dest_info = seg.get('destination', {})
+
             segments.append({
-                'origin': seg.origin.iata_code,
-                'destination': seg.destination.iata_code,
+                'origin': origin_info.get('iata_code', origin_info.get('id', '')),
+                'destination': dest_info.get('iata_code', dest_info.get('id', '')),
                 'depart_time': dep_dt.strftime('%H:%M'),
                 'arrival_time': arr_dt.strftime('%H:%M'),
                 'duration': dur_str,
-                'flight_number': f"{seg.marketing_carrier.iata_code}{seg.marketing_carrier_flight_number}",
-                'airline_name': seg.marketing_carrier.name,
-                'airline_code': seg.marketing_carrier.iata_code,
-                'cabin_class': seg.cabin_class,
+                'flight_number': f"{carrier.get('iata_code', '')}{seg.get('marketing_carrier_flight_number', '')}",
+                'airline_name': carrier.get('name', carrier.get('iata_code', '')),
+                'airline_code': carrier.get('iata_code', ''),
+                'cabin_class': seg.get('cabin_class', 'economy'),
                 'layover_minutes': layover_mins
             })
         
+        # Duration format for whole slice (e.g. PT10H20M -> 10h 20m)
+        slice_duration_str = fslice.get('duration', '')
+        formatted_duration = slice_duration_str[2:].lower().replace('h', 'h ') if slice_duration_str.startswith('PT') else slice_duration_str
+        
+        origin_airport = first_segment.get('origin', {})
+        dest_airport = segments_data[-1].get('destination', {})
+
         return {
             'id': f"{offer_id}_{'in' if is_inbound else 'out'}",
             'airline': {
-                'code': airline.iata_code,
-                'name': airline.name,
-                'logo': f"https://res.cloudinary.com/duffel/image/upload/v1582230000/intermediary/carrier-logos/{airline.iata_code}.png"
+                'code': airline.get('iata_code', ''),
+                'name': airline.get('name', ''),
+                'logo': f"https://res.cloudinary.com/duffel/image/upload/v1582230000/intermediary/carrier-logos/{airline.get('iata_code', '')}.png"
             },
-            'flight_number': f"{airline.iata_code}{segment.marketing_carrier_flight_number}",
-            'origin': segment.origin.iata_code,
-            'destination': segment.destination.iata_code,
-            'depart_time': datetime.fromisoformat(segment.departing_at).strftime('%H:%M'),
-            'arrival_time': datetime.fromisoformat(segment.arriving_at).strftime('%H:%M'),
-            'duration': f"{fslice.duration[2:].lower().replace('h', 'h ')}", # Converts PT10H20M
-            'next_day': False, # Could be calculated from dates
-            'stops': len(fslice.segments) - 1,
+            'flight_number': f"{airline.get('iata_code', '')}{first_segment.get('marketing_carrier_flight_number', '')}",
+            'origin': origin_airport.get('iata_code', ''),
+            'destination': dest_airport.get('iata_code', ''),
+            'depart_time': datetime.fromisoformat(first_segment.get('departing_at', '').replace('Z', '+00:00')).strftime('%H:%M'),
+            'arrival_time': datetime.fromisoformat(segments_data[-1].get('arriving_at', '').replace('Z', '+00:00')).strftime('%H:%M'),
+            'duration': formatted_duration,
+            'next_day': False, 
+            'stops': len(segments_data) - 1,
             'price': float(price),
             'currency': currency,
-            'class': segment.cabin_class,
+            'class': first_segment.get('cabin_class', 'economy'),
             'segments': segments
         }
 

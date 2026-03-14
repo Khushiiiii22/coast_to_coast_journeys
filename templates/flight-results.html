@@ -671,46 +671,62 @@
 
     <!-- Main Content -->
     <main class="hotel-results-main">
-        <!-- Search Info Bar -->
-        <section class="expedia-search-bar"
-            style="background: linear-gradient(135deg, #0f172a, #1e293b); color: white;">
-            <div class="container">
-                <div class="search-bar-container"
-                    style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(8px);">
-                    <div class="search-input-group">
-                        <i class="fas fa-plane-departure" style="color: #60a5fa;"></i>
-                        <div class="search-input-content">
-                            <span class="input-label" style="color: #94a3b8;">From</span>
-                            <span class="input-value" id="flightOriginDisplay" style="color: white;">Loading...</span>
+        <!-- Search Info Bar (Redesigned) -->
+        <section class="results-top-bar">
+            <div class="container" style="max-width: 1400px; padding: 0 40px;">
+                <div class="search-bar-container-new">
+
+                    <!-- Origin -->
+                    <div class="search-block flight-block">
+                        <i class="fas fa-plane-departure icon-plane"></i>
+                        <div class="search-text">
+                            <span class="label">FROM</span>
+                            <span class="value-main" id="flightOriginCodeDisplay">IXR</span>
+                            <span class="value-sub" id="flightOriginCityDisplay">Ranchi</span>
                         </div>
                     </div>
-                    <div class="search-divider" style="background: rgba(255,255,255,0.15);"></div>
-                    <div class="search-input-group">
-                        <i class="fas fa-plane-arrival" style="color: #60a5fa;"></i>
-                        <div class="search-input-content">
-                            <span class="input-label" style="color: #94a3b8;">To</span>
-                            <span class="input-value" id="flightDestDisplay" style="color: white;">Loading...</span>
+
+                    <div class="search-divider"></div>
+
+                    <!-- Destination -->
+                    <div class="search-block flight-block">
+                        <i class="fas fa-plane-arrival icon-plane" style="transform: scaleX(-1);"></i>
+                        <div class="search-text">
+                            <span class="label">TO</span>
+                            <span class="value-main" id="flightDestCodeDisplay">GOX</span>
+                            <span class="value-sub" id="flightDestCityDisplay">Goa</span>
                         </div>
                     </div>
-                    <div class="search-divider" style="background: rgba(255,255,255,0.15);"></div>
-                    <div class="search-input-group">
-                        <i class="fas fa-calendar-alt" style="color: #60a5fa;"></i>
-                        <div class="search-input-content">
-                            <span class="input-label" style="color: #94a3b8;">Departure</span>
-                            <span class="input-value" id="flightDateDisplay" style="color: white;">Loading...</span>
+
+                    <div class="search-divider"></div>
+
+                    <!-- Date -->
+                    <div class="search-block">
+                        <i class="far fa-calendar-alt icon-cal"></i>
+                        <div class="search-text">
+                            <span class="label">DEPARTURE</span>
+                            <span class="value-main" id="flightDateDisplay" style="font-size: 1rem;">Fri, 20 Mar,
+                                2026</span>
                         </div>
                     </div>
-                    <div class="search-divider" style="background: rgba(255,255,255,0.15);"></div>
-                    <div class="search-input-group">
-                        <i class="fas fa-users" style="color: #60a5fa;"></i>
-                        <div class="search-input-content">
-                            <span class="input-label" style="color: #94a3b8;">Travelers</span>
-                            <span class="input-value" id="flightTravelersDisplay" style="color: white;">1 Adult</span>
+
+                    <div class="search-divider"></div>
+
+                    <!-- Travelers -->
+                    <div class="search-block">
+                        <i class="fas fa-user-friends icon-users"></i>
+                        <div class="search-text">
+                            <span class="label">TRAVELERS</span>
+                            <span class="value-main" id="flightTravelersDisplay" style="font-size: 1rem;">1 Traveler,
+                                Economy</span>
                         </div>
                     </div>
-                    <button class="search-btn" id="modifySearchBtn" style="background: #2563eb;" title="Modify Search">
-                        <i class="fas fa-edit"></i>
+
+                    <!-- Edit Button -->
+                    <button class="btn-edit-search" id="modifySearchBtn" title="Modify Search">
+                        <i class="fas fa-pencil-alt"></i>
                     </button>
+
                 </div>
             </div>
         </section>

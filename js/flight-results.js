@@ -230,8 +230,34 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Update search bar display
-    document.getElementById('flightOriginDisplay').textContent = airportDisplay(origin || '');
-    document.getElementById('flightDestDisplay').textContent = airportDisplay(destination || '');
+    const originStr = airportDisplay(origin || '');
+    const destStr = airportDisplay(destination || '');
+
+    // Extracting code (e.g. IXR) and city name if possible. Format is usually "City (CODE)" or just "CODE".
+    const extractCodeAndCity = (str, code) => {
+        let displayCode = code || '';
+        let displayCity = str;
+        // if str has parentheses, assume it's "City (CODE)"
+        const match = str.match(/^(.*?)\s*\((.*?)\)$/);
+        if (match) {
+            displayCity = match[1].trim();
+            displayCode = match[2].trim();
+        } else if (str === code) {
+            // we only have code, no city name available easily without a map, so we'll just show code for both or leave city blank
+            displayCity = code;
+        }
+        return { city: displayCity, code: displayCode };
+    };
+
+    const originInfo = extractCodeAndCity(originStr, origin);
+    const destInfo = extractCodeAndCity(destStr, destination);
+
+    document.getElementById('flightOriginCodeDisplay').textContent = originInfo.code;
+    document.getElementById('flightOriginCityDisplay').textContent = originInfo.city;
+
+    document.getElementById('flightDestCodeDisplay').textContent = destInfo.code;
+    document.getElementById('flightDestCityDisplay').textContent = destInfo.city;
+
     document.getElementById('flightDateDisplay').textContent = formatDateDisplay(departDate);
 
     const totalTravelers = adults + children;

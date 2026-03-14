@@ -1632,6 +1632,130 @@ h6 {
     color: var(--text-secondary);
 }
 
+/* ===== Enhanced Results Header Top Bar (Flight & Hotel) ===== */
+.results-top-bar {
+    background: #1b253b;
+    /* Dark navy background */
+    color: white;
+    padding: 16px 0;
+}
+
+.search-bar-container-new {
+    background: #252f46;
+    /* Slightly lighter navy for inner container */
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    gap: 16px;
+}
+
+.search-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.flight-block {
+    min-width: 140px;
+}
+
+.search-block i {
+    font-size: 1.2rem;
+    color: #60a5fa;
+    /* Light blue accent */
+}
+
+.search-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.search-text .label {
+    font-size: 0.65rem;
+    color: #94a3b8;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.search-text .value-main {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1.2;
+}
+
+.search-text .value-sub {
+    font-size: 0.75rem;
+    color: #cbd5e1;
+    font-weight: 500;
+}
+
+.search-divider {
+    width: 1px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-edit-search {
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.btn-edit-search i {
+    font-size: 1rem;
+    color: white;
+}
+
+.btn-edit-search:hover {
+    background: #1d4ed8;
+    transform: scale(1.05);
+}
+
+/* Responsive top bar */
+@media (max-width: 992px) {
+    .search-bar-container-new {
+        flex-wrap: wrap;
+        border-radius: 12px;
+        padding: 16px;
+    }
+
+    .search-block {
+        flex: 1 1 40%;
+    }
+
+    .search-divider {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .search-block {
+        flex: 1 1 100%;
+        margin-bottom: 8px;
+    }
+
+    .btn-edit-search {
+        width: 100%;
+        border-radius: 8px;
+    }
+}
+
+/* ===== End Enhanced Results Header Top Bar ===== */
+
 /* === Filters Sidebar === */
 .filters-sidebar {
     background: var(--white);

@@ -160,59 +160,36 @@
 
                 </div>
 
-                <form id="flightSearchForm">
-                    <div class="search-form-grid">
-                        <div class="form-field" style="position: relative;">
-                            <label>From</label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-plane-departure"></i>
-                                <input type="text" id="fromCity" placeholder="City or Airport" required>
-                            </div>
-                            <button type="button" class="swap-btn" id="swapCities">
-                                <i class="fas fa-exchange-alt"></i>
-                            </button>
+                <form class="search-form-improved" id="flightSearchForm">
+                    <div class="search-row">
+                        <div class="form-field-improved">
+                            <label><i class="fas fa-plane-departure"></i> From</label>
+                            <input type="text" id="fromCity" placeholder="City or Airport" required>
                         </div>
-
-                        <div class="form-field">
-                            <label>To</label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-plane-arrival"></i>
-                                <input type="text" id="toCity" placeholder="City or Airport" required>
-                            </div>
+                        <div class="swap-cities-btn" id="swapCitiesBtn">
+                            <i class="fas fa-exchange-alt"></i>
                         </div>
-
-                        <div class="form-field">
-                            <label>Departure</label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-calendar-alt"></i>
-                                <input type="date" id="departDate" required class="date-input-hidden">
-                                <div class="date-display-content" id="departDateDisplay">
-                                    <span class="date-main">dd/mm/yy</span>
-                                    <span class="date-sub">Day</span>
-                                </div>
-                            </div>
+                        <div class="form-field-improved">
+                            <label><i class="fas fa-plane-arrival"></i> To</label>
+                            <input type="text" id="toCity" placeholder="City or Airport" required>
                         </div>
-
-                        <div class="form-field" id="returnDateField">
-                            <label>Return</label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-calendar-alt"></i>
-                                <input type="date" id="returnDate" disabled class="date-input-hidden">
-                                <div class="date-display-content" id="returnDateDisplay">
-                                    <span class="date-main">dd/mm/yy</span>
-                                    <span class="date-sub">Day</span>
-                                </div>
-                            </div>
+                    </div>
+                    <div class="search-row">
+                        <div class="form-field-improved date-field">
+                            <label><i class="fas fa-calendar-alt"></i> Departure</label>
+                            <input type="date" id="departDate" required>
+                            <span class="date-display" id="departDateDisplay">Select Date</span>
                         </div>
-
-                        <div class="form-field travelers-field">
-                            <label>Travelers & Class</label>
-                            <div class="input-wrapper travelers-dropdown" id="travelersDropdown"
-                                style="padding-left: 44px;">
-                                <i class="fas fa-users"></i>
-                                <span class="travelers-display" id="travelersDisplay">1 Traveler, Economy</span>
-                                <i class="fas fa-chevron-down"
-                                    style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%);"></i>
+                        <div class="form-field-improved date-field" id="returnDateWrapper">
+                            <label><i class="fas fa-calendar-alt"></i> Return</label>
+                            <input type="date" id="returnDate">
+                            <span class="date-display" id="returnDateDisplay">Select Date</span>
+                        </div>
+                        <div class="form-field-improved travelers-field">
+                            <label><i class="fas fa-users"></i> Travelers & Class</label>
+                            <div class="travelers-dropdown" id="travelersDropdown">
+                                <span class="travelers-display" id="travelersDisplay">1 Adult, Economy</span>
+                                <i class="fas fa-chevron-down"></i>
                             </div>
                             <div class="travelers-popup" id="travelersPopup">
                                 <div class="traveler-row">
@@ -264,9 +241,9 @@
                             </div>
                         </div>
                     </div>
-
                     <div style="display: flex; justify-content: center; margin-top: 24px;">
-                        <button type="submit" class="btn-search" style="min-width: 200px; padding: 16px 32px;">
+                        <button type="submit" class="btn-search-main"
+                            style="min-width: 200px; padding: 16px 32px; font-size: 1.1rem;">
                             <i class="fas fa-search"></i>
                             Search Flights
                         </button>
@@ -462,8 +439,6 @@
 
     <!-- Scripts -->
     <script src="../js/main.js?v=2"></script>
-    <script src="../js/flight-booking.js?v=3"></script>
-
     <!-- Supabase and Auth -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-client.js"></script>
@@ -472,6 +447,199 @@
         document.addEventListener('DOMContentLoaded', function () {
             if (typeof SupabaseDB !== 'undefined' && SupabaseDB.initAuthUI) {
                 SupabaseDB.initAuthUI();
+            }
+
+            // ==========================================
+            // Flight Search Form Logic (Mirrored from Index)
+            // ==========================================
+            function formatDate(dateStr) {
+                if (!dateStr) return 'Select Date';
+                const date = new Date(dateStr);
+                const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+                return date.toLocaleDateString('en-US', options);
+            }
+
+            // Extract IATA Code from AutoComplete
+            function extractAirportCode(locationString) {
+                if (!locationString) return '';
+                locationString = locationString.trim();
+                const match = locationString.match(/^([A-Z]{3})\s*-/);
+                if (match) return match[1];
+                if (locationString.length <= 4) return locationString.toUpperCase();
+                return locationString;
+            }
+
+            // Init Autocomplete
+            if (typeof setupFlightAutocomplete === 'function') {
+                setupFlightAutocomplete(document.getElementById('fromCity'));
+                setupFlightAutocomplete(document.getElementById('toCity'));
+            }
+
+            // Flight dates
+            const departDate = document.getElementById('departDate');
+            const returnDate = document.getElementById('returnDate');
+            const departDateDisplay = document.getElementById('departDateDisplay');
+            const returnDateDisplay = document.getElementById('returnDateDisplay');
+            const returnDateWrapper = document.getElementById('returnDateWrapper');
+
+            if (departDate) {
+                departDate.addEventListener('change', function () {
+                    departDateDisplay.textContent = formatDate(this.value);
+                    if (returnDate) {
+                        returnDate.min = this.value;
+                        if (returnDate.value && returnDate.value < this.value) {
+                            returnDate.value = '';
+                            returnDateDisplay.textContent = 'Select Date';
+                        }
+                    }
+                });
+            }
+
+            if (returnDate) {
+                returnDate.addEventListener('change', function () {
+                    returnDateDisplay.textContent = formatDate(this.value);
+                });
+            }
+
+            // Trip type toggle
+            document.querySelectorAll('input[name="tripType"]').forEach(radio => {
+                radio.addEventListener('change', function () {
+                    if (this.value === 'roundtrip') {
+                        returnDateWrapper.style.display = 'flex';
+                        returnDate.required = true;
+                    } else {
+                        returnDateWrapper.style.display = 'none';
+                        returnDate.required = false;
+                        returnDate.value = '';
+                        returnDateDisplay.textContent = 'Select Date';
+                    }
+                });
+            });
+
+            // Set initial state
+            const checkedTrip = document.querySelector('input[name="tripType"]:checked');
+            if (checkedTrip) {
+                checkedTrip.dispatchEvent(new Event('change'));
+            }
+
+            // Travelers Dropdown
+            const travelersData = { adults: 1, children: 0, infants: 0 };
+            const travelersDropdown = document.getElementById('travelersDropdown');
+            const travelersPopup = document.getElementById('travelersPopup');
+            const travelersDisplay = document.getElementById('travelersDisplay');
+            const travelersDone = document.getElementById('travelersDone');
+
+            if (travelersDropdown && travelersPopup) {
+                travelersDropdown.addEventListener('click', function () {
+                    travelersPopup.classList.toggle('active');
+                });
+
+                travelersDone.addEventListener('click', function () {
+                    travelersPopup.classList.remove('active');
+                });
+
+                document.addEventListener('click', function (e) {
+                    if (!travelersDropdown.contains(e.target) && !travelersPopup.contains(e.target)) {
+                        travelersPopup.classList.remove('active');
+                    }
+                });
+
+                function updateTravelersDisplay() {
+                    const total = travelersData.adults + travelersData.children;
+                    const infants = travelersData.infants;
+                    const cabinClass = document.getElementById('cabinClass').value;
+                    const classLabels = { economy: 'Economy', premium: 'Premium', business: 'Business', first: 'First' };
+                    let text = `${total} Traveler${total > 1 ? 's' : ''}`;
+                    if (infants > 0) text += `, ${infants} Infant${infants > 1 ? 's' : ''}`;
+                    text += `, ${classLabels[cabinClass]}`;
+                    travelersDisplay.textContent = text;
+                }
+
+                document.querySelectorAll('#travelersPopup .counter-btn').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const type = this.dataset.type;
+                        const isPlus = this.classList.contains('plus');
+
+                        if (isPlus) {
+                            if (type === 'adults' && travelersData.adults < 9) travelersData.adults++;
+                            if (type === 'children' && travelersData.children < 9) travelersData.children++;
+                            if (type === 'infants' && travelersData.infants < travelersData.adults) travelersData.infants++;
+                        } else {
+                            if (type === 'adults' && travelersData.adults > 1) travelersData.adults--;
+                            if (type === 'children' && travelersData.children > 0) travelersData.children--;
+                            if (type === 'infants' && travelersData.infants > 0) travelersData.infants--;
+                            if (travelersData.infants > travelersData.adults) travelersData.infants = travelersData.adults;
+                        }
+
+                        document.getElementById('adultsCount').textContent = travelersData.adults;
+                        document.getElementById('childrenCount').textContent = travelersData.children;
+                        document.getElementById('infantsCount').textContent = travelersData.infants;
+                        updateTravelersDisplay();
+                    });
+                });
+
+                document.querySelectorAll('.class-btn').forEach(btn => {
+                    btn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        document.getElementById('cabinClass').value = this.dataset.value;
+                        updateTravelersDisplay();
+                    });
+                });
+            }
+
+            // Swap Cities
+            const swapCitiesBtn = document.getElementById('swapCitiesBtn');
+            if (swapCitiesBtn) {
+                swapCitiesBtn.addEventListener('click', function () {
+                    const fromCity = document.getElementById('fromCity');
+                    const toCity = document.getElementById('toCity');
+                    const temp = fromCity.value;
+                    fromCity.value = toCity.value;
+                    toCity.value = temp;
+                    this.classList.add('rotate');
+                    setTimeout(() => this.classList.remove('rotate'), 300);
+                });
+            }
+
+            // Flight Search Form Submit
+            const flightSearchForm = document.getElementById('flightSearchForm');
+            if (flightSearchForm) {
+                // Remove the old submission listener that might be attached by main.js
+                const clone = flightSearchForm.cloneNode(true);
+                flightSearchForm.parentNode.replaceChild(clone, flightSearchForm);
+
+                clone.addEventListener('submit', function (e) {
+                    e.preventDefault();
+
+                    const from = extractAirportCode(document.getElementById('fromCity').value);
+                    const to = extractAirportCode(document.getElementById('toCity').value);
+                    const depart = document.getElementById('departDate').value;
+                    const returnDateVal = document.getElementById('returnDate').value;
+                    const tripType = document.querySelector('input[name="tripType"]:checked').value;
+                    const cabinClass = document.getElementById('cabinClass').value;
+
+                    const params = new URLSearchParams({
+                        from: from,
+                        to: to,
+                        depart: depart,
+                        type: tripType,
+                        adults: travelersData.adults,
+                        children: travelersData.children,
+                        infants: travelersData.infants,
+                        class: cabinClass
+                    });
+
+                    if (tripType === 'oneway' && returnDateVal) {
+                        // Don't append return date
+                    } else if (tripType === 'roundtrip' && returnDateVal) {
+                        params.append('return', returnDateVal);
+                    }
+
+                    window.location.href = `flight-results.html?${params.toString()}`;
+                });
             }
         });
     </script>
