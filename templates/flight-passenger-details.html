@@ -13,16 +13,23 @@
     <link rel="stylesheet" href="../css/main.css">
     <style>
         .checkout-container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 50px auto;
             padding: 20px;
+        }
+
+        .flight-summary-top {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
         }
 
         .checkout-grid {
             display: grid;
             grid-template-columns: 1fr 400px;
             gap: 30px;
-            margin-top: 30px;
         }
 
         .booking-summary {
@@ -56,6 +63,7 @@
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
             position: sticky;
             top: 100px;
+            height: fit-content;
         }
 
         .price-row {
@@ -100,7 +108,6 @@
             border-radius: 12px;
             padding: 20px;
             border: 1px solid #dbeafe;
-            margin-bottom: 20px;
         }
 
         .flight-route {
@@ -310,12 +317,49 @@
             </div>
         </div>
 
+        <!-- Flight Summary (Full Width - Top) -->
+        <div class="flight-summary-top">
+            <h2><i class="fas fa-plane" style="color: #3b82f6; margin-right: 10px;"></i>Flight Summary</h2>
+            <div class="flight-summary-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span id="airlineName" style="font-weight: 700; color: #1e293b;">Loading...</span>
+                    <span id="flightNumber" style="font-size: 0.8rem; color: #64748b;"></span>
+                </div>
+                <div class="flight-route">
+                    <div class="time-block">
+                        <div class="time" id="departTime">--:--</div>
+                        <div class="code" id="originCode">---</div>
+                    </div>
+                    <div class="path">
+                        <div class="duration" id="flightDuration">--</div>
+                        <div class="line">
+                            <i class="fas fa-plane"></i>
+                        </div>
+                        <div class="stops" id="flightStops">--</div>
+                    </div>
+                    <div class="time-block">
+                        <div class="time" id="arriveTime">--:--</div>
+                        <div class="code" id="destCode">---</div>
+                    </div>
+                </div>
+                <div
+                    style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; font-size: 0.82rem;">
+                    <span style="color: #64748b;"><i class="fas fa-calendar" style="margin-right: 4px;"></i><span
+                            id="flightDate">--</span></span>
+                    <span style="color: #64748b;"><i class="fas fa-couch" style="margin-right: 4px;"></i><span
+                            id="flightClass">Economy</span></span>
+                    <span style="color: #64748b;"><i class="fas fa-users" style="margin-right: 4px;"></i><span
+                            id="travelerCount">1</span> traveler(s)</span>
+                </div>
+            </div>
+        </div>
+
         <h1><i class="fas fa-user-edit"></i> Enter Passenger Details</h1>
 
-        <div class="checkout-grid">
+        <div class="checkout-grid" style="margin-top: 30px;">
             <div class="left-column">
                 <!-- Passenger Information -->
-                <div class="booking-summary" style="margin-bottom: 30px;">
+                <div class="booking-summary">
                     <h2><i class="fas fa-address-card" style="color: #3b82f6; margin-right: 10px;"></i>Passenger
                         Information
                     </h2>
@@ -371,44 +415,6 @@
                                 onblur="this.style.borderColor='#e2e8f0'"></textarea>
                         </div>
                     </form>
-                </div>
-
-                <!-- Flight Summary -->
-                <div class="booking-summary">
-                    <h2>Flight Summary</h2>
-                    <div class="flight-summary-card">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span id="airlineName" style="font-weight: 700; color: #1e293b;">Loading...</span>
-                            <span id="flightNumber" style="font-size: 0.8rem; color: #64748b;"></span>
-                        </div>
-                        <div class="flight-route">
-                            <div class="time-block">
-                                <div class="time" id="departTime">--:--</div>
-                                <div class="code" id="originCode">---</div>
-                            </div>
-                            <div class="path">
-                                <div class="duration" id="flightDuration">--</div>
-                                <div class="line">
-                                    <i class="fas fa-plane"></i>
-                                </div>
-                                <div class="stops" id="flightStops">--</div>
-                            </div>
-                            <div class="time-block">
-                                <div class="time" id="arriveTime">--:--</div>
-                                <div class="code" id="destCode">---</div>
-                            </div>
-                        </div>
-                        <div
-                            style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; font-size: 0.82rem;">
-                            <span style="color: #64748b;"><i class="fas fa-calendar"
-                                    style="margin-right: 4px;"></i><span id="flightDate">--</span></span>
-                            <span style="color: #64748b;"><i class="fas fa-couch" style="margin-right: 4px;"></i><span
-                                    id="flightClass">Economy</span></span>
-                            <span style="color: #64748b;"><i class="fas fa-users" style="margin-right: 4px;"></i><span
-                                    id="travelerCount">1</span> traveler(s)</span>
-                        </div>
-                    </div>
                 </div>
             </div>
 

@@ -2311,6 +2311,9 @@ h6 {
     background: var(--white);
     cursor: pointer;
     transition: var(--transition);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
 .date-field input[type="date"]:focus {
@@ -2329,19 +2332,23 @@ h6 {
     height: 100%;
     opacity: 0;
     cursor: pointer;
+    z-index: 2;
 }
 
 .date-display {
     position: absolute;
-    bottom: 14px;
-    left: 16px;
-    right: 40px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 14px 16px;
     font-size: 0.95rem;
     color: var(--text-primary);
     pointer-events: none;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    z-index: 1;
+    background: transparent;
 }
 
 .date-field input[type="date"]:not(:valid)+.date-display {

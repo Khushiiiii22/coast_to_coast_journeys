@@ -286,17 +286,22 @@ function setupAutocomplete(input) {
 
 function renderSuggestions(suggestions, menu, input) {
     menu.innerHTML = suggestions.map(s => `
-        <div class="suggestion-item" data-code="${s.code}" data-label="${s.label}">
-            <div class="s-main">
-                <i class="fas fa-plane"></i>
-                <span>${s.label || `${s.code} - ${s.name}, ${s.city}, ${s.country}`}</span>
-                <span class="s-code">${s.code}</span>
+        <div class="suggestion-item" data-code="${s.code}" data-label="${s.label || `${s.code} - ${s.name}, ${s.city}, ${s.country}`}"
+            style="display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;border-bottom:1px solid #f3f4f6;transition:background 0.15s;">
+            <div style="width:44px;height:44px;background:linear-gradient(135deg,#e0e7ff,#c7d2fe);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <span style="font-weight:800;font-size:13px;color:#3730a3;letter-spacing:0.5px;">${s.code}</span>
             </div>
-            <div class="s-sub">${s.name}</div>
+            <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;font-size:0.9rem;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.city || ''}, ${s.country || ''}</div>
+                <div style="font-size:0.78rem;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.name}</div>
+            </div>
+            <div style="font-size:0.7rem;font-weight:700;color:#6366f1;background:#eef2ff;padding:3px 8px;border-radius:6px;flex-shrink:0;">${s.code}</div>
         </div>
     `).join('');
 
     menu.querySelectorAll('.suggestion-item').forEach(item => {
+        item.addEventListener('mouseenter', () => item.style.background = '#f8fafc');
+        item.addEventListener('mouseleave', () => item.style.background = '');
         item.addEventListener('click', function () {
             input.value = this.dataset.label;
             input.dataset.airportCode = this.dataset.code || '';

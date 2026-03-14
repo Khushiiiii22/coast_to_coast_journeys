@@ -83,7 +83,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function buildFlightDetailsHtml(flight) {
         const travelClass = flight.class ? (flight.class.charAt(0).toUpperCase() + flight.class.slice(1)) : 'Economy';
         const stopsText = flight.stops === 0 ? 'Non-stop' : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`;
+        const totalTravelers = adults + children + infants;
 
+        // Build segments HTML
         const segments = Array.isArray(flight.segments) ? flight.segments : [];
         const segmentsHtml = segments.length > 0
             ? segments.map((seg, idx) => {
@@ -91,44 +93,138 @@ document.addEventListener('DOMContentLoaded', function () {
                 const segTo = seg.destination || flight.destination;
                 const segFlightNo = seg.flight_number || flight.flight_number;
                 const segAirline = seg.airline_name || flight.airline.name;
+                const aircraft = seg.aircraft || flight.aircraft || '';
                 const layover = seg.layover_minutes ? `
-                    <div style="padding:8px 12px;margin:8px 0;background:#f8fafc;border-radius:8px;color:#475569;font-size:12px;">
-                        Layover: ${seg.layover_minutes} mins at ${segTo}
+                    <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;margin:6px 0;background:#fef3c7;border-radius:8px;border-left:3px solid #f59e0b;font-size:12px;color:#92400e;">
+                        <i class="fas fa-clock" style="color:#f59e0b;"></i>
+                        <span>Layover: <strong>${Math.floor(seg.layover_minutes / 60)}h ${seg.layover_minutes % 60}m</strong> at ${airportDisplay(segTo)}</span>
                     </div>` : '';
 
                 return `
-                    <div style="border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;margin-top:${idx === 0 ? '0' : '8px'};">
-                        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;">
-                            <div style="font-weight:600;color:#111827;">${segAirline} • ${segFlightNo}</div>
-                            <div style="font-size:12px;color:#64748b;">${seg.duration || ''}</div>
+                    <div style="border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin-top:${idx === 0 ? '0' : '8px'};background:#fafbfc;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <img src="${flight.airline.logo}" alt="${segAirline}" style="height:24px;border-radius:4px;" onerror="this.style.display='none'">
+                                <span style="font-weight:700;color:#111827;font-size:14px;">${segAirline}</span>
+                                <span style="background:#f1f5f9;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;color:#475569;">${segFlightNo}</span>
+                            </div>
+                            <div style="font-size:12px;color:#64748b;">${seg.duration || ''} ${aircraft ? '• ' + aircraft : ''}</div>
                         </div>
-                        <div style="margin-top:6px;font-size:13px;color:#334155;">
-                            ${segFrom} ${seg.depart_time ? `(${seg.depart_time})` : ''} → ${segTo} ${seg.arrival_time ? `(${seg.arrival_time})` : ''}
+                        <div style="display:flex;align-items:center;gap:16px;margin-top:12px;">
+                            <div style="text-align:center;">
+                                <div style="font-size:18px;font-weight:800;color:#0f172a;">${seg.depart_time || flight.depart_time}</div>
+                                <div style="font-size:12px;font-weight:600;color:#3b82f6;">${airportDisplay(segFrom)}</div>
+                            </div>
+                            <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+                                <div style="font-size:11px;color:#94a3b8;">${seg.duration || ''}</div>
+                                <div style="width:100%;height:2px;background:linear-gradient(to right,#3b82f6,#8b5cf6);border-radius:2px;position:relative;margin:4px 0;">
+                                    <i class="fas fa-plane" style="position:absolute;right:-2px;top:-7px;color:#3b82f6;font-size:12px;"></i>
+                                </div>
+                                <div style="font-size:11px;color:${flight.stops === 0 ? '#10b981' : '#f59e0b'};font-weight:600;">${idx === 0 ? stopsText : ''}</div>
+                            </div>
+                            <div style="text-align:center;">
+                                <div style="font-size:18px;font-weight:800;color:#0f172a;">${seg.arrival_time || flight.arrival_time}</div>
+                                <div style="font-size:12px;font-weight:600;color:#3b82f6;">${airportDisplay(segTo)}</div>
+                            </div>
                         </div>
                     </div>
                     ${layover}
                 `;
             }).join('')
             : `
-                <div style="border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;">
-                    <div style="font-weight:600;color:#111827;">${flight.airline.name} • ${flight.flight_number}</div>
-                    <div style="margin-top:6px;font-size:13px;color:#334155;">
-                        ${flight.origin} (${flight.depart_time}) → ${flight.destination} (${flight.arrival_time})
+                <div style="border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;background:#fafbfc;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <img src="${flight.airline.logo}" alt="${flight.airline.name}" style="height:24px;border-radius:4px;" onerror="this.style.display='none'">
+                            <span style="font-weight:700;color:#111827;font-size:14px;">${flight.airline.name}</span>
+                            <span style="background:#f1f5f9;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;color:#475569;">${flight.flight_number}</span>
+                        </div>
+                        <div style="font-size:12px;color:#64748b;">${flight.duration} ${flight.aircraft ? '• ' + flight.aircraft : ''}</div>
                     </div>
-                    <div style="margin-top:6px;font-size:12px;color:#64748b;">Duration: ${flight.duration} • ${stopsText} • Class: ${travelClass}</div>
+                    <div style="display:flex;align-items:center;gap:16px;margin-top:12px;">
+                        <div style="text-align:center;">
+                            <div style="font-size:18px;font-weight:800;color:#0f172a;">${flight.depart_time}</div>
+                            <div style="font-size:12px;font-weight:600;color:#3b82f6;">${airportDisplay(flight.origin)}</div>
+                        </div>
+                        <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+                            <div style="font-size:11px;color:#94a3b8;">${flight.duration}</div>
+                            <div style="width:100%;height:2px;background:linear-gradient(to right,#3b82f6,#8b5cf6);border-radius:2px;position:relative;margin:4px 0;">
+                                <i class="fas fa-plane" style="position:absolute;right:-2px;top:-7px;color:#3b82f6;font-size:12px;"></i>
+                            </div>
+                            <div style="font-size:11px;color:${flight.stops === 0 ? '#10b981' : '#f59e0b'};font-weight:600;">${stopsText}</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:18px;font-weight:800;color:#0f172a;">${flight.arrival_time}</div>
+                            <div style="font-size:12px;font-weight:600;color:#3b82f6;">${airportDisplay(flight.destination)}</div>
+                        </div>
+                    </div>
                 </div>
             `;
 
+        // Price per traveler
+        const pricePerPax = formatPrice(flight.price, flight.currency);
+        const totalPrice = formatPrice(flight.price * totalTravelers, flight.currency);
+
         return `
-            <div style="margin-top:10px;padding:12px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;">
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:10px;">
-                    <div style="font-size:12px;color:#64748b;">Route<br><span style="font-size:14px;color:#0f172a;font-weight:600;">${airportDisplay(flight.origin)} → ${airportDisplay(flight.destination)}</span></div>
-                    <div style="font-size:12px;color:#64748b;">Travel Date<br><span style="font-size:14px;color:#0f172a;font-weight:600;">${formatDateDisplay(departDate)}</span></div>
-                    <div style="font-size:12px;color:#64748b;">Duration<br><span style="font-size:14px;color:#0f172a;font-weight:600;">${flight.duration}</span></div>
-                    <div style="font-size:12px;color:#64748b;">Stops<br><span style="font-size:14px;color:#0f172a;font-weight:600;">${stopsText}</span></div>
+            <div style="margin-top:10px;padding:16px;border:1px solid #e2e8f0;border-radius:14px;background:#fff;">
+                <!-- Journey Summary -->
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px;padding:12px;background:#f8fafc;border-radius:10px;">
+                    <div style="font-size:11px;color:#64748b;">Route<br><span style="font-size:13px;color:#0f172a;font-weight:700;">${airportDisplay(flight.origin)} → ${airportDisplay(flight.destination)}</span></div>
+                    <div style="font-size:11px;color:#64748b;">Travel Date<br><span style="font-size:13px;color:#0f172a;font-weight:700;">${formatDateDisplay(departDate)}</span></div>
+                    <div style="font-size:11px;color:#64748b;">Duration<br><span style="font-size:13px;color:#0f172a;font-weight:700;">${flight.duration}</span></div>
+                    <div style="font-size:11px;color:#64748b;">Class<br><span style="font-size:13px;color:#0f172a;font-weight:700;">${travelClass}</span></div>
                 </div>
-                <div style="font-size:12px;font-weight:600;color:#334155;margin-bottom:8px;">Flight Segments</div>
+
+                <!-- Flight Segments -->
+                <div style="font-size:13px;font-weight:700;color:#334155;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                    <i class="fas fa-route" style="color:#3b82f6;"></i> Flight Segments
+                </div>
                 ${segmentsHtml}
+
+                <!-- Fare Breakdown -->
+                <div style="margin-top:16px;padding:14px;background:#f0fdf4;border-radius:10px;border:1px solid #bbf7d0;">
+                    <div style="font-size:13px;font-weight:700;color:#166534;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                        <i class="fas fa-receipt" style="color:#22c55e;"></i> Fare Breakdown
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;color:#334155;padding:4px 0;">
+                        <span>${adults} Adult${adults > 1 ? 's' : ''} × ${pricePerPax}</span>
+                        <span style="font-weight:600;">${formatPrice(flight.price * adults, flight.currency)}</span>
+                    </div>
+                    ${children > 0 ? `<div style="display:flex;justify-content:space-between;font-size:13px;color:#334155;padding:4px 0;">
+                        <span>${children} Child${children > 1 ? 'ren' : ''} × ${pricePerPax}</span>
+                        <span style="font-weight:600;">${formatPrice(flight.price * children, flight.currency)}</span>
+                    </div>` : ''}
+                    ${infants > 0 ? `<div style="display:flex;justify-content:space-between;font-size:13px;color:#334155;padding:4px 0;">
+                        <span>${infants} Infant${infants > 1 ? 's' : ''} (10% of adult fare)</span>
+                        <span style="font-weight:600;">${formatPrice(Math.round(flight.price * 0.1 * infants), flight.currency)}</span>
+                    </div>` : ''}
+                    <div style="display:flex;justify-content:space-between;font-size:13px;color:#334155;padding:4px 0;">
+                        <span>Taxes & Fees</span>
+                        <span style="font-weight:600;color:#16a34a;">Included</span>
+                    </div>
+                    <div style="margin-top:8px;padding-top:8px;border-top:2px solid #86efac;display:flex;justify-content:space-between;font-size:15px;font-weight:800;color:#15803d;">
+                        <span>Total</span>
+                        <span>${totalPrice}</span>
+                    </div>
+                </div>
+
+                <!-- Baggage & Policies -->
+                <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div style="padding:12px;background:#eff6ff;border-radius:10px;border:1px solid #bfdbfe;">
+                        <div style="font-size:12px;font-weight:700;color:#1e40af;margin-bottom:8px;"><i class="fas fa-suitcase" style="margin-right:4px;"></i> Baggage</div>
+                        <div style="font-size:12px;color:#334155;line-height:1.6;">
+                            <div>✓ Cabin bag: 7 kg</div>
+                            <div>✓ Check-in: 15 kg${travelClass !== 'Economy' ? ' (23 kg for ' + travelClass + ')' : ''}</div>
+                        </div>
+                    </div>
+                    <div style="padding:12px;background:#fefce8;border-radius:10px;border:1px solid #fde68a;">
+                        <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:8px;"><i class="fas fa-info-circle" style="margin-right:4px;"></i> Policies</div>
+                        <div style="font-size:12px;color:#334155;line-height:1.6;">
+                            <div>• Cancellation: Charges apply</div>
+                            <div>• Date change: Permitted</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
     }

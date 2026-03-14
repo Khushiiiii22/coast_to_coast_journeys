@@ -1,0 +1,150 @@
+            setTimeout(() => this.classList.remove('rotate'), 300);
+        });
+
+        // ========== Form Submissions ==========
+        document.getElementById('flightSearchForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const from = document.getElementById('fromCity').value;
+            const to = document.getElementById('toCity').value;
+            const depart = document.getElementById('departDate').value;
+            const returnDate = document.getElementById('returnDate').value;
+            const tripType = document.querySelector('input[name="tripType"]:checked').value;
+            const cabinClass = document.getElementById('cabinClass').value;
+
+            const params = new URLSearchParams({
+                from: from,
+                to: to,
+                depart: depart,
+                type: tripType,
+                adults: travelersData.adults,
+                children: travelersData.children,
+                infants: travelersData.infants,
+                class: cabinClass
+            });
+
+            // One Way trip type check
+            if (tripType === 'oneway' && returnDate) {
+                // Don't append return date
+            } else if (tripType === 'roundtrip' && returnDate) {
+                params.append('return', returnDate);
+            }
+
+            window.location.href = `flight-results.html?${params.toString()}`;
+        });
+
+        // ========== Signup Promo Modal Logic ==========
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Delay check to ensure Supabase client is ready
+            setTimeout(async () => {
+                let isLoggedIn = false;
+
+                // Check if SupabaseDB is defined (from supabase-client.js)
+                if (typeof SupabaseDB !== 'undefined') {
+                    try {
+                        const user = await SupabaseDB.getCurrentUser();
+                        if (user) isLoggedIn = true;
+                    } catch (e) {
+                        console.log('User check failed', e);
+                    }
+                }
+
+                // If not logged in, maintainer simple logic
+                if (!isLoggedIn) {
+                    // Check if dismissed recently (24h)
+                    const dismissed = localStorage.getItem('signupModalDismissed');
+                    const now = new Date().getTime();
+
+                    if (!dismissed || (now - parseInt(dismissed) > 24 * 60 * 60 * 1000)) {
+                        // Show after 10 seconds of browsing
+                        setTimeout(() => {
+                            document.getElementById('signupModal').classList.add('active');
+                        }, 10000);
+                    }
+                }
+            }, 1000);
+
+            // Close handlers
+            const closeSignup = () => {
+                document.getElementById('signupModal').classList.remove('active');
+                localStorage.setItem('signupModalDismissed', new Date().getTime().toString());
+            };
+
+            const closeBtn = document.getElementById('signupClose');
+            const laterBtn = document.getElementById('signupLater');
+            const modalOverlay = document.getElementById('signupModal');
+
+            if (closeBtn) closeBtn.addEventListener('click', closeSignup);
+            if (laterBtn) laterBtn.addEventListener('click', closeSignup);
+            if (modalOverlay) {
+                modalOverlay.addEventListener('click', (e) => {
+                    if (e.target === modalOverlay) closeSignup();
+                });
+            }
+        });
+
+        // ========== HOTEL SEARCH FORM SUBMIT ==========
+        document.getElementById('hotelSearchForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const destination = document.getElementById('hotelDestination').value;
+            const checkIn = document.getElementById('checkInDate').value;
+            const checkOut = document.getElementById('checkOutDate').value;
+            const nationality = document.getElementById('hotelNationality').value;
+
+            const params = new URLSearchParams({
+                destination: destination,
+                checkin: checkIn,
+                checkout: checkOut,
+                rooms: JSON.stringify(rooms),
+                residency: nationality  // ETG/RateHawk residency parameter
+            });
+
+            window.location.href = `hotel-results.html?${params.toString()}`;
+        });
+
+
+        document.getElementById('visaSearchForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const destination = document.getElementById('visaDestination').value;
+            const citizenship = document.getElementById('visaCitizenship').value;
+            // Redirect to visa page with params
+            window.location.href = `visa.html?destination=${encodeURIComponent(destination)}&citizenship=${encodeURIComponent(citizenship)}`;
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href !== '#') {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+    <script>
+        // Initialize auth state for header UI on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof SupabaseDB !== 'undefined' && SupabaseDB.initAuthUI) {
+                SupabaseDB.initAuthUI();
+            }
+        });
+    </script>
+    <script src="../js/main.js"></script>
+    <script src="../js/hotel-search.js"></script>
+    <!-- Floating WhatsApp Button -->
+    <a href="https://wa.me/919934547108" target="_blank" class="whatsapp-float" title="Chat on WhatsApp"
+        style="position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: block; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.3s;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp"
+            style="width: 60px; height: 60px; display: block; border-radius: 50%;">
+    </a>
+</body>
+
+</html>

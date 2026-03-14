@@ -1,7 +1,5 @@
 ✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
 ✅ Duffel API client initialized
-⚠️  Warning: Could not initialize Supabase client: Client.__init__() got an unexpected keyword argument 'proxy'
-⚠️  Warning: Could not initialize Supabase client: Client.__init__() got an unexpected keyword argument 'proxy'
 ✅ Razorpay payment service initialized
 ✅ PayPal payment service initialized (live mode)
 ✅ Email service configured with Brevo API
@@ -9,22 +7,27 @@
 🔑 Resend API Key loaded: True
 📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
 📁 Templates exists: True
+🚀 Starting C2C Journeys API Server...
+📍 Running on http://0.0.0.0:5000
+🔧 Debug mode: True
+
+📚 API Documentation:
+   GET  /api              - API info and endpoints
+   GET  /api/health       - Health check
+   POST /api/hotels/...   - Hotel endpoints
+   POST /api/maps/...     - Maps endpoints
+
  * Serving Flask app 'app'
  * Debug mode: on
 [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on http://127.0.0.1:5003
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.63:5000
 [33mPress CTRL+C to quit[0m
  * Restarting with stat
-✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
-✅ Duffel API client initialized
-⚠️  Warning: Could not initialize Supabase client: Client.__init__() got an unexpected keyword argument 'proxy'
-⚠️  Warning: Could not initialize Supabase client: Client.__init__() got an unexpected keyword argument 'proxy'
-✅ Razorpay payment service initialized
-✅ PayPal payment service initialized (live mode)
-✅ Email service configured with Brevo API
-   📧 Sender: info@coasttocoastjourneys.com
-🔑 Resend API Key loaded: True
-📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
-📁 Templates exists: True
  * Debugger is active!
- * Debugger PIN: 116-605-485
+ * Debugger PIN: 121-559-171
+/opt/homebrew/Cellar/python@3.13/3.13.12_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/multiprocessing/resource_tracker.py:400: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown: {'/mp-lcswm2j9'}
+  warnings.warn(
+/opt/homebrew/Cellar/python@3.13/3.13.12_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/multiprocessing/resource_tracker.py:400: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown: {'/mp-w4kpnm2b'}
+  warnings.warn(
