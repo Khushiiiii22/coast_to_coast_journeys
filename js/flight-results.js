@@ -24,8 +24,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Get search parameters from URL (handle both 'depart' and 'date' param names)
     const urlParams = new URLSearchParams(window.location.search);
-    const origin = urlParams.get('from') || '';
-    const destination = urlParams.get('to') || '';
+    const originRaw = urlParams.get('from') || '';
+    const destinationRaw = urlParams.get('to') || '';
     const departDate = urlParams.get('depart') || urlParams.get('date') || '';
     const returnDate = urlParams.get('return') || '';
     const adults = parseInt(urlParams.get('adults')) || 1;
@@ -33,6 +33,31 @@ document.addEventListener('DOMContentLoaded', function () {
     const infants = parseInt(urlParams.get('infants')) || 0;
     const fClass = urlParams.get('class') || 'economy';
     const tripType = urlParams.get('type') || 'oneway';
+
+    function extractAirportCode(value) {
+        if (!value) return '';
+        const text = String(value).trim().toUpperCase();
+        const prefix = text.match(/^([A-Z]{3})\s*-/);
+        if (prefix) return prefix[1];
+        const token = text.match(/\b([A-Z]{3})\b/);
+        if (token) return token[1];
+        return text.slice(0, 3);
+    }
+
+    const AIRPORT_CITY = {
+        DEL: 'New Delhi', BOM: 'Mumbai', BLR: 'Bengaluru', MAA: 'Chennai', CCU: 'Kolkata',
+        HYD: 'Hyderabad', GOI: 'Goa', JAI: 'Jaipur', DXB: 'Dubai', LHR: 'London',
+        JFK: 'New York', SIN: 'Singapore', CDG: 'Paris', FRA: 'Frankfurt', BKK: 'Bangkok', MLE: 'Male'
+    };
+
+    const origin = extractAirportCode(originRaw);
+    const destination = extractAirportCode(destinationRaw);
+
+    function airportDisplay(code) {
+        const upper = (code || '').toUpperCase();
+        const city = AIRPORT_CITY[upper];
+        return city ? `${upper} • ${city}` : upper;
+    }
 
     // Format date for display
     function formatDateDisplay(dateStr) {
@@ -55,9 +80,62 @@ document.addEventListener('DOMContentLoaded', function () {
         return '₹' + inrPrice.toLocaleString('en-IN');
     }
 
+    function buildFlightDetailsHtml(flight) {
+        const travelClass = flight.class ? (flight.class.charAt(0).toUpperCase() + flight.class.slice(1)) : 'Economy';
+        const stopsText = flight.stops === 0 ? 'Non-stop' : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`;
+
+        const segments = Array.isArray(flight.segments) ? flight.segments : [];
+        const segmentsHtml = segments.length > 0
+            ? segments.map((seg, idx) => {
+                const segFrom = seg.origin || flight.origin;
+                const segTo = seg.destination || flight.destination;
+                const segFlightNo = seg.flight_number || flight.flight_number;
+                const segAirline = seg.airline_name || flight.airline.name;
+                const layover = seg.layover_minutes ? `
+                    <div style="padding:8px 12px;margin:8px 0;background:#f8fafc;border-radius:8px;color:#475569;font-size:12px;">
+                        Layover: ${seg.layover_minutes} mins at ${segTo}
+                    </div>` : '';
+
+                return `
+                    <div style="border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;margin-top:${idx === 0 ? '0' : '8px'};">
+                        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;">
+                            <div style="font-weight:600;color:#111827;">${segAirline} • ${segFlightNo}</div>
+                            <div style="font-size:12px;color:#64748b;">${seg.duration || ''}</div>
+                        </div>
+                        <div style="margin-top:6px;font-size:13px;color:#334155;">
+                            ${segFrom} ${seg.depart_time ? `(${seg.depart_time})` : ''} → ${segTo} ${seg.arrival_time ? `(${seg.arrival_time})` : ''}
+                        </div>
+                    </div>
+                    ${layover}
+                `;
+            }).join('')
+            : `
+                <div style="border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;">
+                    <div style="font-weight:600;color:#111827;">${flight.airline.name} • ${flight.flight_number}</div>
+                    <div style="margin-top:6px;font-size:13px;color:#334155;">
+                        ${flight.origin} (${flight.depart_time}) → ${flight.destination} (${flight.arrival_time})
+                    </div>
+                    <div style="margin-top:6px;font-size:12px;color:#64748b;">Duration: ${flight.duration} • ${stopsText} • Class: ${travelClass}</div>
+                </div>
+            `;
+
+        return `
+            <div style="margin-top:10px;padding:12px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:10px;">
+                    <div style="font-size:12px;color:#64748b;">Route<br><span style="font-size:14px;color:#0f172a;font-weight:600;">${airportDisplay(flight.origin)} → ${airportDisplay(flight.destination)}</span></div>
+                    <div style="font-size:12px;color:#64748b;">Travel Date<br><span style="font-size:14px;color:#0f172a;font-weight:600;">${formatDateDisplay(departDate)}</span></div>
+                    <div style="font-size:12px;color:#64748b;">Duration<br><span style="font-size:14px;color:#0f172a;font-weight:600;">${flight.duration}</span></div>
+                    <div style="font-size:12px;color:#64748b;">Stops<br><span style="font-size:14px;color:#0f172a;font-weight:600;">${stopsText}</span></div>
+                </div>
+                <div style="font-size:12px;font-weight:600;color:#334155;margin-bottom:8px;">Flight Segments</div>
+                ${segmentsHtml}
+            </div>
+        `;
+    }
+
     // Update search bar display
-    document.getElementById('flightOriginDisplay').textContent = origin || 'Unknown';
-    document.getElementById('flightDestDisplay').textContent = destination || 'Unknown';
+    document.getElementById('flightOriginDisplay').textContent = airportDisplay(origin || '');
+    document.getElementById('flightDestDisplay').textContent = airportDisplay(destination || '');
     document.getElementById('flightDateDisplay').textContent = formatDateDisplay(departDate);
 
     const totalTravelers = adults + children;
@@ -90,8 +168,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('modifySearchForm').addEventListener('submit', (e) => {
         e.preventDefault();
-        const newFrom = document.getElementById('modifyFrom').value;
-        const newTo = document.getElementById('modifyTo').value;
+        const newFrom = extractAirportCode(document.getElementById('modifyFrom').value);
+        const newTo = extractAirportCode(document.getElementById('modifyTo').value);
         const newDate = document.getElementById('modifyDate').value;
         const newAdults = document.getElementById('modifyAdults').value;
 
@@ -351,7 +429,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div class="flight-timing">
                             <div class="time-block">
                                 <span class="time">${flight.depart_time}</span>
-                                <span class="airport-code">${flight.origin}</span>
+                                <span class="airport-code">${airportDisplay(flight.origin)}</span>
                             </div>
 
                             <div class="flight-path">
@@ -366,7 +444,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                             <div class="time-block">
                                 <span class="time">${flight.arrival_time}</span>
-                                <span class="airport-code">${flight.destination}</span>
+                                <span class="airport-code">${airportDisplay(flight.destination)}</span>
                                 ${flight.next_day ? '<small style="color: #ef4444; font-size: 0.68rem; display:block;">+1 day</small>' : ''}
                             </div>
                         </div>
@@ -395,6 +473,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                         ${flight.stops === 0 ? '<div class="meta-item"><i class="fas fa-check-circle" style="color:#10b981;"></i><span style="color:#10b981;">Direct Flight</span></div>' : ''}
                     </div>
+
+                    <div class="flight-details-toggle" data-details-id="details-${flight.id}" style="margin-top:10px;padding-top:10px;border-top:1px dashed #e5e7eb;cursor:pointer;color:#1d4ed8;font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;">
+                        <i class="fas fa-chevron-down"></i><span class="details-label">Flight Details</span>
+                    </div>
+                    <div id="details-${flight.id}" style="display:none;">
+                        ${buildFlightDetailsHtml(flight)}
+                    </div>
                 </div>
             `;
         }).join('');
@@ -403,6 +488,23 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.btn-select-flight').forEach(btn => {
             btn.addEventListener('click', function () {
                 selectFlight(this);
+            });
+        });
+
+        document.querySelectorAll('.flight-details-toggle').forEach(toggle => {
+            toggle.addEventListener('click', function () {
+                const panel = document.getElementById(this.dataset.detailsId);
+                const icon = this.querySelector('i');
+                const label = this.querySelector('.details-label');
+                if (!panel) return;
+
+                const isOpen = panel.style.display === 'block';
+                panel.style.display = isOpen ? 'none' : 'block';
+                if (label) label.textContent = isOpen ? 'Flight Details' : 'Hide Details';
+                if (icon) {
+                    icon.classList.toggle('fa-chevron-down', isOpen);
+                    icon.classList.toggle('fa-chevron-up', !isOpen);
+                }
             });
         });
     }

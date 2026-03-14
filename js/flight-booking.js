@@ -29,6 +29,16 @@ function initFlightSearch() {
     setupAutocomplete(fromCityInput);
     setupAutocomplete(toCityInput);
 
+    function extractAirportCode(value) {
+        if (!value) return '';
+        const text = String(value).trim().toUpperCase();
+        const prefix = text.match(/^([A-Z]{3})\s*-/);
+        if (prefix) return prefix[1];
+        const token = text.match(/\b([A-Z]{3})\b/);
+        if (token) return token[1];
+        return text.slice(0, 3);
+    }
+
     // 2. Swap Cities
     if (swapBtn) {
         swapBtn.addEventListener('click', function () {
@@ -139,8 +149,8 @@ function initFlightSearch() {
         flightSearchForm.addEventListener('submit', function (e) {
             e.preventDefault();
 
-            const from = fromCityInput.value;
-            const to = toCityInput.value;
+            const from = fromCityInput.dataset.airportCode || extractAirportCode(fromCityInput.value);
+            const to = toCityInput.dataset.airportCode || extractAirportCode(toCityInput.value);
             const depart = departDateInput.value;
             const rt = returnDateInput.value;
             const tripType = document.querySelector('input[name="tripType"]:checked').value;
@@ -213,7 +223,11 @@ function setupAutocomplete(input) {
 
         timeout = setTimeout(async () => {
             try {
-                const response = await fetch(`/api/flights/suggest?q=${encodeURIComponent(query)}`);
+                const response = await fetch('/api/flights/suggest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
                 const result = await response.json();
 
                 if (result.success && result.data.length > 0) {
@@ -245,7 +259,7 @@ function renderSuggestions(suggestions, menu, input) {
         <div class="suggestion-item" data-code="${s.code}" data-label="${s.label}">
             <div class="s-main">
                 <i class="fas fa-plane"></i>
-                <span>${s.city}, ${s.country}</span>
+                <span>${s.label || `${s.code} - ${s.name}, ${s.city}, ${s.country}`}</span>
                 <span class="s-code">${s.code}</span>
             </div>
             <div class="s-sub">${s.name}</div>
@@ -254,7 +268,8 @@ function renderSuggestions(suggestions, menu, input) {
 
     menu.querySelectorAll('.suggestion-item').forEach(item => {
         item.addEventListener('click', function () {
-            input.value = this.dataset.code;
+            input.value = this.dataset.label;
+            input.dataset.airportCode = this.dataset.code || '';
             menu.innerHTML = '';
             menu.classList.remove('active');
         });

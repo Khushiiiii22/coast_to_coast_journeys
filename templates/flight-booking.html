@@ -622,12 +622,109 @@
             });
         });
 
+        function extractAirportCode(value) {
+            if (!value) return '';
+            const text = String(value).trim().toUpperCase();
+            const prefix = text.match(/^([A-Z]{3})\s*-/);
+            if (prefix) return prefix[1];
+            const token = text.match(/\b([A-Z]{3})\b/);
+            if (token) return token[1];
+            return text.slice(0, 3);
+        }
+
+        function setupAirportAutocomplete(input) {
+            const menu = document.createElement('div');
+            menu.style.cssText = `
+                position:absolute;
+                left:0; right:0; top:calc(100% + 8px);
+                background:#fff;
+                border:1px solid #e5e7eb;
+                border-radius:12px;
+                box-shadow:0 10px 30px rgba(0,0,0,0.12);
+                z-index:1200;
+                max-height:320px;
+                overflow:auto;
+                display:none;
+            `;
+
+            const wrapper = input.closest('.input-wrapper') || input.parentNode;
+            if (getComputedStyle(wrapper).position === 'static') wrapper.style.position = 'relative';
+            wrapper.appendChild(menu);
+
+            let debounce;
+            input.addEventListener('input', function () {
+                clearTimeout(debounce);
+                const query = this.value.trim();
+                input.dataset.airportCode = '';
+
+                if (query.length < 2) {
+                    menu.innerHTML = '';
+                    menu.style.display = 'none';
+                    return;
+                }
+
+                debounce = setTimeout(async () => {
+                    try {
+                        const response = await fetch('/api/flights/suggest', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ query })
+                        });
+                        const result = await response.json();
+
+                        if (!result.success || !Array.isArray(result.data) || result.data.length === 0) {
+                            menu.style.display = 'none';
+                            menu.innerHTML = '';
+                            return;
+                        }
+
+                        menu.innerHTML = result.data.map(s => `
+                            <div class="airport-suggestion" data-code="${s.code}" data-label="${(s.label || '').replace(/"/g, '&quot;')}" style="padding:12px 14px;cursor:pointer;border-bottom:1px solid #f3f4f6;">
+                                <div style="display:flex;align-items:center;gap:8px;font-weight:600;color:#111827;">
+                                    <i class="fas fa-plane" style="color:#2563eb;font-size:12px;"></i>
+                                    <span>${s.label || `${s.code} - ${s.name}, ${s.city}, ${s.country}`}</span>
+                                </div>
+                            </div>
+                        `).join('');
+
+                        menu.querySelectorAll('.airport-suggestion').forEach(item => {
+                            item.addEventListener('mouseenter', () => item.style.background = '#f8fafc');
+                            item.addEventListener('mouseleave', () => item.style.background = '#fff');
+                            item.addEventListener('click', function () {
+                                input.value = this.dataset.label;
+                                input.dataset.airportCode = this.dataset.code || '';
+                                menu.style.display = 'none';
+                            });
+                        });
+
+                        menu.style.display = 'block';
+                    } catch (err) {
+                        console.error('Airport autocomplete error:', err);
+                        menu.style.display = 'none';
+                    }
+                }, 250);
+            });
+
+            input.addEventListener('focus', () => {
+                if (menu.innerHTML) menu.style.display = 'block';
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!wrapper.contains(e.target)) menu.style.display = 'none';
+            });
+        }
+
+        setupAirportAutocomplete(document.getElementById('fromCity'));
+        setupAirportAutocomplete(document.getElementById('toCity'));
+
         // Form submission
         document.getElementById('flightSearchForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
-            const from = document.getElementById('fromCity').value;
-            const to = document.getElementById('toCity').value;
+            const fromInput = document.getElementById('fromCity').value;
+            const toInput = document.getElementById('toCity').value;
+            const from = document.getElementById('fromCity').dataset.airportCode || extractAirportCode(fromInput);
+            const to = document.getElementById('toCity').dataset.airportCode || extractAirportCode(toInput);
             const depart = document.getElementById('departDate').value;
             const returnDate = document.getElementById('returnDate').value;
             const tripType = document.querySelector('input[name="tripType"]:checked').value;

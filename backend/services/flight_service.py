@@ -179,6 +179,31 @@ class FlightService:
         # For simplicity, we take the first segment's details
         segment = fslice.segments[0]
         airline = segment.marketing_carrier
+
+        segments = []
+        for idx, seg in enumerate(fslice.segments):
+            dep_dt = datetime.fromisoformat(seg.departing_at)
+            arr_dt = datetime.fromisoformat(seg.arriving_at)
+            dur_mins = max(0, int((arr_dt - dep_dt).total_seconds() // 60))
+            dur_str = f"{dur_mins // 60}h {dur_mins % 60}m"
+
+            layover_mins = None
+            if idx < len(fslice.segments) - 1:
+                next_dep = datetime.fromisoformat(fslice.segments[idx + 1].departing_at)
+                layover_mins = max(0, int((next_dep - arr_dt).total_seconds() // 60))
+
+            segments.append({
+                'origin': seg.origin.iata_code,
+                'destination': seg.destination.iata_code,
+                'depart_time': dep_dt.strftime('%H:%M'),
+                'arrival_time': arr_dt.strftime('%H:%M'),
+                'duration': dur_str,
+                'flight_number': f"{seg.marketing_carrier.iata_code}{seg.marketing_carrier_flight_number}",
+                'airline_name': seg.marketing_carrier.name,
+                'airline_code': seg.marketing_carrier.iata_code,
+                'cabin_class': seg.cabin_class,
+                'layover_minutes': layover_mins
+            })
         
         return {
             'id': f"{offer_id}_{'in' if is_inbound else 'out'}",
@@ -197,13 +222,19 @@ class FlightService:
             'stops': len(fslice.segments) - 1,
             'price': float(price),
             'currency': currency,
-            'class': segment.cabin_class
+            'class': segment.cabin_class,
+            'segments': segments
         }
 
     def suggest(self, query):
         """Autocomplete for airports - stays mock for now to avoid heavy API usage"""
         query = query.upper()
         suggestions = []
+
+        country_codes = {
+            'India': 'IN', 'UAE': 'AE', 'UK': 'GB', 'USA': 'US', 'Singapore': 'SG',
+            'France': 'FR', 'Germany': 'DE', 'Thailand': 'TH', 'Maldives': 'MV'
+        }
         
         for code, details in self.airports.items():
             if (query in code or 
@@ -214,7 +245,7 @@ class FlightService:
                     'name': details['name'],
                     'city': details['city'],
                     'country': details['country'],
-                    'label': f"{details['city']} ({code})"
+                    'label': f"{code} - {details['name']}, {details['city']}, {country_codes.get(details['country'], details['country'][:2].upper())}"
                 })
         
         if not suggestions and len(query) == 3:
@@ -223,7 +254,7 @@ class FlightService:
                 'name': f"{query} International Airport",
                 'city': query,
                 'country': 'Unknown',
-                'label': f"{query} ({query})"
+                'label': f"{query} - {query} International Airport, {query}, UN"
             })
             
         return {
@@ -297,9 +328,48 @@ class FlightService:
                 'stops': stops,
                 'price': int(price),
                 'currency': 'INR',
-                'class': flight_class
+                'class': flight_class,
+                'segments': self._build_mock_segments(origin, destination, date_str, depart_time, duration_mins, stops, airline['code'], flight_class)
             })
         flights.sort(key=lambda x: x['price'])
         return flights
+
+    def _build_mock_segments(self, origin, destination, date_str, depart_time, duration_mins, stops, airline_code, cabin_class):
+        """Create realistic segment-level mock details for flight details expansion."""
+        legs = max(1, int(stops) + 1)
+        hubs = ['DEL', 'BOM', 'BLR', 'DXB', 'SIN', 'HYD', 'MAA']
+        transit = [h for h in hubs if h not in {origin, destination}][:max(0, legs - 1)]
+        route = [origin] + transit + [destination]
+
+        layover_per_stop = 75
+        total_layover = max(0, legs - 1) * layover_per_stop
+        flying_mins = max(legs * 45, duration_mins - total_layover)
+        base_leg = flying_mins // legs
+        rem = flying_mins % legs
+
+        curr = datetime.strptime(f"{date_str} {depart_time}", "%Y-%m-%d %H:%M")
+        segments = []
+
+        for i in range(legs):
+            leg_mins = base_leg + (1 if i < rem else 0)
+            arr = curr + timedelta(minutes=leg_mins)
+            layover = layover_per_stop if i < legs - 1 else None
+
+            segments.append({
+                'origin': route[i],
+                'destination': route[i + 1],
+                'depart_time': curr.strftime('%H:%M'),
+                'arrival_time': arr.strftime('%H:%M'),
+                'duration': f"{leg_mins // 60}h {leg_mins % 60}m",
+                'flight_number': f"{airline_code}{random.randint(100, 999)}",
+                'airline_name': airline_code,
+                'airline_code': airline_code,
+                'cabin_class': cabin_class,
+                'layover_minutes': layover
+            })
+
+            curr = arr + timedelta(minutes=layover_per_stop if layover else 0)
+
+        return segments
 
 flight_service = FlightService()

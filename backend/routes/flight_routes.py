@@ -56,7 +56,7 @@ def search_flights():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@flight_bp.route('/suggest', methods=['POST'])
+@flight_bp.route('/suggest', methods=['GET', 'POST'])
 def suggest_airports():
     """
     Suggest airports for autocomplete
@@ -66,8 +66,11 @@ def suggest_airports():
     }
     """
     try:
-        data = request.get_json()
-        query = data.get('query', '')
+        if request.method == 'GET':
+            query = request.args.get('q') or request.args.get('query') or ''
+        else:
+            data = request.get_json(silent=True) or {}
+            query = data.get('query', '')
         
         if len(query) < 2:
             return jsonify({'success': False, 'error': 'Query too short'}), 400

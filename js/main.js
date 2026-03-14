@@ -240,6 +240,117 @@ function swapLocations() {
 }
 
 // ========================================
+// Flight Airport Autocomplete
+// ========================================
+function extractAirportCode(value) {
+    if (!value) return '';
+    const text = String(value).trim().toUpperCase();
+
+    // Preferred format: "BLR - Kempegowda International Airport, Bengaluru, IN"
+    const prefix = text.match(/^([A-Z]{3})\s*-/);
+    if (prefix) return prefix[1];
+
+    // Any standalone 3-letter IATA token
+    const token = text.match(/\b([A-Z]{3})\b/);
+    if (token) return token[1];
+
+    // Fallback
+    return text.slice(0, 3);
+}
+
+function setupFlightAutocomplete(inputEl) {
+    if (!inputEl) return;
+
+    const menu = document.createElement('div');
+    menu.className = 'flight-autocomplete-menu';
+    menu.style.cssText = `
+        position:absolute;
+        left:0;
+        right:0;
+        top:calc(100% + 8px);
+        background:#fff;
+        border:1px solid #e5e7eb;
+        border-radius:12px;
+        box-shadow:0 10px 30px rgba(0,0,0,0.12);
+        z-index:1200;
+        max-height:320px;
+        overflow:auto;
+        display:none;
+    `;
+
+    const wrapper = inputEl.closest('.form-field-improved') || inputEl.parentNode;
+    if (!wrapper) return;
+    if (getComputedStyle(wrapper).position === 'static') wrapper.style.position = 'relative';
+    wrapper.appendChild(menu);
+
+    let debounce;
+
+    inputEl.addEventListener('input', function () {
+        clearTimeout(debounce);
+        const query = this.value.trim();
+        inputEl.dataset.airportCode = '';
+
+        if (query.length < 2) {
+            menu.innerHTML = '';
+            menu.style.display = 'none';
+            return;
+        }
+
+        debounce = setTimeout(async () => {
+            try {
+                const response = await fetch('/api/flights/suggest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                const result = await response.json();
+
+                if (!result.success || !Array.isArray(result.data) || result.data.length === 0) {
+                    menu.innerHTML = '';
+                    menu.style.display = 'none';
+                    return;
+                }
+
+                menu.innerHTML = result.data.map(s => `
+                    <div class="flight-suggestion-item" data-code="${s.code}" data-label="${(s.label || '').replace(/"/g, '&quot;')}">
+                        <div style="display:flex;align-items:center;gap:8px;font-weight:600;color:#111827;">
+                            <i class="fas fa-plane" style="color:#2563eb;font-size:12px;"></i>
+                            <span>${s.label || `${s.code} - ${s.name}, ${s.city}, ${s.country}`}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                menu.querySelectorAll('.flight-suggestion-item').forEach(item => {
+                    item.style.cssText = 'padding:12px 14px;cursor:pointer;border-bottom:1px solid #f3f4f6;';
+                    item.addEventListener('mouseenter', () => item.style.background = '#f8fafc');
+                    item.addEventListener('mouseleave', () => item.style.background = '#fff');
+                    item.addEventListener('click', function () {
+                        inputEl.value = this.dataset.label;
+                        inputEl.dataset.airportCode = this.dataset.code || '';
+                        menu.style.display = 'none';
+                    });
+                });
+
+                menu.style.display = 'block';
+            } catch (err) {
+                menu.style.display = 'none';
+                console.error('Flight autocomplete error:', err);
+            }
+        }, 250);
+    });
+
+    inputEl.addEventListener('focus', () => {
+        if (menu.innerHTML) menu.style.display = 'block';
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!wrapper.contains(e.target)) {
+            menu.style.display = 'none';
+        }
+    });
+}
+
+// ========================================
 // Travelers Dropdown
 // ========================================
 function toggleTravelersDropdown(e) {
@@ -300,9 +411,13 @@ function applyRooms() {
 async function handleFlightSearch(e) {
     e.preventDefault();
 
-    const from = document.getElementById('fromCity').value;
-    const to = document.getElementById('toCity').value;
+    const fromInput = document.getElementById('fromCity').value;
+    const toInput = document.getElementById('toCity').value;
+    const fromCode = document.getElementById('fromCity').dataset.airportCode || extractAirportCode(fromInput);
+    const toCode = document.getElementById('toCity').dataset.airportCode || extractAirportCode(toInput);
     const date = document.getElementById('departDate').value;
+    const tripType = document.querySelector('input[name="tripType"]:checked')?.value || 'oneway';
+    const returnDate = document.getElementById('returnDate')?.value || '';
 
     // Travelers - parse from spans
     const adults = parseInt(document.getElementById('adultsCount').textContent) || 1;
@@ -312,18 +427,23 @@ async function handleFlightSearch(e) {
 
     const fClass = document.getElementById('cabinClass').value;
 
-    if (!from || !to || !date) {
+    if (!fromCode || !toCode || !date) {
         showNotification('Please fill in From, To, and Departure fields', 'warning');
         return;
     }
 
     const params = new URLSearchParams({
-        from: from,
-        to: to,
+        from: fromCode,
+        to: toCode,
         date: date,
+        type: tripType,
         adults: totalTravelers,
         class: fClass
     });
+
+    if (tripType === 'roundtrip' && returnDate) {
+        params.append('return', returnDate);
+    }
 
     window.location.href = `flight-results.html?${params.toString()}`;
 }
@@ -683,11 +803,19 @@ function initEventListeners() {
     DOM.tripOptions.forEach(option => {
         option.addEventListener('change', handleTripType);
     });
+    const checkedTrip = document.querySelector('.trip-option input[name="tripType"]:checked');
+    if (checkedTrip) {
+        handleTripType({ target: checkedTrip });
+    }
 
     // Swap Button
     if (DOM.swapBtn) {
         DOM.swapBtn.addEventListener('click', swapLocations);
     }
+
+    // Flight airport autocomplete
+    if (DOM.flightFrom) setupFlightAutocomplete(DOM.flightFrom);
+    if (DOM.flightTo) setupFlightAutocomplete(DOM.flightTo);
 
     // Travelers Dropdown
     if (DOM.travelersSelector) {
