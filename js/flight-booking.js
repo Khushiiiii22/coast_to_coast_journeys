@@ -51,21 +51,44 @@ function initFlightSearch() {
     }
 
     // 3. Trip Type Toggle
-    tripTypeRadios.forEach(radio => {
-        radio.addEventListener('change', function () {
-            if (this.value === 'roundtrip') {
-                returnDateInput.disabled = false;
-                returnDateField.style.opacity = '1';
-                returnDateInput.required = true;
+    const searchFormGrid = document.querySelector('.search-form-grid');
+
+    function applyTripType(type) {
+        if (type === 'roundtrip') {
+            returnDateField.style.display = '';
+            returnDateInput.disabled = false;
+            returnDateInput.required = true;
+            if (searchFormGrid) searchFormGrid.style.gridTemplateColumns = '1fr 1fr 160px 160px 1fr';
+        } else {
+            returnDateField.style.display = 'none';
+            returnDateInput.disabled = true;
+            returnDateInput.required = false;
+            returnDateInput.value = '';
+            updateDateDisplay('returnDate', 'returnDateDisplay');
+            if (searchFormGrid) searchFormGrid.style.gridTemplateColumns = '1fr 1fr 160px 1fr';
+        }
+        // Update active class on trip type labels
+        document.querySelectorAll('.trip-type-option').forEach(lbl => {
+            const radio = lbl.querySelector('input[type="radio"]');
+            if (radio && radio.checked) {
+                lbl.classList.add('active');
             } else {
-                returnDateInput.disabled = true;
-                returnDateField.style.opacity = '0.5';
-                returnDateInput.required = false;
-                returnDateInput.value = '';
-                updateDateDisplay('returnDate', 'returnDateDisplay');
+                lbl.classList.remove('active');
             }
         });
+    }
+
+    tripTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function () {
+            applyTripType(this.value);
+        });
     });
+
+    // Apply initial state (One Way is default checked)
+    const initialTripType = document.querySelector('input[name="tripType"]:checked');
+    if (initialTripType) {
+        applyTripType(initialTripType.value);
+    }
 
     // 4. Date Logic
     const today = new Date().toISOString().split('T')[0];
