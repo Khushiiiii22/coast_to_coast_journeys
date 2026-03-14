@@ -2431,7 +2431,7 @@ h6 {
     border: 2px solid var(--gray-200);
     border-radius: var(--radius);
     font-size: 0.95rem;
-    color: transparent;
+    color: transparent !important;
     background: var(--white);
     cursor: pointer;
     transition: var(--transition);
@@ -2444,6 +2444,10 @@ h6 {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 4px rgba(14, 100, 166, 0.1);
+}
+
+.date-field input[type="date"]::-webkit-datetime-edit {
+    color: transparent !important;
 }
 
 .date-field input[type="date"]::-webkit-calendar-picker-indicator {

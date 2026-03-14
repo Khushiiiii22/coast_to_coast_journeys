@@ -6,6 +6,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     // State
     let allOutboundFlights = [];
+    let allInboundFlights = [];
     let filteredFlights = [];
     let activeTimeFilter = 'all';
     let activeSortBy = 'cheapest';
@@ -358,6 +359,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (result.success && result.data) {
                 allOutboundFlights = result.data.outbound || [];
+                allInboundFlights = result.data.inbound || [];
 
                 if (allOutboundFlights.length === 0) {
                     loadingState.classList.add('hidden');
@@ -579,6 +581,45 @@ document.addEventListener('DOMContentLoaded', function () {
                             </button>
                         </div>
                     </div>
+
+                    ${tripType === 'roundtrip' && index < allInboundFlights.length ? `
+                    <div style="border-top:1px solid #e5e7eb; margin-top:16px; padding-top:16px;" class="flight-main-info">
+                        <div class="airline-info">
+                            <span style="font-size:0.75rem; font-weight:700; color:#ef4444; background:#fee2e2; padding:3px 8px; border-radius:4px; margin-bottom:6px; display:inline-block;">RETURN</span>
+                            <br>
+                            <img src="${allInboundFlights[index].airline.logo}" alt="${allInboundFlights[index].airline.name}" class="airline-logo"
+                                onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDgwIDQwIj48cmVjdCB3aWR0aD0iODAiIGhlaWdodD0iNDAiIGZpbGw9IiNlMmU4ZjAiIHJ4PSI4Ii8+PHRleHQgeD0iNDAiIHk9IjI0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjQ3NDhiIiBmb250LXNpemU9IjEyIiBmb250LWZhbWlseT0iQXJpYWwiPiR7YWxsSW5ib3VuZEZsaWdodHNbaW5kZXhdLmFpcmxpbmUuY29kZX08L3RleHQ+PC9zdmc+'">
+                            <span class="airline-name">${allInboundFlights[index].airline.name}</span>
+                            <span class="flight-number">${allInboundFlights[index].flight_number}</span>
+                        </div>
+
+                        <div class="flight-timing">
+                            <div class="time-block">
+                                <span class="time">${allInboundFlights[index].depart_time}</span>
+                                <span class="airport-code">${airportDisplay(allInboundFlights[index].origin)}</span>
+                            </div>
+
+                            <div class="flight-path">
+                                <span class="duration">${allInboundFlights[index].duration}</span>
+                                <div class="path-line">
+                                    <i class="fas fa-plane path-line plane-icon" style="transform: rotate(180deg);"></i>
+                                </div>
+                                <span class="stops-info ${allInboundFlights[index].stops === 0 ? 'direct' : ''}">
+                                    ${allInboundFlights[index].stops === 0 ? '✈ Non-stop' : allInboundFlights[index].stops + (allInboundFlights[index].stops === 1 ? ' stop' : ' stops')}
+                                </span>
+                            </div>
+
+                            <div class="time-block">
+                                <span class="time">${allInboundFlights[index].arrival_time}</span>
+                                <span class="airport-code">${airportDisplay(allInboundFlights[index].destination)}</span>
+                                ${allInboundFlights[index].next_day ? '<small style="color: #ef4444; font-size: 0.68rem; display:block;">+1 day</small>' : ''}
+                            </div>
+                        </div>
+                        <div class="flight-price-action">
+                             <!-- Align visually with outbound flexbox -->
+                             <span style="opacity:0">per traveler</span>
+                        </div>
+                    </div>` : ''}
 
                     <div class="flight-meta">
                         <div class="meta-item">
