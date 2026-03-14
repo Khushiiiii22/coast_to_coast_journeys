@@ -173,12 +173,14 @@ def get_customers():
 @admin_bp.route('/markup-rules', methods=['GET'])
 @require_auth()
 def get_markup_rules():
-    """Get all markup rules"""
     try:
         from flask import current_app
         supabase = current_app.config.get('SUPABASE')
         
-        result = supabase.table('markup_rules').select('*').eq('is_active', True).order('created_at', desc=True).execute()
+        if not supabase:
+            return jsonify({'success': True, 'data': [], 'count': 0}), 200
+
+        result = supabase.table('markup_rules').select('*').order('created_at', desc=True).execute()
         
         return jsonify({
             'success': True,
@@ -207,13 +209,14 @@ def create_markup_rule():
         
         # Create rule
         rule = {
+            'rule_name': data.get('target_name', 'Unnamed Rule'),
             'rule_type': data['rule_type'],
-            'target_id': data.get('target_id'),
-            'target_name': data.get('target_name'),
+            'apply_to': data.get('apply_to', data['rule_type']),
+            'target_value': data.get('target_id'),
             'markup_type': data['markup_type'],
             'markup_value': float(data['markup_value']),
             'is_active': True,
-            'created_by': request.admin_user['admin_id']
+            'created_by': request.admin_user.get('auth_user_id')
         }
         
         result = supabase.table('markup_rules').insert(rule).execute()
@@ -232,6 +235,60 @@ def create_markup_rule():
             'data': result.data[0] if result.data else None
         }), 201
         
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/markup-rules/<rule_id>', methods=['PUT', 'DELETE'])
+@require_auth(required_role=['super_admin', 'operations'])
+def handle_markup_rule(rule_id):
+    """Update or delete a markup rule"""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        admin_service = current_app.config.get('ADMIN_SERVICE')
+        
+        if request.method == 'PUT':
+            data = request.get_json()
+            update_data = {}
+            
+            if 'markup_value' in data:
+                update_data['markup_value'] = float(data['markup_value'])
+            if 'is_active' in data:
+                update_data['is_active'] = bool(data['is_active'])
+            if 'markup_type' in data:
+                update_data['markup_type'] = data['markup_type']
+                
+            update_data['updated_at'] = 'now()'
+            
+            result = supabase.table('markup_rules').update(update_data).eq('id', rule_id).execute()
+            
+            # Log activity
+            admin_service.log_activity(
+                admin_id=request.admin_user['admin_id'],
+                action='update_markup_rule',
+                target_type='markup',
+                target_id=rule_id,
+                ip_address=request.remote_addr
+            )
+            
+            return jsonify({'success': True, 'data': result.data[0] if result.data else None}), 200
+            
+        elif request.method == 'DELETE':
+            # Instead of hard delete, we can just deactivate it or delete if user is super admin
+            result = supabase.table('markup_rules').delete().eq('id', rule_id).execute()
+            
+            # Log activity
+            admin_service.log_activity(
+                admin_id=request.admin_user['admin_id'],
+                action='delete_markup_rule',
+                target_type='markup',
+                target_id=rule_id,
+                ip_address=request.remote_addr
+            )
+            
+            return jsonify({'success': True, 'message': 'Rule deleted successfully'}), 200
+            
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -336,33 +393,54 @@ def get_flight_booking_stats():
             }), 200
 
         # Total
-        total_res = supabase.table('flight_bookings').select('id', count='exact').execute()
-        total = total_res.count or 0
+        total = 0
+        try:
+            total_res = supabase.table('flight_bookings').select('id', count='exact').execute()
+            total = total_res.count or 0
+        except Exception: pass
 
         # Confirmed
-        confirmed_res = supabase.table('flight_bookings').select('id', count='exact').eq('status', 'confirmed').execute()
-        confirmed = confirmed_res.count or 0
+        confirmed = 0
+        try:
+            confirmed_res = supabase.table('flight_bookings').select('id', count='exact').eq('status', 'confirmed').execute()
+            confirmed = confirmed_res.count or 0
+        except Exception: pass
 
         # Pending
-        pending_res = supabase.table('flight_bookings').select('id', count='exact').eq('status', 'pending').execute()
-        pending = pending_res.count or 0
+        pending = 0
+        try:
+            pending_res = supabase.table('flight_bookings').select('id', count='exact').eq('status', 'pending').execute()
+            pending = pending_res.count or 0
+        except Exception: pass
 
         # Cancelled
-        cancelled_res = supabase.table('flight_bookings').select('id', count='exact').eq('status', 'cancelled').execute()
-        cancelled = cancelled_res.count or 0
+        cancelled = 0
+        try:
+            cancelled_res = supabase.table('flight_bookings').select('id', count='exact').eq('status', 'cancelled').execute()
+            cancelled = cancelled_res.count or 0
+        except Exception: pass
 
         # Revenue from confirmed bookings
-        revenue_res = supabase.table('flight_bookings').select('total_amount').eq('status', 'confirmed').execute()
-        revenue = sum(float(b.get('total_amount', 0) or 0) for b in revenue_res.data)
+        revenue = 0
+        try:
+            revenue_res = supabase.table('flight_bookings').select('total_amount').eq('status', 'confirmed').execute()
+            revenue = sum(float(b.get('total_amount', 0) or 0) for b in revenue_res.data)
+        except Exception: pass
 
         # Domestic vs International counts
-        domestic_res = supabase.table('flight_bookings').select('id', count='exact').eq('trip_type', 'domestic').execute()
-        domestic = domestic_res.count or 0
+        domestic = 0
+        try:
+            domestic_res = supabase.table('flight_bookings').select('id', count='exact').eq('trip_type', 'domestic').execute()
+            domestic = domestic_res.count or 0
+        except Exception: pass
         international = max(0, total - domestic)
 
         # Round trip count
-        roundtrip_res = supabase.table('flight_bookings').select('id', count='exact').not_.is_('return_flight_number', 'null').execute()
-        roundtrip = roundtrip_res.count or 0
+        roundtrip = 0
+        try:
+            roundtrip_res = supabase.table('flight_bookings').select('id', count='exact').not_.is_('return_flight_number', 'null').execute()
+            roundtrip = roundtrip_res.count or 0
+        except Exception: pass
 
         return jsonify({
             'success': True,

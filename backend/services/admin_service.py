@@ -22,10 +22,11 @@ class AdminService:
         """Verify password against hash"""
         return bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
     
-    def generate_token(self, admin_id, email, role):
+    def generate_token(self, admin_id, email, role, auth_user_id=None):
         """Generate JWT token"""
         payload = {
             'admin_id': admin_id,
+            'auth_user_id': auth_user_id,
             'email': email,
             'role': role,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=self.token_expiry)
@@ -75,7 +76,7 @@ class AdminService:
                             pass  # Use hardcoded values if DB fails
                     
                     # Generate token
-                    token = self.generate_token(user_id, email, role)
+                    token = self.generate_token(user_id, email, role, auth_user_id=user.get('user_id') if 'user' in locals() else None)
                     
                     return {
                         'success': True,
@@ -83,6 +84,7 @@ class AdminService:
                             'token': token,
                             'user': {
                                 'id': user_id,
+                                'auth_user_id': user.get('user_id') if 'user' in locals() else None,
                                 'email': email,
                                 'full_name': full_name,
                                 'role': role

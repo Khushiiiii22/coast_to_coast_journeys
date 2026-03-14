@@ -1124,18 +1124,7 @@
 
         // Check authentication
         document.addEventListener('DOMContentLoaded', function () {
-            const session = localStorage.getItem('admin_session');
-            if (!session) { window.location.href = 'login.html'; return; }
-            try {
-                const s = JSON.parse(session);
-                if (new Date(s.expiresAt) <= new Date()) {
-                    localStorage.removeItem('admin_token');
-                    localStorage.removeItem('admin_user');
-                    localStorage.removeItem('admin_session');
-                    window.location.href = 'login.html';
-                    return;
-                }
-            } catch (e) { window.location.href = 'login.html'; return; }
+            // Standard auth is handled by admin.js checkAuth() which runs on DOMContentLoaded
 
             loadFlightStats();
             loadFlightBookings();
@@ -1433,7 +1422,7 @@
             };
 
             try {
-                const res = await apiRequest('/flight-bookings', { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } });
+                const res = await apiRequest('/flight-bookings', 'POST', payload);
                 if (res.success) {
                     showNotification('Flight booking created: ' + res.booking_id, 'success');
                     closeModal('manualFlightModal');

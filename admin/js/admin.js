@@ -29,7 +29,97 @@ document.addEventListener('DOMContentLoaded', function () {
             sidebar.classList.toggle('open');
         });
     }
+
+    // Initialize dynamic components
+    initSidebar();
 });
+
+// ========================================
+// Sidebar Management
+// ========================================
+function initSidebar() {
+    const sidebar = document.getElementById('adminSidebar');
+    if (!sidebar) return;
+
+    const currentPath = window.location.pathname.split('/').pop() || 'dashboard.html';
+
+    const navItems = [
+        {
+            section: 'Main', items: [
+                { name: 'Dashboard', icon: 'fa-home', href: 'dashboard.html' },
+                { name: 'Hotel Bookings', icon: 'fa-calendar-check', href: 'bookings.html' },
+                { name: 'Flight Bookings', icon: 'fa-plane', href: 'flights.html' }
+            ]
+        },
+        {
+            section: 'Finance', items: [
+                { name: 'Payments', icon: 'fa-credit-card', href: 'payments.html' },
+                { name: 'Invoices', icon: 'fa-file-invoice', href: 'invoices.html' },
+                { name: 'Refunds', icon: 'fa-undo', href: 'refunds.html' }
+            ]
+        },
+        {
+            section: 'Operations', items: [
+                { name: 'Markup Tool', icon: 'fa-percentage', href: 'markup.html' },
+                { name: 'Suppliers', icon: 'fa-handshake', href: 'suppliers.html' },
+                { name: 'Customers', icon: 'fa-users', href: 'customers.html' }
+            ]
+        },
+        {
+            section: 'Analytics', items: [
+                { name: 'Reports', icon: 'fa-chart-bar', href: 'reports.html' }
+            ]
+        },
+        {
+            section: 'System', items: [
+                { name: 'Admin Users', icon: 'fa-user-shield', href: 'users.html' },
+                { name: 'Settings', icon: 'fa-cog', href: 'settings.html' },
+                { name: 'Activity Logs', icon: 'fa-history', href: 'activity-logs.html' },
+                { name: 'Logout', icon: 'fa-sign-out-alt', href: '#', onclick: 'logout(); return false;', style: 'color: #ef4444;' }
+            ]
+        }
+    ];
+
+    let html = `
+        <div class="sidebar-header">
+            <div class="sidebar-logo">C</div>
+            <span class="sidebar-brand">CTC Admin</span>
+        </div>
+        <nav class="sidebar-nav">
+    `;
+
+    navItems.forEach(section => {
+        html += `
+            <div class="nav-section">
+                <span class="nav-section-title">${section.section}</span>
+                ${section.items.map(item => `
+                    <a href="${item.href}" 
+                       class="nav-item ${currentPath === item.href ? 'active' : ''}" 
+                       ${item.onclick ? `onclick="${item.onclick}"` : ''}
+                       ${item.style ? `style="${item.style}"` : ''}>
+                        <i class="fas ${item.icon}"></i>
+                        <span>${item.name}</span>
+                    </a>
+                `).join('')}
+            </div>
+        `;
+    });
+
+    html += `
+        </nav>
+        <div class="sidebar-footer">
+            <div class="admin-profile">
+                <div class="admin-avatar">SA</div>
+                <div class="admin-info">
+                    <div class="admin-name">Super Admin</div>
+                    <div class="admin-role">Administrator</div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    sidebar.innerHTML = html;
+}
 
 // ========================================
 // Notifications

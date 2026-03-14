@@ -393,9 +393,9 @@
 
                 <!-- Tab Buttons -->
                 <div class="tab-buttons">
-                    <button class="tab-btn active" onclick="showTab('global')">Global Markup</button>
-                    <button class="tab-btn" onclick="showTab('city')">City-wise</button>
-                    <button class="tab-btn" onclick="showTab('hotel')">Hotel-specific</button>
+                    <button class="tab-btn active" data-tab="global" onclick="showTab('global')">Global Markup</button>
+                    <button class="tab-btn" data-tab="city" onclick="showTab('city')">City-wise</button>
+                    <button class="tab-btn" data-tab="hotel" onclick="showTab('hotel')">Hotel-specific</button>
                 </div>
 
                 <!-- Markup Rules Grid -->
@@ -624,6 +624,86 @@
     <!-- Admin JavaScript -->
     <script src="../../admin/js/admin.js"></script>
     <script>
+        // State
+        let markupRules = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function () {
+            loadMarkupRules();
+            calculateMarkup();
+        });
+
+        // Load Markup Rules from API
+        async function loadMarkupRules() {
+            try {
+                const response = await apiRequest('/markup-rules');
+                if (response.success) {
+                    markupRules = response.data;
+                    renderMarkupRules();
+                }
+            } catch (error) {
+                console.error('Error loading markup rules:', error);
+            }
+        }
+
+        // Render Markup Rules Grid
+        function renderMarkupRules() {
+            const grid = document.getElementById('markupRulesGrid');
+            const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+
+            // Filter rules based on active tab
+            const filteredRules = markupRules.filter(rule => {
+                if (activeTab === 'global') return rule.rule_type === 'global' || rule.rule_type === 'all';
+                return rule.rule_type === activeTab;
+            });
+
+            if (filteredRules.length === 0) {
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted); background: white; border-radius: 12px;">
+                    <i class="fas fa-percentage" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.2;"></i>
+                    <p>No markup rules found for this category.</p>
+                </div>`;
+                return;
+            }
+
+            grid.innerHTML = filteredRules.map(rule => `
+                <div class="markup-rule-card ${rule.rule_type}" data-type="${rule.rule_type}">
+                    <div class="rule-header">
+                        <div>
+                            <div class="rule-title">${rule.rule_name || 'Unnamed Rule'}</div>
+                            <span class="rule-type">${capitalize(rule.rule_type)} Markup</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" ${rule.is_active ? 'checked' : ''} onchange="toggleRule('${rule.id}', this.checked)">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="rule-value">${rule.markup_type === 'percentage' ? rule.markup_value + '%' : formatCurrency(rule.markup_value)}</div>
+                    <div class="rule-details">
+                        ${rule.target_value ? 'Target: ' + rule.target_value : 'Default fallback rule'}
+                    </div>
+                    <div class="rule-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="editMarkup('${rule.id}')">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteMarkup('${rule.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Tab Switching
+        function showTab(type) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.tab === type) {
+                    btn.classList.add('active');
+                }
+            });
+            renderMarkupRules();
+        }
+
         // Calculate Markup Preview
         function calculateMarkup() {
             const supplierPrice = parseFloat(document.getElementById('supplierPrice').value) || 0;
@@ -634,67 +714,97 @@
 
             if (markupType === 'percentage') {
                 profit = supplierPrice * (markupValue / 100);
-                customerPrice = supplierPrice + profit;
             } else {
                 profit = markupValue;
-                customerPrice = supplierPrice + profit;
             }
+            customerPrice = supplierPrice + profit;
 
-            document.getElementById('customerPrice').textContent = '₹' + customerPrice.toLocaleString('en-IN');
-            document.getElementById('profitAmount').textContent = '₹' + profit.toLocaleString('en-IN');
+            document.getElementById('customerPrice').textContent = formatCurrency(customerPrice);
+            document.getElementById('profitAmount').textContent = formatCurrency(profit);
         }
 
-        // Tab Switching
-        function showTab(type) {
-            // Update buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-
-            // Filter cards
-            document.querySelectorAll('.markup-rule-card').forEach(card => {
-                if (type === 'global' && card.dataset.type === 'global') {
-                    card.style.display = 'block';
-                } else if (type === 'city' && card.dataset.type === 'city') {
-                    card.style.display = 'block';
-                } else if (type === 'hotel' && card.dataset.type === 'hotel') {
-                    card.style.display = 'block';
-                } else if (type === 'global') {
-                    card.style.display = 'block'; // Show all in global view
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
-
-        // Toggle Apply Fields
+        // Toggle Apply Fields in Modal
         function toggleApplyFields() {
             const applyTo = document.getElementById('applyTo').value;
             document.getElementById('cityField').style.display = applyTo === 'city' ? 'block' : 'none';
             document.getElementById('hotelField').style.display = applyTo === 'hotel' ? 'block' : 'none';
         }
 
-        // Save Markup Rule
-        function saveMarkup() {
-            showNotification('Markup rule saved successfully!', 'success');
-            closeModal('addMarkupModal');
-        }
+        // Save Markup Rule to Database
+        async function saveMarkup() {
+            if (!validateForm('addMarkupForm')) return;
 
-        // Edit Markup
-        function editMarkup(id) {
-            showNotification('Edit functionality coming soon', 'info');
-        }
+            const ruleName = document.querySelector('#addMarkupForm input[type="text"]').value;
+            const applyTo = document.getElementById('applyTo').value;
+            const markupType = document.getElementById('markupType').value;
+            const markupValue = document.querySelector('#addMarkupForm input[type="number"]').value;
 
-        // Delete Markup
-        function deleteMarkup(id) {
-            if (confirm('Are you sure you want to delete this markup rule?')) {
-                showNotification('Markup rule deleted', 'success');
+            let targetId = null;
+            if (applyTo === 'city') {
+                targetId = document.querySelector('#cityField select').value;
+            } else if (applyTo === 'hotel') {
+                targetId = document.querySelector('#hotelField input').value;
+            }
+
+            const payload = {
+                rule_type: applyTo === 'all' ? 'global' : applyTo,
+                apply_to: applyTo,
+                target_name: ruleName,
+                target_id: targetId,
+                markup_type: markupType,
+                markup_value: parseFloat(markupValue)
+            };
+
+            try {
+                const response = await apiRequest('/markup-rules', 'POST', payload);
+                if (response.success) {
+                    showNotification('Markup rule created successfully!', 'success');
+                    closeModal('addMarkupModal');
+                    loadMarkupRules();
+                    document.getElementById('addMarkupForm').reset();
+                }
+            } catch (error) {
+                console.error('Error saving rule:', error);
             }
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function () {
-            calculateMarkup();
-        });
+        // Toggle Rule Status
+        async function toggleRule(id, isActive) {
+            try {
+                await apiRequest(`/markup-rules/${id}`, 'PUT', { is_active: isActive });
+                showNotification(`Rule ${isActive ? 'activated' : 'deactivated'}`, 'success');
+                // Update local state instead of reload
+                const rule = markupRules.find(r => r.id === id);
+                if (rule) rule.is_active = isActive;
+            } catch (error) {
+                console.error('Error toggling rule:', error);
+                loadMarkupRules(); // Reload on error
+            }
+        }
+
+        // Delete Markup Rule
+        async function deleteMarkup(id) {
+            if (!confirm('Are you sure you want to delete this markup rule?')) return;
+
+            try {
+                const response = await apiRequest(`/markup-rules/${id}`, 'DELETE');
+                if (response.success) {
+                    showNotification('Markup rule deleted', 'success');
+                    markupRules = markupRules.filter(r => r.id !== id);
+                    renderMarkupRules();
+                }
+            } catch (error) {
+                console.error('Error deleting rule:', error);
+            }
+        }
+
+        function editMarkup(id) {
+            showNotification('Edit feature coming soon', 'info');
+        }
+
+        function capitalize(str) {
+            return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+        }
     </script>
 </body>
 
