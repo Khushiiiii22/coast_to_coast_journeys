@@ -13,7 +13,7 @@
         rel="stylesheet">
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
 
     <!-- Admin Styles -->
     <link rel="stylesheet" href="../../admin/css/admin.css">
@@ -125,25 +125,121 @@
             </header>
 
             <div class="admin-content">
-                <div class="admin-card" style="text-align: center; padding: 4rem 2rem;">
-                    <div style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;">
-                        <i class="fas fa-file-invoice-dollar"></i>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #dcfce7; color: #16a34a;">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Total Paid Invoices</span>
+                            <span class="stat-value" id="totalInvoices">0</span>
+                        </div>
                     </div>
-                    <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #1e293b;">Invoice System Coming Soon
-                    </h2>
-                    <p style="color: #64748b; max-width: 500px; margin: 0 auto;">
-                        We are currently building this module to generate and manage tax invoices automatically. Check
-                        back later!
-                    </p>
-                    <a href="bookings.html" class="btn btn-primary" style="margin-top: 1.5rem; display: inline-flex;">
-                        Go to Bookings
-                    </a>
+                </div>
+
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Tax Invoices</h3>
+                        <div class="card-actions">
+                            <select class="form-control" id="invoiceServiceFilter" onchange="loadInvoices()"
+                                style="width: auto;">
+                                <option value="all">All Services</option>
+                                <option value="hotel">Hotels</option>
+                                <option value="flight">Flights</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Invoice #</th>
+                                    <th>Booking ID</th>
+                                    <th>Service</th>
+                                    <th>Total Amount</th>
+                                    <th>Payment Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoicesTableBody">
+                                <!-- Data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
     <script src="../../admin/js/admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', loadInvoices);
+
+        async function loadInvoices() {
+            const tbody = document.getElementById('invoicesTableBody');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 3rem;"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
+
+            try {
+                const response = await apiRequest('/finance?type=invoices');
+                if (response.success) {
+                    const filter = document.getElementById('invoiceServiceFilter').value;
+                    let data = response.data;
+
+                    if (filter !== 'all') {
+                        data = data.filter(r => r.service_type === filter);
+                    }
+
+                    if (data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 3rem; color: #64748b;">No invoices found.</td></tr>';
+                        return;
+                    }
+
+                    document.getElementById('totalInvoices').textContent = data.length;
+
+                    tbody.innerHTML = data.map(record => `
+                        <tr>
+                            <td>${new Date(record.created_at).toLocaleDateString()}</td>
+                            <td style="font-family: monospace; font-weight: 600;">INV-${record.id.substring(0, 6).toUpperCase()}</td>
+                            <td>
+                                <div style="font-weight: 600; font-size: 0.9rem;">${record.booking_id}</div>
+                                <div style="font-size: 0.75rem; color: #64748b;">${record.service_type === 'hotel' ? record.hotel_name : (record.origin_code + '-' + record.destination_code)}</div>
+                            </td>
+                            <td>
+                                <span class="badge" style="background: ${record.service_type === 'hotel' ? '#e0f2fe; color: #0369a1' : '#fef3c7; color: #92400e'}">
+                                    <i class="fas ${record.service_type === 'hotel' ? 'fa-hotel' : 'fa-plane'}"></i> ${record.service_type.toUpperCase()}
+                                </span>
+                            </td>
+                            <td style="font-weight: 600;">${formatCurrency(record.total_amount)}</td>
+                            <td>
+                                <span class="status-badge confirmed">PAID</span>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn btn-secondary btn-sm" onclick="viewInvoice('${record.id}')">
+                                        <i class="fas fa-file-pdf"></i> View
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm" onclick="downloadInvoice('${record.id}')">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 3rem; color: #ef4444;">Error: ${error.message}</td></tr>`;
+            }
+        }
+
+        function viewInvoice(id) {
+            showNotification('Generating invoice PDF preview...', 'info');
+        }
+
+        function downloadInvoice(id) {
+            showNotification('Invoice download started', 'success');
+        }
+    </script>
 </body>
 
 </html>

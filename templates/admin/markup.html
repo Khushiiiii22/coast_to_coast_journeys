@@ -13,7 +13,7 @@
         rel="stylesheet">
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
 
     <!-- Admin Styles -->
     <link rel="stylesheet" href="../../admin/css/admin.css">
@@ -356,6 +356,17 @@
             </header>
 
             <div class="admin-content">
+                <!-- Service Selection -->
+                <div class="tab-buttons"
+                    style="margin-bottom: 2rem; background: #f8fafc; padding: 0.5rem; border-radius: 12px; display: inline-flex;">
+                    <button class="tab-btn active" id="serviceHotel" onclick="switchService('hotel')">
+                        <i class="fas fa-hotel"></i> Hotel Markups
+                    </button>
+                    <button class="tab-btn" id="serviceFlight" onclick="switchService('flight')">
+                        <i class="fas fa-plane"></i> Flight Markups
+                    </button>
+                </div>
+
                 <!-- Markup Calculator -->
                 <div class="markup-calculator">
                     <div class="calculator-title">
@@ -364,7 +375,7 @@
                     </div>
                     <div class="calculator-row">
                         <div class="calc-input-group">
-                            <label>Supplier Price (ETG)</label>
+                            <label>Supplier Price (Net)</label>
                             <input type="number" id="supplierPrice" placeholder="Enter price" value="10000"
                                 oninput="calculateMarkup()">
                         </div>
@@ -392,7 +403,7 @@
                 </div>
 
                 <!-- Tab Buttons -->
-                <div class="tab-buttons">
+                <div class="tab-buttons" id="markupTabs">
                     <button class="tab-btn active" data-tab="global" onclick="showTab('global')">Global Markup</button>
                     <button class="tab-btn" data-tab="city" onclick="showTab('city')">City-wise</button>
                     <button class="tab-btn" data-tab="hotel" onclick="showTab('hotel')">Hotel-specific</button>
@@ -558,38 +569,31 @@
             </div>
             <div class="modal-body">
                 <form id="addMarkupForm">
-                    <div class="form-group">
-                        <label class="form-label">Rule Name</label>
-                        <input type="text" class="form-control" placeholder="e.g., Weekend Special" required>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Service Type</label>
+                            <select class="form-control" id="formServiceType" onchange="updateApplyToOptions()">
+                                <option value="hotel">Hotels</option>
+                                <option value="flight">Flights</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Rule Name</label>
+                            <input type="text" class="form-control" id="ruleName" placeholder="e.g., Weekend Special"
+                                required>
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Apply To</label>
                         <select class="form-control" id="applyTo" onchange="toggleApplyFields()">
-                            <option value="all">All Hotels (Global)</option>
-                            <option value="city">Specific City</option>
-                            <option value="hotel">Specific Hotel</option>
-                            <option value="category">Hotel Category</option>
+                            <!-- Options dynamically populated -->
                         </select>
                     </div>
 
                     <div class="form-group" id="cityField" style="display: none;">
-                        <label class="form-label">Select City</label>
-                        <select class="form-control">
-                            <option value="">Choose a city...</option>
-                            <option value="delhi">Delhi NCR</option>
-                            <option value="mumbai">Mumbai</option>
-                            <option value="goa">Goa</option>
-                            <option value="jaipur">Jaipur</option>
-                            <option value="bangalore">Bangalore</option>
-                            <option value="chennai">Chennai</option>
-                            <option value="kolkata">Kolkata</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group" id="hotelField" style="display: none;">
-                        <label class="form-label">Hotel ID or Name</label>
-                        <input type="text" class="form-control" placeholder="Enter hotel ID or search...">
+                        <label class="form-label" id="targetLabel">Select City</label>
+                        <input type="text" class="form-control" id="targetValue" placeholder="Enter value...">
                     </div>
 
                     <div class="form-row">
@@ -602,13 +606,14 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">Markup Value</label>
-                            <input type="number" class="form-control" placeholder="Enter value" required>
+                            <input type="number" class="form-control" id="formMarkupValue" placeholder="Enter value"
+                                required>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Priority (Higher = Applied First)</label>
-                        <input type="number" class="form-control" value="0" min="0" max="100">
+                        <input type="number" class="form-control" id="priority" value="0" min="0" max="100">
                     </div>
                 </form>
             </div>
@@ -626,12 +631,40 @@
     <script>
         // State
         let markupRules = [];
+        let currentService = 'hotel';
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function () {
             loadMarkupRules();
             calculateMarkup();
+            updateApplyToOptions();
+            switchService('hotel');
         });
+
+        // Switch between Hotel and Flight
+        function switchService(service) {
+            currentService = service;
+            document.getElementById('serviceHotel').classList.toggle('active', service === 'hotel');
+            document.getElementById('serviceFlight').classList.toggle('active', service === 'flight');
+
+            // Update tabs based on service
+            const tabs = document.getElementById('markupTabs');
+            if (service === 'hotel') {
+                tabs.innerHTML = `
+                    <button class="tab-btn active" data-tab="global" onclick="showTab('global')">Global Markup</button>
+                    <button class="tab-btn" data-tab="city" onclick="showTab('city')">City-wise</button>
+                    <button class="tab-btn" data-tab="hotel" onclick="showTab('hotel')">Hotel-specific</button>
+                `;
+            } else {
+                tabs.innerHTML = `
+                    <button class="tab-btn active" data-tab="global" onclick="showTab('global')">Global Markup</button>
+                    <button class="tab-btn" data-tab="airline" onclick="showTab('airline')">Airline-wise</button>
+                    <button class="tab-btn" data-tab="route" onclick="showTab('route')">Route-specific</button>
+                `;
+            }
+
+            renderMarkupRules();
+        }
 
         // Load Markup Rules from API
         async function loadMarkupRules() {
@@ -649,18 +682,21 @@
         // Render Markup Rules Grid
         function renderMarkupRules() {
             const grid = document.getElementById('markupRulesGrid');
-            const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+            const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab || 'global';
 
-            // Filter rules based on active tab
+            // Filter rules based on current service and active tab
             const filteredRules = markupRules.filter(rule => {
+                const serviceMatch = (rule.service_type || 'hotel') === currentService;
+                if (!serviceMatch) return false;
+
                 if (activeTab === 'global') return rule.rule_type === 'global' || rule.rule_type === 'all';
                 return rule.rule_type === activeTab;
             });
 
             if (filteredRules.length === 0) {
                 grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted); background: white; border-radius: 12px;">
-                    <i class="fas fa-percentage" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.2;"></i>
-                    <p>No markup rules found for this category.</p>
+                    <i class="fas ${currentService === 'hotel' ? 'fa-hotel' : 'fa-plane'}" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.2;"></i>
+                    <p>No ${currentService} markup rules found for this category.</p>
                 </div>`;
                 return;
             }
@@ -695,7 +731,7 @@
 
         // Tab Switching
         function showTab(type) {
-            document.querySelectorAll('.tab-btn').forEach(btn => {
+            document.querySelectorAll('#markupTabs .tab-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.dataset.tab === type) {
                     btn.classList.add('active');
@@ -723,36 +759,70 @@
             document.getElementById('profitAmount').textContent = formatCurrency(profit);
         }
 
+        // Update Apply To options based on Service Type
+        function updateApplyToOptions() {
+            const service = document.getElementById('formServiceType').value;
+            const applyTo = document.getElementById('applyTo');
+
+            if (service === 'hotel') {
+                applyTo.innerHTML = `
+                    <option value="all">All Hotels (Global)</option>
+                    <option value="city">Specific City</option>
+                    <option value="hotel">Specific Hotel</option>
+                    <option value="category">Hotel Category</option>
+                `;
+            } else {
+                applyTo.innerHTML = `
+                    <option value="all">All Flights (Global)</option>
+                    <option value="airline">Specific Airline</option>
+                    <option value="route">Specific Route (e.g., DEL-BOM)</option>
+                    <option value="class">Cabin Class</option>
+                `;
+            }
+            toggleApplyFields();
+        }
+
         // Toggle Apply Fields in Modal
         function toggleApplyFields() {
             const applyTo = document.getElementById('applyTo').value;
-            document.getElementById('cityField').style.display = applyTo === 'city' ? 'block' : 'none';
-            document.getElementById('hotelField').style.display = applyTo === 'hotel' ? 'block' : 'none';
+            const service = document.getElementById('formServiceType').value;
+            const cityField = document.getElementById('cityField');
+            const targetLabel = document.getElementById('targetLabel');
+            const targetValue = document.getElementById('targetValue');
+
+            if (applyTo === 'all') {
+                cityField.style.display = 'none';
+            } else {
+                cityField.style.display = 'block';
+                if (service === 'hotel') {
+                    targetLabel.textContent = applyTo === 'city' ? 'City Name' : (applyTo === 'hotel' ? 'Hotel ID/Name' : 'Category');
+                } else {
+                    targetLabel.textContent = applyTo === 'airline' ? 'Airline Code/Name' : (applyTo === 'route' ? 'Route (e.g. DEL-DXB)' : 'Class');
+                }
+            }
         }
 
         // Save Markup Rule to Database
         async function saveMarkup() {
             if (!validateForm('addMarkupForm')) return;
 
-            const ruleName = document.querySelector('#addMarkupForm input[type="text"]').value;
+            const serviceType = document.getElementById('formServiceType').value;
+            const ruleName = document.getElementById('ruleName').value;
             const applyTo = document.getElementById('applyTo').value;
             const markupType = document.getElementById('markupType').value;
-            const markupValue = document.querySelector('#addMarkupForm input[type="number"]').value;
-
-            let targetId = null;
-            if (applyTo === 'city') {
-                targetId = document.querySelector('#cityField select').value;
-            } else if (applyTo === 'hotel') {
-                targetId = document.querySelector('#hotelField input').value;
-            }
+            const markupValue = document.getElementById('formMarkupValue').value;
+            const targetValue = document.getElementById('targetValue').value;
+            const priority = document.getElementById('priority').value;
 
             const payload = {
+                service_type: serviceType,
                 rule_type: applyTo === 'all' ? 'global' : applyTo,
                 apply_to: applyTo,
                 target_name: ruleName,
-                target_id: targetId,
+                target_id: targetValue,
                 markup_type: markupType,
-                markup_value: parseFloat(markupValue)
+                markup_value: parseFloat(markupValue),
+                priority: parseInt(priority) || 0
             };
 
             try {
@@ -762,9 +832,11 @@
                     closeModal('addMarkupModal');
                     loadMarkupRules();
                     document.getElementById('addMarkupForm').reset();
+                    updateApplyToOptions();
                 }
             } catch (error) {
                 console.error('Error saving rule:', error);
+                showNotification(error.message || 'Failed to save rule', 'error');
             }
         }
 
@@ -773,12 +845,11 @@
             try {
                 await apiRequest(`/markup-rules/${id}`, 'PUT', { is_active: isActive });
                 showNotification(`Rule ${isActive ? 'activated' : 'deactivated'}`, 'success');
-                // Update local state instead of reload
                 const rule = markupRules.find(r => r.id === id);
                 if (rule) rule.is_active = isActive;
             } catch (error) {
                 console.error('Error toggling rule:', error);
-                loadMarkupRules(); // Reload on error
+                loadMarkupRules();
             }
         }
 
@@ -799,7 +870,7 @@
         }
 
         function editMarkup(id) {
-            showNotification('Edit feature coming soon', 'info');
+            showNotification('Edit functionality coming soon', 'info');
         }
 
         function capitalize(str) {
@@ -809,3 +880,4 @@
 </body>
 
 </html>
+```

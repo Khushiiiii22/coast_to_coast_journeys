@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Initialize dynamic components
     initSidebar();
+    restoreSidebarScroll();
 });
 
 // ========================================
@@ -40,6 +41,9 @@ document.addEventListener('DOMContentLoaded', function () {
 function initSidebar() {
     const sidebar = document.getElementById('adminSidebar');
     if (!sidebar) return;
+
+    // Save sidebar scroll position before re-rendering
+    const scrollPos = sidebar.querySelector('.sidebar-nav')?.scrollTop || 0;
 
     const currentPath = window.location.pathname.split('/').pop() || 'dashboard.html';
 
@@ -119,6 +123,32 @@ function initSidebar() {
     `;
 
     sidebar.innerHTML = html;
+
+    // Attach scroll listener to preserve position
+    const nav = sidebar.querySelector('.sidebar-nav');
+    if (nav) {
+        nav.addEventListener('scroll', () => {
+            localStorage.setItem('admin_sidebar_scroll', nav.scrollTop);
+        });
+    }
+
+    // Scroll active item into view
+    setTimeout(() => {
+        const activeItem = sidebar.querySelector('.nav-item.active');
+        if (activeItem) {
+            activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }, 100);
+}
+
+function restoreSidebarScroll() {
+    const nav = document.querySelector('.sidebar-nav');
+    if (nav) {
+        const scrollPos = localStorage.getItem('admin_sidebar_scroll');
+        if (scrollPos) {
+            nav.scrollTop = parseInt(scrollPos);
+        }
+    }
 }
 
 // ========================================

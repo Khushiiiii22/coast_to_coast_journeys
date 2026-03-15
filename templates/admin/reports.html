@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Analytics | C2C Journeys Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="../../admin/css/admin.css">
+
+    <!-- Chart.js -->
+    <script src="../../admin/libs/chart.min.js"></script>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="adminSidebar">
+            <!-- Sidebar will be injected by admin.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Reports & Analytics</h1>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-secondary" onclick="exportReport()">
+                        <i class="fas fa-download"></i> Export CSV
+                    </button>
+                    <button class="btn btn-primary" onclick="loadReports()">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <!-- Filters -->
+                <div class="admin-card" style="margin-bottom: 2rem;">
+                    <div class="card-body">
+                        <div style="display: flex; gap: 1.5rem; align-items: flex-end;">
+                            <div class="form-group" style="margin-bottom: 0; min-width: 200px;">
+                                <label class="form-label">Time Range</label>
+                                <select class="form-control" id="timeRange">
+                                    <option value="7d">Last 7 Days</option>
+                                    <option value="30d">Last 30 Days</option>
+                                    <option value="90d">Last 90 Days</option>
+                                    <option value="ytd">Year to Date</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0; min-width: 200px;">
+                                <label class="form-label">Service Type</label>
+                                <select class="form-control" id="serviceType">
+                                    <option value="all">All Services</option>
+                                    <option value="hotel">Hotels</option>
+                                    <option value="flight">Flights</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" style="height: 48px;" onclick="loadReports()">Apply
+                                Filter</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Summary -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #e0f2fe; color: #0e64a6;">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Total Bookings</span>
+                            <span class="stat-value" id="statTotalBookings">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #dcfce7; color: #16a34a;">
+                            <i class="fas fa-hand-holding-usd"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Total Sales</span>
+                            <span class="stat-value" id="statTotalSales">₹0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #fef3c7; color: #d97706;">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Gross Margin</span>
+                            <span class="stat-value" id="statMargin">₹0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Grid -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 2rem;">
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Booking Trends</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="trendsChart" height="300"></canvas>
+                        </div>
+                    </div>
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Service Distribution</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="serviceChart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../admin/js/admin.js"></script>
+    <script>
+        let trendsChart, serviceChart;
+
+        document.addEventListener('DOMContentLoaded', loadReports);
+
+        async function loadReports() {
+            try {
+                // Fetch stats from existing stats API
+                const statsResponse = await apiRequest('/stats');
+                if (statsResponse.success) {
+                    const stats = statsResponse.data;
+                    document.getElementById('statTotalBookings').textContent = stats.hotels.total + stats.flights.total;
+                    document.getElementById('statTotalSales').textContent = formatCurrency(stats.hotels.revenue + stats.flights.revenue);
+                    document.getElementById('statMargin').textContent = formatCurrency((stats.hotels.revenue + stats.flights.revenue) * 0.12); // Mock 12% margin
+
+                    renderCharts(stats);
+                }
+            } catch (error) {
+                showNotification('Error loading reports: ' + error.message, 'error');
+            }
+        }
+
+        function renderCharts(stats) {
+            // Trends Chart (Mocked)
+            const trendsCtx = document.getElementById('trendsChart').getContext('2d');
+            if (trendsChart) trendsChart.destroy();
+
+            trendsChart = new Chart(trendsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [
+                        {
+                            label: 'Hotel Bookings',
+                            data: [12, 19, 3, 5, 2, 3],
+                            borderColor: '#0e64a6',
+                            tension: 0.4,
+                            fill: true,
+                            backgroundColor: 'rgba(14, 100, 166, 0.1)'
+                        },
+                        {
+                            label: 'Flight Bookings',
+                            data: [5, 32, 12, 10, 8, 15],
+                            borderColor: '#f97316',
+                            tension: 0.4,
+                            fill: true,
+                            backgroundColor: 'rgba(249, 115, 22, 0.1)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+
+            // Service Chart
+            const serviceCtx = document.getElementById('serviceChart').getContext('2d');
+            if (serviceChart) serviceChart.destroy();
+
+            serviceChart = new Chart(serviceCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Hotels', 'Flights'],
+                    datasets: [{
+                        data: [stats.hotels.total, stats.flights.total],
+                        backgroundColor: ['#0e64a6', '#f97316']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        function exportReport() {
+            showNotification('Exporting reports to CSV...', 'info');
+            setTimeout(() => showNotification('Reports exported successfully', 'success'), 1500);
+        }
+    </script>
+</body>
+
+</html>

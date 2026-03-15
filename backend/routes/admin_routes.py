@@ -144,6 +144,104 @@ def get_booking_details(booking_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@admin_bp.route('/bookings/stats', methods=['GET'])
+@require_auth()
+def get_hotel_booking_stats():
+    """Get aggregate stats for hotel bookings"""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        if not supabase:
+            return jsonify({'success': True, 'data': {'total': 0, 'confirmed': 0, 'pending': 0, 'cancelled': 0}}), 200
+            
+        # Overall counts
+        res = supabase.table('hotel_bookings').select('status').execute()
+        bookings = res.data or []
+        
+        stats = {
+            'total': len(bookings),
+            'confirmed': len([b for b in bookings if b['status'] == 'confirmed']),
+            'pending': len([b for b in bookings if b['status'] == 'pending']),
+            'cancelled': len([b for b in bookings if b['status'] == 'cancelled'])
+        }
+        
+        return jsonify({'success': True, 'data': stats}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/bookings', methods=['POST'])
+@require_auth(required_role=['super_admin', 'operations'])
+def create_manual_hotel_booking():
+    """Create a manual hotel booking"""
+    try:
+        data = request.get_json()
+        import time, random
+        
+        timestamp = hex(int(time.time()))[2:].upper()
+        rand_part = ''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=4))
+        booking_ref = f"C2C-H{timestamp[-4:]}{rand_part}"
+        
+        booking_record = {
+            'booking_id': booking_ref,
+            'hotel_name': data.get('hotel_name'),
+            'check_in': data.get('check_in'),
+            'check_out': data.get('check_out'),
+            'rooms': int(data.get('rooms', 1)),
+            'customer_name': data.get('customer_name'),
+            'customer_email': data.get('customer_email'),
+            'customer_phone': data.get('customer_phone'),
+            'total_amount': float(data.get('total_amount', 0)),
+            'currency': data.get('currency', 'INR'),
+            'status': data.get('status', 'confirmed'),
+            'payment_status': data.get('payment_status', 'paid'),
+            'booking_source': 'admin_manual',
+            'hotel_star_rating': data.get('hotel_star_rating')
+        }
+        
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        # Ensure customer exists or create them
+        customer_email = data.get('customer_email')
+        if customer_email:
+            # Check if customer exists
+            cust_res = supabase.table('customers').select('id').eq('email', customer_email).execute()
+            if not cust_res.data:
+                # Create customer
+                customer_data = {
+                    'full_name': data.get('customer_name'),
+                    'email': customer_email,
+                    'phone': data.get('customer_phone'),
+                    'status': 'active'
+                }
+                supabase.table('customers').insert(customer_data).execute()
+        
+        result = supabase.table('hotel_bookings').insert(booking_record).execute()
+        
+        # Log activity
+        try:
+            admin_service = current_app.config.get('ADMIN_SERVICE')
+            admin_service.log_activity(
+                admin_id=request.admin_user['admin_id'],
+                action='create_hotel_booking',
+                target_type='hotel_booking',
+                target_id=booking_ref,
+                ip_address=request.remote_addr
+            )
+        except Exception: pass
+        
+        return jsonify({
+            'success': True,
+            'data': result.data[0] if result.data else None,
+            'booking_id': booking_ref
+        }), 201
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @admin_bp.route('/customers', methods=['GET'])
 @require_auth()
 def get_customers():
@@ -170,17 +268,66 @@ def get_customers():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@admin_bp.route('/customers', methods=['POST'])
+@require_auth(required_role=['super_admin', 'operations'])
+def create_customer():
+    """Create a new customer"""
+    try:
+        data = request.get_json()
+        
+        if not data.get('email') or not data.get('full_name'):
+            return jsonify({'success': False, 'error': 'Full name and email required'}), 400
+            
+        customer_record = {
+            'full_name': data.get('full_name'),
+            'email': data.get('email'),
+            'phone': data.get('phone'),
+            'date_of_birth': data.get('date_of_birth') or None,
+            'gender': data.get('gender'),
+            'nationality': data.get('nationality', 'Indian'),
+            'passport_number': data.get('passport_number'),
+            'address': data.get('address'),
+            'city': data.get('city'),
+            'country': data.get('country', 'India'),
+            'customer_type': data.get('customer_type', 'regular'),
+            'is_active': True
+        }
+        
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        # Check if exists
+        exists = supabase.table('customers').select('id').eq('email', data['email']).execute()
+        if exists.data:
+            return jsonify({'success': False, 'error': 'Customer with this email already exists'}), 409
+            
+        result = supabase.table('customers').insert(customer_record).execute()
+        
+        return jsonify({
+            'success': True,
+            'data': result.data[0] if result.data else None
+        }), 201
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @admin_bp.route('/markup-rules', methods=['GET'])
 @require_auth()
 def get_markup_rules():
     try:
+        service_type = request.args.get('service_type')
         from flask import current_app
         supabase = current_app.config.get('SUPABASE')
         
         if not supabase:
             return jsonify({'success': True, 'data': [], 'count': 0}), 200
 
-        result = supabase.table('markup_rules').select('*').order('created_at', desc=True).execute()
+        query = supabase.table('markup_rules').select('*')
+        if service_type:
+            query = query.eq('service_type', service_type)
+            
+        result = query.order('created_at', desc=True).execute()
         
         return jsonify({
             'success': True,
@@ -211,6 +358,7 @@ def create_markup_rule():
         rule = {
             'rule_name': data.get('target_name', 'Unnamed Rule'),
             'rule_type': data['rule_type'],
+            'service_type': data.get('service_type', 'hotel'),
             'apply_to': data.get('apply_to', data['rule_type']),
             'target_value': data.get('target_id'),
             'markup_type': data['markup_type'],
@@ -574,6 +722,22 @@ def create_manual_flight_booking():
 
         from flask import current_app
         supabase = current_app.config.get('SUPABASE')
+
+        # Ensure customer exists or create them
+        customer_email = data.get('passenger_email') or data.get('customer_email')
+        if customer_email:
+            # Check if customer exists
+            cust_res = supabase.table('customers').select('id').eq('email', customer_email).execute()
+            if not cust_res.data:
+                # Create customer
+                customer_data = {
+                    'full_name': data.get('passenger_name') or data.get('customer_name'),
+                    'email': customer_email,
+                    'phone': data.get('passenger_phone') or data.get('customer_phone'),
+                    'status': 'active'
+                }
+                supabase.table('customers').insert(customer_data).execute()
+
         result = supabase.table('flight_bookings').insert(booking_record).execute()
 
         # Log activity
@@ -597,3 +761,132 @@ def create_manual_flight_booking():
 
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/users', methods=['GET'])
+@require_auth(required_role=['super_admin'])
+def get_users():
+    """
+    Get list of admin users
+    GET /api/admin/users
+    """
+    try:
+        role = request.args.get('role')
+        search = request.args.get('search')
+        
+        from flask import current_app
+        admin_service = current_app.config.get('ADMIN_SERVICE')
+        
+        result = admin_service.get_admin_users(role=role, search=search)
+        return jsonify(result), 200 if result['success'] else 500
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+@admin_bp.route('/users', methods=['POST'])
+@require_auth(required_role=['super_admin'])
+def create_admin_user():
+    """Add a new admin user"""
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        full_name = data.get('full_name')
+        role = data.get('role', 'staff')
+        
+        if not email or not full_name:
+            return jsonify({'success': False, 'error': 'Email and full name required'}), 400
+            
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        # Check if already exists
+        exists = supabase.table('admin_users').select('id').eq('email', email).execute()
+        if exists.data:
+            return jsonify({'success': False, 'error': 'Admin user already exists'}), 409
+            
+        user_record = {
+            'email': email,
+            'full_name': full_name,
+            'role': role,
+            'is_active': True
+        }
+        
+        result = supabase.table('admin_users').insert(user_record).execute()
+        
+        return jsonify({
+            'success': True,
+            'data': result.data[0] if result.data else None
+        }), 201
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/finance', methods=['GET'])
+@require_auth()
+def get_finance():
+    """Get finance data (invoices/refunds)"""
+    try:
+        finance_type = request.args.get('type', 'invoices')
+        from flask import current_app
+        admin_service = current_app.config.get('ADMIN_SERVICE')
+        
+        data = admin_service.get_finance_data(type=finance_type)
+        return jsonify({'success': True, 'data': data}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/suppliers', methods=['GET'])
+@require_auth()
+def get_suppliers():
+    """Get list of suppliers"""
+    try:
+        from flask import current_app
+        admin_service = current_app.config.get('ADMIN_SERVICE')
+        
+        data = admin_service.get_suppliers()
+        return jsonify({'success': True, 'data': data}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/stats', methods=['GET'])
+@require_auth()
+def get_detailed_stats():
+    """Get detailed statistics for reports"""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        # Hotel stats
+        hotels_total = supabase.table('hotel_bookings').select('id', count='exact').execute().count or 0
+        hotels_revenue = 0
+        try:
+            res = supabase.table('hotel_bookings').select('total_amount').eq('status', 'confirmed').execute()
+            hotels_revenue = sum(float(b.get('total_amount', 0) or 0) for b in res.data)
+        except: pass
+        
+        # Flight stats
+        flights_total = supabase.table('flight_bookings').select('id', count='exact').execute().count or 0
+        flights_revenue = 0
+        try:
+            res = supabase.table('flight_bookings').select('total_amount').eq('status', 'confirmed').execute()
+            flights_revenue = sum(float(b.get('total_amount', 0) or 0) for b in res.data)
+        except: pass
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'hotels': {
+                    'total': hotels_total,
+                    'revenue': round(hotels_revenue, 2)
+                },
+                'flights': {
+                    'total': flights_total,
+                    'revenue': round(flights_revenue, 2)
+                }
+            }
+        }), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+

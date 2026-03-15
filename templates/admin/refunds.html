@@ -13,7 +13,7 @@
         rel="stylesheet">
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
 
     <!-- Admin Styles -->
     <link rel="stylesheet" href="../../admin/css/admin.css">
@@ -125,25 +125,121 @@
             </header>
 
             <div class="admin-content">
-                <div class="admin-card" style="text-align: center; padding: 4rem 2rem;">
-                    <div style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;">
-                        <i class="fas fa-undo-alt"></i>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #fee2e2; color: #ef4444;">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Pending Refunds</span>
+                            <span class="stat-value" id="pendingRefunds">0</span>
+                        </div>
                     </div>
-                    <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #1e293b;">Refunds Dashboard Coming Soon
-                    </h2>
-                    <p style="color: #64748b; max-width: 500px; margin: 0 auto;">
-                        We are currently building this module to help you process and track refunds efficiently. Check
-                        back later!
-                    </p>
-                    <a href="payments.html" class="btn btn-primary" style="margin-top: 1.5rem; display: inline-flex;">
-                        View Payments
-                    </a>
+                </div>
+
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Refund Requests</h3>
+                        <div class="card-actions">
+                            <select class="form-control" id="serviceFilter" onchange="loadRefunds()"
+                                style="width: auto;">
+                                <option value="all">All Services</option>
+                                <option value="hotel">Hotels</option>
+                                <option value="flight">Flights</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Booking ID</th>
+                                    <th>Service</th>
+                                    <th>Customer</th>
+                                    <th>Total Amount</th>
+                                    <th>Refund Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="refundsTableBody">
+                                <!-- Data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
     <script src="../../admin/js/admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', loadRefunds);
+
+        async function loadRefunds() {
+            const tbody = document.getElementById('refundsTableBody');
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 3rem;"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
+
+            try {
+                const response = await apiRequest('/finance?type=refunds');
+                if (response.success) {
+                    const filter = document.getElementById('serviceFilter').value;
+                    let data = response.data;
+
+                    if (filter !== 'all') {
+                        data = data.filter(r => r.service_type === filter);
+                    }
+
+                    if (data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 3rem; color: #64748b;">No refund records found.</td></tr>';
+                        return;
+                    }
+
+                    let pendingCount = 0;
+                    tbody.innerHTML = data.map(record => {
+                        if (record.refund_status === 'pending') pendingCount++;
+
+                        return `
+                            <tr>
+                                <td>${new Date(record.created_at).toLocaleDateString()}</td>
+                                <td>
+                                    <div style="font-weight: 600; font-size: 0.9rem;">${record.booking_id}</div>
+                                    <div style="font-size: 0.75rem; color: #64748b;">${record.service_type === 'hotel' ? record.hotel_name : (record.origin_code + '-' + record.destination_code)}</div>
+                                </td>
+                                <td>
+                                    <span class="badge" style="background: ${record.service_type === 'hotel' ? '#e0f2fe; color: #0369a1' : '#fef3c7; color: #92400e'}">
+                                        <i class="fas ${record.service_type === 'hotel' ? 'fa-hotel' : 'fa-plane'}"></i> ${record.service_type.toUpperCase()}
+                                    </span>
+                                </td>
+                                <td>Customer #${record.customer_id ? record.customer_id.substring(0, 8) : 'N/A'}</td>
+                                <td>${formatCurrency(record.total_amount)}</td>
+                                <td style="font-weight: 600; color: #ef4444;">${formatCurrency(record.refund_amount || 0)}</td>
+                                <td>
+                                    <span class="status-badge ${record.refund_status || 'pending'}">
+                                        ${(record.refund_status || 'Pending').toUpperCase()}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-secondary btn-sm" onclick="viewDetails('${record.id}', '${record.service_type}')">
+                                        <i class="fas fa-eye"></i> Details
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                    document.getElementById('pendingRefunds').textContent = pendingCount;
+                }
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 3rem; color: #ef4444;">Error: ${error.message}</td></tr>`;
+            }
+        }
+
+        function viewDetails(id, type) {
+            window.location.href = `bookings.html?id=${id}&type=${type}`;
+        }
+    </script>
 </body>
 
 </html>

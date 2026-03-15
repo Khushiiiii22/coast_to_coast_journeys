@@ -13,10 +13,11 @@
         rel="stylesheet">
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
 
     <!-- Admin Styles -->
     <link rel="stylesheet" href="../../admin/css/admin.css">
+    <link rel="icon" href="data:,">
 
     <style>
         .filters-bar {
@@ -316,19 +317,19 @@
                 <!-- Quick Stats -->
                 <div class="quick-stats">
                     <div class="quick-stat total">
-                        <div class="quick-stat-value">1,247</div>
+                        <div class="quick-stat-value" id="statTotal">0</div>
                         <div class="quick-stat-label">Total Bookings</div>
                     </div>
                     <div class="quick-stat confirmed">
-                        <div class="quick-stat-value">892</div>
+                        <div class="quick-stat-value" id="statConfirmed">0</div>
                         <div class="quick-stat-label">Confirmed</div>
                     </div>
                     <div class="quick-stat pending">
-                        <div class="quick-stat-value">285</div>
+                        <div class="quick-stat-value" id="statPending">0</div>
                         <div class="quick-stat-label">Pending</div>
                     </div>
                     <div class="quick-stat cancelled">
-                        <div class="quick-stat-value">70</div>
+                        <div class="quick-stat-value" id="statCancelled">0</div>
                         <div class="quick-stat-label">Cancelled</div>
                     </div>
                 </div>
@@ -337,12 +338,12 @@
                 <div class="filters-bar">
                     <div class="search-box">
                         <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Search by booking ID, customer, hotel...">
+                        <input type="text" id="bookingSearch" placeholder="Search by booking ID, customer, hotel...">
                     </div>
 
                     <div class="filter-group">
                         <label>Status:</label>
-                        <select>
+                        <select id="statusFilter" onchange="currentPage=0; loadBookings()">
                             <option value="">All Status</option>
                             <option value="confirmed">Confirmed</option>
                             <option value="pending">Pending</option>
@@ -353,19 +354,19 @@
 
                     <div class="filter-group">
                         <label>Date:</label>
-                        <input type="date">
+                        <input type="date" id="fromDate">
                         <span>to</span>
-                        <input type="date">
+                        <input type="date" id="toDate">
                     </div>
 
-                    <button class="btn btn-secondary">
+                    <button class="btn btn-secondary" onclick="currentPage=0; loadBookings()">
                         <i class="fas fa-filter"></i> Apply
                     </button>
                 </div>
 
                 <!-- Bookings Table -->
                 <div class="admin-card">
-                    <table class="admin-table">
+                    <table class="admin-table" id="bookingsTable">
                         <thead>
                             <tr>
                                 <th>Booking ID</th>
@@ -378,188 +379,21 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="bookingsBody">
                             <tr>
-                                <td><span class="booking-id">#CTC-10001</span></td>
-                                <td>
-                                    <div class="customer-info">
-                                        <span class="customer-name">Rahul Sharma</span>
-                                        <span class="customer-email">rahul@email.com</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="hotel-info">
-                                        <span class="hotel-name">The Leela Palace, New Delhi</span>
-                                        <span class="hotel-dates">Jan 25 - Jan 28, 2026 (3N)</span>
-                                    </div>
-                                </td>
-                                <td>2</td>
-                                <td class="amount-cell">
-                                    <div class="amount-main">₹45,500</div>
-                                    <div class="amount-margin">+₹5,460 margin</div>
-                                </td>
-                                <td><span class="status-badge confirmed">Confirmed</span></td>
-                                <td><span class="status-badge confirmed">Paid</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="Download Voucher">
-                                            <i class="fas fa-download"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="Resend Email">
-                                            <i class="fas fa-envelope"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><span class="booking-id">#CTC-10002</span></td>
-                                <td>
-                                    <div class="customer-info">
-                                        <span class="customer-name">Priya Patel</span>
-                                        <span class="customer-email">priya@email.com</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="hotel-info">
-                                        <span class="hotel-name">Taj Exotica, Goa</span>
-                                        <span class="hotel-dates">Jan 28 - Jan 31, 2026 (3N)</span>
-                                    </div>
-                                </td>
-                                <td>1</td>
-                                <td class="amount-cell">
-                                    <div class="amount-main">₹32,000</div>
-                                    <div class="amount-margin">+₹3,840 margin</div>
-                                </td>
-                                <td><span class="status-badge pending">Pending</span></td>
-                                <td><span class="status-badge pending">Awaiting</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="Send Reminder">
-                                            <i class="fas fa-bell"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><span class="booking-id">#CTC-10003</span></td>
-                                <td>
-                                    <div class="customer-info">
-                                        <span class="customer-name">Amit Kumar</span>
-                                        <span class="customer-email">amit.k@email.com</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="hotel-info">
-                                        <span class="hotel-name">Oberoi Udaivilas, Udaipur</span>
-                                        <span class="hotel-dates">Feb 1 - Feb 5, 2026 (4N)</span>
-                                    </div>
-                                </td>
-                                <td>1</td>
-                                <td class="amount-cell">
-                                    <div class="amount-main">₹78,000</div>
-                                    <div class="amount-margin">+₹11,700 margin</div>
-                                </td>
-                                <td><span class="status-badge confirmed">Confirmed</span></td>
-                                <td><span class="status-badge confirmed">Paid</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="Download Voucher">
-                                            <i class="fas fa-download"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="Resend Email">
-                                            <i class="fas fa-envelope"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><span class="booking-id">#CTC-10004</span></td>
-                                <td>
-                                    <div class="customer-info">
-                                        <span class="customer-name">Neha Singh</span>
-                                        <span class="customer-email">neha.singh@email.com</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="hotel-info">
-                                        <span class="hotel-name">JW Marriott, Mumbai</span>
-                                        <span class="hotel-dates">Feb 5 - Feb 7, 2026 (2N)</span>
-                                    </div>
-                                </td>
-                                <td>1</td>
-                                <td class="amount-cell">
-                                    <div class="amount-main">₹28,500</div>
-                                    <div class="amount-margin">+₹3,420 margin</div>
-                                </td>
-                                <td><span class="status-badge cancelled">Cancelled</span></td>
-                                <td><span class="status-badge processing">Refunding</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="View Refund">
-                                            <i class="fas fa-undo"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><span class="booking-id">#CTC-10005</span></td>
-                                <td>
-                                    <div class="customer-info">
-                                        <span class="customer-name">Vikram Reddy</span>
-                                        <span class="customer-email">vikram.r@email.com</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="hotel-info">
-                                        <span class="hotel-name">ITC Grand Chola, Chennai</span>
-                                        <span class="hotel-dates">Feb 10 - Feb 12, 2026 (2N)</span>
-                                    </div>
-                                </td>
-                                <td>2</td>
-                                <td class="amount-cell">
-                                    <div class="amount-main">₹52,000</div>
-                                    <div class="amount-margin">+₹6,240 margin</div>
-                                </td>
-                                <td><span class="status-badge processing">Processing</span></td>
-                                <td><span class="status-badge confirmed">Paid</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="Check Status">
-                                            <i class="fas fa-sync"></i>
-                                        </button>
-                                    </div>
+                                <td colspan="8" style="text-align: center; padding: 2rem;">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading bookings...
                                 </td>
                             </tr>
                         </tbody>
                     </table>
 
                     <div class="pagination">
-                        <div class="pagination-info">
-                            Showing 1-5 of 1,247 bookings
+                        <div class="pagination-info" id="paginationInfo">
+                            Showing 0-0 of 0 bookings
                         </div>
-                        <div class="pagination-buttons">
-                            <button class="page-btn"><i class="fas fa-chevron-left"></i></button>
-                            <button class="page-btn active">1</button>
-                            <button class="page-btn">2</button>
-                            <button class="page-btn">3</button>
-                            <button class="page-btn">...</button>
-                            <button class="page-btn">250</button>
-                            <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
+                        <div class="pagination-buttons" id="paginationButtons">
+                            <!-- Pagination buttons will be inserted here -->
                         </div>
                     </div>
                 </div>
@@ -567,8 +401,299 @@
         </main>
     </div>
 
+    <!-- Manual Booking Modal -->
+    <div class="modal" id="manualBookingModal">
+        <div class="modal-overlay" onclick="closeModal('manualBookingModal')"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-plus-circle"></i> Create Manual Hotel Booking</h3>
+                <button class="modal-close" onclick="closeModal('manualBookingModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="manualBookingForm">
+                    <div class="info-section">
+                        <div class="info-section-title">
+                            <i class="fas fa-hotel"></i> Hotel Details
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Hotel Name</label>
+                            <input type="text" name="hotel_name" class="form-control"
+                                placeholder="Search or enter hotel name" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Check-in</label>
+                                <input type="date" name="check_in" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Check-out</label>
+                                <input type="date" name="check_out" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Rooms</label>
+                                <input type="number" name="rooms" class="form-control" value="1" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Hotel Star Rating</label>
+                                <select name="hotel_star_rating" class="form-control">
+                                    <option value="3">3 Star</option>
+                                    <option value="4">4 Star</option>
+                                    <option value="5" selected>5 Star</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <div class="info-section-title">
+                            <i class="fas fa-user"></i> Customer Details
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="customer_name" class="form-control" placeholder="e.g. Rahul Sharma"
+                                required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" name="customer_email" class="form-control"
+                                    placeholder="customer@email.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" name="customer_phone" class="form-control"
+                                    placeholder="+91 98765 43210" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <div class="info-section-title">
+                            <i class="fas fa-rupee-sign"></i> Payment & Pricing
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Base Price</label>
+                                <input type="number" name="base_price" class="form-control" placeholder="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Markup</label>
+                                <input type="number" name="markup_amount" class="form-control" value="0">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Status</label>
+                                <select name="status" class="form-control">
+                                    <option value="confirmed">Confirmed</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="processing">Processing</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Payment Status</label>
+                                <select name="payment_status" class="form-control">
+                                    <option value="paid">Paid</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="partial">Partial</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('manualBookingModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveManualBooking()">
+                    <i class="fas fa-save"></i> Create Booking
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Admin JavaScript -->
     <script src="../../admin/js/admin.js"></script>
+    <script>
+        let currentPage = 0;
+        const PAGE_SIZE = 10;
+        let totalBookings = 0;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadBookings();
+            loadStats();
+
+            // Set up search debouncing
+            const searchInput = document.getElementById('bookingSearch');
+            let searchTimeout;
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        currentPage = 0;
+                        loadBookings();
+                    }, 500);
+                });
+            }
+        });
+
+        async function loadStats() {
+            try {
+                const res = await apiRequest('/bookings/stats');
+                if (res.success) {
+                    const s = res.data;
+                    document.getElementById('statTotal').textContent = s.total || 0;
+                    document.getElementById('statConfirmed').textContent = s.confirmed || 0;
+                    document.getElementById('statPending').textContent = s.pending || 0;
+                    document.getElementById('statCancelled').textContent = s.cancelled || 0;
+                }
+            } catch (e) {
+                console.error('Stats error:', e);
+            }
+        }
+
+        async function loadBookings() {
+            const tbody = document.getElementById('bookingsBody');
+            const status = document.getElementById('statusFilter')?.value || '';
+            const search = document.getElementById('bookingSearch')?.value || '';
+            const fromDate = document.getElementById('fromDate')?.value || '';
+            const toDate = document.getElementById('toDate')?.value || '';
+
+            try {
+                const params = new URLSearchParams({
+                    limit: PAGE_SIZE,
+                    offset: currentPage * PAGE_SIZE
+                });
+
+                if (status) params.append('status', status);
+                if (search) params.append('search', search);
+                if (fromDate) params.append('from_date', fromDate);
+                if (toDate) params.append('to_date', toDate);
+
+                const res = await apiRequest(`/bookings?${params.toString()}`);
+
+                if (res.success) {
+                    const bookings = res.data;
+                    totalBookings = res.count || 0;
+
+                    if (bookings.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem;">No bookings found</td></tr>';
+                    } else {
+                        tbody.innerHTML = bookings.map(b => `
+                            <tr>
+                                <td><span class="booking-id">#${b.booking_id || (b.id ? b.id.substring(0, 8).toUpperCase() : 'N/A')}</span></td>
+                                <td>
+                                    <div class="customer-info">
+                                        <span class="customer-name">${b.customer_name || 'Guest'}</span>
+                                        <span class="customer-email">${b.customer_email || '--'}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="hotel-info">
+                                        <span class="hotel-name">${b.hotel_name || 'N/A'}</span>
+                                        <span class="hotel-dates">${formatDate(b.check_in)} - ${formatDate(b.check_out)}</span>
+                                    </div>
+                                </td>
+                                <td>${b.rooms || 1}</td>
+                                <td class="amount-cell">
+                                    <div class="amount-main">${formatCurrency(b.total_amount || 0, b.currency)}</div>
+                                    ${b.markup_amount ? `<div class="amount-margin">M: ${formatCurrency(b.markup_amount, b.currency)}</div>` : ''}
+                                </td>
+                                <td><span class="status-badge ${b.status || 'pending'}">${(b.status || 'pending').toUpperCase()}</span></td>
+                                <td><span class="status-badge ${b.payment_status || 'pending'}">${(b.payment_status || 'pending').toUpperCase()}</span></td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="btn btn-secondary btn-icon" onclick="viewBookingDetails('${b.id}')" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-secondary btn-icon" onclick="downloadVoucher('${b.id}')" title="Download Voucher">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+
+                    renderPagination();
+                }
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #ef4444;">Failed to load bookings</td></tr>';
+            }
+        }
+
+        function renderPagination() {
+            const info = document.getElementById('paginationInfo');
+            const buttons = document.getElementById('paginationButtons');
+
+            const start = totalBookings > 0 ? (currentPage * PAGE_SIZE + 1) : 0;
+            const end = Math.min(start + PAGE_SIZE - 1, totalBookings);
+
+            info.textContent = `Showing ${start}-${end} of ${totalBookings} bookings`;
+
+            const totalPages = Math.ceil(totalBookings / PAGE_SIZE);
+            let html = '';
+
+            if (totalPages > 1) {
+                html += `<button class="page-btn" ${currentPage === 0 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})"><i class="fas fa-chevron-left"></i></button>`;
+
+                const maxPages = 5;
+                let s = Math.max(0, currentPage - 2);
+                let e = Math.min(totalPages - 1, s + maxPages - 1);
+                if (e - s < maxPages - 1) s = Math.max(0, e - maxPages + 1);
+
+                if (s > 0) html += `<button class="page-btn" onclick="changePage(0)">1</button>${s > 1 ? '<span class="page-dots">...</span>' : ''}`;
+
+                for (let i = s; i <= e; i++) {
+                    html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i + 1}</button>`;
+                }
+
+                if (e < totalPages - 1) html += `${e < totalPages - 2 ? '<span class="page-dots">...</span>' : ''}<button class="page-btn" onclick="changePage(${totalPages - 1})">${totalPages}</button>`;
+
+                html += `<button class="page-btn" ${currentPage === totalPages - 1 ? 'disabled' : ''} onclick="changePage(${currentPage + 1})"><i class="fas fa-chevron-right"></i></button>`;
+            }
+
+            buttons.innerHTML = html;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            loadBookings();
+            window.scrollTo(0, 0);
+        }
+
+        async function saveManualBooking() {
+            const form = document.getElementById('manualBookingForm');
+            if (!validateForm('manualBookingForm')) return;
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            // Convert numbers
+            data.base_price = parseFloat(data.base_price);
+            data.markup_amount = parseFloat(data.markup_amount || 0);
+            data.total_amount = data.base_price + data.markup_amount;
+            data.booking_source = 'admin_manual';
+
+            try {
+                const res = await apiRequest('/bookings', 'POST', data);
+                if (res.success) {
+                    showNotification('Manual booking created successfully', 'success');
+                    closeModal('manualBookingModal');
+                    form.reset();
+                    loadStats();
+                    loadBookings();
+                }
+            } catch (error) {
+                showNotification(error.message || 'Failed to create booking', 'error');
+            }
+        }
+
+        function viewBookingDetails(id) { showNotification(`Viewing details for booking ${id}`, 'info'); }
+        function downloadVoucher(id) { showNotification(`Generating voucher for booking ${id}`, 'info'); }
+    </script>
 </body>
 
 </html>

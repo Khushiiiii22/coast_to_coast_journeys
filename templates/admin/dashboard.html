@@ -13,13 +13,14 @@
         rel="stylesheet">
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
 
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../../admin/libs/chart.min.js"></script>
 
     <!-- Admin Styles -->
     <link rel="stylesheet" href="../../admin/css/admin.css">
+    <link rel="icon" href="data:,">
 </head>
 
 <body>
@@ -401,8 +402,25 @@
         }
 
         function updateCharts(data) {
-            // Revenue Chart - For now using placeholder data as the API doesn't return time-series data yet
-            // In a real scenario, we would need an endpoint for chart data
+            // Check if Chart.js is loaded
+            if (typeof Chart === 'undefined') {
+                console.warn('Chart.js not loaded. Skipping chart rendering.');
+                const containers = ['revenueChart', 'statusChart'];
+                containers.forEach(id => {
+                    const canvas = document.getElementById(id);
+                    if (canvas && canvas.parentElement) {
+                        canvas.parentElement.innerHTML = `
+                            <div class="chart-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <p>Failed to load charts. Please check your internet connection.</p>
+                            </div>
+                        `;
+                    }
+                });
+                return;
+            }
+
+            // Revenue Chart
             const revenueCtx = document.getElementById('revenueChart').getContext('2d');
             new Chart(revenueCtx, {
                 type: 'line',

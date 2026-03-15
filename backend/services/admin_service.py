@@ -99,6 +99,45 @@ class AdminService:
         except Exception as e:
             return {'success': False, 'error': str(e)}
     
+    def get_admin_users(self, role=None, search=None):
+        """Get list of admin users"""
+        try:
+            if not self.supabase:
+                # Return demo data if Supabase is not available
+                return {
+                    'success': True,
+                    'data': [
+                        {
+                            'id': 'admin-001',
+                            'full_name': 'Super Admin',
+                            'email': 'admin@coasttocoast.com',
+                            'role': 'super_admin',
+                            'is_active': True,
+                            'created_at': datetime.datetime.now().isoformat()
+                        }
+                    ],
+                    'count': 1
+                }
+
+            query = self.supabase.table('admin_users').select('*')
+            
+            if role:
+                query = query.eq('role', role)
+            
+            if search:
+                query = query.or_(f"full_name.ilike.%{search}%,email.ilike.%{search}%")
+            
+            query = query.order('created_at', desc=True)
+            result = query.execute()
+            
+            return {
+                'success': True,
+                'data': result.data,
+                'count': len(result.data)
+            }
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+
     def get_dashboard_stats(self):
         """Get dashboard statistics"""
         try:
@@ -175,7 +214,54 @@ class AdminService:
             }
         except Exception as e:
             return {'success': False, 'error': str(e)}
-    
+    # Get finance data (invoices or refunds)
+    def get_finance_data(self, type='invoices'):
+        try:
+            results = []
+            
+            # Fetch Hotels
+            hotel_query = self.supabase.table('hotel_bookings').select('*')
+            if type == 'invoices':
+                hotel_query = hotel_query.eq('payment_status', 'paid')
+            elif type == 'refunds':
+                hotel_query = hotel_query.not_.is_('refund_status', 'null')
+            
+            hotels = hotel_query.order('created_at', desc=True).limit(50).execute()
+            for h in hotels.data:
+                h['service_type'] = 'hotel'
+                results.append(h)
+                
+            # Fetch Flights
+            flight_query = self.supabase.table('flight_bookings').select('*')
+            if type == 'invoices':
+                flight_query = flight_query.eq('payment_status', 'paid')
+            elif type == 'refunds':
+                flight_query = flight_query.not_.is_('refund_status', 'null')
+                
+            flights = flight_query.order('created_at', desc=True).limit(50).execute()
+            for f in flights.data:
+                f['service_type'] = 'flight'
+                results.append(f)
+                
+            # Sort combined results by created_at
+            results.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+            
+            return results
+            
+        except Exception as e:
+            print(f"Error getting finance data: {e}")
+            return []
+
+    # Get suppliers
+    def get_suppliers(self):
+        try:
+            result = self.supabase.table('suppliers').select('*').execute()
+            return result.data
+        except Exception as e:
+            print(f"Error getting suppliers: {e}")
+            return []
+
+    # Log admin activity
     def log_activity(self, admin_id, action, target_type=None, target_id=None, details=None, ip_address=None):
         """Log admin activity"""
         try:

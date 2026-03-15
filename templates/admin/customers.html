@@ -13,7 +13,7 @@
         rel="stylesheet">
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
 
     <!-- Admin Styles -->
     <link rel="stylesheet" href="../../admin/css/admin.css">
@@ -271,7 +271,7 @@
                     <button class="btn btn-secondary">
                         <i class="fas fa-download"></i> Export CSV
                     </button>
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" onclick="openModal('addCustomerModal')">
                         <i class="fas fa-plus"></i> Add Customer
                     </button>
                 </div>
@@ -302,189 +302,33 @@
 
                 <!-- Customers Table -->
                 <div class="admin-card">
-                    <table class="admin-table">
+                    <table class="admin-table" id="customersTable">
                         <thead>
                             <tr>
-                                <th>Customer</th>
-                                <th>Phone</th>
+                                <th>Customer Name</th>
+                                <th>Contact Info</th>
                                 <th>Location</th>
-                                <th>Total Bookings</th>
+                                <th>Bookings</th>
                                 <th>Total Spent</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="customersBody">
                             <tr>
-                                <td>
-                                    <div class="customer-info">
-                                        <div class="customer-avatar">RS</div>
-                                        <div class="customer-details">
-                                            <span class="customer-name">Rahul Sharma</span>
-                                            <span class="customer-email">rahul@email.com</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td><span class="contact-info">+91 98765 43210</span></td>
-                                <td><span class="contact-info">New Delhi, India</span></td>
-                                <td>
-                                    <div class="stats-cell">
-                                        <span class="stats-value">12</span>
-                                        <span class="stats-label">Last: Jan 21, 2026</span>
-                                    </div>
-                                </td>
-                                <td><span class="stats-value">₹4,56,800</span></td>
-                                <td><span class="status-badge confirmed">Active</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Profile">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="Edit Customer">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="customer-info">
-                                        <div class="customer-avatar">PP</div>
-                                        <div class="customer-details">
-                                            <span class="customer-name">Priya Patel</span>
-                                            <span class="customer-email">priya@email.com</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td><span class="contact-info">+91 98765 12345</span></td>
-                                <td><span class="contact-info">Mumbai, India</span></td>
-                                <td>
-                                    <div class="stats-cell">
-                                        <span class="stats-value">5</span>
-                                        <span class="stats-label">Last: Jan 20, 2026</span>
-                                    </div>
-                                </td>
-                                <td><span class="stats-value">₹1,24,500</span></td>
-                                <td><span class="status-badge confirmed">Active</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Profile">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="Edit Customer">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="customer-info">
-                                        <div class="customer-avatar">AK</div>
-                                        <div class="customer-details">
-                                            <span class="customer-name">Amit Kumar</span>
-                                            <span class="customer-email">amit.k@email.com</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td><span class="contact-info">+91 99887 76655</span></td>
-                                <td><span class="contact-info">Bangalore, India</span></td>
-                                <td>
-                                    <div class="stats-cell">
-                                        <span class="stats-value">3</span>
-                                        <span class="stats-label">Last: Jan 15, 2026</span>
-                                    </div>
-                                </td>
-                                <td><span class="stats-value">₹86,200</span></td>
-                                <td><span class="status-badge pending">Inactive</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Profile">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="Edit Customer">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="customer-info">
-                                        <div class="customer-avatar">NS</div>
-                                        <div class="customer-details">
-                                            <span class="customer-name">Neha Singh</span>
-                                            <span class="customer-email">neha.singh@email.com</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td><span class="contact-info">+91 91234 56789</span></td>
-                                <td><span class="contact-info">Chennai, India</span></td>
-                                <td>
-                                    <div class="stats-cell">
-                                        <span class="stats-value">8</span>
-                                        <span class="stats-label">Last: Jan 18, 2026</span>
-                                    </div>
-                                </td>
-                                <td><span class="stats-value">₹3,45,000</span></td>
-                                <td><span class="status-badge confirmed">Active</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Profile">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="Edit Customer">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="customer-info">
-                                        <div class="customer-avatar">VR</div>
-                                        <div class="customer-details">
-                                            <span class="customer-name">Vikram Reddy</span>
-                                            <span class="customer-email">vikram.r@email.com</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td><span class="contact-info">+91 88776 65544</span></td>
-                                <td><span class="contact-info">Hyderabad, India</span></td>
-                                <td>
-                                    <div class="stats-cell">
-                                        <span class="stats-value">1</span>
-                                        <span class="stats-label">Last: Jan 10, 2026</span>
-                                    </div>
-                                </td>
-                                <td><span class="stats-value">₹24,500</span></td>
-                                <td><span class="status-badge confirmed">Active</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" title="View Profile">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" title="Edit Customer">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </div>
+                                <td colspan="7" style="text-align: center; padding: 2rem;">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading customers...
                                 </td>
                             </tr>
                         </tbody>
                     </table>
 
                     <div class="pagination">
-                        <div class="pagination-info">
-                            Showing 1-5 of 842 customers
+                        <div class="pagination-info" id="paginationInfo">
+                            Showing 0-0 of 0 customers
                         </div>
-                        <div class="pagination-buttons">
-                            <button class="page-btn"><i class="fas fa-chevron-left"></i></button>
-                            <button class="page-btn active">1</button>
-                            <button class="page-btn">2</button>
-                            <button class="page-btn">3</button>
-                            <button class="page-btn">...</button>
-                            <button class="page-btn">168</button>
-                            <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
+                        <div class="pagination-buttons" id="paginationButtons">
+                            <!-- Pagination buttons inserted here -->
                         </div>
                     </div>
                 </div>
@@ -492,8 +336,271 @@
         </main>
     </div>
 
+    <!-- Add Customer Modal -->
+    <div class="modal" id="addCustomerModal">
+        <div class="modal-overlay" onclick="closeModal('addCustomerModal')"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-user-plus"></i> Add New Customer</h3>
+                <button class="modal-close" onclick="closeModal('addCustomerModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addCustomerForm">
+                    <div class="info-section">
+                        <div class="info-section-title">
+                            <i class="fas fa-id-card"></i> Basic Information
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="full_name" class="form-control" placeholder="Enter customer name"
+                                required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" name="email" class="form-control" placeholder="email@example.com"
+                                    required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" name="phone" class="form-control" placeholder="+91 98765 43210"
+                                    required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Date of Birth</label>
+                                <input type="date" name="date_of_birth" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Gender</label>
+                                <select name="gender" class="form-control">
+                                    <option value="">Select Gender</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <div class="info-section-title">
+                            <i class="fas fa-map-marker-alt"></i> Address & Nationality
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Nationality</label>
+                                <input type="text" name="nationality" class="form-control" value="Indian">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Passport Number</label>
+                                <input type="text" name="passport_number" class="form-control" placeholder="Optional">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Address</label>
+                            <input type="text" name="address" class="form-control" placeholder="Street address">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">City</label>
+                                <input type="text" name="city" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Country</label>
+                                <input type="text" name="country" class="form-control" value="India">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <div class="info-section-title">
+                            <i class="fas fa-tags"></i> Customer Type
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Customer Category</label>
+                            <select name="customer_type" class="form-control">
+                                <option value="regular">Regular</option>
+                                <option value="vip">VIP</option>
+                                <option value="corporate">Corporate</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('addCustomerModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveCustomer()">
+                    <i class="fas fa-save"></i> Save Customer
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Admin JavaScript -->
     <script src="../../admin/js/admin.js"></script>
+    <script>
+        let currentPage = 0;
+        const PAGE_SIZE = 10;
+        let totalCustomers = 0;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadCustomers();
+
+            // Set up search debouncing
+            const searchInput = document.querySelector('.search-box input');
+            let searchTimeout;
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        currentPage = 0;
+                        loadCustomers();
+                    }, 500);
+                });
+            }
+
+            // Set up status filter
+            const statusFilter = document.querySelector('.filter-group select');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', function () {
+                    currentPage = 0;
+                    loadCustomers();
+                });
+            }
+        });
+
+        async function loadCustomers() {
+            const tbody = document.getElementById('customersBody');
+            const search = document.querySelector('.search-box input')?.value || '';
+            const status = document.querySelector('.filter-group select')?.value || '';
+
+            try {
+                const params = new URLSearchParams({
+                    limit: PAGE_SIZE,
+                    offset: currentPage * PAGE_SIZE
+                });
+
+                if (search) params.append('search', search);
+                if (status) params.append('status', status);
+
+                const res = await apiRequest(`/customers?${params.toString()}`);
+
+                if (res.success) {
+                    const customers = res.data;
+                    totalCustomers = res.count || 0;
+
+                    if (customers.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">No customers found</td></tr>';
+                    } else {
+                        tbody.innerHTML = customers.map(c => `
+                            <tr>
+                                <td>
+                                    <div class="customer-profile">
+                                        <div class="customer-avatar">${c.full_name?.charAt(0) || 'U'}</div>
+                                        <div class="customer-details">
+                                            <span class="customer-name">${c.full_name || 'Unnamed'}</span>
+                                            <span class="customer-id">PID-${c.id.substring(0, 8).toUpperCase()}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="contact-info">
+                                        <span class="contact-email"><i class="far fa-envelope"></i> ${c.email || 'N/A'}</span>
+                                        <span class="contact-phone"><i class="fas fa-phone-alt"></i> ${c.phone || 'N/A'}</span>
+                                    </div>
+                                </td>
+                                <td>${c.city || ''}${c.city && c.country ? ', ' : ''}${c.country || ''}</td>
+                                <td><span class="count-badge">${c.total_bookings || 0} Bookings</span></td>
+                                <td><span class="amount-text">${formatCurrency(c.total_spent || 0)}</span></td>
+                                <td><span class="status-badge ${c.is_active ? 'confirmed' : 'cancelled'}">${c.is_active ? 'Active' : 'Inactive'}</span></td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="btn btn-secondary btn-icon" title="View Profile" onclick="viewCustomerProfile('${c.id}')">
+                                            <i class="fas fa-user-edit"></i>
+                                        </button>
+                                        <button class="btn btn-secondary btn-icon" title="View Bookings" onclick="viewCustomerBookings('${c.id}')">
+                                            <i class="fas fa-history"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+
+                    renderPagination();
+                }
+            } catch (error) {
+                console.error('Error loading customers:', error);
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--status-error);">Failed to load customers</td></tr>';
+            }
+        }
+
+        function renderPagination() {
+            const info = document.getElementById('paginationInfo');
+            const buttons = document.getElementById('paginationButtons');
+
+            const start = currentPage * PAGE_SIZE + 1;
+            const end = Math.min(start + PAGE_SIZE - 1, totalCustomers);
+
+            info.textContent = `Showing ${totalCustomers > 0 ? start : 0}-${end} of ${totalCustomers} customers`;
+
+            const totalPages = Math.ceil(totalCustomers / PAGE_SIZE);
+            let html = '';
+
+            if (totalPages > 1) {
+                html += `<button class="page-btn" ${currentPage === 0 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})"><i class="fas fa-chevron-left"></i></button>`;
+
+                for (let i = 0; i < totalPages; i++) {
+                    if (i === 0 || i === totalPages - 1 || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                        html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i + 1}</button>`;
+                    } else if (i === currentPage - 2 || i === currentPage + 2) {
+                        html += `<button class="page-btn" disabled>...</button>`;
+                    }
+                }
+
+                html += `<button class="page-btn" ${currentPage === totalPages - 1 ? 'disabled' : ''} onclick="changePage(${currentPage + 1})"><i class="fas fa-chevron-right"></i></button>`;
+            }
+
+            buttons.innerHTML = html;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            loadCustomers();
+            window.scrollTo(0, 0);
+        }
+
+        async function saveCustomer() {
+            const form = document.getElementById('addCustomerForm');
+            if (!validateForm('addCustomerForm')) return;
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const res = await apiRequest('/customers', 'POST', data);
+                if (res.success) {
+                    showNotification('Customer added successfully', 'success');
+                    closeModal('addCustomerModal');
+                    form.reset();
+                    loadCustomers();
+                }
+            } catch (error) {
+                console.error('Error saving customer:', error);
+                showNotification(error.message || 'Failed to add customer', 'error');
+            }
+        }
+
+        function viewCustomerProfile(id) {
+            showNotification(`Opening profile for ${id}`, 'info');
+        }
+
+        function viewCustomerBookings(id) {
+            window.location.href = `bookings.html?customer_id=${id}`;
+        }
+    </script>
 </body>
 
 </html>
