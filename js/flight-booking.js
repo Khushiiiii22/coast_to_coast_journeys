@@ -205,25 +205,33 @@ function initFlightSearch() {
 function updateDateDisplay(inputId, displayId) {
     const input = document.getElementById(inputId);
     const display = document.getElementById(displayId);
-    if (!display) return;
+    if (!input || !display) return;
 
     const dateVal = input.value;
+    const dateMain = display.querySelector('.date-main');
+    const dateSub = display.querySelector('.date-sub');
 
     if (!dateVal) {
-        display.querySelector('.date-main').textContent = 'dd/mm/yy';
-        display.querySelector('.date-sub').textContent = 'Day';
+        if (dateMain) dateMain.textContent = 'dd/mm/yy';
+        if (dateSub) dateSub.textContent = 'Day';
         return;
     }
 
-    const dateObj = new Date(dateVal);
-    const day = dateObj.getDate().toString().padStart(2, '0');
-    const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
-    const yearShort = dateObj.getFullYear().toString().slice(-2);
-    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const dayName = dayNames[dateObj.getDay()];
+    try {
+        const dateObj = new Date(dateVal);
+        if (isNaN(dateObj.getTime())) return;
 
-    display.querySelector('.date-main').textContent = `${day}/${month}/${yearShort}`;
-    display.querySelector('.date-sub').textContent = dayName;
+        const day = dateObj.getDate().toString().padStart(2, '0');
+        const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+        const yearShort = dateObj.getFullYear().toString().slice(-2);
+        const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const dayName = dayNames[dateObj.getDay()];
+
+        if (dateMain) dateMain.textContent = `${day}/${month}/${yearShort}`;
+        if (dateSub) dateSub.textContent = dayName;
+    } catch (e) {
+        console.error("Error updating date display:", e);
+    }
 }
 
 /**

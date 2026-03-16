@@ -965,12 +965,34 @@
 
                         <!-- Flights List -->
                         <div id="flightsList" class="hidden">
-                            <!-- Flight cards injected by JS -->
+                            <!-- Injected by JS: either a single list or side-by-side columns -->
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+
+        <!-- Booking Bar (Sticky at bottom) -->
+        <div id="bookingBar">
+            <div class="booking-info-combined">
+                <div class="booking-leg-preview" id="outboundPreview">
+                    <span class="preview-label">Outbound</span>
+                    <span class="preview-value">Select a flight</span>
+                </div>
+                <div class="booking-leg-preview" id="inboundPreview" style="display: none;">
+                    <span class="preview-label">Return</span>
+                    <span class="preview-value">Select a flight</span>
+                </div>
+            </div>
+            <div class="booking-total">
+                <span class="total-label">Total Price</span>
+                <span class="total-price" id="bookingTotalPrice">₹0</span>
+            </div>
+            <button class="btn btn-primary" id="finalBookBtn" disabled>
+                Book Now <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </main>
     </main>
 
     <!-- Modify Search Modal -->

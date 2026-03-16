@@ -7,7 +7,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // State
     let allOutboundFlights = [];
     let allInboundFlights = [];
-    let filteredFlights = [];
+    let filteredOutbound = [];
+    let filteredInbound = [];
+    let selectedOutbound = null;
+    let selectedInbound = null;
     let activeTimeFilter = 'all';
     let activeSortBy = 'cheapest';
 
@@ -19,6 +22,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const airlineFilters = document.getElementById('airlineFilters');
     const maxPriceLabel = document.getElementById('maxPriceLabel');
     const priceRange = document.getElementById('priceRange');
+
+    // Booking Bar Elements
+    const bookingBar = document.getElementById('bookingBar');
+    const outboundPreview = document.getElementById('outboundPreview');
+    const inboundPreview = document.getElementById('inboundPreview');
+    const bookingTotalPrice = document.getElementById('bookingTotalPrice');
+    const finalBookBtn = document.getElementById('finalBookBtn');
 
     // USD to INR conversion (approximate)
     const USD_TO_INR = 83;
@@ -470,24 +480,17 @@ document.addEventListener('DOMContentLoaded', function () {
         return parseInt(timeStr.split(':')[0]);
     }
 
-    // ========== Render Flights ==========
     function renderFlights() {
         const selectedAirlines = [...document.querySelectorAll('.airline-filter:checked')].map(cb => cb.value);
         const maxPrice = parseFloat(priceRange.value);
         const selectedStops = [...document.querySelectorAll('.stop-filter:checked')].map(cb => parseInt(cb.value));
 
-        filteredFlights = allOutboundFlights.filter(f => {
-            // Airline filter
+        // Filter Outbound
+        filteredOutbound = allOutboundFlights.filter(f => {
             const airlineMatch = selectedAirlines.length === 0 || selectedAirlines.includes(f.airline.code);
-
-            // Price filter (convert to INR for comparison)
             const priceINR = f.currency === 'USD' ? Math.round(f.price * USD_TO_INR) : f.price;
             const priceMatch = priceINR <= maxPrice;
-
-            // Stops filter
             const stopsMatch = selectedStops.includes(f.stops >= 2 ? 2 : f.stops);
-
-            // Time filter
             let timeMatch = true;
             if (activeTimeFilter !== 'all') {
                 const hour = getDepartHour(f.depart_time);
@@ -495,182 +498,237 @@ document.addEventListener('DOMContentLoaded', function () {
                 else if (activeTimeFilter === 'afternoon') timeMatch = hour >= 12 && hour < 18;
                 else if (activeTimeFilter === 'evening') timeMatch = hour >= 18 || hour < 6;
             }
-
             return airlineMatch && priceMatch && stopsMatch && timeMatch;
         });
 
-        // Sort
-        if (activeSortBy === 'cheapest') {
-            filteredFlights.sort((a, b) => a.price - b.price);
-        } else if (activeSortBy === 'fastest') {
-            filteredFlights.sort((a, b) => getDurationMins(a.duration) - getDurationMins(b.duration));
-        } else if (activeSortBy === 'earliest') {
-            filteredFlights.sort((a, b) => a.depart_time.localeCompare(b.depart_time));
+        // Filter Inbound if roundtrip
+        if (tripType === 'roundtrip') {
+            filteredInbound = allInboundFlights.filter(f => {
+                const airlineMatch = selectedAirlines.length === 0 || selectedAirlines.includes(f.airline.code);
+                const stopsMatch = selectedStops.includes(f.stops >= 2 ? 2 : f.stops);
+                let timeMatch = true;
+                if (activeTimeFilter !== 'all') {
+                    const hour = getDepartHour(f.depart_time);
+                    if (activeTimeFilter === 'morning') timeMatch = hour >= 6 && hour < 12;
+                    else if (activeTimeFilter === 'afternoon') timeMatch = hour >= 12 && hour < 18;
+                    else if (activeTimeFilter === 'evening') timeMatch = hour >= 18 || hour < 6;
+                }
+                return airlineMatch && stopsMatch && timeMatch;
+            });
         }
 
-        flightCount.textContent = filteredFlights.length;
+        // Sort both
+        const sorter = (a, b) => {
+            if (activeSortBy === 'cheapest') return a.price - b.price;
+            if (activeSortBy === 'fastest') return getDurationMins(a.duration) - getDurationMins(b.duration);
+            if (activeSortBy === 'earliest') return a.depart_time.localeCompare(b.depart_time);
+            return 0;
+        };
+        filteredOutbound.sort(sorter);
+        filteredInbound.sort(sorter);
 
-        if (filteredFlights.length === 0) {
-            flightsList.innerHTML = `
-                <div class="flight-no-results">
-                    <i class="fas fa-filter"></i>
-                    <h3>No flights match your filters</h3>
-                    <div class="no-results-suggestions">
-                        <h4>💡 Try these:</h4>
-                        <ul>
-                            <li>Remove some filters</li>
-                            <li>Increase your price range</li>
-                            <li>Select "Any Time" for departure</li>
-                            <li>Check all airline options</li>
-                        </ul>
-                    </div>
-                    <button class="btn btn-primary" id="resetAllFilters">
-                        <i class="fas fa-undo"></i> Reset All Filters
-                    </button>
-                </div>
-            `;
-            document.getElementById('resetAllFilters')?.addEventListener('click', resetAllFilters);
+        flightCount.textContent = filteredOutbound.length;
+
+        if (filteredOutbound.length === 0) {
+            flightsList.innerHTML = `<div class="flight-no-results" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                <i class="fas fa-search" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 20px; display: block;"></i>
+                <h3 style="color: #475569;">No flights match your filters</h3>
+                <p style="color: #64748b;">Try adjusting your price range or airline filters.</p>
+            </div>`;
             return;
         }
 
-        // Find cheapest for badge
-        const cheapestPrice = Math.min(...filteredFlights.map(f => f.price));
+        // Render Logic
+        if (tripType === 'oneway') {
+            renderOneway();
+        } else {
+            renderRoundtrip();
+        }
+    }
 
-        flightsList.innerHTML = filteredFlights.map((flight, index) => {
-            const isCheapest = flight.price === cheapestPrice && index === 0;
-            const priceDisplay = formatPrice(flight.price, flight.currency);
+    function generateFlightCardHtml(flight, type) {
+        const isSelected = type === 'outbound'
+            ? (selectedOutbound && selectedOutbound.id === flight.id)
+            : (selectedInbound && selectedInbound.id === flight.id);
 
-            return `
-                <div class="flight-card ${isCheapest ? 'cheapest' : ''}">
-                    <div class="flight-main-info">
-                        <div class="airline-info">
-                            <img src="${flight.airline.logo}" alt="${flight.airline.name}" class="airline-logo"
-                                onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDgwIDQwIj48cmVjdCB3aWR0aD0iODAiIGhlaWdodD0iNDAiIGZpbGw9IiNlMmU4ZjAiIHJ4PSI4Ii8+PHRleHQgeD0iNDAiIHk9IjI0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjQ3NDhiIiBmb250LXNpemU9IjEyIiBmb250LWZhbWlseT0iQXJpYWwiPiR7ZmxpZ2h0LmFpcmxpbmUuY29kZX08L3RleHQ+PC9zdmc+'">
-                            <span class="airline-name">${flight.airline.name}</span>
-                            <span class="flight-number">${flight.flight_number}</span>
+        const priceDisplay = formatPrice(flight.price, flight.currency);
+
+        return `
+            <div class="flight-card ${isSelected ? 'selected' : ''}" data-id="${flight.id}" data-type="${type}">
+                ${isSelected ? '<div class="selection-indicator"><i class="fas fa-check"></i></div>' : ''}
+                <div class="flight-main-info" style="padding: 16px;">
+                    <div class="airline-info" style="flex: 0 0 100px;">
+                        <img src="${flight.airline.logo}" alt="${flight.airline.name}" class="airline-logo" style="height:24px;">
+                        <span class="airline-name" style="font-size:0.75rem;">${flight.airline.name}</span>
+                        <span class="flight-number" style="font-size:0.65rem;">${flight.flight_number}</span>
+                    </div>
+
+                    <div class="flight-timing" style="min-width: 150px; font-size: 0.9rem;">
+                        <div class="time-block">
+                            <span class="time" style="font-size: 1.1rem;">${flight.depart_time}</span>
+                            <span class="airport-code" style="font-size: 0.75rem;">${flight.origin}</span>
                         </div>
-
-                        <div class="flight-timing">
-                            <div class="time-block">
-                                <span class="time">${flight.depart_time}</span>
-                                <span class="airport-code">${airportDisplay(flight.origin)}</span>
-                            </div>
-
-                            <div class="flight-path">
-                                <span class="duration">${flight.duration}</span>
-                                <div class="path-line">
-                                    <i class="fas fa-plane path-line plane-icon"></i>
-                                </div>
-                                <span class="stops-info ${flight.stops === 0 ? 'direct' : ''}">
-                                    ${flight.stops === 0 ? '✈ Non-stop' : flight.stops + (flight.stops === 1 ? ' stop' : ' stops')}
-                                </span>
-                            </div>
-
-                            <div class="time-block">
-                                <span class="time">${flight.arrival_time}</span>
-                                <span class="airport-code">${airportDisplay(flight.destination)}</span>
-                                ${flight.next_day ? '<small style="color: #ef4444; font-size: 0.68rem; display:block;">+1 day</small>' : ''}
-                            </div>
+                        <div class="flight-path" style="flex: 0 0 60px;">
+                            <div class="path-line"></div>
                         </div>
-
-                        <div class="flight-price-action">
-                            <span class="price-label">per traveler</span>
-                            <span class="price">${priceDisplay}</span>
-                            <button class="btn-select-flight" data-flight-id="${flight.id}" data-airline="${flight.airline.name}" data-flight-num="${flight.flight_number}" data-origin="${flight.origin}" data-dest="${flight.destination}" data-depart="${flight.depart_time}" data-arrive="${flight.arrival_time}" data-price="${priceDisplay}" data-raw-price="${flight.price}" data-currency="${flight.currency || 'INR'}" data-date="${departDate}" data-stops="${flight.stops}" data-duration="${flight.duration}" data-class="${flight.class || 'economy'}">
-                                Select <i class="fas fa-arrow-right" style="font-size: 0.7rem;"></i>
-                            </button>
+                        <div class="time-block">
+                            <span class="time" style="font-size: 1.1rem;">${flight.arrival_time}</span>
+                            <span class="airport-code" style="font-size: 0.75rem;">${flight.destination}</span>
                         </div>
                     </div>
 
-                    ${tripType === 'roundtrip' && index < allInboundFlights.length ? `
-                    <div style="border-top:1px solid #e5e7eb; margin-top:16px; padding-top:16px;" class="flight-main-info">
-                        <div class="airline-info">
-                            <span style="font-size:0.75rem; font-weight:700; color:#ef4444; background:#fee2e2; padding:3px 8px; border-radius:4px; margin-bottom:6px; display:inline-block;">RETURN</span>
-                            <br>
-                            <img src="${allInboundFlights[index].airline.logo}" alt="${allInboundFlights[index].airline.name}" class="airline-logo"
-                                onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDgwIDQwIj48cmVjdCB3aWR0aD0iODAiIGhlaWdodD0iNDAiIGZpbGw9IiNlMmU4ZjAiIHJ4PSI4Ii8+PHRleHQgeD0iNDAiIHk9IjI0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjQ3NDhiIiBmb250LXNpemU9IjEyIiBmb250LWZhbWlseT0iQXJpYWwiPiR7YWxsSW5ib3VuZEZsaWdodHNbaW5kZXhdLmFpcmxpbmUuY29kZX08L3RleHQ+PC9zdmc+'">
-                            <span class="airline-name">${allInboundFlights[index].airline.name}</span>
-                            <span class="flight-number">${allInboundFlights[index].flight_number}</span>
-                        </div>
-
-                        <div class="flight-timing">
-                            <div class="time-block">
-                                <span class="time">${allInboundFlights[index].depart_time}</span>
-                                <span class="airport-code">${airportDisplay(allInboundFlights[index].origin)}</span>
-                            </div>
-
-                            <div class="flight-path">
-                                <span class="duration">${allInboundFlights[index].duration}</span>
-                                <div class="path-line">
-                                    <i class="fas fa-plane path-line plane-icon" style="transform: rotate(180deg);"></i>
-                                </div>
-                                <span class="stops-info ${allInboundFlights[index].stops === 0 ? 'direct' : ''}">
-                                    ${allInboundFlights[index].stops === 0 ? '✈ Non-stop' : allInboundFlights[index].stops + (allInboundFlights[index].stops === 1 ? ' stop' : ' stops')}
-                                </span>
-                            </div>
-
-                            <div class="time-block">
-                                <span class="time">${allInboundFlights[index].arrival_time}</span>
-                                <span class="airport-code">${airportDisplay(allInboundFlights[index].destination)}</span>
-                                ${allInboundFlights[index].next_day ? '<small style="color: #ef4444; font-size: 0.68rem; display:block;">+1 day</small>' : ''}
-                            </div>
-                        </div>
-                        <div class="flight-price-action">
-                             <!-- Align visually with outbound flexbox -->
-                             <span style="opacity:0">per traveler</span>
-                        </div>
-                    </div>` : ''}
-
-                    <div class="flight-meta">
-                        <div class="meta-item">
-                            <i class="fas fa-suitcase-rolling"></i>
-                            <span>Cabin bag included</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class="fas fa-couch"></i>
-                            <span>${flight.class ? flight.class.charAt(0).toUpperCase() + flight.class.slice(1) : 'Economy'}</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class="fas fa-bolt"></i>
-                            <span>Instant Confirmation</span>
-                        </div>
-                        ${flight.stops === 0 ? '<div class="meta-item"><i class="fas fa-check-circle" style="color:#10b981;"></i><span style="color:#10b981;">Direct Flight</span></div>' : ''}
-                    </div>
-
-                    <div class="flight-details-toggle" data-details-id="details-${flight.id}" style="margin-top:10px;padding-top:10px;border-top:1px dashed #e5e7eb;cursor:pointer;color:#1d4ed8;font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;">
-                        <i class="fas fa-chevron-down"></i><span class="details-label">Flight Details</span>
-                    </div>
-                    <div id="details-${flight.id}" style="display:none;">
-                        ${buildFlightDetailsHtml(flight)}
+                    <div class="flight-price-action" style="text-align: right; flex: 1;">
+                        <span class="price" style="font-size: 1.1rem; display: block; color: var(--primary); font-weight: 800;">${priceDisplay}</span>
+                        <button class="btn btn-primary select-leg-btn" 
+                            style="padding: 4px 12px; font-size: 0.8rem; margin-top: 5px;"
+                            data-flight-id="${flight.id}" 
+                            data-type="${type}">
+                            ${isSelected ? 'Selected' : 'Select'}
+                        </button>
                     </div>
                 </div>
-            `;
-        }).join('');
+            </div>
+        `;
+    }
 
-        // Attach click handlers to all Select buttons
-        document.querySelectorAll('.btn-select-flight').forEach(btn => {
-            btn.addEventListener('click', function () {
-                selectFlight(this);
+    function renderOneway() {
+        flightsList.innerHTML = filteredOutbound.map(f => generateFlightCardHtml(f, 'outbound')).join('');
+        attachCardListeners();
+    }
+
+    function renderRoundtrip() {
+        flightsList.innerHTML = `
+            <div class="round-trip-results">
+                <div class="journey-column">
+                    <div class="journey-header">
+                        <i class="fas fa-plane-departure"></i>
+                        <h3>Departure Flights</h3>
+                    </div>
+                    <div id="onward-list">
+                        ${filteredOutbound.map(f => generateFlightCardHtml(f, 'outbound')).join('')}
+                    </div>
+                </div>
+                <div class="journey-column">
+                    <div class="journey-header">
+                        <i class="fas fa-plane-arrival"></i>
+                        <h3>Return Flights</h3>
+                    </div>
+                    <div id="return-list">
+                        ${filteredInbound.map(f => generateFlightCardHtml(f, 'inbound')).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+        attachCardListeners();
+    }
+
+    function attachCardListeners() {
+        document.querySelectorAll('.select-leg-btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const id = this.dataset.flightId;
+                const type = this.dataset.type;
+                handleLegSelection(id, type);
             });
         });
 
-        document.querySelectorAll('.flight-details-toggle').forEach(toggle => {
-            toggle.addEventListener('click', function () {
-                const panel = document.getElementById(this.dataset.detailsId);
-                const icon = this.querySelector('i');
-                const label = this.querySelector('.details-label');
-                if (!panel) return;
-
-                const isOpen = panel.style.display === 'block';
-                panel.style.display = isOpen ? 'none' : 'block';
-                if (label) label.textContent = isOpen ? 'Flight Details' : 'Hide Details';
-                if (icon) {
-                    icon.classList.toggle('fa-chevron-down', isOpen);
-                    icon.classList.toggle('fa-chevron-up', !isOpen);
-                }
+        document.querySelectorAll('.flight-card').forEach(card => {
+            card.addEventListener('click', function () {
+                const id = this.dataset.id;
+                const type = this.dataset.type;
+                handleLegSelection(id, type);
             });
         });
     }
+
+    function handleLegSelection(id, type) {
+        const flight = type === 'outbound'
+            ? allOutboundFlights.find(f => f.id === id)
+            : allInboundFlights.find(f => f.id === id);
+
+        if (type === 'outbound') {
+            selectedOutbound = flight;
+        } else {
+            selectedInbound = flight;
+        }
+
+        updateBookingBar();
+        renderFlights(); // Refresh to show selected state
+    }
+
+    function updateBookingBar() {
+        if (!selectedOutbound && !selectedInbound) {
+            bookingBar.classList.remove('active');
+            return;
+        }
+
+        bookingBar.classList.add('active');
+
+        // Outbound preview
+        if (selectedOutbound) {
+            outboundPreview.querySelector('.preview-value').textContent =
+                `${selectedOutbound.airline.name} • ${selectedOutbound.depart_time}`;
+        }
+
+        // Inbound preview
+        if (tripType === 'roundtrip') {
+            inboundPreview.style.display = 'flex';
+            if (selectedInbound) {
+                inboundPreview.querySelector('.preview-value').textContent =
+                    `${selectedInbound.airline.name} • ${selectedInbound.depart_time}`;
+            } else {
+                inboundPreview.querySelector('.preview-value').textContent = 'Select a flight';
+            }
+        } else {
+            inboundPreview.style.display = 'none';
+        }
+
+        // Total Price
+        let total = 0;
+        let currency = 'INR';
+        if (selectedOutbound) {
+            total += selectedOutbound.price;
+            currency = selectedOutbound.currency || 'INR';
+        }
+        if (selectedInbound) {
+            total += selectedInbound.price;
+        }
+
+        bookingTotalPrice.textContent = formatPrice(total * (adults + children), currency);
+
+        // Final Button
+        if (tripType === 'oneway') {
+            finalBookBtn.disabled = !selectedOutbound;
+        } else {
+            finalBookBtn.disabled = !(selectedOutbound && selectedInbound);
+        }
+    }
+
+    finalBookBtn.addEventListener('click', function () {
+        const outboundData = selectedOutbound ? {
+            ...selectedOutbound,
+            travelers: adults + children,
+            class: fClass,
+            date: departDate
+        } : null;
+
+        const inboundData = selectedInbound ? {
+            ...selectedInbound,
+            travelers: adults + children,
+            class: fClass,
+            date: returnDate
+        } : null;
+
+        const bookingData = {
+            type: tripType,
+            outbound: outboundData,
+            inbound: inboundData,
+            totalPrice: parseFloat(bookingTotalPrice.textContent.replace(/[^\d]/g, ''))
+        };
+
+        sessionStorage.setItem('ctc_flight_booking', JSON.stringify(bookingData));
+        window.location.href = 'flight-passenger-details.html';
+    });
 
     // ========== Error & No Results ==========
     function showError(msg) {
@@ -780,30 +838,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ========== Select Flight - Redirect to Passenger Details ==========
-    function selectFlight(btn) {
-        const flightData = {
-            flightId: btn.dataset.flightId || '',
-            airline: btn.dataset.airline || '',
-            flightNumber: btn.dataset.flightNum || '',
-            origin: btn.dataset.origin || '',
-            destination: btn.dataset.dest || '',
-            departTime: btn.dataset.depart || '',
-            arriveTime: btn.dataset.arrive || '',
-            price: parseFloat(btn.dataset.rawPrice) || 0,
-            currency: btn.dataset.currency || 'INR',
-            date: btn.dataset.date || '',
-            stops: btn.dataset.stops || '0',
-            duration: btn.dataset.duration || '',
-            flightClass: btn.dataset.class || 'economy',
-            travelers: adults || 1
-        };
 
-        // Save flight selection to sessionStorage
-        sessionStorage.setItem('ctc_flight_booking', JSON.stringify(flightData));
-
-        // Redirect to passenger details page
-        window.location.href = 'flight-passenger-details.html';
-    }
 
     // Start search
     fetchFlights();
