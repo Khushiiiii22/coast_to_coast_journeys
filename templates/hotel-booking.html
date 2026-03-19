@@ -1111,70 +1111,209 @@
 
         // Helper to format date as dd/mm/yy
         function formatDateDisplay(dateStr) {
-            if (!dateStr) return 'dd/mm/yy';
-            const date = new Date(dateStr);
+            if (!dateStr) return 'Select Date';
+            const parts = dateStr.split('-');
+            const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            if (isNaN(date.getTime())) return 'Select Date';
             const day = String(date.getDate()).padStart(2, '0');
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = String(date.getFullYear()).slice(-2);
             return `${day}/${month}/${year}`;
         }
 
+        function toDateStr(d) {
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
         // Set min date to today
-        const today = new Date().toISOString().split('T')[0];
+        const todayDate = new Date();
+        todayDate.setHours(0, 0, 0, 0);
+        const today = toDateStr(todayDate);
         const checkInInput = document.getElementById('checkIn');
         const checkOutInput = document.getElementById('checkOut');
         const checkInDisplay = document.getElementById('checkInDisplay');
         const checkOutDisplay = document.getElementById('checkOutDisplay');
 
-        checkInInput.min = today;
         checkInInput.value = today;
         checkInDisplay.textContent = formatDateDisplay(today);
 
         // Set checkout to tomorrow
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const tomorrowStr = tomorrow.toISOString().split('T')[0];
-        checkOutInput.min = tomorrowStr;
+        const tomorrowDate = new Date(todayDate);
+        tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+        const tomorrowStr = toDateStr(tomorrowDate);
         checkOutInput.value = tomorrowStr;
         checkOutDisplay.textContent = formatDateDisplay(tomorrowStr);
 
-        // Update display and min dates when checkin changes
-        checkInInput.addEventListener('change', function () {
-            checkInDisplay.textContent = formatDateDisplay(this.value);
-            const checkInDate = new Date(this.value);
-            checkInDate.setDate(checkInDate.getDate() + 1);
-            const nextDayStr = checkInDate.toISOString().split('T')[0];
-            checkOutInput.min = nextDayStr;
+        // ========== Custom Calendar for Hotels ==========
+        function setupHotelCalendar(wrapperId, calendarId, inputId, displayId, getMinDate, onSelect) {
+            const wrapper = document.querySelector(`#${wrapperId}`).closest('.date-field-hotel')
+                || document.querySelector(`#${wrapperId}`).closest('.form-field');
+            const calendarEl = document.getElementById(calendarId);
+            const input = document.getElementById(inputId);
+            const display = document.getElementById(displayId);
+            // The clickable area is the .date-picker-wrapper
+            const clickTarget = document.getElementById(wrapperId).closest('.date-picker-wrapper')
+                || document.getElementById(wrapperId);
 
-            if (new Date(checkOutInput.value) <= new Date(this.value)) {
-                checkOutInput.value = nextDayStr;
-                checkOutDisplay.textContent = formatDateDisplay(nextDayStr);
+            if (!calendarEl || !input || !display) return;
+
+            const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'];
+            const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
+            let minDate = getMinDate();
+            let viewYear = minDate.getFullYear();
+            let viewMonth = minDate.getMonth();
+
+            function renderCalendar() {
+                minDate = getMinDate();
+                const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+                const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+                const todayStr = toDateStr(new Date());
+                const selectedVal = input.value;
+
+                let html = `
+                    <div class="cal-header">
+                        <button class="cal-nav" id="${calendarId}_prev"><i class="fas fa-chevron-left"></i></button>
+                        <span class="cal-month-year">${MONTHS[viewMonth]} ${viewYear}</span>
+                        <button class="cal-nav" id="${calendarId}_next"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div class="cal-weekdays">${DAYS.map(d => `<div class="cal-weekday">${d}</div>`).join('')}</div>
+                    <div class="cal-days">`;
+
+                for (let i = 0; i < firstDay; i++) {
+                    html += `<button class="cal-day empty" disabled></button>`;
+                }
+
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                    const dateObj = new Date(viewYear, viewMonth, d);
+                    const isDisabled = dateObj < minDate;
+                    const isToday = dateStr === todayStr;
+                    const isSelected = dateStr === selectedVal;
+                    let cls = 'cal-day';
+                    if (isDisabled) cls += ' disabled';
+                    if (isToday) cls += ' today';
+                    if (isSelected) cls += ' selected';
+                    html += `<button class="${cls}" data-date="${dateStr}" ${isDisabled ? 'disabled' : ''}>${d}</button>`;
+                }
+
+                html += `</div>`;
+                calendarEl.innerHTML = html;
+
+                calendarEl.querySelector(`#${calendarId}_prev`).addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    viewMonth--;
+                    if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+                    renderCalendar();
+                });
+
+                calendarEl.querySelector(`#${calendarId}_next`).addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    viewMonth++;
+                    if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+                    renderCalendar();
+                });
+
+                calendarEl.querySelectorAll('.cal-day:not(.disabled):not(.empty)').forEach(btn => {
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const dateStr = this.dataset.date;
+                        input.value = dateStr;
+                        display.textContent = formatDateDisplay(dateStr);
+                        closeCalendar();
+                        if (onSelect) onSelect(dateStr);
+                    });
+                });
             }
-        });
 
-        checkOutInput.addEventListener('change', function () {
-            checkOutDisplay.textContent = formatDateDisplay(this.value);
-        });
-
-        // Trigger native date picker when clicking on the wrapper
-        document.querySelectorAll('.date-picker-wrapper').forEach(wrapper => {
-            wrapper.addEventListener('click', function () {
-                const input = this.querySelector('input[type="date"]');
-                if (input) {
-                    try {
-                        if (typeof input.showPicker === 'function') {
-                            input.showPicker();
-                        } else {
-                            input.focus();
-                            input.click();
-                        }
-                    } catch (e) {
-                        console.log('showPicker not supported or failed:', e);
-                        input.focus();
+            function openCalendar() {
+                // Close all other hotel calendars
+                document.querySelectorAll('.custom-calendar.open').forEach(c => {
+                    if (c !== calendarEl) {
+                        c.classList.remove('open');
                     }
+                });
+                // Close guests popup if open
+                const gp = document.getElementById('guestsPopup');
+                if (gp) gp.classList.remove('active');
+
+                minDate = getMinDate();
+                const val = input.value;
+                if (val) {
+                    const parts = val.split('-');
+                    viewYear = parseInt(parts[0]);
+                    viewMonth = parseInt(parts[1]) - 1;
+                } else {
+                    viewYear = minDate.getFullYear();
+                    viewMonth = minDate.getMonth();
+                }
+                renderCalendar();
+                calendarEl.classList.add('open');
+            }
+
+            function closeCalendar() {
+                calendarEl.classList.remove('open');
+            }
+
+            // Click on the wrapper to open/close
+            clickTarget.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (calendarEl.classList.contains('open')) {
+                    closeCalendar();
+                } else {
+                    openCalendar();
                 }
             });
-        });
+
+            // Close on outside click
+            document.addEventListener('click', function (e) {
+                if (!calendarEl.contains(e.target) && !clickTarget.contains(e.target)) {
+                    closeCalendar();
+                }
+            });
+
+            // Prevent calendar clicks from bubbling to document
+            calendarEl.addEventListener('click', function (e) {
+                e.stopPropagation();
+            });
+        }
+
+        // Setup Check-in Calendar
+        setupHotelCalendar('checkInDisplay', 'checkInCalendar', 'checkIn', 'checkInDisplay',
+            function () { return todayDate; },
+            function (selectedDate) {
+                // When check-in changes, update checkout if needed
+                const checkInDate = new Date(selectedDate);
+                const nextDay = new Date(checkInDate);
+                nextDay.setDate(nextDay.getDate() + 1);
+                const nextDayStr = toDateStr(nextDay);
+
+                if (!checkOutInput.value || checkOutInput.value <= selectedDate) {
+                    checkOutInput.value = nextDayStr;
+                    checkOutDisplay.textContent = formatDateDisplay(nextDayStr);
+                }
+            }
+        );
+
+        // Setup Check-out Calendar
+        setupHotelCalendar('checkOutDisplay', 'checkOutCalendar', 'checkOut', 'checkOutDisplay',
+            function () {
+                // Min date for checkout is day after checkin
+                const ciVal = checkInInput.value;
+                if (ciVal) {
+                    const parts = ciVal.split('-');
+                    const ciDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                    ciDate.setDate(ciDate.getDate() + 1);
+                    return ciDate;
+                }
+                return tomorrowDate;
+            },
+            null
+        );
 
         // ========== Guests Dropdown (Multi-room) ==========
         // ETG/RateHawk limits per room:

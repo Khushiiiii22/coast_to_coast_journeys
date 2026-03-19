@@ -2092,7 +2092,7 @@
     justify-content: center !important;
     /* Perfect centering */
     white-space: nowrap !important;
-    pointer-events: none !important;
+    pointer-events: auto !important;
     background: transparent !important;
     z-index: 2 !important;
 }
