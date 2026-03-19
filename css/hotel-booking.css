@@ -2028,6 +2028,11 @@
     justify-content: flex-end;
 }
 
+/* Date fields need position relative for calendar positioning */
+.hotel-search-grid .date-field-hotel {
+    position: relative !important;
+}
+
 /* Ensure destination input has enough space */
 .hotel-search-grid .form-field:first-child {
     min-width: 200px;

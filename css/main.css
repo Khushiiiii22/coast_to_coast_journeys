@@ -3948,3 +3948,188 @@ body {
         box-shadow: none !important;
     }
 }
+
+/* ===== Custom Calendar Picker ===== */
+.date-field {
+    position: relative;
+    /* Ensure calendar positions relative to this container */
+    isolation: isolate;
+}
+
+.date-display {
+    cursor: pointer;
+    user-select: none;
+}
+
+.date-display:hover {
+    border-color: var(--primary) !important;
+}
+
+.date-display.open {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 4px rgba(14, 100, 166, 0.1) !important;
+}
+
+.custom-calendar {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: auto;
+    z-index: 9999;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    padding: 16px;
+    min-width: 300px;
+    max-width: 320px;
+    border: 1px solid #e2e8f0;
+    animation: calFadeIn 0.15s ease;
+    /* Ensure it doesn't overflow */
+    margin: 0;
+}
+
+.custom-calendar.open {
+    display: block;
+}
+
+@keyframes calFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.cal-nav {
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #374151;
+    font-size: 0.9rem;
+    transition: background 0.15s;
+}
+
+.cal-nav:hover {
+    background: #f1f5f9;
+}
+
+.cal-month-year {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #1e293b;
+}
+
+.cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 6px;
+}
+
+.cal-weekday {
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #94a3b8;
+    padding: 4px 0;
+}
+
+.cal-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.cal-day {
+    text-align: center;
+    padding: 7px 4px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    color: #374151;
+    transition: background 0.12s, color 0.12s;
+    border: none;
+    background: none;
+    font-family: inherit;
+}
+
+.cal-day:hover:not(.disabled):not(.empty) {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.cal-day.today {
+    font-weight: 700;
+    color: #2563eb;
+    background: #eff6ff;
+}
+
+.cal-day.selected {
+    background: #2563eb;
+    color: #fff !important;
+    font-weight: 700;
+}
+
+.cal-day.disabled {
+    color: #d1d5db;
+    cursor: not-allowed;
+}
+
+.cal-day.empty {
+    cursor: default;
+}
+
+/* Responsive calendar positioning */
+@media (max-width: 768px) {
+    .custom-calendar {
+        left: 50%;
+        transform: translateX(-50%);
+        min-width: 280px;
+    }
+    
+    .custom-calendar.open {
+        transform: translateX(-50%);
+    }
+}
+
+/* Ensure calendar appears under its own date field */
+.date-field .custom-calendar,
+.date-field-hotel .custom-calendar {
+    /* Force positioning relative to parent date-field */
+    position: absolute !important;
+}
+
+/* Hotel booking specific date field */
+.date-field-hotel {
+    position: relative !important;
+    /* Ensure calendar positions relative to this field, not grid container */
+    z-index: 1;
+    /* Create a new positioning context */
+    isolation: isolate;
+}
+
+.date-field-hotel .custom-calendar {
+    /* Position relative to .date-field-hotel parent */
+    position: absolute !important;
+    top: calc(100% + 8px) !important;
+    left: 0 !important;
+    right: auto !important;
+    /* Ensure it doesn't get affected by grid */
+    margin: 0 !important;
+}
+
+/* When calendar is open, increase z-index */
+.date-field-hotel .custom-calendar.open {
+    z-index: 10000 !important;
+}

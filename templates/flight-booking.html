@@ -175,21 +175,23 @@
                         </div>
                     </div>
                     <div class="search-row">
-                        <div class="form-field-improved date-field">
+                        <div class="form-field-improved date-field" id="departDateWrapper">
                             <label><i class="fas fa-calendar-alt"></i> Departure</label>
-                            <input type="date" id="departDate" required>
-                            <span class="date-display" id="departDateDisplay">
+                            <input type="hidden" id="departDate" required>
+                            <div class="date-display" id="departDateDisplay" tabindex="0" role="button" aria-label="Select departure date">
                                 <span class="date-main">Select Date</span>
                                 <span class="date-sub">Departure Day</span>
-                            </span>
+                            </div>
+                            <div class="custom-calendar" id="departCalendar"></div>
                         </div>
                         <div class="form-field-improved date-field" id="returnDateField">
                             <label><i class="fas fa-calendar-alt"></i> Return</label>
-                            <input type="date" id="returnDate">
-                            <span class="date-display" id="returnDateDisplay">
+                            <input type="hidden" id="returnDate">
+                            <div class="date-display" id="returnDateDisplay" tabindex="0" role="button" aria-label="Select return date">
                                 <span class="date-main">Select Date</span>
                                 <span class="date-sub">Return Day</span>
-                            </span>
+                            </div>
+                            <div class="custom-calendar" id="returnCalendar"></div>
                         </div>
                         <div class="form-field-improved travelers-field">
                             <label><i class="fas fa-users"></i> Travelers & Class</label>

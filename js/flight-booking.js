@@ -3,6 +3,16 @@
  * Handles autocomplete, travelers dropdown, and search redirection
  */
 
+// Global function to close all open calendars
+window.closeAllCalendars = function() {
+    document.querySelectorAll('.custom-calendar.open').forEach(cal => {
+        cal.classList.remove('open');
+    });
+    document.querySelectorAll('.date-display.open').forEach(disp => {
+        disp.classList.remove('open');
+    });
+};
+
 document.addEventListener('DOMContentLoaded', function () {
     initFlightSearch();
 });
@@ -90,21 +100,20 @@ function initFlightSearch() {
         applyTripType(initialTripType.value);
     }
 
-    // 4. Date Logic
-    const today = new Date().toISOString().split('T')[0];
-    departDateInput.min = today;
-    returnDateInput.min = today;
+    // 4. Custom Calendar Date Pickers
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    departDateInput.addEventListener('change', function () {
-        returnDateInput.min = this.value;
-        if (returnDateInput.value && returnDateInput.value < this.value) {
+    setupCalendar('departDateDisplay', 'departCalendar', 'departDate', today, null, function(selectedDate) {
+        // When depart date changes, update return calendar min date
+        const retVal = returnDateInput.value;
+        if (retVal && retVal < selectedDate) {
             returnDateInput.value = '';
             updateDateDisplay('returnDate', 'returnDateDisplay');
         }
-        updateDateDisplay('departDate', 'departDateDisplay');
     });
 
-    returnDateInput.addEventListener('change', () => updateDateDisplay('returnDate', 'returnDateDisplay'));
+    setupCalendar('returnDateDisplay', 'returnCalendar', 'returnDate', today, null, null);
 
     // 5. Travelers Popup
     if (travelersDropdown) {
@@ -212,13 +221,14 @@ function updateDateDisplay(inputId, displayId) {
     const dateSub = display.querySelector('.date-sub');
 
     if (!dateVal) {
-        if (dateMain) dateMain.textContent = 'dd/mm/yy';
-        if (dateSub) dateSub.textContent = 'Day';
+        if (dateMain) dateMain.textContent = 'Select Date';
+        if (dateSub) dateSub.textContent = inputId === 'departDate' ? 'Departure Day' : 'Return Day';
         return;
     }
 
     try {
-        const dateObj = new Date(dateVal);
+        const parts = dateVal.split('-');
+        const dateObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
         if (isNaN(dateObj.getTime())) return;
 
         const day = dateObj.getDate().toString().padStart(2, '0');
@@ -232,6 +242,165 @@ function updateDateDisplay(inputId, displayId) {
     } catch (e) {
         console.error("Error updating date display:", e);
     }
+}
+
+/**
+ * Custom Calendar Picker
+ */
+function setupCalendar(displayId, calendarId, inputId, minDate, maxDate, onSelect) {
+    const display = document.getElementById(displayId);
+    const calendar = document.getElementById(calendarId);
+    const input = document.getElementById(inputId);
+    if (!display || !calendar || !input) return;
+
+    const MONTHS = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+    const DAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+    let viewYear = minDate.getFullYear();
+    let viewMonth = minDate.getMonth();
+
+    function renderCalendar() {
+        const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+        const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+        const todayStr = toDateStr(new Date());
+        const selectedVal = input.value;
+
+        let html = `
+            <div class="cal-header">
+                <button class="cal-nav" id="${calendarId}_prev"><i class="fas fa-chevron-left"></i></button>
+                <span class="cal-month-year">${MONTHS[viewMonth]} ${viewYear}</span>
+                <button class="cal-nav" id="${calendarId}_next"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="cal-weekdays">${DAYS.map(d => `<div class="cal-weekday">${d}</div>`).join('')}</div>
+            <div class="cal-days">`;
+
+        for (let i = 0; i < firstDay; i++) {
+            html += `<button class="cal-day empty" disabled></button>`;
+        }
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const dateObj = new Date(viewYear, viewMonth, d);
+            const isDisabled = dateObj < minDate || (maxDate && dateObj > maxDate);
+            const isToday = dateStr === todayStr;
+            const isSelected = dateStr === selectedVal;
+            let cls = 'cal-day';
+            if (isDisabled) cls += ' disabled';
+            if (isToday) cls += ' today';
+            if (isSelected) cls += ' selected';
+            html += `<button class="${cls}" data-date="${dateStr}" ${isDisabled ? 'disabled' : ''}>${d}</button>`;
+        }
+
+        html += `</div>`;
+        calendar.innerHTML = html;
+
+        calendar.querySelector(`#${calendarId}_prev`).addEventListener('click', function(e) {
+            e.stopPropagation();
+            viewMonth--;
+            if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+            renderCalendar();
+        });
+
+        calendar.querySelector(`#${calendarId}_next`).addEventListener('click', function(e) {
+            e.stopPropagation();
+            viewMonth++;
+            if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+            renderCalendar();
+        });
+
+        calendar.querySelectorAll('.cal-day:not(.disabled):not(.empty)').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const dateStr = this.dataset.date;
+                input.value = dateStr;
+                updateDateDisplay(inputId, displayId);
+                closeCalendar();
+                if (onSelect) onSelect(dateStr);
+            });
+        });
+    }
+
+    function openCalendar() {
+        // Close all other calendars
+        document.querySelectorAll('.custom-calendar.open').forEach(c => {
+            if (c !== calendar) {
+                c.classList.remove('open');
+                const disp = c.closest('.date-field') && c.closest('.date-field').querySelector('.date-display');
+                if (disp) disp.classList.remove('open');
+            }
+        });
+        
+        // Close travelers popup if open
+        const travelersPopup = document.getElementById('travelersPopup');
+        if (travelersPopup) {
+            travelersPopup.classList.remove('active');
+        }
+        
+        const val = input.value;
+        if (val) {
+            const parts = val.split('-');
+            viewYear = parseInt(parts[0]);
+            viewMonth = parseInt(parts[1]) - 1;
+        } else {
+            viewYear = minDate.getFullYear();
+            viewMonth = minDate.getMonth();
+        }
+        renderCalendar();
+        calendar.classList.add('open');
+        display.classList.add('open');
+    }
+
+    function closeCalendar() {
+        calendar.classList.remove('open');
+        display.classList.remove('open');
+        // Force remove any lingering open states
+        setTimeout(() => {
+            if (calendar.classList.contains('open')) {
+                calendar.classList.remove('open');
+            }
+            if (display.classList.contains('open')) {
+                display.classList.remove('open');
+            }
+        }, 10);
+    }
+
+    display.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (calendar.classList.contains('open')) {
+            closeCalendar();
+        } else {
+            openCalendar();
+        }
+    });
+
+    display.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openCalendar();
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!calendar.contains(e.target) && !display.contains(e.target)) {
+            closeCalendar();
+        }
+    });
+    
+    // Also close when clicking on date field wrapper
+    const dateFieldWrapper = display.closest('.date-field');
+    if (dateFieldWrapper) {
+        dateFieldWrapper.addEventListener('click', function(e) {
+            // Only handle clicks on the wrapper itself, not its children
+            if (e.target === dateFieldWrapper) {
+                closeCalendar();
+            }
+        });
+    }
+}
+
+function toDateStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 /**

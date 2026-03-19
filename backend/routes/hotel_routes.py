@@ -1468,9 +1468,24 @@ def get_hotel_policies(hotel_id):
 
         # Extract policy information
         # NOTE: policy_struct is deprecated - we only use metapolicy_struct and metapolicy_extra_info
+        
+        # Helper function to filter out placeholder/invalid data
+        def is_valid_policy_data(data):
+            """Check if policy data is valid (not a placeholder string)"""
+            if not data:
+                return False
+            # Filter out placeholder strings like "{{{}metapolicy_struct{}}}}"
+            if isinstance(data, str):
+                if '{{{' in data or 'metapolicy' in data.lower():
+                    return False
+            return True
+        
+        metapolicy_struct_raw = hotel_data.get('metapolicy_struct')
+        metapolicy_extra_info_raw = hotel_data.get('metapolicy_extra_info')
+        
         policies = {
-            'metapolicy_struct': hotel_data.get('metapolicy_struct') or {},
-            'metapolicy_extra_info': hotel_data.get('metapolicy_extra_info') or {},
+            'metapolicy_struct': metapolicy_struct_raw if is_valid_policy_data(metapolicy_struct_raw) else {},
+            'metapolicy_extra_info': metapolicy_extra_info_raw if is_valid_policy_data(metapolicy_extra_info_raw) else {},
             # Additional useful info
             'check_in_time': hotel_data.get('check_in_time'),
             'check_out_time': hotel_data.get('check_out_time'),
