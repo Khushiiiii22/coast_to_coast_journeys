@@ -25,7 +25,7 @@ const DOM = {
 
     // Trip Type
     tripOptions: document.querySelectorAll('.trip-option input'),
-    returnDateGroup: document.getElementById('returnDateGroup'),
+    returnDateWrapper: document.getElementById('returnDateWrapper'),
     returnDate: document.getElementById('returnDate'),
 
     // Swap Button
@@ -220,13 +220,19 @@ function handleTripType(e) {
     });
     e.target.closest('.trip-option').classList.add('active');
 
-    // Show/hide return date
+    // Show/hide return date using visibility to preserve standard 3-column layout width
     if (value === 'oneway') {
-        DOM.returnDateGroup.classList.add('disabled');
-        DOM.returnDate.disabled = true;
+        if (DOM.returnDateWrapper) {
+            DOM.returnDateWrapper.style.visibility = 'hidden';
+            DOM.returnDateWrapper.style.opacity = '0';
+        }
+        if (DOM.returnDate) DOM.returnDate.disabled = true;
     } else {
-        DOM.returnDateGroup.classList.remove('disabled');
-        DOM.returnDate.disabled = false;
+        if (DOM.returnDateWrapper) {
+            DOM.returnDateWrapper.style.visibility = 'visible';
+            DOM.returnDateWrapper.style.opacity = '1';
+        }
+        if (DOM.returnDate) DOM.returnDate.disabled = false;
     }
 }
 
@@ -736,29 +742,29 @@ function smoothScroll(e) {
 }
 
 // ========================================
-// Date Picker Defaults
+// Date Picker Init (Flatpickr)
 // ========================================
-function setDateDefaults() {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const nextWeek = new Date(today);
-    nextWeek.setDate(nextWeek.getDate() + 7);
+function initDatePickers() {
+    const commonConfig = {
+        dateFormat: "Y-m-d",
+        altInput: true,
+        altFormat: "d M Y", // e.g., 25 Mar 2026
+        minDate: "today",
+        disableMobile: "true" // Use Flatpickr UI on mobile rather than native
+    };
 
-    const formatDate = (date) => date.toISOString().split('T')[0];
-
-    // Set min dates
-    document.getElementById('departDate').min = formatDate(today);
-    document.getElementById('departDate').value = formatDate(tomorrow);
-
-    document.getElementById('returnDate').min = formatDate(tomorrow);
-    document.getElementById('returnDate').value = formatDate(nextWeek);
-
-    document.getElementById('checkInDate').min = formatDate(today);
-    document.getElementById('checkInDate').value = formatDate(tomorrow);
-
-    document.getElementById('checkOutDate').min = formatDate(tomorrow);
-    document.getElementById('checkOutDate').value = formatDate(nextWeek);
+    if (document.getElementById('departDate')) {
+        flatpickr("#departDate", commonConfig);
+    }
+    if (document.getElementById('returnDate')) {
+        flatpickr("#returnDate", commonConfig);
+    }
+    if (document.getElementById('checkInDate')) {
+        flatpickr("#checkInDate", commonConfig);
+    }
+    if (document.getElementById('checkOutDate')) {
+        flatpickr("#checkOutDate", commonConfig);
+    }
 }
 
 // ========================================
@@ -1232,7 +1238,8 @@ function initSmoothLoad() {
 function init() {
     hidePreloader();
     initSlider();
-    setDateDefaults();
+    // Init custom date pickers
+    initDatePickers();
     initEventListeners();
     initScrollReveal();
     initEnhancedHovers();

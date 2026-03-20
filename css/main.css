@@ -2380,6 +2380,8 @@ h6 {
     font-size: 0.95rem;
     color: var(--text-primary);
     transition: var(--transition);
+    height: 52px;
+    box-sizing: border-box;
 }
 
 .form-field-improved input[type="text"]:focus {
@@ -2427,95 +2429,39 @@ h6 {
     }
 }
 
-/* Date Field Styles */
-.date-field {
-    position: relative;
-}
-
-.date-field input[type="date"] {
+/* Custom Flatpickr Input */
+.flatpickr-input-custom {
     width: 100%;
-    height: 100%;
     padding: 14px 16px;
-    border: none;
-    background: transparent;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    transition: var(--transition);
+    height: 52px;
+    box-sizing: border-box;
     cursor: pointer;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 10;
-    opacity: 0 !important;
+    background-color: var(--white);
 }
 
-.date-field input[type="date"]:focus {
+.flatpickr-input-custom:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 4px rgba(14, 100, 166, 0.1);
 }
 
-.date-field input[type="date"]::-webkit-datetime-edit {
-    color: transparent !important;
-    display: none !important;
-}
-
-.date-field input[type="date"]::-webkit-calendar-picker-indicator {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 2;
-}
-
-.date-display {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 14px 16px;
-    font-size: 0.95rem;
-    color: var(--text-primary);
-    pointer-events: none;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    z-index: 1;
-    background: transparent;
-}
-
-.date-field {
-    position: relative;
-    height: 54px;
-    /* Default height for form-field-improved input */
-}
-
-.date-display {
-    padding: 14px 16px;
-    font-size: 0.95rem;
-    color: var(--text-primary);
-    pointer-events: none;
-    background: var(--white);
-    border: 2px solid var(--gray-200);
-    border-radius: var(--radius);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    transition: var(--transition);
-}
-
-.date-field input[type="date"]:focus+.date-display {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(14, 100, 166, 0.1);
-}
-
-.date-field input[type="date"]:not(:valid)+.date-display {
+.flatpickr-input-custom::placeholder {
     color: var(--text-muted);
 }
+
+/* Flight Dates Row Layout - strict 3 columns */
+.flights-row-2 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    align-items: flex-end;
+}
+
 
 /* Autocomplete Styles */
 .autocomplete-menu,
@@ -2695,6 +2641,8 @@ h6 {
     justify-content: space-between;
     cursor: pointer;
     transition: var(--transition);
+    height: 52px;
+    box-sizing: border-box;
 }
 
 .travelers-dropdown:hover {

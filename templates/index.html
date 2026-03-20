@@ -20,7 +20,10 @@
         rel="stylesheet">
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="css/variables.css">
 
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="../css/main.css">
@@ -600,16 +603,24 @@
                                 <input type="text" id="toCity" placeholder="City or Airport" required>
                             </div>
                         </div>
-                        <div class="search-row">
-                            <div class="form-field-improved date-field">
+                        <div class="search-row flights-row-2">
+                            <div class="form-field-improved">
                                 <label><i class="fas fa-calendar-alt"></i> Departure</label>
-                                <input type="date" id="departDate" required>
-                                <span class="date-display" id="departDateDisplay">Select Date</span>
+                                <div style="position: relative;">
+                                    <input type="text" id="departDate" placeholder="Add Date"
+                                        class="flatpickr-input-custom" required>
+                                    <i class="fas fa-calendar-day"
+                                        style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--primary); pointer-events: none;"></i>
+                                </div>
                             </div>
-                            <div class="form-field-improved date-field" id="returnDateWrapper">
+                            <div class="form-field-improved" id="returnDateWrapper">
                                 <label><i class="fas fa-calendar-alt"></i> Return</label>
-                                <input type="date" id="returnDate">
-                                <span class="date-display" id="returnDateDisplay">Select Date</span>
+                                <div style="position: relative;">
+                                    <input type="text" id="returnDate" placeholder="Add Date"
+                                        class="flatpickr-input-custom">
+                                    <i class="fas fa-calendar-day"
+                                        style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--primary); pointer-events: none;"></i>
+                                </div>
                             </div>
                             <div class="form-field-improved travelers-field">
                                 <label><i class="fas fa-users"></i> Travelers & Class</label>
@@ -711,15 +722,23 @@
                             </div>
                         </div>
                         <div class="search-row">
-                            <div class="form-field-improved date-field">
+                            <div class="form-field-improved">
                                 <label><i class="fas fa-calendar-check"></i> Check-in</label>
-                                <input type="date" id="checkInDate" required>
-                                <span class="date-display" id="checkInDisplay">Select Date</span>
+                                <div style="position: relative;">
+                                    <input type="text" id="checkInDate" placeholder="Add Date"
+                                        class="flatpickr-input-custom" required>
+                                    <i class="fas fa-calendar-day"
+                                        style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--primary); pointer-events: none;"></i>
+                                </div>
                             </div>
-                            <div class="form-field-improved date-field">
+                            <div class="form-field-improved">
                                 <label><i class="fas fa-calendar-times"></i> Check-out</label>
-                                <input type="date" id="checkOutDate" required>
-                                <span class="date-display" id="checkOutDisplay">Select Date</span>
+                                <div style="position: relative;">
+                                    <input type="text" id="checkOutDate" placeholder="Add Date"
+                                        class="flatpickr-input-custom" required>
+                                    <i class="fas fa-calendar-day"
+                                        style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--primary); pointer-events: none;"></i>
+                                </div>
                             </div>
                             <div class="form-field-improved travelers-field">
                                 <label><i class="fas fa-door-open"></i> Rooms & Guests</label>
@@ -2131,6 +2150,9 @@
             });
         });
     </script>
+
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         // Initialize auth state for header UI on page load
         document.addEventListener('DOMContentLoaded', function () {
