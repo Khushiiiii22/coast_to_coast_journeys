@@ -408,37 +408,36 @@ def search_by_destination():
     }
     """
     # Destinations with ETG region IDs
-    # NOTE: RateHawk Sandbox only supports limited destinations (Paris, Dubai, etc.)
-    # For production, request RateHawk to activate your production API credentials
+    # ALL destinations use ETG/RateHawk API — no sandbox/production distinction
+    # For certification, Mikhail's team will test with supported destinations
     POPULAR_DESTINATIONS = {
-        # SANDBOX SUPPORTED DESTINATIONS (Real hotel data available)
-        'paris': {'latitude': 48.8566, 'longitude': 2.3522, 'region_id': 2734, 'name': 'Paris', 'sandbox': True},
-        'dubai': {'latitude': 25.2048, 'longitude': 55.2708, 'region_id': 6053839, 'name': 'Dubai', 'sandbox': True},
-        'moscow': {'latitude': 55.7558, 'longitude': 37.6173, 'region_id': 2395, 'name': 'Moscow', 'sandbox': True},
+        # WELL-KNOWN DESTINATIONS
+        'paris': {'latitude': 48.8566, 'longitude': 2.3522, 'region_id': 2734, 'name': 'Paris'},
+        'dubai': {'latitude': 25.2048, 'longitude': 55.2708, 'region_id': 6053839, 'name': 'Dubai'},
+        'moscow': {'latitude': 55.7558, 'longitude': 37.6173, 'region_id': 2395, 'name': 'Moscow'},
         
-        # INDIAN DESTINATIONS (Will need production API for real data)
-        # These region IDs are for production API - sandbox will return empty
-        'goa': {'latitude': 15.2993, 'longitude': 74.1240, 'region_id': 6308855, 'name': 'Goa', 'sandbox': False},
-        'delhi': {'latitude': 28.6139, 'longitude': 77.2090, 'region_id': 6308838, 'name': 'New Delhi', 'sandbox': False},
-        'mumbai': {'latitude': 19.0760, 'longitude': 72.8777, 'region_id': 6308862, 'name': 'Mumbai', 'sandbox': False},
-        'bangalore': {'latitude': 12.9716, 'longitude': 77.5946, 'region_id': 6308822, 'name': 'Bangalore', 'sandbox': False},
-        'bengaluru': {'latitude': 12.9716, 'longitude': 77.5946, 'region_id': 6308822, 'name': 'Bangalore', 'sandbox': False},
-        'chennai': {'latitude': 13.0827, 'longitude': 80.2707, 'region_id': 6308834, 'name': 'Chennai', 'sandbox': False},
-        'kolkata': {'latitude': 22.5726, 'longitude': 88.3639, 'region_id': 6308856, 'name': 'Kolkata', 'sandbox': False},
-        'jaipur': {'latitude': 26.9124, 'longitude': 75.7873, 'region_id': 6308849, 'name': 'Jaipur', 'sandbox': False},
-        'udaipur': {'latitude': 24.5854, 'longitude': 73.7125, 'region_id': 6308883, 'name': 'Udaipur', 'sandbox': False},
-        'agra': {'latitude': 27.1767, 'longitude': 78.0081, 'region_id': 6308815, 'name': 'Agra', 'sandbox': False},
-        'hyderabad': {'latitude': 17.3850, 'longitude': 78.4867, 'region_id': 6308846, 'name': 'Hyderabad', 'sandbox': False},
-        'pune': {'latitude': 18.5204, 'longitude': 73.8567, 'region_id': 6308870, 'name': 'Pune', 'sandbox': False},
-        'kerala': {'latitude': 10.8505, 'longitude': 76.2711, 'region_id': 6308854, 'name': 'Kerala', 'sandbox': False},
-        'kochi': {'latitude': 9.9312, 'longitude': 76.2673, 'region_id': 6308855, 'name': 'Kochi', 'sandbox': False},
-        'manali': {'latitude': 32.2396, 'longitude': 77.1887, 'region_id': 6308859, 'name': 'Manali', 'sandbox': False},
-        'shimla': {'latitude': 31.1048, 'longitude': 77.1734, 'region_id': 6308876, 'name': 'Shimla', 'sandbox': False},
-        'rishikesh': {'latitude': 30.0869, 'longitude': 78.2676, 'region_id': 6308872, 'name': 'Rishikesh', 'sandbox': False},
-        'varanasi': {'latitude': 25.3176, 'longitude': 82.9739, 'region_id': 6308885, 'name': 'Varanasi', 'sandbox': False},
-        'amritsar': {'latitude': 31.6340, 'longitude': 74.8723, 'region_id': 6308818, 'name': 'Amritsar', 'sandbox': False},
-        'darjeeling': {'latitude': 27.0410, 'longitude': 88.2663, 'region_id': 6308837, 'name': 'Darjeeling', 'sandbox': False},
-        'ooty': {'latitude': 11.4102, 'longitude': 76.6950, 'region_id': 6308866, 'name': 'Ooty', 'sandbox': False},
+        # INDIAN DESTINATIONS
+        'goa': {'latitude': 15.2993, 'longitude': 74.1240, 'region_id': 6308855, 'name': 'Goa'},
+        'delhi': {'latitude': 28.6139, 'longitude': 77.2090, 'region_id': 6308838, 'name': 'New Delhi'},
+        'mumbai': {'latitude': 19.0760, 'longitude': 72.8777, 'region_id': 6308862, 'name': 'Mumbai'},
+        'bangalore': {'latitude': 12.9716, 'longitude': 77.5946, 'region_id': 6308822, 'name': 'Bangalore'},
+        'bengaluru': {'latitude': 12.9716, 'longitude': 77.5946, 'region_id': 6308822, 'name': 'Bangalore'},
+        'chennai': {'latitude': 13.0827, 'longitude': 80.2707, 'region_id': 6308834, 'name': 'Chennai'},
+        'kolkata': {'latitude': 22.5726, 'longitude': 88.3639, 'region_id': 6308856, 'name': 'Kolkata'},
+        'jaipur': {'latitude': 26.9124, 'longitude': 75.7873, 'region_id': 6308849, 'name': 'Jaipur'},
+        'udaipur': {'latitude': 24.5854, 'longitude': 73.7125, 'region_id': 6308883, 'name': 'Udaipur'},
+        'agra': {'latitude': 27.1767, 'longitude': 78.0081, 'region_id': 6308815, 'name': 'Agra'},
+        'hyderabad': {'latitude': 17.3850, 'longitude': 78.4867, 'region_id': 6308846, 'name': 'Hyderabad'},
+        'pune': {'latitude': 18.5204, 'longitude': 73.8567, 'region_id': 6308870, 'name': 'Pune'},
+        'kerala': {'latitude': 10.8505, 'longitude': 76.2711, 'region_id': 6308854, 'name': 'Kerala'},
+        'kochi': {'latitude': 9.9312, 'longitude': 76.2673, 'region_id': 6308855, 'name': 'Kochi'},
+        'manali': {'latitude': 32.2396, 'longitude': 77.1887, 'region_id': 6308859, 'name': 'Manali'},
+        'shimla': {'latitude': 31.1048, 'longitude': 77.1734, 'region_id': 6308876, 'name': 'Shimla'},
+        'rishikesh': {'latitude': 30.0869, 'longitude': 78.2676, 'region_id': 6308872, 'name': 'Rishikesh'},
+        'varanasi': {'latitude': 25.3176, 'longitude': 82.9739, 'region_id': 6308885, 'name': 'Varanasi'},
+        'amritsar': {'latitude': 31.6340, 'longitude': 74.8723, 'region_id': 6308818, 'name': 'Amritsar'},
+        'darjeeling': {'latitude': 27.0410, 'longitude': 88.2663, 'region_id': 6308837, 'name': 'Darjeeling'},
+        'ooty': {'latitude': 11.4102, 'longitude': 76.6950, 'region_id': 6308866, 'name': 'Ooty'},
     }
     
     try:
@@ -452,18 +451,16 @@ def search_by_destination():
         destination = data['destination'].lower().strip()
         region_id = data.get('region_id')
         location_name = data['destination']
-        is_sandbox_supported = bool(region_id) # If region_id is provided, assume we want to try RateHawk
 
         
         print(f"🔍 Hotel Search Request: {data['destination']}")
         
-        # Step 1: Check if destination matches a known sandbox-supported location
+        # Step 1: Check if destination matches a known location with region_id
         for key, loc_data in POPULAR_DESTINATIONS.items():
             if key in destination or destination in key:
                 region_id = loc_data.get('region_id')
                 location_name = loc_data['name']
-                is_sandbox_supported = loc_data.get('sandbox', False)
-                print(f"📍 Matched destination: {location_name}, Sandbox: {is_sandbox_supported}")
+                print(f"📍 Matched destination: {location_name}, Region ID: {region_id}")
                 break
         
         # Step 2: ALWAYS call ETG/RateHawk API for every search when we have a region_id.
@@ -567,7 +564,7 @@ def search_by_destination():
                         'source': 'ratehawk'
                     })
                 else:
-                    print(f"⚠️ RateHawk returned 0 hotels for {location_name}, trying Google")
+                    print(f"⚠️ RateHawk returned 0 hotels for {location_name}")
         
         # Step 4: If not in predefined list, try ETG suggest API to find the region
         if not region_id:
@@ -579,7 +576,6 @@ def search_by_destination():
                 if regions:
                     region_id = regions[0].get('id')
                     location_name = regions[0].get('name', data['destination'])
-                    is_sandbox_supported = True
                     print(f"✅ Found region via suggest API: {location_name} (ID: {region_id})")
                     
                     # Try searching with the found region
@@ -594,8 +590,8 @@ def search_by_destination():
                         checkin=data['checkin'],
                         checkout=data['checkout'],
                         guests=guests,
-                        currency='USD',
-                        residency='gb'
+                        currency=target_currency,
+                        residency=data.get('residency', 'gb')
                     )
                     
                     if result.get('success') and result.get('data'):
@@ -605,12 +601,8 @@ def search_by_destination():
                         if etg_hotels and len(etg_hotels) > 0:
                             print(f"✅ Found {len(etg_hotels)} hotels via RateHawk suggest")
                             
-                            # Fetch static data for images
-                            # NOTE: Do NOT call /hotel/info/ per result (ETG RPM limits).
-                            # Use cached static data from dumps instead.
                             suggest_static_map = {}
                             
-                            # Calculate nights for correct inclusive price display
                             from datetime import datetime
                             try:
                                 d1 = datetime.strptime(data['checkin'], '%Y-%m-%d')
@@ -619,7 +611,6 @@ def search_by_destination():
                             except:
                                 nights = 1
 
-                            # Enrich hotels with static data before transformation
                             for h in etg_hotels:
                                 hid = h.get('id')
                                 if hid in suggest_static_map:
@@ -640,27 +631,15 @@ def search_by_destination():
                                 'source': 'ratehawk'
                             })
         
-        # Step 5: Final fallback to Google Places API
-        print(f"🌐 Falling back to Google Places for: {data['destination']}")
-        google_hotels = search_hotels_via_google(data['destination'], data['checkin'], data['checkout'])
-        
-        if google_hotels:
-            print(f"✅ Found {len(google_hotels)} hotels via Google Places")
-            return jsonify({
-                'success': True,
-                'data': {'hotels': google_hotels},
-                'location': {'name': location_name},
-                'hotels_count': len(google_hotels),
-                'real_data': True,
-                'source': 'google_places'
-            })
-        
-        # All methods failed
-        print(f"❌ No hotels found for {data['destination']}")
+        # Step 5: NO Google Places fallback
+        # Google Places hotels have ChIJ... IDs with no ETG book_hash,
+        # so the full booking chain (hotelpage → prebook → create → finish → check)
+        # can never fire. This was blocking ETG certification.
+        # Instead, return an informative error so the user knows to search a supported destination.
+        print(f"❌ No ETG hotels found for {data['destination']} — NOT falling back to Google")
         return jsonify({
             'success': False,
-            'error': f"Could not find hotels for '{data['destination']}'. Please try Paris, Dubai, or Moscow for best results.",
-            'sandbox_mode': True,
+            'error': f"No bookable hotels found for '{data['destination']}'. Please try Paris, Dubai, or Moscow.",
             'supported_destinations': ['Paris', 'Moscow', 'Dubai']
         }), 400
     

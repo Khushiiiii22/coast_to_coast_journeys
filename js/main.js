@@ -1246,7 +1246,7 @@ function init() {
     initBackToTop();
     initCookieConsent();
     initBookingTimer();
-    initRecentSearches();
+    initFlightAutocomplete();
     initLazyLoading();
     initAutoYear();
 
@@ -1417,87 +1417,6 @@ function initBookingTimer() {
     const timerInterval = setInterval(updateTimer, 1000);
 }
 
-// ========================================
-// Recent Hotel Searches
-// ========================================
-function initRecentSearches() {
-    const STORAGE_KEY = 'ctc_recent_searches';
-    const MAX_SEARCHES = 5;
-
-    // Only on hotel-booking page
-    const hotelForm = document.getElementById('hotelSearchForm');
-    if (!hotelForm) return;
-
-    // Save search on form submit
-    hotelForm.addEventListener('submit', function () {
-        const dest = document.getElementById('hotelDestination');
-        const checkin = document.getElementById('checkInDate');
-        const checkout = document.getElementById('checkOutDate');
-
-        if (dest && dest.value) {
-            const searches = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            const newSearch = {
-                destination: dest.value,
-                checkin: checkin ? checkin.value : '',
-                checkout: checkout ? checkout.value : '',
-                timestamp: Date.now()
-            };
-
-            // Remove duplicates
-            const filtered = searches.filter(s => s.destination !== newSearch.destination);
-            filtered.unshift(newSearch);
-
-            // Keep max
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered.slice(0, MAX_SEARCHES)));
-        }
-    });
-
-    // Display recent searches
-    const searches = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    if (searches.length === 0) return;
-
-    const container = document.createElement('div');
-    container.className = 'recent-searches';
-    container.innerHTML = `
-        <div class="recent-searches-label">
-            <i class="fas fa-history"></i> Recent Searches
-        </div>
-        <div class="recent-searches-chips">
-            ${searches.map(s => `
-                <div class="recent-search-chip" data-dest="${s.destination}" data-in="${s.checkin}" data-out="${s.checkout}">
-                    <i class="fas fa-map-marker-alt"></i>
-                    ${s.destination}
-                </div>
-            `).join('')}
-        </div>
-    `;
-
-    // Insert after the search form
-    const searchContainer = hotelForm.closest('.booking-search-container') || hotelForm.parentElement;
-    if (searchContainer) {
-        searchContainer.appendChild(container);
-    }
-
-    // Click handler for chips
-    container.querySelectorAll('.recent-search-chip').forEach(chip => {
-        chip.addEventListener('click', function () {
-            const dest = document.getElementById('hotelDestination');
-            const checkin = document.getElementById('checkInDate');
-            const checkout = document.getElementById('checkOutDate');
-
-            if (dest) dest.value = this.dataset.dest;
-            if (checkin && this.dataset.in) checkin.value = this.dataset.in;
-            if (checkout && this.dataset.out) checkout.value = this.dataset.out;
-
-            // Scroll to search button
-            const searchBtn = hotelForm.querySelector('.btn-search') || hotelForm.querySelector('button[type="submit"]');
-            if (searchBtn) {
-                searchBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                searchBtn.style.animation = 'timerPulse 0.5s ease 2';
-            }
-        });
-    });
-}
 
 // ========================================
 // Lazy Loading for Images

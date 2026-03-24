@@ -1874,6 +1874,12 @@ function switchCancellationTab(btn, tab) {
  * Select a rate and proceed to booking
  */
 function selectRate(rate, index) {
+    // Guard: Google Places hotels cannot be booked via ETG
+    if (currentHotel && currentHotel.id && (currentHotel.id.startsWith('google_') || currentHotel.id.startsWith('ChIJ'))) {
+        showNotification('This hotel is not available for online booking. Please search for hotels in Paris, Dubai, or Moscow for bookable rates.', 'warning');
+        return;
+    }
+
     selectedRate = rate;
 
     // Update UI
