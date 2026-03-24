@@ -161,6 +161,7 @@ function initSlider() {
 }
 
 function goToSlide(index) {
+    if (!DOM.heroSlides || !DOM.heroSlides.length || !DOM.sliderDots) return;
     DOM.heroSlides[currentSlide].classList.remove('active');
     DOM.sliderDots.children[currentSlide].classList.remove('active');
 
@@ -791,10 +792,10 @@ function toggleWishlist(e) {
 // Close Dropdowns on Outside Click
 // ========================================
 function closeDropdowns(e) {
-    if (!e.target.closest('.travelers-group')) {
+    if (DOM.travelersDropdown && !e.target.closest('.travelers-group')) {
         DOM.travelersDropdown.classList.remove('show');
     }
-    if (!e.target.closest('.rooms-group')) {
+    if (DOM.roomsDropdown && !e.target.closest('.rooms-group')) {
         DOM.roomsDropdown.classList.remove('show');
     }
 }
@@ -1246,7 +1247,6 @@ function init() {
     initBackToTop();
     initCookieConsent();
     initBookingTimer();
-    initFlightAutocomplete();
     initLazyLoading();
     initAutoYear();
 

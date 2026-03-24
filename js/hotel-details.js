@@ -18,42 +18,48 @@ let hotelImages = [];
  * Initialize hotel details page
  */
 async function initHotelDetails() {
-    // Get hotel from session
-    currentHotel = SearchSession.getSelectedHotel();
+    // Get hotel from session (used for context: name, images, search params)
+    const sessionHotel = SearchSession.getSelectedHotel();
     searchParams = SearchSession.getSearchParams();
 
-    if (!currentHotel) {
-        // Try to get from URL parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        const hotelId = urlParams.get('id');
+    // Get hotel ID from URL or session
+    const urlParams = new URLSearchParams(window.location.search);
+    const hotelId = urlParams.get('id') || (sessionHotel && sessionHotel.id);
 
-        if (!hotelId) {
-            showNotification('No hotel selected', 'error');
-            setTimeout(() => window.location.href = 'hotel-results.html', 2000);
-            return;
-        }
-
-        // If we have demo hotel data in search results
-        const searchResults = SearchSession.getSearchResults();
-        if (searchResults?.data?.hotels) {
-            currentHotel = searchResults.data.hotels.find(h => h.id === hotelId);
-        }
+    if (!hotelId) {
+        showNotification('No hotel selected', 'error');
+        setTimeout(() => window.location.href = 'hotel-results.html', 2000);
+        return;
     }
 
     if (!searchParams) {
         showNotification('Search parameters not found', 'warning');
     }
 
-    // Display hotel data
-    if (currentHotel) {
+    // ALWAYS fetch fresh hotel data from ETG API (/search/hp/)
+    // This is required for ETG certification — Mikhail needs to see the hotelpage call
+    // Session data is only used as fallback if API call fails
+    const isETGHotel = hotelId && !hotelId.startsWith('google_') && !hotelId.startsWith('ChIJ') && !hotelId.startsWith('demo_');
+
+    if (isETGHotel) {
+        // Always call the ETG API for real hotels
+        await fetchHotelDetails();
+
+        // If fetchHotelDetails didn't set currentHotel, use session data as fallback
+        if (!currentHotel && sessionHotel) {
+            currentHotel = sessionHotel;
+            displayHotelDetails(currentHotel);
+        }
+    } else if (sessionHotel) {
+        // For Google/demo hotels, use session data
+        currentHotel = sessionHotel;
         displayHotelDetails(currentHotel);
 
-        // For Google Places hotels, fetch additional photos for gallery
         if (currentHotel.id && currentHotel.id.startsWith('google_')) {
             fetchGooglePlacePhotos(currentHotel.id);
         }
     } else {
-        // Fetch from API
+        // No session data, try API
         await fetchHotelDetails();
     }
 
