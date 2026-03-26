@@ -548,7 +548,10 @@ def search_by_destination():
                             'images': ['https://cdn.worldota.net/t/crop/640x400/content/ac/36/ac360877a5ea71a39626ccf772e399c0e5a8fc25.jpeg'],
                             'rates': [{
                                 'book_hash': 'm-cert-10004834-hash',
-                                'payment_options': {'payment_types': [{'amount': '150.00'}]},
+                                'payment_options': {
+                                    'currency_code': 'INR',
+                                    'payment_types': [{'amount': '10000.00'}]
+                                },
                                 'meal_data': {'value': 'breakfast'},
                                 'room_name': 'Deluxe Room'
                             }]
@@ -562,7 +565,10 @@ def search_by_destination():
                             'images': ['https://cdn.worldota.net/t/crop/640x400/content/5f/88/5f889240369865612ac82f9d6a365457ef672522.jpeg'],
                             'rates': [{
                                 'book_hash': 'm-cert-6362880-hash',
-                                'payment_options': {'payment_types': [{'amount': '120.00'}]},
+                                'payment_options': {
+                                    'currency_code': 'INR',
+                                    'payment_types': [{'amount': '10000.00'}]
+                                },
                                 'meal_data': {'value': 'nomeal'},
                                 'room_name': 'Standard King'
                             }]
@@ -576,7 +582,10 @@ def search_by_destination():
                             'images': ['https://cdn.worldota.net/t/crop/640x400/content/13/2d/132d432328492039402324912041234123412342.jpeg'],
                             'rates': [{
                                 'book_hash': 'm-cert-10595223-hash',
-                                'payment_options': {'payment_types': [{'amount': '110.00'}]},
+                                'payment_options': {
+                                    'currency_code': 'INR',
+                                    'payment_types': [{'amount': '10000.00'}]
+                                },
                                 'meal_data': {'value': 'breakfast'},
                                 'room_name': 'Design Room'
                             }]
@@ -1432,7 +1441,10 @@ def get_hotel_details():
                             'rates': [
                                 {
                                     'book_hash': f"m-cert-{data['hotel_id']}-hash",
-                                    'payment_options': {'payment_types': [{'amount': '150.00', 'currency_code': 'USD'}]},
+                                    'payment_options': {
+                                        'currency_code': 'INR',
+                                        'payment_types': [{'amount': '10000.00'}]
+                                    },
                                     'meal_data': {'value': 'breakfast'},
                                     'room_name': 'Luxury King Room'
                                 }
@@ -2733,8 +2745,12 @@ def prebook_rate():
                     'data': {
                         'price_changed': False,
                         'book_hash': book_hash,
-                        'currency': 'USD',
-                        'amount': '150.00'
+                        'payment_options': {
+                            'currency_code': 'INR',
+                            'payment_types': [{'amount': '11500.00'}]
+                        },
+                        'currency_code': 'INR',
+                        'amount': '11500.00'
                     }
                 }
             })
