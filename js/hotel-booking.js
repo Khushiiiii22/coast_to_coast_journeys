@@ -184,24 +184,8 @@ async function handleBookingSubmit(e) {
     showLoadingOverlay('Processing your booking...');
 
     try {
-        // Check API health
-        let apiAvailable = false;
-        try {
-            await HotelAPI.healthCheck();
-            apiAvailable = true;
-        } catch (e) {
-            console.log('API not available, using demo flow');
-        }
-
-        let bookingResult;
-
-        if (apiAvailable && !rate.book_hash?.startsWith('demo_')) {
-            // Real API booking
-            bookingResult = await processRealBooking(guests, email, phone, specialRequests);
-        } else {
-            // Demo booking
-            bookingResult = await processDemoBooking(guests, email, phone, specialRequests);
-        }
+        // Step 1: Process real booking
+        const bookingResult = await processRealBooking(guests, email, phone, specialRequests);
 
         if (bookingResult.success) {
             // Save confirmation data
@@ -266,6 +250,9 @@ async function processRealBooking(guests, email, phone, specialRequests) {
         const bookingParams = {
             book_hash: rate.book_hash,
             guests: guests,
+            email: email,
+            phone: phone,
+            special_requests: specialRequests,
             hotel_id: hotel.id,
             hotel_name: hotel.name,
             checkin: searchParams.checkin,
@@ -306,30 +293,6 @@ async function processRealBooking(guests, email, phone, specialRequests) {
         console.error('Real booking error:', error);
         return { success: false, error: error.message };
     }
-}
-
-/**
- * Process demo booking
- */
-async function processDemoBooking(guests, email, phone, specialRequests) {
-    // Simulate API delay
-    await sleep(1500);
-    updateLoadingMessage('Checking availability...');
-    await sleep(1000);
-    updateLoadingMessage('Creating reservation...');
-    await sleep(1000);
-    updateLoadingMessage('Confirming with hotel...');
-    await sleep(1000);
-
-    const confirmationNumber = 'CTC-' + Date.now().toString().slice(-8).toUpperCase();
-
-    return {
-        success: true,
-        partner_order_id: confirmationNumber,
-        confirmation_number: confirmationNumber,
-        status: 'confirmed',
-        demo: true
-    };
 }
 
 /**

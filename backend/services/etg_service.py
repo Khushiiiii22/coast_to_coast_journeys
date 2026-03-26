@@ -473,42 +473,72 @@ class ETGApiService:
         self,
         book_hash: str,
         partner_order_id: str,
-        guests: List[Dict],
+        guests: List[Dict] = None,
         user_ip: str = "127.0.0.1",
         payment_type: str = "now",
-        user_comment: str = None
+        user_comment: str = None,
+        language: str = "en"
     ) -> dict:
         """
         Create booking - form order
         POST /hotel/order/booking/form/
+        
+        Per ETG v3 docs, required fields:
+          - partner_order_id: unique order ID (UUID format, 3-256 chars)
+          - book_hash: rate ID from prebook step
+        Optional:
+          - language: default "en"
+          - user_ip: end user IP (used for CC processing with payment_type=now)
         """
         data = {
-            "hash": book_hash,
+            "book_hash": book_hash,
             "partner_order_id": partner_order_id,
-            "payment_type": {"type": payment_type},
-            "user_ip": user_ip,
-            "rooms": [{"guests": guests}],
+            "language": language,
+            "user_ip": user_ip
+        }
+            
+        return self._make_request("/hotel/order/booking/form/", data)
+    
+    def finish_booking(
+        self,
+        partner_order_id: str,
+        email: str,
+        phone: str,
+        guests: List[Dict],
+        amount: float,
+        currency: str = "USD",
+        payment_type: str = "deposit",
+        user_comment: str = None,
+        language: str = "en"
+    ) -> dict:
+        """
+        Finish/Start booking process
+        POST /hotel/order/booking/finish/
+        
+        Per ETG v3 docs, this starts the actual booking process.
+        As the booking process is made asynchronously, repeatedly 
+        request the Check booking process call to know the status.
+        """
+        data = {
+            "partner": {
+                "partner_order_id": partner_order_id
+            },
             "user": {
-                "email": Config.CORPORATE_EMAIL,
-                "phone": "0000000000",  # Placeholder required by some APIs
-                "first_name": "C2C",
-                "last_name": "Bookings"
+                "email": email,
+                "phone": phone
+            },
+            "language": language,
+            "rooms": [{"guests": guests}],
+            "payment_type": {
+                "type": payment_type,
+                "amount": str(amount),
+                "currency_code": currency
             }
         }
         
         if user_comment:
-            data["user_comment"] = user_comment
+            data["user"]["comment"] = user_comment
             
-        return self._make_request("/hotel/order/booking/form/", data)
-    
-    def finish_booking(self, partner_order_id: str) -> dict:
-        """
-        Finish/Start booking process
-        POST /hotel/order/booking/finish/
-        RateHawk recommended timeout: 180 seconds (min 60s, max 600s)
-        Countdown starts after successful response to "Start booking process"
-        """
-        data = {"partner_order_id": partner_order_id}
         return self._make_request("/hotel/order/booking/finish/", data, timeout=180)
     
     def check_booking_status(self, partner_order_id: str) -> dict:

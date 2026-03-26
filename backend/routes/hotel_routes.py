@@ -483,18 +483,26 @@ def search_by_destination():
         # Mikhail's team from seeing our API calls and blocked certification progress.
         # Now ETG is always called first; Google Places is only used as a fallback if ETG returns 0.
         
+        # Prepare common search parameters (needed by BOTH Step 3 and Step 4)
+        rooms_data = data.get('rooms')  # multi-room array if available
+        target_currency = data.get('currency', 'INR')
+        
+        # Define conversion rates for search results
+        CONVERSION_RATES = {
+            'USD_TO_INR': 86.5,
+            'EUR_TO_INR': 92.0,
+            'GBP_TO_INR': 108.0
+        }
+        
         # Step 3: Try ETG/RateHawk for ALL destinations with a known region_id or hotel_ids
         if region_id or hotel_ids_to_search:
             print(f"🏨 Searching RateHawk for destination: {location_name}")
             
-            rooms_data = data.get('rooms')  # multi-room array if available
             guests = etg_service.format_guests_for_search(
                 adults=data['adults'],
                 children_ages=data.get('children_ages', []),
                 rooms=rooms_data
             )
-            
-            target_currency = data.get('currency', 'INR')
             
             if hotel_ids_to_search:
                 # Search by specific hotel IDs (for certification testing)
@@ -546,12 +554,6 @@ def search_by_destination():
                         if hid and hid in static_hotel_map:
                             h['static_data'] = static_hotel_map[hid]
 
-                    # Define conversion rates for search results
-                    CONVERSION_RATES = {
-                        'USD_TO_INR': 86.5,
-                        'EUR_TO_INR': 92.0,
-                        'GBP_TO_INR': 108.0
-                    }
 
                     transformed_hotels = transform_etg_hotels(
                         hotels_data=etg_hotels, 
@@ -637,43 +639,37 @@ def search_by_destination():
                     )
                 else:
                     result = {}
+                
+                # Process results from Step 4 suggest-based search
+                if result.get('success') and result.get('data'):
+                    search_data = result['data'].get('data', result['data'])
+                    etg_hotels = search_data.get('hotels', [])
                     
-                    if result.get('success') and result.get('data'):
-                        search_data = result['data'].get('data', result['data'])
-                        etg_hotels = search_data.get('hotels', [])
+                    if etg_hotels and len(etg_hotels) > 0:
+                        print(f"✅ Found {len(etg_hotels)} hotels via RateHawk suggest")
                         
-                        if etg_hotels and len(etg_hotels) > 0:
-                            print(f"✅ Found {len(etg_hotels)} hotels via RateHawk suggest")
-                            
-                            suggest_static_map = {}
-                            
-                            from datetime import datetime
-                            try:
-                                d1 = datetime.strptime(data['checkin'], '%Y-%m-%d')
-                                d2 = datetime.strptime(data['checkout'], '%Y-%m-%d')
-                                nights = (d2 - d1).days
-                            except:
-                                nights = 1
+                        from datetime import datetime
+                        try:
+                            d1 = datetime.strptime(data['checkin'], '%Y-%m-%d')
+                            d2 = datetime.strptime(data['checkout'], '%Y-%m-%d')
+                            nights = (d2 - d1).days
+                        except:
+                            nights = 1
 
-                            for h in etg_hotels:
-                                hid = h.get('id')
-                                if hid in suggest_static_map:
-                                    h['static_data'] = suggest_static_map[hid]
-
-                            transformed_hotels = transform_etg_hotels(
-                                hotels_data=etg_hotels, 
-                                target_currency=target_currency,
-                                conversion_rates=CONVERSION_RATES,
-                                nights=nights
-                            )
-                            return jsonify({
-                                'success': True,
-                                'data': {'hotels': transformed_hotels},
-                                'location': {'name': location_name, 'region_id': region_id},
-                                'hotels_count': len(transformed_hotels),
-                                'real_data': True,
-                                'source': 'ratehawk'
-                            })
+                        transformed_hotels = transform_etg_hotels(
+                            hotels_data=etg_hotels, 
+                            target_currency=target_currency,
+                            conversion_rates=CONVERSION_RATES,
+                            nights=nights
+                        )
+                        return jsonify({
+                            'success': True,
+                            'data': {'hotels': transformed_hotels},
+                            'location': {'name': location_name, 'region_id': region_id},
+                            'hotels_count': len(transformed_hotels),
+                            'real_data': True,
+                            'source': 'ratehawk'
+                        })
         
         # Step 5: NO Google Places fallback
         # Google Places hotels have ChIJ... IDs with no ETG book_hash,
@@ -2748,37 +2744,6 @@ def create_booking():
         
         book_hash = data['book_hash']
         
-        # Check for demo/test/google bookings - skip ETG API for these
-        if book_hash.startswith('demo_') or book_hash.startswith('test_') or book_hash.startswith('google_'):
-            # Generate local booking ID for demo/test bookings
-            partner_order_id = etg_service.generate_partner_order_id()
-            
-            # Save demo booking to Supabase
-            booking_data = {
-                'partner_order_id': partner_order_id,
-                'user_id': data.get('user_id'),
-                'hotel_id': data.get('hotel_id', ''),
-                'hotel_name': data.get('hotel_name', ''),
-                'check_in': data.get('checkin'),
-                'check_out': data.get('checkout'),
-                'rooms': len(data['guests']),
-                'guests': data['guests'],
-                'total_amount': data.get('total_amount', 0),
-                'currency': data.get('currency', 'INR'),
-                'status': 'confirmed',  # Demo bookings are auto-confirmed
-                'booking_response': {'demo': True, 'message': 'Demo/Test booking created successfully'}
-            }
-            
-            db_result = supabase_service.create_booking(booking_data)
-            
-            return jsonify({
-                'success': True,
-                'partner_order_id': partner_order_id,
-                'booking_id': db_result.get('data', {}).get('id'),
-                'demo': True,
-                'message': 'Demo booking created successfully'
-            })
-        
         # Frontend already called prebook (Step 6 in booking flow).
         # Do NOT call prebook again here — it wastes quota and slows the flow.
         # Trust the book_hash is valid (prebook was already done by the frontend).
@@ -2824,6 +2789,9 @@ def create_booking():
             'check_out': data.get('checkout'),
             'rooms': len(data['guests']),
             'guests': data['guests'],
+            'customer_email': data.get('email'),
+            'customer_phone': data.get('phone'),
+            'special_requests': data.get('special_requests'),
             'total_amount': data.get('total_amount', 0),
             'currency': data.get('currency', 'INR'),
             'status': 'created',
@@ -2870,8 +2838,23 @@ def finish_booking():
         
         partner_order_id = data['partner_order_id']
         
-        # Call finish booking
-        result = etg_service.finish_booking(partner_order_id)
+        # Fetch booking details from DB to provide to ETG
+        db_booking = supabase_service.get_booking_by_partner_order_id(partner_order_id)
+        if not db_booking.get('success') or not db_booking.get('data'):
+            return jsonify({'success': False, 'error': 'Booking record not found'}), 404
+        
+        booking_info = db_booking['data']
+        
+        # Call finish booking with all required details for ETG v3
+        result = etg_service.finish_booking(
+            partner_order_id=partner_order_id,
+            email=booking_info.get('customer_email') or booking_info.get('email', 'info@coasttocoastjourneys.com'),
+            phone=booking_info.get('customer_phone') or booking_info.get('phone', '0000000000'),
+            guests=booking_info.get('guests', []),
+            amount=booking_info.get('total_amount', 0),
+            currency=booking_info.get('currency', 'INR'),
+            user_comment=booking_info.get('special_requests')
+        )
         
         if result.get('success'):
             # Update booking status in database

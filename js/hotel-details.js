@@ -50,8 +50,8 @@ async function initHotelDetails() {
             currentHotel = sessionHotel;
             displayHotelDetails(currentHotel);
         }
-    } else if (sessionHotel) {
-        // For Google/demo hotels, use session data
+    } else if (sessionHotel && (sessionHotel.id?.startsWith('google_') || sessionHotel.id?.startsWith('ChIJ'))) {
+        // For Google hotels, use session data
         currentHotel = sessionHotel;
         displayHotelDetails(currentHotel);
 
@@ -138,112 +138,6 @@ async function fetchHotelDetails() {
         console.error('Error fetching hotel:', error);
         showDemoHotel(hotelId);
     }
-}
-
-/**
- * Show demo hotel data
- */
-function showDemoHotel(hotelId) {
-    currentHotel = generateDemoHotelDetails(hotelId);
-    displayHotelDetails(currentHotel);
-    showNotification('Showing demo data. Connect backend for real results.', 'info');
-}
-
-/**
- * Generate demo hotel details
- */
-function generateDemoHotelDetails(hotelId) {
-    const names = ['The Grand Palace', 'Ocean View Resort', 'Mountain Retreat', 'City Center Hotel'];
-    const name = names[Math.floor(Math.random() * names.length)];
-    const destination = searchParams?.destination || 'Paris';
-
-    return {
-        id: hotelId,
-        name: name,
-        property_type: 'Hotel',
-        star_rating: Math.floor(Math.random() * 2) + 4,
-        guest_rating: (Math.random() * 1 + 4).toFixed(1),
-        review_count: Math.floor(Math.random() * 500) + 100,
-        address: `123 Hotel Street, ${destination}`,
-        description: `Experience luxury and comfort at ${name}. Our hotel offers world-class amenities, exceptional service, and a prime location. Whether you're traveling for business or leisure, we ensure an unforgettable stay with our modern facilities and warm hospitality.`,
-        images: [
-            'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800',
-            'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800',
-            'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800',
-            'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800',
-            'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800',
-            'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800'
-        ],
-        latitude: 48.8566 + (Math.random() - 0.5) * 0.1,
-        longitude: 2.3522 + (Math.random() - 0.5) * 0.1,
-        amenities: ['wifi', 'pool', 'parking', 'spa', 'restaurant', 'gym', 'bar', 'room_service'],
-        rates: [
-            {
-                book_hash: `demo_hash_1_${Date.now()}`,
-                room_name: 'Deluxe Room',
-                room_description: 'Spacious room with city view, king bed, and modern amenities.',
-                meal_plan: 'breakfast',
-                meal_info: { display_name: 'Breakfast included', no_child_meal: false },
-                price: Math.floor(Math.random() * 5000) + 8000,
-                original_price: Math.floor(Math.random() * 3000) + 12000,
-                currency: 'INR',
-                cancellation: 'free',
-                cancellation_info: {
-                    is_free_cancellation: true,
-                    free_cancellation_formatted: { datetime: 'Feb 10, 2026 at 11:59 PM' },
-                    policies: [
-                        { type: 'free', end_formatted: 'Feb 10, 2026' },
-                        { type: 'full_penalty', start_formatted: 'Feb 11, 2026', penalty_amount: 8000 }
-                    ]
-                },
-                features: ['King Bed', 'City View', '45 sqm', 'Free WiFi'],
-                room_static: {
-                    matched: true,
-                    images: ['https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600']
-                }
-            },
-            {
-                book_hash: `demo_hash_2_${Date.now()}`,
-                room_name: 'Premium Suite',
-                room_description: 'Luxurious suite with separate living area and premium amenities.',
-                meal_plan: 'halfboard',
-                meal_info: { display_name: 'Breakfast + Dinner included', no_child_meal: false },
-                price: Math.floor(Math.random() * 8000) + 15000,
-                original_price: Math.floor(Math.random() * 5000) + 20000,
-                currency: 'INR',
-                cancellation: 'free',
-                cancellation_info: {
-                    is_free_cancellation: true,
-                    free_cancellation_formatted: { datetime: 'Feb 9, 2026 at 11:59 PM' },
-                    policies: [
-                        { type: 'free', end_formatted: 'Feb 9, 2026' },
-                        { type: 'partial_penalty', start_formatted: 'Feb 10, 2026', penalty_amount: 7500 },
-                        { type: 'full_penalty', start_formatted: 'Feb 11, 2026', penalty_amount: 15000 }
-                    ]
-                },
-                features: ['King Bed', 'Sea View', '65 sqm', 'Lounge Access', 'Butler Service'],
-                room_static: {
-                    matched: true,
-                    images: ['https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600']
-                }
-            },
-            {
-                book_hash: `demo_hash_3_${Date.now()}`,
-                room_name: 'Standard Room',
-                room_description: 'Comfortable room with all essential amenities for a pleasant stay.',
-                meal_plan: 'nomeal',
-                meal_info: { display_name: 'Room only (no meals)', no_child_meal: true },
-                price: Math.floor(Math.random() * 3000) + 5000,
-                currency: 'INR',
-                cancellation: 'non-refundable',
-                features: ['Queen Bed', 'Garden View', '30 sqm', 'Free WiFi'],
-                room_static: {
-                    matched: true,
-                    images: ['https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=600']
-                }
-            }
-        ]
-    };
 }
 
 /**
@@ -694,9 +588,9 @@ async function fetchHotelPolicies(hotelId) {
     const loadingEl = document.getElementById('policiesLoading');
     const errorEl = document.getElementById('policiesError');
 
-    if (!hotelId || hotelId.startsWith('google_') || hotelId.startsWith('demo_') || hotelId.startsWith('test_')) {
+    if (!hotelId || hotelId.startsWith('google_') || hotelId.startsWith('ChIJ')) {
         loadingEl?.classList.add('hidden');
-        // Show default policies for demo
+        // Show default policies
         displayDefaultPolicies();
         return;
     }
