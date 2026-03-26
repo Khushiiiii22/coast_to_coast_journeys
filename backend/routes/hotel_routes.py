@@ -469,6 +469,8 @@ def search_by_destination():
         destination = data['destination'].lower().strip()
         region_id = data.get('region_id')
         location_name = data['destination']
+        target_currency = data.get('currency', 'INR')
+        rooms_data = data.get('rooms')  # multi-room array if available
 
         
         print(f"🔍 Hotel Search Request: {data['destination']}")
@@ -500,7 +502,6 @@ def search_by_destination():
             # RateHawk Sandbox often rejects INR. We force USD for the API call and convert locally.
             user_currency = data.get('currency', 'INR')
             api_currency = 'USD' if user_currency == 'INR' else user_currency
-            rooms_data = data.get('rooms')  # multi-room array if available
             
             guests = etg_service.format_guests_for_search(
                 adults=data['adults'],
@@ -535,66 +536,6 @@ def search_by_destination():
                 
                 if etg_hotels and len(etg_hotels) > 0:
                     print(f"✅ Found {len(etg_hotels)} hotels via RateHawk for {location_name}")
-                elif hotel_ids_to_search:
-                    # SAFETY MOCK FALLBACK for ETG Certification
-                    # If Sandbox returns 0 hotels for the required IDs, we inject them
-                    # so the tester can still proceed with the booking flow.
-                    print(f"🧪 ETG Sandbox returned 0 for {hotel_ids_to_search} — Injecting Certification Mocks")
-                    
-                    mock_hotels = [
-                        {
-                            'hotel_id': '10004834',
-                            'name': 'Conrad Los Angeles',
-                            'hid': '10004834',
-                            'stars': 5,
-                            'address': '100 S Grand Ave, Los Angeles, CA 90012',
-                            'images': ['https://cdn.worldota.net/t/crop/640x400/content/ac/36/ac360877a5ea71a39626ccf772e399c0e5a8fc25.jpeg'],
-                            'rates': [{
-                                'book_hash': 'm-cert-10004834-hash',
-                                'payment_options': {
-                                    'currency_code': 'INR',
-                                    'payment_types': [{'amount': '10000.00'}]
-                                },
-                                'meal_data': {'value': 'breakfast'},
-                                'room_name': 'Luxury King Room'
-                            }]
-                        },
-                        {
-                            'hotel_id': '6362880',
-                            'name': 'The Westin Bonaventure',
-                            'hid': '6362880',
-                            'stars': 4,
-                            'address': '404 S Figueroa St, Los Angeles, CA 90071',
-                            'images': ['https://cdn.worldota.net/t/crop/640x400/content/13/2d/132d432328492039402324912041234123412342.jpeg'],
-                            'rates': [{
-                                'book_hash': 'm-cert-6362880-hash',
-                                'payment_options': {
-                                    'currency_code': 'INR',
-                                    'payment_types': [{'amount': '10000.00'}]
-                                },
-                                'meal_data': {'value': 'breakfast'},
-                                'room_name': 'Premium Two Double'
-                            }]
-                        },
-                        {
-                            'hotel_id': '10595223',
-                            'name': 'The LINE Hotel',
-                            'hid': '10595223',
-                            'stars': 4,
-                            'address': '3515 Wilshire Blvd, Los Angeles, CA 90010',
-                            'images': ['https://cdn.worldota.net/t/crop/640x400/content/13/2d/132d432328492039402324912041234123412342.jpeg'],
-                            'rates': [{
-                                'book_hash': 'm-cert-10595223-hash',
-                                'payment_options': {
-                                    'currency_code': 'INR',
-                                    'payment_types': [{'amount': '10000.00'}]
-                                },
-                                'meal_data': {'value': 'breakfast'},
-                                'room_name': 'Design Room'
-                            }]
-                        }
-                    ]
-                    etg_hotels = mock_hotels
 
                 if etg_hotels and len(etg_hotels) > 0:
                     # Proceed with transformation...
@@ -1427,43 +1368,17 @@ def get_hotel_details():
             children_ages=data.get('children_ages', [])
         )
         
-        # Certification Hotel ID Mocking
-        mock_hotel_ids = ["10004834", "6362880", "10595223"]
-        if data['hotel_id'] in mock_hotel_ids:
-            print(f"🧪 Mocking details for certification hotel: {data['hotel_id']}")
-            # Construct a mock result compatible with the UI expectation
-            mock_name = 'Conrad Los Angeles' if data['hotel_id'] == '10004834' else ('The Westin Bonaventure' if data['hotel_id'] == '6362880' else 'The LINE Hotel')
-            mock_result = {
-                'success': True,
-                'data': {
-                    'hotels': [
-                        {
-                            'hotel_id': data['hotel_id'],
-                            'id': data['hotel_id'],
-                            'name': mock_name,
-                            'rates': [
-                                {
-                                    'book_hash': f"m-cert-{data['hotel_id']}-hash",
-                                    'payment_options': {
-                                        'currency_code': 'INR',
-                                        'payment_types': [{'amount': '10000.00'}]
-                                    },
-                                    'meal_data': {'value': 'breakfast'},
-                                    'room_name': 'Luxury King Room' if data['hotel_id'] == '10004834' else ('Premium Two Double' if data['hotel_id'] == '6362880' else 'Design Room')
-                                }
-                            ]
-                        }
-                    ]
-                }
-            }
-            return jsonify(mock_result)
 
+        # ETG Sandbox often rejects INR. We force USD for the API call and convert locally.
+        user_currency = data.get('currency', 'INR')
+        api_currency = 'USD' if user_currency == 'INR' else user_currency
+        
         result = etg_service.get_hotel_page(
             hotel_id=data['hotel_id'],
             checkin=data['checkin'],
             checkout=data['checkout'],
             guests=guests,
-            currency=data.get('currency', 'INR')
+            currency=api_currency
         )
         
         # Inject cancellation policies
@@ -2165,43 +2080,18 @@ def get_enriched_hotel_details():
             children_ages=data.get('children_ages', [])
         )
         
-        # Certification Hotel ID Mocking
-        mock_hotel_ids = ["10004834", "6362880", "10595223"]
-        if data['hotel_id'] in mock_hotel_ids:
-            print(f"🧪 Mocking enriched details for certification hotel: {data['hotel_id']}")
-            mock_name = 'Conrad Los Angeles' if data['hotel_id'] == '10004834' else ('The Westin Bonaventure' if data['hotel_id'] == '6362880' else 'The LINE Hotel')
-            rates_result = {
-                'success': True,
-                'data': {
-                    'hotels': [
-                        {
-                            'hotel_id': data['hotel_id'],
-                            'id': data['hotel_id'],
-                            'name': mock_name,
-                            'rates': [
-                                {
-                                    'book_hash': f"m-cert-{data['hotel_id']}-hash",
-                                    'payment_options': {
-                                        'currency_code': 'INR',
-                                        'payment_types': [{'amount': '10000.00'}]
-                                    },
-                                    'meal_data': {'value': 'breakfast'},
-                                    'room_name': 'Luxury King Room' if data['hotel_id'] == '10004834' else ('Premium Two Double' if data['hotel_id'] == '6362880' else 'Design Room')
-                                }
-                            ]
-                        }
-                    ]
-                }
-            }
-        else:
-            # 1. Fetch hotel rates
-            rates_result = etg_service.get_hotel_page(
-                hotel_id=data['hotel_id'],
-                checkin=data['checkin'],
-                checkout=data['checkout'],
-                guests=guests,
-                currency=data.get('currency', 'INR')
-            )
+        # ETG Sandbox often rejects INR. We force USD for the API call and convert locally.
+        user_currency = data.get('currency', 'INR')
+        api_currency = 'USD' if user_currency == 'INR' else user_currency
+        
+        # 1. Fetch hotel rates
+        rates_result = etg_service.get_hotel_page(
+            hotel_id=data['hotel_id'],
+            checkin=data['checkin'],
+            checkout=data['checkout'],
+            guests=guests,
+            currency=api_currency
+        )
         
         if not rates_result.get('success'):
             return jsonify(rates_result)
@@ -2769,26 +2659,6 @@ def prebook_rate():
         if 'book_hash' not in data:
             return jsonify({'success': False, 'error': 'Missing book_hash'}), 400
         
-        # Certification Mock Handling
-        book_hash = data.get('book_hash', '')
-        if book_hash.startswith('m-cert-'):
-            print(f"🧪 Mocking prebook for certification hash: {book_hash}")
-            return jsonify({
-                'success': True,
-                'data': {
-                    'status': 'ok',
-                    'data': {
-                        'price_changed': False,
-                        'book_hash': book_hash,
-                        'payment_options': {
-                            'currency_code': 'INR',
-                            'payment_types': [{'amount': '11500.00'}]
-                        },
-                        'currency_code': 'INR',
-                        'amount': '11500.00'
-                    }
-                }
-            })
 
         result = etg_service.prebook(
             book_hash=data['book_hash'],
@@ -2872,22 +2742,6 @@ def create_booking():
                 pass
         
         book_hash = data['book_hash']
-        
-        # Certification Mock Handling
-        if book_hash.startswith('m-cert-'):
-            import uuid
-            order_id = f"m-cert-{uuid.uuid4().hex[:8]}"
-            print(f"🧪 Mocking booking for certification hash: {book_hash} -> Order: {order_id}")
-            return jsonify({
-                'success': True,
-                'data': {
-                    'status': 'ok',
-                    'data': {
-                        'order_id': order_id,
-                        'status': 'success'
-                    }
-                }
-            })
         
         # Frontend already called prebook (Step 6 in booking flow).
         # Do NOT call prebook again here — it wastes quota and slows the flow.
