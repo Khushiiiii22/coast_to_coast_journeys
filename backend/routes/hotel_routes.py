@@ -438,6 +438,14 @@ def search_by_destination():
         'amritsar': {'latitude': 31.6340, 'longitude': 74.8723, 'region_id': 6308818, 'name': 'Amritsar'},
         'darjeeling': {'latitude': 27.0410, 'longitude': 88.2663, 'region_id': 6308837, 'name': 'Darjeeling'},
         'ooty': {'latitude': 11.4102, 'longitude': 76.6950, 'region_id': 6308866, 'name': 'Ooty'},
+        
+        # MIKHAIL'S REQUIRED SANDBOX HOTELS (ETG Certification)
+        'los angeles': {
+            'latitude': 34.0522, 
+            'longitude': -118.2437, 
+            'name': 'Los Angeles',
+            'hotel_ids': ['10004834', '6362880', '10595223']  # Conrad LA, etc.
+        },
     }
     
     try:
@@ -455,12 +463,18 @@ def search_by_destination():
         
         print(f"🔍 Hotel Search Request: {data['destination']}")
         
-        # Step 1: Check if destination matches a known location with region_id
+        # Step 1: Check if destination matches a known location
+        hotel_ids_to_search = None
         for key, loc_data in POPULAR_DESTINATIONS.items():
             if key in destination or destination in key:
-                region_id = loc_data.get('region_id')
-                location_name = loc_data['name']
-                print(f"📍 Matched destination: {location_name}, Region ID: {region_id}")
+                if 'hotel_ids' in loc_data:
+                    hotel_ids_to_search = loc_data['hotel_ids']
+                    location_name = loc_data['name']
+                    print(f"📍 Matched destination with specific hotels: {location_name}, Hotel IDs: {hotel_ids_to_search}")
+                else:
+                    region_id = loc_data.get('region_id')
+                    location_name = loc_data['name']
+                    print(f"📍 Matched destination: {location_name}, Region ID: {region_id}")
                 break
         
         # Step 2: ALWAYS call ETG/RateHawk API for every search when we have a region_id.
@@ -469,9 +483,9 @@ def search_by_destination():
         # Mikhail's team from seeing our API calls and blocked certification progress.
         # Now ETG is always called first; Google Places is only used as a fallback if ETG returns 0.
         
-        # Step 3: Try ETG/RateHawk for ALL destinations with a known region_id
-        if region_id:
-            print(f"🏨 Searching RateHawk for sandbox destination: {location_name}")
+        # Step 3: Try ETG/RateHawk for ALL destinations with a known region_id or hotel_ids
+        if region_id or hotel_ids_to_search:
+            print(f"🏨 Searching RateHawk for destination: {location_name}")
             
             rooms_data = data.get('rooms')  # multi-room array if available
             guests = etg_service.format_guests_for_search(
@@ -480,16 +494,28 @@ def search_by_destination():
                 rooms=rooms_data
             )
             
-            # Search using region API with sandbox-compatible parameters
             target_currency = data.get('currency', 'INR')
-            result = etg_service.search_by_region(
-                region_id=region_id,
-                checkin=data['checkin'],
-                checkout=data['checkout'],
-                guests=guests,
-                currency=target_currency, # Request user's currency (API might still return USD)
-                residency=data.get('residency', 'gb')
-            )
+            
+            if hotel_ids_to_search:
+                # Search by specific hotel IDs (for certification testing)
+                result = etg_service.search_by_hotels(
+                    hotel_ids=hotel_ids_to_search,
+                    checkin=data['checkin'],
+                    checkout=data['checkout'],
+                    guests=guests,
+                    currency=target_currency,
+                    residency=data.get('residency', 'gb')
+                )
+            else:
+                # Search using region API
+                result = etg_service.search_by_region(
+                    region_id=region_id,
+                    checkin=data['checkin'],
+                    checkout=data['checkout'],
+                    guests=guests,
+                    currency=target_currency,
+                    residency=data.get('residency', 'gb')
+                )
             
             # Check if RateHawk returned hotels
             if result.get('success') and result.get('data'):
@@ -566,24 +592,26 @@ def search_by_destination():
                 else:
                     print(f"⚠️ RateHawk returned 0 hotels for {location_name}")
         
-        # Step 4: If not in predefined list, try ETG suggest API to find the region
-        if not region_id:
+        # Step 4: If not in predefined list, try ETG suggest API
+        if not region_id and not hotel_ids_to_search:
             print(f"🔎 Trying RateHawk suggest API for: {data['destination']}")
             suggest_result = etg_service.suggest(data['destination'])
             if suggest_result.get('success') and suggest_result.get('data'):
                 inner_data = suggest_result['data'].get('data', suggest_result['data'])
                 regions = inner_data.get('regions', [])
+                hotels = inner_data.get('hotels', [])
+                
+                guests = etg_service.format_guests_for_search(
+                    adults=data['adults'],
+                    children_ages=data.get('children_ages', []),
+                    rooms=rooms_data
+                )
+                
                 if regions:
+                    # Search by suggested region
                     region_id = regions[0].get('id')
                     location_name = regions[0].get('name', data['destination'])
                     print(f"✅ Found region via suggest API: {location_name} (ID: {region_id})")
-                    
-                    # Try searching with the found region
-                    guests = etg_service.format_guests_for_search(
-                        adults=data['adults'],
-                        children_ages=data.get('children_ages', []),
-                        rooms=rooms_data
-                    )
                     
                     result = etg_service.search_by_region(
                         region_id=region_id,
@@ -593,6 +621,22 @@ def search_by_destination():
                         currency=target_currency,
                         residency=data.get('residency', 'gb')
                     )
+                elif hotels:
+                    # Search by suggested specific hotels (e.g. user typed a hotel name)
+                    hotel_ids = [h.get('id') for h in hotels if h.get('id')][:10]  # Take up to 10 hotels
+                    location_name = hotels[0].get('name', data['destination'])
+                    print(f"✅ Found specific hotels via suggest API: {location_name}...")
+                    
+                    result = etg_service.search_by_hotels(
+                        hotel_ids=hotel_ids,
+                        checkin=data['checkin'],
+                        checkout=data['checkout'],
+                        guests=guests,
+                        currency=target_currency,
+                        residency=data.get('residency', 'gb')
+                    )
+                else:
+                    result = {}
                     
                     if result.get('success') and result.get('data'):
                         search_data = result['data'].get('data', result['data'])
