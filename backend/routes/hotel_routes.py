@@ -443,8 +443,9 @@ def search_by_destination():
         'los angeles': {
             'latitude': 34.0522, 
             'longitude': -118.2437, 
-            'name': 'Los Angeles',
-            'hotel_ids': ['10004834', '6362880', '10595223']  # Conrad LA, etc.
+            'name': 'Los Angeles', 
+            'region_id': 2011,  # Verified Sandbox Region ID for LA
+            'hotel_ids': ['conrad_los_angeles', 'the_westin_bonaventure_hotel_suites_los_angeles', 'the_line_la']
         },
     }
     
