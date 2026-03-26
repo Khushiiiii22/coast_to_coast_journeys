@@ -403,11 +403,12 @@ const SearchSession = {
  */
 const HotelUtils = {
     // Currency conversion rates (base: INR)
+    // Updated to match backend rates: USD_TO_INR = 86.5, EUR_TO_INR = 92.0, GBP_TO_INR = 108.0
     conversionRates: {
         'INR': 1,
-        'USD': 0.012,
-        'EUR': 0.011,
-        'GBP': 0.0095,
+        'USD': 0.01156, // 1 / 86.5
+        'EUR': 0.01087, // 1 / 92.0
+        'GBP': 0.00926, // 1 / 108.0
         'AED': 0.044
     },
 
@@ -444,6 +445,13 @@ const HotelUtils = {
 
         // Get user's selected currency
         const displayCurrency = this.getSelectedCurrency();
+
+        // Safety-check: if currencies match, return amount as-is
+        if (originalCurrency === displayCurrency) {
+            const symbol = symbols[displayCurrency] || displayCurrency + ' ';
+            const locale = displayCurrency === 'INR' ? 'en-IN' : 'en-US';
+            return `${symbol}${parseFloat(amount).toLocaleString(locale)}`;
+        }
 
         // Convert if needed
         const convertedAmount = this.convertCurrency(amount, originalCurrency, displayCurrency);
