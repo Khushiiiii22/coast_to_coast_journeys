@@ -445,7 +445,12 @@ def search_by_destination():
             'longitude': -118.2437, 
             'name': 'Los Angeles', 
             'region_id': 2011,  # Verified Sandbox Region ID for LA
-            'hotel_ids': ['conrad_los_angeles', 'the_westin_bonaventure_hotel_suites_los_angeles', 'the_line_la']
+            'hotel_ids': [
+                'conrad_los_angeles', 
+                '10004834',  # Mikhail's Conrad HID
+                '6362880',   # Mikhail's Westin HID
+                '10595223'   # Mikhail's The LINE HID
+            ]
         },
     }
     
