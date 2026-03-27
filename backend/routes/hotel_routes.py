@@ -3077,17 +3077,28 @@ def poll_booking_status():
                         booking_data = db_booking.get('data') if db_booking else None
                         
                         if booking_data:
+                            # Extract guest names professionally
+                            guests = booking_data.get('guests', [])
+                            customer_name = "Valued Guest"
+                            if guests and isinstance(guests, list) and len(guests) > 0:
+                                first_guest = guests[0]
+                                first_name = first_guest.get('first_name', '')
+                                last_name = first_guest.get('last_name', '')
+                                if first_name or last_name:
+                                    customer_name = f"{first_name} {last_name}".strip()
+                            
                             customer_email = booking_data.get('customer_email') or booking_data.get('email')
                             if customer_email:
                                 email_details = {
                                     'booking_id': partner_order_id,
-                                    'customer_name': booking_data.get('guest_name') or f"{booking_data.get('first_name', '')} {booking_data.get('last_name', '')}",
+                                    'customer_name': customer_name,
                                     'customer_email': customer_email,
                                     'hotel_name': booking_data.get('hotel_name', 'Hotel'),
                                     'checkin': booking_data.get('check_in') or booking_data.get('checkin'),
                                     'checkout': booking_data.get('check_out') or booking_data.get('checkout'),
                                     'amount': booking_data.get('total_amount', 0),
-                                    'currency': booking_data.get('currency', 'INR')
+                                    'currency': booking_data.get('currency', 'INR'),
+                                    'room_name': booking_data.get('room_name', 'Standard Room')
                                 }
                                 email_sent = email_service.send_booking_confirmation(customer_email, email_details)
                                 print(f"{'✅' if email_sent else '❌'} Confirmation email {'sent' if email_sent else 'FAILED'} to {customer_email}")

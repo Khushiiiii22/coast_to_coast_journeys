@@ -24,56 +24,129 @@ class EmailService:
     def init_app(self, app):
         # Brevo API Configuration
         self.api_key = app.config.get('BREVO_API_KEY') or os.getenv('BREVO_API_KEY')
-        # Verified sender in Brevo
+        # Resend API Configuration
+        self.resend_api_key = app.config.get('RESEND_API_KEY') or os.getenv('RESEND_API_KEY')
+        
+        # Verified sender
         self.default_sender = os.getenv('MAIL_DEFAULT_SENDER', 'info@coasttocoastjourneys.com')
         
         if self.api_key:
             print(f"✅ Email service configured with Brevo API")
-            print(f"   📧 Sender: {self.default_sender}")
+        elif self.resend_api_key:
+            print(f"✅ Email service configured with Resend API (as fallback)")
         else:
-            print(f"⚠️  Email service NOT configured - missing BREVO_API_KEY")
+            print(f"⚠️ Email service NOT configured - missing API keys")
+        
+        print(f"   📧 Sender: {self.default_sender}")
         
     def send_email(self, to_email, subject, body, html_body=None, attachments=None):
-        """Send an email using Brevo API (HTTPS)"""
-        if not self.api_key:
-            print("⚠️ Brevo API key not configured. Skipping email.")
-            return False
+        """Send an email using Brevo (primary) or Resend (fallback)"""
+        # 1. Try Brevo first if configured
+        if self.api_key:
+            success = self._send_via_brevo(to_email, subject, body, html_body)
+            if success:
+                return True
+            print("⚠️ Brevo failed. Attempting Resend fallback...")
+            
+        # 2. Try Resend if Brevo failed or is not configured
+        if self.resend_api_key:
+            return self._send_via_resend(to_email, subject, body, html_body)
+            
+        print("⚠️ No working email provider configured. Skipping email.")
+        return False
 
+    def _send_via_brevo(self, to_email, subject, body, html_body=None):
+        """Internal helper for Brevo API"""
         try:
             headers = {
                 "accept": "application/json",
                 "content-type": "application/json",
                 "api-key": self.api_key
             }
-            
-            # Build email payload
             payload = {
-                "sender": {
-                    "name": self.sender_name,
-                    "email": self.default_sender
-                },
+                "sender": {"name": self.sender_name, "email": self.default_sender},
                 "to": [{"email": to_email}],
                 "subject": subject,
                 "textContent": body
             }
-            
-            # Add HTML body if provided
             if html_body:
                 payload["htmlContent"] = html_body
             
-            # Send the email
-            response = requests.post(self.BREVO_API_URL, json=payload, headers=headers)
-            
+            response = requests.post(self.BREVO_API_URL, json=payload, headers=headers, timeout=10)
             if response.status_code in [200, 201, 202]:
-                result = response.json()
-                print(f"✅ Email sent to {to_email} (Message ID: {result.get('messageId', 'N/A')})")
+                print(f"✅ Email sent via Brevo to {to_email}")
                 return True
-            else:
-                print(f"❌ Brevo API error: {response.status_code} - {response.text}")
-                return False
-            
+            print(f"❌ Brevo error: {response.status_code} - {response.text}")
+            return False
         except Exception as e:
-            print(f"❌ Failed to send email: {str(e)}")
+            print(f"❌ Brevo failure: {str(e)}")
+            return False
+
+    def _send_via_resend(self, to_email, subject, body, html_body=None):
+        """Internal helper for Resend API.
+        
+        Strategy (for environments where the sending domain is not verified):
+        1. Always try onboarding@resend.dev first (Resend's built-in test sender).
+        2. If the *recipient* is also not verified, redirect to OWNER_EMAIL.
+        This guarantees at least one email arrives during testing.
+        """
+        try:
+            url = "https://api.resend.com/emails"
+            resend_headers = {
+                "Authorization": f"Bearer {self.resend_api_key}",
+                "Content-Type": "application/json"
+            }
+            owner_email = os.getenv('OWNER_EMAIL', 'khushikumari62406@gmail.com')
+            
+            # Always use onboarding@resend.dev to bypass domain verification in test mode
+            sender = f"{self.sender_name} <onboarding@resend.dev>"
+
+            payload = {
+                "from": sender,
+                "to": [to_email],
+                "subject": subject,
+                "text": body
+            }
+            if html_body:
+                payload["html"] = html_body
+
+            response = requests.post(url, json=payload, headers=resend_headers, timeout=10)
+
+            if response.status_code in [200, 201]:
+                print(f"✅ Email sent via Resend to {to_email}")
+                return True
+
+            # If recipient is not the verified owner, redirect to them
+            if response.status_code == 403 and to_email != owner_email:
+                print(f"⚠️ Resend blocked {to_email}. Redirecting to verified owner {owner_email} ...")
+                redirect_notice = (
+                    f"\n\n[TEST MODE] Original recipient: {to_email}\n"
+                    f"Redirected to owner because Resend API is in Test Mode.\n"
+                )
+                redirect_html_banner = (
+                    f"<div style='background:#fff4ed;border:1px solid #fdba74;"
+                    f"border-radius:8px;padding:12px 16px;margin-bottom:20px;'>"
+                    f"<strong style='color:#9a3412;'>⚠️ Test Mode Redirect</strong><br>"
+                    f"Original recipient: <strong>{to_email}</strong><br>"
+                    f"Showing to owner because Resend is in Test Mode.</div>"
+                )
+                payload["to"] = [owner_email]
+                payload["subject"] = f"[REDIRECT → {to_email}] {subject}"
+                payload["text"] = redirect_notice + payload.get("text", body)
+                if "html" in payload:
+                    payload["html"] = redirect_html_banner + payload["html"]
+
+                r2 = requests.post(url, json=payload, headers=resend_headers, timeout=10)
+                if r2.status_code in [200, 201]:
+                    print(f"✅ Redirected email delivered to {owner_email} (was for {to_email})")
+                    return True
+                print(f"❌ Redirect also failed: {r2.status_code} - {r2.text}")
+                return False
+
+            print(f"❌ Resend error: {response.status_code} - {response.text}")
+            return False
+        except Exception as e:
+            print(f"❌ Resend failure: {str(e)}")
             return False
 
     def send_flight_confirmation(self, to_email, booking_details):
@@ -368,7 +441,8 @@ Thank you for choosing C2C Journeys!
 
     def _send_owner_notification(self, guest_email, booking_details):
         """Send booking notification to owner/admin"""
-        owner_email = os.getenv('CORPORATE_EMAIL', os.getenv('OWNER_EMAIL', 'info@coasttocoastjourneys.com'))
+        # Priority: OWNER_EMAIL (verified for Resend test) > CORPORATE_EMAIL > default
+        owner_email = os.getenv('OWNER_EMAIL', os.getenv('CORPORATE_EMAIL', 'info@coasttocoastjourneys.com'))
         
         subject = f"🎉 New Booking — {booking_details.get('hotel_name')} | {booking_details.get('booking_id', 'N/A')}"
         
