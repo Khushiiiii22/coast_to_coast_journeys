@@ -753,13 +753,16 @@
                     currentRoom = { guests: [] };
                 }
 
-                currentRoom.guests.push({
+                let guestObj = {
                     first_name: firstName.value.trim(),
                     last_name: lastName.value.trim(),
-                    gender: gender.value, // male/female
-                    is_child: type === 'child',
-                    age: type === 'child' ? parseInt(age) : null
-                });
+                    is_child: type === 'child'
+                };
+                if (type === 'child' && age) {
+                    guestObj.age = parseInt(age);
+                }
+                
+                currentRoom.guests.push(guestObj);
             });
             if (currentRoom) roomsData.push(currentRoom);
 

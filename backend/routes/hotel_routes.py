@@ -2718,10 +2718,13 @@ def create_booking():
     try:
         data = request.get_json()
         
-        required = ['book_hash', 'guests']
+        required = ['book_hash']
         for field in required:
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
+                
+        if 'guests' not in data and 'rooms' not in data:
+            return jsonify({'success': False, 'error': 'Missing field: guests or rooms'}), 400
         
         # Booking cut-off validation for create_booking as well
         checkin_str = data.get('checkin')
