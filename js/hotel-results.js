@@ -146,7 +146,8 @@ async function performSearch(params) {
         const result = await HotelAPI.searchByDestination(params);
 
         if (result.success && result.data?.hotels?.length > 0) {
-            SearchSession.saveSearchResults(result);
+            // NOTE: Saving all results to session storage is removed as it exceeds browser quota (5MB) for large searches.
+            // SearchSession.saveSearchResults(result); 
             displayResults(result);
 
             const hotelCount = result.hotels_count || result.data.hotels.length;

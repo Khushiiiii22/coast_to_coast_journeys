@@ -341,7 +341,15 @@ const SearchSession = {
     },
 
     save(key, data) {
-        sessionStorage.setItem(key, JSON.stringify(data));
+        try {
+            sessionStorage.setItem(key, JSON.stringify(data));
+        } catch (error) {
+            console.warn(`⚠️ Storage Quota exceeded for ${key}:`, error);
+            if (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+                // Potential fallback: clean up other sessions or just ignore
+                console.log('Clearing old session data might help if persistency is not required.');
+            }
+        }
     },
 
     get(key) {
