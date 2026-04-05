@@ -444,40 +444,23 @@ Thank you for choosing C2C Journeys!
         # Priority: OWNER_EMAIL (verified for Resend test) > CORPORATE_EMAIL > default
         owner_email = os.getenv('OWNER_EMAIL', os.getenv('CORPORATE_EMAIL', 'info@coasttocoastjourneys.com'))
         
-        subject = f"🎉 New Booking — {booking_details.get('hotel_name')} | {booking_details.get('booking_id', 'N/A')}"
+        hotel_name = booking_details.get('hotel_name', 'Hotel')
+        subject = f"🔔 NEW BOOKING: {hotel_name} | {booking_details.get('booking_id', 'N/A')}"
         
-        amount = booking_details.get('amount', 0)
-        currency = booking_details.get('currency', 'INR')
+        # We send the same professional invoice to the owner so they see exactly what the guest sees
+        invoice_html = self._generate_invoice_html(booking_details)
         
-        body = f"""
-New Booking Confirmed!
-
-══════════════════════════════════════
-BOOKING DETAILS
-══════════════════════════════════════
-
-Booking ID: {booking_details.get('booking_id', 'N/A')}
-
-GUEST INFORMATION:
-• Name: {booking_details.get('customer_name', 'N/A')}
-• Email: {guest_email}
-
-HOTEL DETAILS:
-• Hotel: {booking_details.get('hotel_name', 'N/A')}
-• Room: {booking_details.get('room_name', 'N/A')}
-• Check-in: {booking_details.get('checkin', 'N/A')}
-• Check-out: {booking_details.get('checkout', 'N/A')}
-
-PAYMENT:
-• Amount: {self._format_amount(amount, currency)}
-
-══════════════════════════════════════
-
-This is an automated notification from C2C Journeys.
+        # Add a small admin header to the HTML if it exists
+        admin_header = f"""
+        <div style="background: #fef3c7; padding: 15px; text-align: center; border-bottom: 2px solid #fde68a; font-family: sans-serif;">
+            <strong style="color: #92400e;">ADMIN NOTIFICATION</strong><br>
+            <span style="color: #d97706; font-size: 13px;">New booking received from <strong>{guest_email}</strong></span>
+        </div>
         """
-        
+        invoice_html = admin_header + invoice_html
+
         print(f"📧 Sending owner notification to {owner_email}")
-        self.send_email(owner_email, subject, body)
+        self.send_email(owner_email, subject, "New booking received. See HTML version for details.", html_body=invoice_html)
 
     def _format_date(self, date_str):
         """Format date string nicely"""
@@ -512,6 +495,7 @@ This is an automated notification from C2C Journeys.
         booking_id = booking.get('booking_id', 'N/A')
         customer_name = booking.get('customer_name', 'Valued Guest')
         customer_email = booking.get('customer_email', '')
+        customer_phone = booking.get('customer_phone', '')
         hotel_name = booking.get('hotel_name', 'Hotel')
         room_name = booking.get('room_name', '')
         meal_plan = booking.get('meal_plan', '') or booking.get('meal_info', '')
@@ -559,6 +543,15 @@ This is an automated notification from C2C Journeys.
             <tr>
                 <td style="padding: 12px 0; color: #64748b; border-bottom: 1px solid #f1f5f9;">Guests</td>
                 <td style="padding: 12px 0; color: #1e293b; font-weight: 500; text-align: right; border-bottom: 1px solid #f1f5f9;">{guests_info}</td>
+            </tr>"""
+            
+        # Phone row (only if available)
+        phone_row = ''
+        if customer_phone:
+            phone_row = f"""
+            <tr>
+                <td style="padding: 12px 0; color: #64748b; border-bottom: 1px solid #f1f5f9;">Contact Phone</td>
+                <td style="padding: 12px 0; color: #1e293b; font-weight: 500; text-align: right; border-bottom: 1px solid #f1f5f9;">{customer_phone}</td>
             </tr>"""
         
         return f"""
@@ -651,7 +644,7 @@ This is an automated notification from C2C Journeys.
                                 <tr>
                                     <td style="padding: 12px 0; color: #64748b; border-bottom: 1px solid #f1f5f9;">Duration</td>
                                     <td style="padding: 12px 0; color: #1e293b; font-weight: 500; text-align: right; border-bottom: 1px solid #f1f5f9;">🌙 {nights_text}</td>
-                                </tr>{guests_row}
+                                </tr>{guests_row}{phone_row}
                             </table>
                         </td>
                     </tr>

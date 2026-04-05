@@ -1365,26 +1365,32 @@
                 }));
 
                 // Send booking confirmation email
-                const guest = bookingData.guest || {};
-                const customerEmail = guest.email || bookingData.email;
+                let guestsStr = 'Guest';
+                if (bookingData.rooms && Array.isArray(bookingData.rooms)) {
+                    const allGuestNames = [];
+                    bookingData.rooms.forEach(room => {
+                        if (room.guests && Array.isArray(room.guests)) {
+                            room.guests.forEach(g => {
+                                allGuestNames.push(`${g.first_name || ''} ${g.last_name || ''}`.trim());
+                            });
+                        }
+                    });
+                    if (allGuestNames.length > 0) guestsStr = allGuestNames.join(', ');
+                }
 
-                console.log('📧 Email Debug:', {
-                    guest: guest,
-                    customerEmail: customerEmail,
-                    bookingDataEmail: bookingData.email,
-                    guestEmail: guest.email
-                });
+                const customerEmail = bookingData.email || (bookingData.guest && bookingData.guest.email);
+                const customerPhone = bookingData.phone || (bookingData.guest && bookingData.guest.phone);
 
                 if (customerEmail) {
                     try {
-                        console.log('📤 Sending email to:', customerEmail);
                         const emailPayload = {
                             partner_order_id: bookingData.partner_order_id || referenceId,
                             email: customerEmail,
+                            phone: customerPhone,
                             hotel_name: bookingData.hotel.name,
                             checkin: bookingData.search_params.checkin,
                             checkout: bookingData.search_params.checkout,
-                            guests: `${guest.firstName || ''} ${guest.lastName || ''}`.trim() || 'Guest',
+                            guests: guestsStr,
                             total_amount: bookingData.total || 0,
                             room_name: bookingData.rate?.room_name || '',
                             meal_plan: bookingData.rate?.meal_info?.display_name || bookingData.rate?.meal_plan || '',

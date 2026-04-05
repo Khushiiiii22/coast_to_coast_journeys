@@ -3430,6 +3430,8 @@ def send_booking_confirmation():
             'booking_id': data.get('partner_order_id'),
             'customer_name': customer_name,
             'customer_email': data.get('email'),
+            'customer_phone': data.get('phone'),
+            'guests_info': data.get('guests'),
             'hotel_name': hotel_name,
             'room_name': room_name,
             'meal_plan': meal_plan,
