@@ -1252,14 +1252,23 @@ function createRateCard(rate, index, customBadge = null) {
         `;
     }
 
-    // ── Cancellation Policy Section (clean header only) ────────────────────
-    const cancellationInfo = rate.cancellation_info || {};
+    // ── Cancellation Policy Section (ETG-compliant) ──────────────────────
+    const cancelStatus = HotelUtils.getCancellationStatus(rate);
+    const isRefundable = cancelStatus.isRefundable;
+    const deadline = cancelStatus.deadline;
 
     let refundableHtml = `
         <div class="cancellation-policy-section">
+            <div class="cp-header" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                ${isRefundable 
+                    ? `<i class="fas fa-check-circle" style="color:#059669;font-size:1.1rem;"></i>` 
+                    : `<i class="fas fa-times-circle" style="color:#ef4444;font-size:1.1rem;"></i>`}
+                <span class="cp-title" style="font-weight:600;font-size:0.9rem;${isRefundable ? 'color:#065f46;' : 'color:#7f1d1d;'}">
+                    ${isRefundable ? `Free cancellation until ${deadline}` : 'Non-refundable rate'}
+                </span>
+            </div>
             <div class="cp-header">
-                <span class="cp-title">Cancellation policy</span>
-                <a class="cp-more-details" onclick="showCancellationModal(${index})">More details on all policy options <i class="fas fa-info-circle"></i></a>
+                <a class="cp-more-details" onclick="showCancellationModal(${index})">View all policy details <i class="fas fa-chevron-right"></i></a>
             </div>
         </div>
     `;
@@ -1304,27 +1313,31 @@ function createRateCard(rate, index, customBadge = null) {
     const urgencyHtml = showUrgency ? `<span class="urgency-notice">We have ${roomsLeft} left</span>` : '';
 
     // Tax info display - ETG-compliant: distinguish included vs non-included taxes
-    let taxNoteHtml = '<small class="taxes-note" style="color:#059669"><i class="fas fa-check-circle"></i> Includes taxes & fees</small>';
-
-    const taxInfo = rate.tax_info || {};
-    const nonIncludedTaxes = taxInfo.non_included_taxes || [];
+    const taxData = rate.tax_data || {};
+    const allTaxes = taxData.taxes || [];
+    const nonIncludedTaxes = allTaxes.filter(tax => tax.included_by_supplier === false);
+    
+    // Dynamic tax note: only show "Includes taxes" if NO non-included taxes exist
+    let taxNoteHtml = nonIncludedTaxes.length === 0 
+        ? '<small class="taxes-note" style="color:#059669"><i class="fas fa-check-circle"></i> Includes taxes & fees</small>'
+        : '<small class="taxes-note" style="color:#b45309"><i class="fas fa-plus-circle"></i> Plus fees payable at property</small>';
 
     // If there are non-included taxes, show them clearly (ETG certification requirement)
     if (nonIncludedTaxes.length > 0) {
         const taxItems = nonIncludedTaxes.map(tax => {
             const amount = parseFloat(tax.amount || 0);
             const currency = tax.currency_code || 'USD';
-            const displayName = tax.display_name || tax.name || 'Property Fee';
+            const displayName = tax.name ? tax.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Property Fee';
             return `<div style="display:flex;justify-content:space-between;font-size:0.72rem;padding:2px 0"><span>${displayName}</span><span>${currency} ${amount.toFixed(2)}</span></div>`;
         }).join('');
 
         taxNoteHtml = `
             <div style="margin-top:6px;padding:8px 10px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;">
                 <div style="font-size:0.78rem;font-weight:600;color:#92400e;margin-bottom:4px;">
-                    <i class="fas fa-info-circle"></i> Additional fees payable at property:
+                    <i class="fas fa-info-circle"></i> Payable at Property (Not included):
                 </div>
                 ${taxItems}
-                <div style="font-size:0.72rem;color:#b45309;margin-top:4px;">These fees are not included in the price shown and must be paid at check-in.</div>
+                <div style="font-size:0.72rem;color:#b45309;margin-top:4px;">These fees must be paid directly to the hotel upon check-in.</div>
             </div>
         `;
     }
@@ -1460,8 +1473,10 @@ function showRoomDetails(rateIndex) {
     }
 
     const cancelInfo = rate.cancellation_info || {};
-    const isFreeCancellation = cancelInfo.is_free_cancellation;
-    const deadline = cancelInfo.free_cancellation_formatted?.datetime || cancelInfo.free_cancellation_formatted || '';
+    const cancelStatus = HotelUtils.getCancellationStatus(rate);
+    const isFreeCancellation = cancelStatus.isRefundable;
+    const deadline = cancelStatus.deadline;
+
     const mealDisplay = rate.meal_info?.display_name || 'Room Only';
     const roomName = rate.room_name || 'Room';
 
@@ -1800,6 +1815,7 @@ function selectRate(rate, index) {
     const totalPrice = nightlyWithExtras * nights;
 
     // Build the rate object that checkout pages will read
+    // ETG Certification Requirement (Updates 3 & 4): Keep track of prepaid vs property-payable
     const rateForCheckout = {
         ...rate,
         // Overwrite price fields to include the extras
@@ -1808,6 +1824,9 @@ function selectRate(rate, index) {
         extra_price: extraNightlyPrice,
         extra_type: extras.type,
         total_price: totalPrice,
+        // Mikhail Requirement: The actual amount to be charged to the card
+        prepaid_amount: (rate.prepaid_amount || 0) + (extraNightlyPrice * nights),
+        property_payable_fees: rate.property_payable_fees || [],
         nights: nights,
         // Meal plan may change if breakfast extra was added
         meal_plan: extras.type === 'breakfast' ? 'breakfast' : rate.meal_plan,

@@ -310,7 +310,8 @@ class ETGApiService:
         hotel_ids: List[str],
         checkin: str,
         checkout: str,
-        guests: List[Dict],
+        guests: List[Dict] = None,
+        rooms: List[Dict] = None,
         currency: str = "INR",
         residency: str = "in",
         language: str = "en"
@@ -322,12 +323,13 @@ class ETGApiService:
         if len(hotel_ids) > 300:
             hotel_ids = hotel_ids[:300]
         
+        guest_data = guests or rooms or [{"adults": 2, "children": []}]
         data = {
             "checkin": checkin,
             "checkout": checkout,
             "residency": residency,
             "language": language,
-            "guests": guests,
+            "guests": guest_data,
             "ids": hotel_ids,
             "currency": currency
         }
@@ -340,7 +342,8 @@ class ETGApiService:
         radius: int,
         checkin: str,
         checkout: str,
-        guests: List[Dict],
+        guests: List[Dict] = None,
+        rooms: List[Dict] = None,
         currency: str = "USD",
         residency: str = "gb",
         language: str = "en",
@@ -350,12 +353,13 @@ class ETGApiService:
         Endpoint 10: Search by geo coordinates
         POST /search/serp/geo/
         """
+        guest_data = guests or rooms or [{"adults": 2, "children": []}]
         data = {
             "checkin": checkin,
             "checkout": checkout,
             "residency": residency,
             "language": language,
-            "guests": guests,
+            "guests": guest_data,
             "latitude": latitude,
             "longitude": longitude,
             "radius": radius,
@@ -371,7 +375,8 @@ class ETGApiService:
         region_id: int,
         checkin: str,
         checkout: str,
-        guests: List[Dict],
+        guests: List[Dict] = None,
+        rooms: List[Dict] = None,
         currency: str = "USD",
         residency: str = "gb",
         language: str = "en",
@@ -381,12 +386,13 @@ class ETGApiService:
         Endpoint 11: Search by region
         POST /search/serp/region/
         """
+        guest_data = guests or rooms or [{"adults": 2, "children": []}]
         data = {
             "checkin": checkin,
             "checkout": checkout,
             "residency": residency,
             "language": language,
-            "guests": guests,
+            "guests": guest_data,
             "region_id": region_id,
             "currency": currency,
             "limit": limit,
@@ -422,7 +428,8 @@ class ETGApiService:
         hotel_id: str,
         checkin: str,
         checkout: str,
-        guests: List[Dict],
+        guests: List[Dict] = None,
+        rooms: List[Dict] = None,
         currency: str = "INR",
         residency: str = "in",
         language: str = "en"
@@ -431,13 +438,14 @@ class ETGApiService:
         Endpoint 14: Retrieve hotel page
         POST /search/hp/
         """
+        guest_data = guests or rooms or [{"adults": 2, "children": []}]
         data = {
             "id": hotel_id,
             "checkin": checkin,
             "checkout": checkout,
             "residency": residency,
             "language": language,
-            "guests": guests,
+            "guests": guest_data,
             "currency": currency
         }
         return self._make_request("/search/hp/", data)
@@ -474,6 +482,7 @@ class ETGApiService:
         book_hash: str,
         partner_order_id: str,
         guests: List[Dict] = None,
+        rooms: List[Dict] = None,
         user_ip: str = "127.0.0.1",
         payment_type: str = "now",
         user_comment: str = None,
@@ -487,6 +496,7 @@ class ETGApiService:
           - partner_order_id: unique order ID (UUID format, 3-256 chars)
           - book_hash: rate ID from prebook step
         Optional:
+          - rooms: list of rooms with guest details [NEW - 4th Update]
           - language: default "en"
           - user_ip: end user IP (used for CC processing with payment_type=now)
         """
@@ -496,6 +506,13 @@ class ETGApiService:
             "language": language,
             "user_ip": user_ip
         }
+        
+        # Support for multi-room guest details (4th update)
+        if rooms:
+            data["rooms"] = rooms
+        elif guests:
+            # Fallback for legacy singe-room guest list
+            data["rooms"] = [{"guests": guests}]
             
         return self._make_request("/hotel/order/booking/form/", data)
     
@@ -504,8 +521,9 @@ class ETGApiService:
         partner_order_id: str,
         email: str,
         phone: str,
-        guests: List[Dict],
-        amount: float,
+        guests: List[Dict] = None,
+        rooms: List[Dict] = None,
+        amount: float = 0,
         currency: str = "USD",
         payment_type: str = "deposit",
         user_comment: str = None,
@@ -514,10 +532,6 @@ class ETGApiService:
         """
         Finish/Start booking process
         POST /hotel/order/booking/finish/
-        
-        Per ETG v3 docs, this starts the actual booking process.
-        As the booking process is made asynchronously, repeatedly 
-        request the Check booking process call to know the status.
         """
         data = {
             "partner": {
@@ -528,13 +542,19 @@ class ETGApiService:
                 "phone": phone
             },
             "language": language,
-            "rooms": [{"guests": guests}],
             "payment_type": {
                 "type": payment_type,
                 "amount": str(amount),
                 "currency_code": currency
             }
         }
+        
+        # Support for multi-room guest details (4th update)
+        if rooms:
+            data["rooms"] = rooms
+        elif guests:
+            # Fallback for legacy single-room guest list
+            data["rooms"] = [{"guests": guests}]
         
         if user_comment:
             data["user"]["comment"] = user_comment
@@ -578,29 +598,29 @@ class ETGApiService:
     @staticmethod
     def format_guests_for_search(adults: int, children_ages: List[int] = None, rooms: list = None) -> List[Dict]:
         """
-        Format guest configuration for search API.
-        Supports multi-room: if 'rooms' is a list of dicts like
-        [{"adults": 2, "childAges": [5,10]}, {"adults": 1}],
-        each becomes a separate guest entry.
+        Format guest configuration for ETG v3 search API (rooms array).
+        Returns a list of rooms, where each room is a dict: {"adults": N, "children": [age1, age2]}
         """
         if rooms and isinstance(rooms, list) and len(rooms) > 0 and isinstance(rooms[0], dict):
-            # Multi-room format: each room -> one guests entry
-            guests = []
+            # Formats multi-room input into ETG-compatible rooms array
+            formatted_rooms = []
             for room in rooms:
-                entry = {"adults": room.get("adults", 1)}
+                entry = {"adults": int(room.get("adults", 1))}
                 child_ages = room.get("childAges", room.get("children_ages", []))
                 if child_ages and isinstance(child_ages, list):
                     entry["children"] = [int(a) for a in child_ages]
-                guests.append(entry)
-            return guests
+                else:
+                    entry["children"] = []
+                formatted_rooms.append(entry)
+            return formatted_rooms
 
-        # Single-room fallback
+        # Single-room fallback logic
         if children_ages is None:
             children_ages = []
         
         return [{
-            "adults": adults,
-            "children": children_ages
+            "adults": int(adults),
+            "children": [int(a) for a in children_ages]
         }]
     
     @staticmethod

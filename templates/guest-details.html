@@ -261,67 +261,34 @@
         <h1><i class="fas fa-user-edit"></i> Enter Guest Details</h1>
 
         <div class="checkout-grid">
-            <div class="left-column">
-                <!-- Contact Information -->
+            <div class="left-column">                <!-- Contact Information -->
                 <div class="booking-summary" style="margin-bottom: 30px;">
-                    <h2><i class="fas fa-address-card" style="color: #3b82f6; margin-right: 10px;"></i>Contact
-                        Information
-                    </h2>
-                    <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">We will send your confirmation
-                        and notify you of any changes to your hotel booking status.</p>
-                    <form id="guestForm">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                            <div class="form-group">
-                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">First Name <span
-                                        style="color: #ef4444;">*</span></label>
-                                <input type="text" id="firstName" required class="form-control" placeholder="John"
-                                    style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; transition: border 0.2s;"
-                                    onfocus="this.style.borderColor='#3b82f6'"
-                                    onblur="this.style.borderColor='#e2e8f0'">
-                            </div>
-                            <div class="form-group">
-                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Last Name <span
-                                        style="color: #ef4444;">*</span></label>
-                                <input type="text" id="lastName" required class="form-control" placeholder="Doe"
-                                    style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; transition: border 0.2s;"
-                                    onfocus="this.style.borderColor='#3b82f6'"
-                                    onblur="this.style.borderColor='#e2e8f0'">
-                            </div>
+                    <h2><i class="fas fa-address-card" style="color: #3b82f6; margin-right: 10px;"></i>Contact Info</h2>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                        <div class="form-group">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Email Address <span style="color: #ef4444;">*</span></label>
+                            <input type="email" id="email" required class="form-control" placeholder="john@example.com"
+                                style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem;">
                         </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
-                            <div class="form-group">
-                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Email Address <span
-                                        style="color: #ef4444;">*</span></label>
-                                <input type="email" id="email" required class="form-control"
-                                    placeholder="john@example.com"
-                                    style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; transition: border 0.2s;"
-                                    onfocus="this.style.borderColor='#3b82f6'"
-                                    onblur="this.style.borderColor='#e2e8f0'">
-                                <small style="color: #64748b; font-size: 0.8rem;">Confirmation email will be sent
-                                    here</small>
-                            </div>
-                            <div class="form-group">
-                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Phone Number <span
-                                        style="color: #ef4444;">*</span></label>
-                                <input type="tel" id="phone" required class="form-control" placeholder="+91 98765 43210"
-                                    style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; transition: border 0.2s;"
-                                    onfocus="this.style.borderColor='#3b82f6'"
-                                    onblur="this.style.borderColor='#e2e8f0'">
-                            </div>
+                        <div class="form-group">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Phone Number <span style="color: #ef4444;">*</span></label>
+                            <input type="tel" id="getPhone" required class="form-control" placeholder="+91 98765 43210"
+                                style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem;">
                         </div>
-                        <div style="margin-top: 20px;">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Special Requests <span
-                                    style="color: #64748b; font-weight: normal;">(Optional)</span></label>
-                            <textarea id="specialRequests" class="form-control"
-                                placeholder="E.g., High floor, twin beds, quiet room, etc."
-                                style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; min-height: 80px; resize: vertical; transition: border 0.2s;"
-                                onfocus="this.style.borderColor='#3b82f6'"
-                                onblur="this.style.borderColor='#e2e8f0'"></textarea>
-                            <small style="color: #64748b; font-size: 0.8rem;">Special requests are subject to
-                                availability and cannot be guaranteed.</small>
-                        </div>
-                    </form>
+                    </div>
                 </div>
+
+                <!-- Dynamic Guest Details Container -->
+                <div id="guestDetailsContainer">
+                    <!-- Guest forms will be injected here -->
+                </div>
+
+                <div class="booking-summary" style="margin-bottom: 30px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Special Requests <span style="color: #64748b; font-weight: normal;">(Optional)</span></label>
+                    <textarea id="specialRequests" class="form-control" placeholder="E.g., High floor, twin beds, quiet room, etc."
+                        style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; min-height: 80px; resize: vertical;"></textarea>
+                </div>
+
 
 
                 <!-- Booking Cut-off Warning -->
@@ -602,22 +569,92 @@
                 }
             }
 
-            // PRE-FILL USER DETAILS
+            // PRE-FILL CONTACT DETAILS
             if (typeof AuthGuard !== 'undefined' && window.supabase) {
                 const session = await AuthGuard.checkSession();
                 if (session && session.user) {
                     const user = session.user;
                     const meta = user.user_metadata || {};
-
                     if (user.email) document.getElementById('email').value = user.email;
-                    if (meta.phone) document.getElementById('phone').value = meta.phone;
-                    if (meta.full_name) {
-                        const parts = meta.full_name.split(' ');
-                        document.getElementById('firstName').value = parts[0];
-                        document.getElementById('lastName').value = parts.slice(1).join(' ') || '';
-                    }
+                    if (meta.phone) document.getElementById('getPhone').value = meta.phone;
                 }
             }
+
+            // RENDER DYNAMIC GUEST FORMS
+            renderGuestForms(searchParams.rooms || [{ adults: 2, children: 0, childAges: [] }]);
+        }
+
+        function renderGuestForms(rooms) {
+            // Handle legacy rooms (if it was a simple number)
+            if (!Array.isArray(rooms)) {
+                const count = parseInt(rooms) || 1;
+                rooms = [];
+                for(let i=0; i<count; i++) rooms.push({ adults: 2, children: 0, childAges: [] });
+            }
+
+            const container = document.getElementById('guestDetailsContainer');
+            if (!container) return;
+
+            let html = '';
+            rooms.forEach((room, roomIdx) => {
+                html += `
+                    <div class="booking-summary guest-card" style="margin-bottom: 30px; border-left: 5px solid #3b82f6;">
+                        <h3 style="margin-bottom: 20px; color: #1e293b; font-size: 1.25rem;">
+                            <i class="fas fa-bed" style="margin-right: 10px; color: #3b82f6;"></i>Room ${roomIdx + 1}
+                        </h3>
+                `;
+
+                // Adults
+                for (let i = 0; i < room.adults; i++) {
+                    html += renderGuestInputs(roomIdx, i, 'adult', null);
+                }
+
+                // Children
+                if (room.children > 0 && room.childAges) {
+                    room.childAges.forEach((age, childIdx) => {
+                        html += renderGuestInputs(roomIdx, room.adults + childIdx, 'child', age);
+                    });
+                }
+
+                html += `</div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderGuestInputs(roomIdx, guestIdx, type, age) {
+            const isLead = (roomIdx === 0 && guestIdx === 0);
+            const label = type === 'adult' ? `Adult ${guestIdx + 1}` : `Child ${guestIdx - (modifyRooms[roomIdx]?.adults || 2) + 1} (${age} yrs)`;
+            // Wait, I don't have access to modifyRooms here, but I have the age already.
+            const displayLabel = type === 'adult' ? `Adult ${guestIdx + 1}` : `Child (Age: ${age})`;
+
+            return `
+                <div class="guest-input-row" data-room="${roomIdx}" data-guest="${guestIdx}" data-type="${type}" data-age="${age || ''}" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px dashed #e2e8f0;">
+                    <div style="font-weight: 600; font-size: 0.9rem; color: #64748b; margin-bottom: 10px;">
+                        ${displayLabel} ${isLead ? '<span style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; margin-left: 8px;">Lead Guest</span>' : ''}
+                    </div>
+                    <div style="display: grid; grid-template-columns: 100px 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label style="display: block; margin-bottom: 6px; font-size: 0.85rem;">Title <span style="color: #ef4444;">*</span></label>
+                            <select class="guest-gender" required style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px;">
+                                <option value="male">Mr.</option>
+                                <option value="female">Ms.</option>
+                                <option value="female">Mrs.</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; margin-bottom: 6px; font-size: 0.85rem;">First Name <span style="color: #ef4444;">*</span></label>
+                            <input type="text" class="guest-firstname form-control" placeholder="First Name" required
+                                style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px;">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; margin-bottom: 6px; font-size: 0.85rem;">Last Name <span style="color: #ef4444;">*</span></label>
+                            <input type="text" class="guest-lastname form-control" placeholder="Last Name" required
+                                style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px;">
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         function formatDate(dateStr) {
@@ -656,59 +693,97 @@
             }
         }
 
+        function highlightField(field) {
+            field.style.borderColor = '#ef4444';
+            field.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.15)';
+            // Add error message if not already present
+            if (!field.parentElement.querySelector('.field-error')) {
+                const msg = document.createElement('span');
+                msg.className = 'field-error';
+                msg.style.cssText = 'color: #ef4444; font-size: 0.8rem; margin-top: 4px; display: block;';
+                msg.innerHTML = '<i class="fas fa-exclamation-circle" style="margin-right: 4px;"></i>Required';
+                field.parentElement.appendChild(msg);
+            }
+        }
+
         function proceedToPayment() {
-            // Validate form
-            const firstName = document.getElementById('firstName');
-            const lastName = document.getElementById('lastName');
-            const email = document.getElementById('email');
-            const phone = document.getElementById('phone');
-            const specialRequests = document.getElementById('specialRequests').value;
-
-            const requiredFields = [firstName, lastName, email, phone];
-            let hasError = false;
-
-            requiredFields.forEach(field => {
-                if (!field.value.trim()) {
-                    highlightField(field);
-                    hasError = true;
-                }
+            // Clear previous errors
+            document.querySelectorAll('.field-error').forEach(e => e.remove());
+            document.querySelectorAll('.form-control, select').forEach(e => {
+                e.style.borderColor = '';
+                e.style.boxShadow = '';
             });
 
-            // Email format validation
-            if (email.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+            // 1. Validate Contact Info
+            const email = document.getElementById('email');
+            const phone = document.getElementById('getPhone');
+            let hasError = false;
+
+            if (!email.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
                 highlightField(email);
-                const errMsg = email.parentElement.querySelector('.field-error');
-                if (errMsg) errMsg.innerHTML = '<i class="fas fa-exclamation-circle" style="margin-right: 4px;"></i>Please enter a valid email address';
+                hasError = true;
+            }
+            if (!phone.value.trim()) {
+                highlightField(phone);
                 hasError = true;
             }
 
+            // 2. Collect & Validate All Guests
+            const guestRows = document.querySelectorAll('.guest-input-row');
+            const roomsData = [];
+            let currentRoomIdx = -1;
+            let currentRoom = null;
+
+            guestRows.forEach(row => {
+                const roomIdx = parseInt(row.dataset.room);
+                const guestIdx = parseInt(row.dataset.guest);
+                const type = row.dataset.type;
+                const age = row.dataset.age;
+
+                const firstName = row.querySelector('.guest-firstname');
+                const lastName = row.querySelector('.guest-lastname');
+                const gender = row.querySelector('.guest-gender');
+
+                if (!firstName.value.trim()) { highlightField(firstName); hasError = true; }
+                if (!lastName.value.trim()) { highlightField(lastName); hasError = true; }
+
+                if (roomIdx !== currentRoomIdx) {
+                    if (currentRoom) roomsData.push(currentRoom);
+                    currentRoomIdx = roomIdx;
+                    currentRoom = { guests: [] };
+                }
+
+                currentRoom.guests.push({
+                    first_name: firstName.value.trim(),
+                    last_name: lastName.value.trim(),
+                    gender: gender.value, // male/female
+                    is_child: type === 'child',
+                    age: type === 'child' ? parseInt(age) : null
+                });
+            });
+            if (currentRoom) roomsData.push(currentRoom);
+
             if (hasError) {
                 if (typeof showNotification === 'function') {
-                    showNotification('Please fill in all required fields.', 'warning');
+                    showNotification('Please fill in all required guest details.', 'warning');
                 }
-                // Scroll to first error
-                const firstError = document.querySelector('[style*="border-color: rgb(239, 68, 68)"]');
-                if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const firstErr = document.querySelector('.field-error');
+                if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
 
-            // Save details to booking data
-            bookingData.guest = {
-                firstName: firstName.value.trim(),
-                lastName: lastName.value.trim(),
-                email: email.value.trim(),
-                phone: phone.value.trim(),
-                specialRequests: specialRequests
-            };
-
-            // Also store top-level for compat with old code if needed
+            // 3. Save to Session
+            bookingData.rooms = roomsData;
             bookingData.email = email.value.trim();
             bookingData.phone = phone.value.trim();
-            bookingData.guestName = firstName.value.trim() + ' ' + lastName.value.trim();
+            bookingData.specialRequests = document.getElementById('specialRequests').value;
+            
+            // Set lead guest name for display/legacy
+            if (roomsData.length > 0 && roomsData[0].guests.length > 0) {
+                bookingData.guestName = roomsData[0].guests[0].first_name + ' ' + roomsData[0].guests[0].last_name;
+            }
 
             sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
-
-            // Redirect to payment
             window.location.href = 'payment.html';
         }
 

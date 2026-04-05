@@ -83,6 +83,7 @@ const HotelAPI = {
                 checkout: params.checkout,
                 adults: params.adults || 2,
                 children_ages: params.children_ages || [],
+                rooms: params.rooms || null, // Multi-room array for ETG v3
                 radius: params.radius || 10000,
                 currency: params.currency || 'USD',
                 residency: params.residency || 'in'  // ETG/RateHawk residency parameter
@@ -404,6 +405,7 @@ const SearchSession = {
 const HotelUtils = {
     // Currency conversion rates (base: INR)
     // Updated to match backend rates: USD_TO_INR = 86.5, EUR_TO_INR = 92.0, GBP_TO_INR = 108.0
+    // ETG Certification Note: Fixed platform conversion rate 1 USD = 86.5 INR.
     conversionRates: {
         'INR': 1,
         'USD': 0.01156, // 1 / 86.5
@@ -597,7 +599,9 @@ const HotelUtils = {
         const mealInfo = rate.meal_info || {};
         // Always use meal_data.value (via meal_info.value); fallback chain stops here.
         const code = mealInfo.value || rate.meal_plan || rate.meal || 'nomeal';
-        const displayName = this.getMealPlanText(code);
+        // 3. Apply commission to both: Display_Net = API_Net * 1.15, Display_Tax = API_Tax * 1.15.
+        // ETG Certification Note: Fixed 1.15 multiplier for platform service fee/markup.
+        commission_multiplier = 1.15
         const isNoMeal = (code === 'nomeal' || code === 'room-only');
         const noChildMeal = !!mealInfo.no_child_meal;
         const isFixedCount = !!mealInfo.is_fixed_count;
@@ -637,16 +641,48 @@ const HotelUtils = {
                 </div>`;
         }
 
-        // No-child-meal warning (only shown when children are in the party)
-        if (!isNoMeal && noChildMeal && numChildren > 0) {
+        // No-child-meal warning (ETG Certification Fix: Show even if no children in current search)
+        if (!isNoMeal && noChildMeal) {
             html += `
-                <div class="meal-note meal-note--warning">
+                <div class="meal-note meal-note--warning" style="background:#fffbeb;border:1px solid #fde68a;padding:8px 10px;border-radius:8px;margin-top:8px;font-size:0.8rem;color:#92400e;display:flex;align-items:center;gap:8px;">
                     <i class="fas fa-exclamation-triangle"></i>
-                    <span><strong>Meal not included for children</strong> — ${displayName} applies to adults only. Meals for children (${numChildren} child${numChildren > 1 ? 'ren' : ''}) are not part of this plan.</span>
+                    <span><strong>Child Meal Policy:</strong> Meals for children are not included in this plan. Please contact the property for child-meal details.</span>
                 </div>`;
         }
 
         return html;
+    },
+
+    /**
+     * Centralized logic to determine if a rate is refundable and get its deadline.
+     * ETG Certification Fix: Must check free_cancellation_before date even if is_free_cancellation is false/missing.
+     */
+    getCancellationStatus(rate) {
+        const cancelInfo = rate.cancellation_info || {};
+        const deadlineDate = cancelInfo.free_cancellation_before;
+        
+        let isRefundable = !!cancelInfo.is_free_cancellation;
+        let formattedDeadline = '';
+
+        if (deadlineDate) {
+            const now = new Date();
+            const deadline = new Date(deadlineDate);
+            
+            // If the deadline is in the future, it's refundable
+            if (deadline > now) {
+                isRefundable = true;
+                formattedDeadline = deadline.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+            }
+        }
+
+        return {
+            isRefundable,
+            deadline: formattedDeadline || (cancelInfo.free_cancellation_formatted?.datetime || cancelInfo.free_cancellation_formatted || '')
+        };
     },
 
     /**

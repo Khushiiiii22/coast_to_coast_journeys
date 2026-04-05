@@ -352,17 +352,22 @@ function createHotelCardHorizontal(hotel) {
                         <span class="price-per-night"><span class="amount">${price}</span> nightly</span>
                         ${originalPrice ? `<span class="price-original">${originalPrice}</span>` : ''}
                         <span class="price-total">${totalPrice} <span class="total-label">total</span></span>
-                        <span class="price-includes">${(() => {
-            const firstRate = hotel.rates && hotel.rates[0];
-            const taxInfo = firstRate && firstRate.tax_info;
-            const nonIncluded = taxInfo && taxInfo.non_included_taxes;
-            if (nonIncluded && nonIncluded.length > 0) {
-                return '<i class="fas fa-info-circle" style="color:#d97706"></i> + taxes payable at property';
+                        <div class="price-transparency-disclosure">
+                            ${(() => {
+            const fees = hotel.property_payable_fees || [];
+            if (fees.length > 0) {
+                // ETG Certification Requirement: Show original currency for property-payable fees
+                return fees.map(fee => 
+                    `<div class="property-fee-notice">
+                        <i class="fas fa-exclamation-circle"></i> 
+                        Pay at property: <strong>${fee.amount_native} ${fee.currency_native}</strong> ${fee.name}
+                    </div>`
+                ).join('');
             } else {
-                // Taxes are always bundled into the displayed total by the backend
-                return '<i class="fas fa-check-circle" style="color:#059669"></i> Incl. taxes &amp; fees';
+                return '<span class="price-includes"><i class="fas fa-check-circle" style="color:#059669"></i> Incl. taxes &amp; fees</span>';
             }
-        })()}</span>
+        })()}
+                        </div>
                     </div>
                     ${hotel.is_refundable ? '<span class="refundable-badge"><i class="fas fa-check-circle"></i> Fully refundable</span>' : ''}
                 </div>
@@ -650,9 +655,19 @@ function setupEventListeners() {
     // Modify search form
     document.getElementById('modifySearchForm')?.addEventListener('submit', handleModifySearch);
 
-    // Modify search children change
-    document.getElementById('modifyChildren')?.addEventListener('change', function () {
-        updateChildAgeInputs(parseInt(this.value));
+    // Add/Remove Room buttons in Modify Modal
+    document.getElementById('modifyAddRoomBtn')?.addEventListener('click', () => {
+        if (modifyRooms.length < 8) {
+            modifyRooms.push({ adults: 2, children: 0, childAges: [] });
+            renderModifyRooms();
+        }
+    });
+
+    document.getElementById('modifyRemoveRoomBtn')?.addEventListener('click', () => {
+        if (modifyRooms.length > 1) {
+            modifyRooms.pop();
+            renderModifyRooms();
+        }
     });
 
     // Property search
@@ -755,6 +770,8 @@ function clearFilters() {
     applyFiltersAndSort();
 }
 
+let modifyRooms = [{ adults: 2, children: 0, childAges: [] }];
+
 /**
  * Open modify search modal
  */
@@ -766,38 +783,137 @@ function openModifyModal() {
         document.getElementById('modifyDestination').value = params.destination || '';
         document.getElementById('modifyCheckin').value = params.checkin || '';
         document.getElementById('modifyCheckout').value = params.checkout || '';
-        document.getElementById('modifyRooms').value = Array.isArray(params.rooms) ? params.rooms.length : (params.rooms || 1);
-        document.getElementById('modifyAdults').value = params.adults || 2;
 
-        // Handle Children
-        const children = params.children_ages ? params.children_ages.length : 0;
-        const childSelect = document.getElementById('modifyChildren');
-        if (childSelect) {
-            childSelect.value = children;
-            // Update age inputs based on count
-            updateChildAgeInputs(children);
-
-            // Fill age inputs
-            if (children > 0 && params.children_ages) {
-                // Must wait for DOM update if we just set innerHTML in updateChildAgeInputs
-                // But since it's synchronous, we should be fine, but let's select newly created elements
-                const ageSelects = document.querySelectorAll('.child-age-select');
-                params.children_ages.forEach((age, index) => {
-                    if (ageSelects[index]) ageSelects[index].value = age;
+        // Initialize modifyRooms from params
+        if (params.rooms && Array.isArray(params.rooms)) {
+            modifyRooms = JSON.parse(JSON.stringify(params.rooms));
+        } else if (params.rooms) {
+            // Legacy/Fallback for simple room count
+            modifyRooms = [];
+            const count = parseInt(params.rooms);
+            for (let i = 0; i < count; i++) {
+                modifyRooms.push({
+                    adults: params.adults || 2,
+                    children: (params.children_ages && i === 0) ? params.children_ages.length : 0,
+                    childAges: (params.children_ages && i === 0) ? [...params.children_ages] : []
                 });
             }
         }
 
-        // Set residency if element exists
+        // Set residency
         const residencySelect = document.getElementById('modifyResidency');
         if (residencySelect && params.residency) {
             residencySelect.value = params.residency;
         }
+
+        renderModifyRooms();
     }
 
     modal.classList.add('show');
     document.body.style.overflow = 'hidden';
 }
+
+function renderModifyRooms() {
+    const container = document.getElementById('modifyRoomsContainer');
+    if (!container) return;
+
+    let html = '';
+    modifyRooms.forEach((room, index) => {
+        const totalGuests = room.adults + room.children;
+        const canAddAdult = room.adults < 6 && totalGuests < 10;
+        const canAddChild = room.children < 4 && totalGuests < 10;
+
+        html += `
+            <div class="room-block-modify" style="background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #e2e8f0;">
+                <div class="room-header" style="font-weight: 600; color: #1e293b; margin-bottom: 10px; display: flex; justify-content: space-between;">
+                    <span>Room ${index + 1}</span>
+                    ${totalGuests >= 10 ? '<span style="color: #ef4444; font-size: 0.75rem;"><i class="fas fa-exclamation-circle"></i> Max 10</span>' : ''}
+                </div>
+                <div class="traveler-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div class="traveler-info">
+                        <span style="display: block; font-weight: 500; font-size: 0.9rem;">Adults</span>
+                        <span style="display: block; font-size: 0.75rem; color: #64748b;">18+ years</span>
+                    </div>
+                    <div class="traveler-counter" style="display: flex; align-items: center; gap: 12px;">
+                        <button type="button" class="counter-btn" onclick="updateModifyGuest(${index}, 'adults', -1)" 
+                            style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; cursor: pointer;"
+                            ${room.adults <= 1 ? 'disabled' : ''}>-</button>
+                        <span style="min-width: 20px; text-align: center;">${room.adults}</span>
+                        <button type="button" class="counter-btn" onclick="updateModifyGuest(${index}, 'adults', 1)"
+                            style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; cursor: pointer;"
+                            ${!canAddAdult ? 'disabled' : ''}>+</button>
+                    </div>
+                </div>
+                <div class="traveler-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div class="traveler-info">
+                        <span style="display: block; font-weight: 500; font-size: 0.9rem;">Children</span>
+                        <span style="display: block; font-size: 0.75rem; color: #64748b;">0-17 years</span>
+                    </div>
+                    <div class="traveler-counter" style="display: flex; align-items: center; gap: 12px;">
+                        <button type="button" class="counter-btn" onclick="updateModifyGuest(${index}, 'children', -1)"
+                            style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; cursor: pointer;"
+                            ${room.children <= 0 ? 'disabled' : ''}>-</button>
+                        <span style="min-width: 20px; text-align: center;">${room.children}</span>
+                        <button type="button" class="counter-btn" onclick="updateModifyGuest(${index}, 'children', 1)"
+                            style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; cursor: pointer;"
+                            ${!canAddChild ? 'disabled' : ''}>+</button>
+                    </div>
+                </div>
+                ${room.children > 0 ? `
+                    <div class="child-ages-container" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1;">
+                        ${room.childAges.map((age, i) => `
+                            <div class="child-age-group">
+                                <label style="display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 4px;">Child ${i + 1} Age</label>
+                                <select onchange="updateModifyChildAge(${index}, ${i}, this.value)" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.8rem;">
+                                    ${Array.from({ length: 18 }, (_, k) => `<option value="${k}" ${age == k ? 'selected' : ''}>${k} year${k !== 1 ? 's' : ''}</option>`).join('')}
+                                </select>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+    
+    // Update buttons
+    const addBtn = document.getElementById('modifyAddRoomBtn');
+    const removeBtn = document.getElementById('modifyRemoveRoomBtn');
+    if (addBtn) addBtn.disabled = modifyRooms.length >= 8;
+    if (removeBtn) removeBtn.style.display = modifyRooms.length > 1 ? 'block' : 'none';
+}
+
+window.updateModifyGuest = function(roomIndex, type, change) {
+    const room = modifyRooms[roomIndex];
+    if (!room) return;
+
+    const totalGuests = room.adults + room.children;
+
+    if (type === 'adults') {
+        const newValue = room.adults + change;
+        if (newValue >= 1 && newValue <= 6 && (newValue + room.children) <= 10) {
+            room.adults = newValue;
+        }
+    } else if (type === 'children') {
+        const newValue = room.children + change;
+        if (newValue >= 0 && newValue <= 4 && (room.adults + newValue) <= 10) {
+            room.children = newValue;
+            if (change > 0) {
+                room.childAges.push(7); // Default age 7
+            } else {
+                room.childAges.pop();
+            }
+        }
+    }
+    renderModifyRooms();
+};
+
+window.updateModifyChildAge = function(roomIndex, childIndex, value) {
+    if (modifyRooms[roomIndex]) {
+        modifyRooms[roomIndex].childAges[childIndex] = parseInt(value);
+    }
+};
 
 /**
  * Close modify search modal
@@ -848,28 +964,22 @@ function handleModifySearch(e) {
     const residencySelect = document.getElementById('modifyResidency');
     const residency = residencySelect ? residencySelect.value : 'in';
 
-    // Collect children ages
-    const childrenCount = parseInt(document.getElementById('modifyChildren').value);
-    const childrenAges = [];
+    // Validate that all child ages are selected
+    let allAgesSelected = true;
+    modifyRooms.forEach(room => {
+        if (room.childAges.some(age => age === null)) allAgesSelected = false;
+    });
 
-    if (childrenCount > 0) {
-        document.querySelectorAll('.child-age-select').forEach(select => {
-            if (select.value !== '') {
-                childrenAges.push(parseInt(select.value));
-            } else {
-                // Default to 0 if not selected to avoid errors, or could validate
-                childrenAges.push(0);
-            }
-        });
+    if (!allAgesSelected) {
+        alert('Please select age for all children.');
+        return;
     }
 
     const params = {
         destination: document.getElementById('modifyDestination').value,
         checkin: document.getElementById('modifyCheckin').value,
         checkout: document.getElementById('modifyCheckout').value,
-        rooms: parseInt(document.getElementById('modifyRooms').value),
-        adults: parseInt(document.getElementById('modifyAdults').value),
-        children_ages: childrenAges,
+        rooms: modifyRooms, // Pass the entire array
         residency: residency // ETG requires this for accurate pricing
     };
 

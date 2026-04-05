@@ -274,7 +274,7 @@ def search_by_region():
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
         
         # Format guests (supports multi-room if 'rooms' is provided)
-        rooms_data = data.get('rooms')  # array of {adults, childAges} per room
+        rooms_data = data.get('rooms')
         guests = etg_service.format_guests_for_search(
             adults=data['adults'],
             children_ages=data.get('children_ages', []),
@@ -331,9 +331,12 @@ def search_by_geo():
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
         
+        # Format guests (supports multi-room if 'rooms' is provided)
+        rooms_data = data.get('rooms')
         guests = etg_service.format_guests_for_search(
             adults=data['adults'],
-            children_ages=data.get('children_ages', [])
+            children_ages=data.get('children_ages', []),
+            rooms=rooms_data
         )
         
         result = etg_service.search_by_geo(
@@ -373,9 +376,12 @@ def search_by_hotel_ids():
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
         
+        # Format guests (supports multi-room if 'rooms' is provided)
+        rooms_data = data.get('rooms')
         guests = etg_service.format_guests_for_search(
             adults=data['adults'],
-            children_ages=data.get('children_ages', [])
+            children_ages=data.get('children_ages', []),
+            rooms=rooms_data
         )
         
         result = etg_service.search_by_hotels(
@@ -520,7 +526,7 @@ def search_by_destination():
                     hotel_ids=hotel_ids_to_search,
                     checkin=data['checkin'],
                     checkout=data['checkout'],
-                    guests=guests,
+                    rooms=guests,
                     currency=api_currency, # Force USD for sandbox compatibility
                     residency=data.get('residency', 'gb')
                 )
@@ -530,7 +536,7 @@ def search_by_destination():
                     region_id=region_id,
                     checkin=data['checkin'],
                     checkout=data['checkout'],
-                    guests=guests,
+                    rooms=guests,
                     currency=api_currency, # Force USD for sandbox compatibility
                     residency=data.get('residency', 'gb')
                 )
@@ -609,7 +615,7 @@ def search_by_destination():
                         region_id=region_id,
                         checkin=data['checkin'],
                         checkout=data['checkout'],
-                        guests=guests,
+                        rooms=guests,
                         currency=target_currency,
                         residency=data.get('residency', 'gb')
                     )
@@ -623,7 +629,7 @@ def search_by_destination():
                         hotel_ids=hotel_ids,
                         checkin=data['checkin'],
                         checkout=data['checkout'],
-                        guests=guests,
+                        rooms=guests,
                         currency=target_currency,
                         residency=data.get('residency', 'gb')
                     )
@@ -785,49 +791,67 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
         best_meal_display = 'Room Only'
         has_breakfast = False
         no_child_meal = False
+        best_rate_fees = []
+        prepay_to_charge = 0
         
-        # Determine lowest price including taxes
+        # Determine best rate and gather transparency data
         for rate in rates:
             payment_options = rate.get('payment_options', {})
             payment_types = payment_options.get('payment_types', [])
             rate_currency = payment_options.get('currency_code', 'USD')
             
+            # API Total is the amount ETG says the booking costs inclusive of ALL taxes
             api_total = float(payment_types[0].get('amount', 0)) if payment_types else 0
             
-            # Non-included Taxes (Property Fees)
+            # Identify Property-Payable (Non-Included) Taxes
             api_non_included_tax = 0
+            property_fees = []
             tax_data = payment_options.get('tax_data', {}) or {}
+            
             for tax in tax_data.get('taxes', []):
+                amt = float(tax.get('amount', 0))
+                # Certification requirement (Tax Discovery): 
+                # If included_by_supplier is false, the guest pays at the property.
                 if not tax.get('included_by_supplier', True):
-                    api_non_included_tax += float(tax.get('amount', 0))
+                    api_non_included_tax += amt
+                    property_fees.append({
+                        'name': tax.get('name', 'Local Fee'),
+                        'amount_native': amt,
+                        'currency_native': tax.get('currency_code', rate_currency)
+                    })
 
-            # Apply currency conversion if target differs from rate currency
-            # We explicitly handle USD to INR conversion since we force USD API calls
-            converted_api_total = api_total
+            # Calculate amount to charge the user on our platform (Prepaid Total)
+            # Mikhail Requirement (Update 3): We MUST subtract non-included fees from the prepaid total.
+            api_prepaid_amount = api_total - api_non_included_tax
+
+            # Apply conversion and markup to the prepaid component
+            converted_prepaid = api_prepaid_amount
             if target_currency == 'INR' and rate_currency == 'USD' and conversion_rates:
-                converted_api_total = api_total * conversion_rates.get('USD_TO_INR', 86.5)
+                converted_prepaid = api_prepaid_amount * conversion_rates.get('USD_TO_INR', 86.5)
             elif target_currency == 'INR' and rate_currency == 'EUR' and conversion_rates:
-                converted_api_total = api_total * conversion_rates.get('EUR_TO_INR', 92.0)
+                converted_prepaid = api_prepaid_amount * conversion_rates.get('EUR_TO_INR', 92.0)
             elif target_currency == rate_currency:
-                converted_api_total = api_total
+                converted_prepaid = api_prepaid_amount
             elif conversion_rates and f"{rate_currency}_TO_{target_currency}" in conversion_rates:
-                converted_api_total = api_total * conversion_rates[f"{rate_currency}_TO_{target_currency}"]
+                converted_prepaid = api_prepaid_amount * conversion_rates[f"{rate_currency}_TO_{target_currency}"]
 
+            # Display total: what the user sees (Prepaid + Property Fees converted)
             # Final display price inclusive of everything
-            # (converted_api_total includes API_Net + API_Included_Tax in display currency)
-            display_total = (converted_api_total * (1 + COMMISSION_RATE)) + api_non_included_tax
+            display_total = (converted_prepaid * (1 + COMMISSION_RATE)) + (api_non_included_tax * conversion_rates.get(f"{rate_currency}_TO_{target_currency}", 1) if target_currency != rate_currency else api_non_included_tax)
             display_nightly = display_total / (nights if nights > 0 else 1)
             
             if lowest_price == 0 or display_nightly < lowest_price:
                 lowest_price = display_nightly
                 best_rate = rate
-                # Also capture meal info for the best rate
+                # Save essential data for UI rendering
                 meal_data = rate.get('meal_data', {})
                 best_meal_value = meal_data.get('value', rate.get('meal', 'nomeal'))
                 best_meal_display = MEAL_TYPE_DISPLAY.get(best_meal_value, best_meal_value.replace('-', ' ').title())
                 has_breakfast = 'breakfast' in best_meal_value.lower()
                 no_child_meal = meal_data.get('no_child_meal', False)
-        
+                best_rate_fees = property_fees
+                # The actual amount to charge the guest (excluding what they pay at property)
+                prepay_to_charge = converted_prepaid * (1 + COMMISSION_RATE)
         # Use Static Data for Name/Image/Address if available
         # Fallback to search result data, then to safe defaults
         static_info = hotel.get('static_data', {}) # Assuming static data is passed in or fetched
@@ -836,6 +860,36 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
         # Clean up hotel name (RateHawk sometimes returns snake_case slugs as names)
         if hotel_name and '_' in hotel_name:
             hotel_name = hotel_name.replace('_', ' ').replace('  ', ' ').title()
+        
+        # Perform full transformation of all rates for the details page
+        enriched_rates = transform_rates(
+            rates,
+            target_currency=target_currency,
+            conversion_rates=conversion_rates,
+            meal_display_map=MEAL_TYPE_DISPLAY,
+            room_groups=room_groups,
+            nights=nights
+        )
+
+        transformed.append({
+            'id': hotel_id,
+            'name': hotel_name,
+            'price': lowest_price,
+            'prepaid_amount': prepay_to_charge, # Corrected amount for payment gateway
+            'property_payable_fees': best_rate_fees, # Transparency Disclosure
+            'currency': target_currency,
+            'meal_type': best_meal_value,
+            'meal_display': best_meal_display,
+            'has_breakfast': has_breakfast,
+            'no_child_meal': no_child_meal,
+            'star_rating': static_info.get('star_rating') or hotel.get('star_rating'),
+            'address': static_info.get('address') or hotel.get('address', ''),
+            'latitude': static_info.get('latitude') or hotel.get('latitude'),
+            'longitude': static_info.get('longitude') or hotel.get('longitude'),
+            'images': hotel.get('images', []),
+            'amenities': hotel.get('amenities', []),
+            'rates': enriched_rates  # CRITICAL: Preserve full rates for Details Page
+        })
         
         # Image logic - prioritize API images
         image_url = None
@@ -963,36 +1017,53 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map, 
         # 3. Extract and Convert Non-Included Taxes (Property Fees)
         # We add these to the display total to satisfy "Includes all taxes"
         api_non_included_tax = 0
+        property_fees = []
         for tax in payment_options.get('tax_data', {}).get('taxes', []):
             if not tax.get('included_by_supplier', True):
-                val = float(tax.get('amount', 0))
-                # Note: These are usually in local currency, but ETG often provides them in rate currency too
-                if target_currency == 'INR' and rate_currency == 'USD':
-                    val *= conversion_rates['USD_TO_INR']
-                elif target_currency == 'INR' and rate_currency == 'EUR':
-                    val *= conversion_rates['EUR_TO_INR']
-                api_non_included_tax += val
+                amt = float(tax.get('amount', 0))
+                api_non_included_tax += amt
+                property_fees.append({
+                    'name': tax.get('name', 'Local Fee'),
+                    'amount_native': amt,
+                    'currency_native': tax.get('currency_code', rate_currency)
+                })
 
         # 4. Calculate Final Display Values
-        # Apply currency conversion to the base API total
-        converted_api_total = api_total
+        # Calculate amount to charge the user on our platform (Prepaid Total)
+        # Mikhail Requirement: Markup only the prepaid component
+        api_prepaid_amount = api_total - api_non_included_tax
+
+        # Apply currency conversion to the prepaid component
+        converted_prepaid = api_prepaid_amount
         if target_currency == 'INR' and rate_currency == 'USD' and conversion_rates:
-            converted_api_total = api_total * conversion_rates.get('USD_TO_INR', 86.5)
+            converted_prepaid = api_prepaid_amount * conversion_rates.get('USD_TO_INR', 86.5)
         elif target_currency == 'INR' and rate_currency == 'EUR' and conversion_rates:
-            converted_api_total = api_total * conversion_rates.get('EUR_TO_INR', 92.0)
+            converted_prepaid = api_prepaid_amount * conversion_rates.get('EUR_TO_INR', 92.0)
         elif target_currency != rate_currency and conversion_rates:
             key = f"{rate_currency}_TO_{target_currency}"
             if key in conversion_rates:
-                converted_api_total = api_total * conversion_rates[key]
+                converted_prepaid = api_prepaid_amount * conversion_rates[key]
         
-        # Apply commission only to what WE collect (API Total)
-        # But for user perception, we show one grand total
-        display_total_with_fees = (converted_api_total * (1 + COMMISSION_RATE)) + api_non_included_tax
+        # Apply commission only to what WE collect (Prepaid)
+        prepay_to_charge = converted_prepaid * (1 + COMMISSION_RATE)
+        
+        # Property fees converted for display
+        display_property_fees = api_non_included_tax * (conversion_rates.get(f"{rate_currency}_TO_{target_currency}", 1) if target_currency != rate_currency else 1)
+        
+        # Grand total for the user
+        display_total_with_fees = prepay_to_charge + display_property_fees
         
         # Nightly inclusive price for display
         display_nightly_inclusive = display_total_with_fees / (nights if nights > 0 else 1)
         
-        # Update tax_info for frontend visibility if needed
+        # Save enriched data back to the rate object
+        rate['price'] = display_nightly_inclusive
+        rate['prepaid_amount'] = prepay_to_charge
+        rate['property_payable_fees'] = property_fees
+        rate['currency'] = target_currency
+        rate['meal_display'] = meal_display_map.get(rate.get('meal', 'nomeal'), rate.get('meal', 'Room Only').title())
+
+        transformed_rates.append(rate)
         tax_info = parse_taxes(
             payment_options.get('tax_data', {}), 
             target_currency, 
@@ -2363,15 +2434,37 @@ def enrich_rate_with_room_data(rate, room_groups):
     
     # Calculate Price with Commission
     # ETG returns NET price. We must add our markup.
+    # Mikhail Requirement (Update 3 & 4): Markup ONLY applies to the PREPAID portion.
+    # Non-included property fees must be passed through AT COST for transparency.
     try:
-        net_price = float(rate.get('payment_options', {}).get('payment_types', [{}])[0].get('amount', 0))
-        sales_price = net_price * (1 + COMMISSION_PERCENT / 100)
-        enriched_rate['price'] = round(sales_price, 2)
-        enriched_rate['net_price'] = net_price  # Keep original for reference
+        api_total = float(rate.get('payment_options', {}).get('payment_types', [{}])[0].get('amount', 0))
+        
+        # Identify non-included taxes
+        api_non_included_tax = 0
+        tax_data = rate.get('tax_data', {}) or {}
+        for tax in tax_data.get('taxes', []):
+            if not tax.get('included_by_supplier', True):
+                api_non_included_tax += float(tax.get('amount', 0))
+        
+        # Base for markup
+        api_prepaid_base = api_total - api_non_included_tax
+        
+        # Apply 15% Markup to prepaid portion only
+        markup_factor = 1 + (COMMISSION_PERCENT / 100)
+        sales_prepaid = api_prepaid_base * markup_factor
+        
+        # Final display price = Marked-up Prepaid + Raw Property Fees
+        final_sales_price = sales_prepaid + api_non_included_tax
+        
+        enriched_rate['price'] = round(final_sales_price, 2)
+        enriched_rate['prepaid_amount'] = round(sales_prepaid, 2)
+        enriched_rate['property_payable_fees_total'] = round(api_non_included_tax, 2)
+        enriched_rate['net_price'] = api_total  # Keep for internal reference
         
         # Calculate original price (fake higher price for discount display)
-        enriched_rate['original_price'] = round(sales_price * 1.25, 2)
-    except Exception:
+        enriched_rate['original_price'] = round(final_sales_price * 1.25, 2)
+    except Exception as e:
+        print(f"⚠️ Error calculating commission in enrich_rate: {e}")
         enriched_rate['price'] = 0
     
     # ── Room-group matching ───────────────────────────────────────────────────
@@ -2442,17 +2535,8 @@ def enrich_rate_with_room_data(rate, room_groups):
         'has_non_included_taxes': len(non_included_taxes) > 0
     }
     
-    # Extract cancellation policies
-    # ETG API sends cancellation_penalties with:
-    # - free_cancellation_before: timestamp for free cancellation deadline (UTC+0)
-    # - policies: array of cancellation tiers with penalties
-    cancellation_penalties = rate.get('cancellation_penalties', {})
-    free_cancellation_before = cancellation_penalties.get('free_cancellation_before')
-    policies = cancellation_penalties.get('policies', [])
-    
-    # Format cancellation info for frontend
-    currency_code = rate.get('payment_options', {}).get('currency_code', 'USD')
-    cancellation_info = extract_cancellation_info(free_cancellation_before, policies, currency_code)
+    # Extract cancellation policies (Update 5 - Use Helper for from_orig_time support)
+    cancellation_info = format_cancellation_policies(rate)
     enriched_rate['cancellation_info'] = cancellation_info
     
     # Extract Meal Data (New RateHawk Requirement)
@@ -2526,96 +2610,7 @@ def process_meal_data(meal_data):
     }
 
 
-def extract_cancellation_info(free_cancellation_before, policies, currency_code='USD'):
-    """
-    Extract and format cancellation policy information
-    
-    Parameters:
-    - free_cancellation_before: ISO timestamp for free cancellation deadline (UTC+0)
-    - policies: array of cancellation tiers
-    - currency_code: currency for penalty display
-    """
-    cancellation_info = {
-        'is_free_cancellation': free_cancellation_before is not None,
-        'free_cancellation_before': free_cancellation_before,
-        'free_cancellation_formatted': None,
-        'policies': [],
-        'summary': 'Non-refundable',
-        'currency_code': currency_code
-    }
-    
-    if free_cancellation_before:
-        # Parse and format the deadline
-        try:
-            # Format: "2025-10-21T08:59:00"
-            from datetime import datetime
-            deadline = datetime.fromisoformat(free_cancellation_before.replace('Z', ''))
-            
-            # Format for display
-            cancellation_info['free_cancellation_formatted'] = {
-                'date': deadline.strftime('%d %b %Y'),  # e.g., "21 Oct 2025"
-                'time': deadline.strftime('%H:%M'),     # e.g., "08:59"
-                'datetime': deadline.strftime('%d %b %Y, %H:%M (UTC+0)'),  # Requested format
-                'iso': free_cancellation_before
-            }
-            
-            cancellation_info['summary'] = f"Free cancellation until {deadline.strftime('%d %b %Y, %H:%M')} (UTC+0)"
-        except Exception:
-            # If parsing fails, use raw value
-            cancellation_info['free_cancellation_formatted'] = {
-                'date': free_cancellation_before,
-                'time': '',
-                'datetime': f"{free_cancellation_before} (UTC+0)",
-                'iso': free_cancellation_before
-            }
-            cancellation_info['summary'] = f"Free cancellation until {free_cancellation_before} (UTC+0)"
-    
-    # Process cancellation policies (tiers)
-    for policy in policies:
-        start_at = policy.get('start_at')
-        end_at = policy.get('end_at')
-        amount_show = policy.get('amount_show', '0')
-        amount_charge = policy.get('amount_charge', '0')
-        
-        # Determine policy type
-        if start_at is None and float(amount_show) == 0:
-            # Free cancellation period
-            policy_type = 'free'
-        elif end_at is None:
-            # Full penalty (no refund)
-            policy_type = 'full_penalty'
-        else:
-            # Partial penalty
-            policy_type = 'partial_penalty'
-        
-        formatted_policy = {
-            'type': policy_type,
-            'start_at': start_at,
-            'end_at': end_at,
-            'penalty_amount': amount_show,
-            'penalty_amount_internal': amount_charge
-        }
-        
-        # Format dates for display
-        if start_at:
-            try:
-                from datetime import datetime
-                start = datetime.fromisoformat(start_at.replace('Z', ''))
-                formatted_policy['start_formatted'] = start.strftime('%d %b %Y, %H:%M (UTC+0)')
-            except:
-                formatted_policy['start_formatted'] = start_at
-        
-        if end_at:
-            try:
-                from datetime import datetime
-                end = datetime.fromisoformat(end_at.replace('Z', ''))
-                formatted_policy['end_formatted'] = end.strftime('%d %b %Y, %H:%M (UTC+0)')
-            except:
-                formatted_policy['end_formatted'] = end_at
-        
-        cancellation_info['policies'].append(formatted_policy)
-    
-    return cancellation_info
+# DELETED LOCAL REDUNDANT CANCELLATION PARSER - NOW USING central helpers.py
 
 
 def format_tax_name(tax_name):
@@ -2761,10 +2756,12 @@ def create_booking():
         user_ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
         
         # Create booking in ETG using the validated hash
+        # Support for 4th update: pass 'rooms' if available, fallback to 'guests'
         etg_result = etg_service.create_booking(
             book_hash=book_hash,
             partner_order_id=partner_order_id,
-            guests=data['guests'],
+            guests=data.get('guests'),
+            rooms=data.get('rooms'),
             user_ip=user_ip,
             user_comment=data.get('special_requests')
         )
@@ -2792,8 +2789,8 @@ def create_booking():
             'hotel_name': data.get('hotel_name', ''),
             'check_in': data.get('checkin'),
             'check_out': data.get('checkout'),
-            'rooms': len(data['guests']),
-            'guests': data['guests'],
+            'rooms': data.get('rooms') or [{"guests": data.get('guests', [])}],
+            'guests': data.get('guests') or (data.get('rooms', [{}])[0].get('guests', []) if data.get('rooms') else []),
             'customer_email': data.get('email'),
             'customer_phone': data.get('phone'),
             'special_requests': data.get('special_requests'),
@@ -2850,23 +2847,27 @@ def finish_booking():
         
         booking_info = db_booking['data']
         
-        # Call finish booking with all required details for ETG v3
+        # Mikhail Requirement (Update 6): Update to "processing" IMMEDIATELY before starting finalization
+        # This ensures the frontend sees "In Progress" even if the API call is slow.
+        supabase_service.update_booking_by_partner_order_id(
+            partner_order_id,
+            {'status': 'processing'}
+        )
+        
+        # Finalize with ETG
+        # Support for 4th update: pass 'rooms' if stored in DB
         result = etg_service.finish_booking(
             partner_order_id=partner_order_id,
             email=booking_info.get('customer_email') or booking_info.get('email', 'info@coasttocoastjourneys.com'),
             phone=booking_info.get('customer_phone') or booking_info.get('phone', '0000000000'),
             guests=booking_info.get('guests', []),
+            rooms=booking_info.get('rooms'),
             amount=booking_info.get('total_amount', 0),
             currency=booking_info.get('currency', 'INR'),
             user_comment=booking_info.get('special_requests')
         )
         
         if result.get('success'):
-            # Update booking status in database
-            supabase_service.update_booking_by_partner_order_id(
-                partner_order_id,
-                {'status': 'processing'}
-            )
             return jsonify(result)
         
         # ===== ERROR HANDLING (Table 3) =====
@@ -3120,7 +3121,7 @@ def poll_booking_status():
                         'data': result['data']
                     })
                 
-                # === KNOWN ERRORS (Table 4) ===
+                # === KNOWN TERMINAL ERRORS (Table 4) ===
                 error_key = error if error else status
                 if error_key in ERROR_MESSAGES:
                     supabase_service.update_booking_by_partner_order_id(
@@ -3134,30 +3135,27 @@ def poll_booking_status():
                         'error_code': error_key.upper()
                     })
                 
-                # === TIMEOUT / UNKNOWN from ETG ===
-                if error_key in ('timeout', 'unknown'):
-                    supabase_service.update_booking_by_partner_order_id(
-                        partner_order_id,
-                        {'status': 'pending', 'booking_response': result['data']}
-                    )
-                    return jsonify({
-                        'success': False,
-                        'status': 'pending',
-                        'error': 'Your booking is still being processed. We will send you a confirmation email once it is finalized.',
-                        'error_code': 'PENDING'
-                    })
+                # === NON-FINAL ERRORS (timeout, unknown, processing) ===
+                # Per Mikhail: Continue polling until status "ok" or a definitive terminal error.
+                if status == 'processing' or error_key in ('timeout', 'unknown'):
+                    print(f"🔄 Polling Status: {status} (Error: {error_key}). Attempt {attempt+1}/{max_attempts}...")
+                    attempt += 1
+                    time.sleep(2.5)
+                    continue
                 
-                # === UNRECOGNIZED STATUS ===
-                # If we get a status we don't recognize, do NOT terminate the loop.
-                # Just continue polling until timeout or a known terminal status.
+                # Unrecognized status -> default to continue polling (Safety)
+                attempt += 1
+                time.sleep(2.5)
+                continue
             
             # API call itself failed (5xx, network error)
-            elif result.get('status_code') and result['status_code'] >= 500:
-                # 5xx -> continue polling (ETG may still be processing)
-                print(f"⚠️ 5xx error during status poll attempt {attempt}, continuing...")
-            
-            attempt += 1
-            time.sleep(2.5)
+            else:
+                # 5xx / Network Error -> continue polling (ETG says it can still be successful)
+                status_code = result.get('status_code', 'unknown')
+                print(f"⚠️ Status check failed (HTTP {status_code}) on attempt {attempt+1}, continuing...")
+                attempt += 1
+                time.sleep(2.5)
+                continue
         
         # === POLLING TIMEOUT (180s exhausted) ===
         # Save as pending - booking may still succeed on ETG side

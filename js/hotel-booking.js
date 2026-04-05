@@ -224,6 +224,24 @@ async function processRealBooking(guests, email, phone, specialRequests) {
             return { success: false, error: 'Room is no longer available at this price' };
         }
 
+        // IMPORTANT: ETG requires that we use the hash returned from the prebook call
+        // for all subsequent booking steps.
+        // Extraction logic matches verified backend test: data.data.hotels[0].rates[0].book_hash
+        const etgData = prebookResult.data?.data || {};
+        let updatedHash = null;
+        
+        if (etgData.hotels && etgData.hotels[0] && etgData.hotels[0].rates && etgData.hotels[0].rates[0]) {
+            updatedHash = etgData.hotels[0].rates[0].book_hash;
+        }
+        
+        // Fallbacks
+        updatedHash = updatedHash || etgData.hash || prebookResult.data?.hash || rate.book_hash;
+        
+        console.log('🔗 Booking sequence hash update:', { 
+            original: rate.book_hash.substring(0, 15) + '...', 
+            updated: updatedHash.substring(0, 15) + '...' 
+        });
+
         // FIX F: Handle price_changed during prebook
         if (prebookResult.price_changed) {
             hideLoadingOverlay();
@@ -241,14 +259,17 @@ async function processRealBooking(guests, email, phone, specialRequests) {
 
             // Update global state so next click uses new data
             bookingData.total_amount = newTotalINR;
+            
+            // IMPORTANT: We must update the rate object too so the next attempt uses the NEW hash
+            rate.book_hash = updatedHash;
 
             return { success: false, error: 'Price updated. Please confirm again.' };
         }
 
-        // Step 2: Create booking
+        // Step 2: Create booking (Order Form)
         updateLoadingMessage('Creating your reservation...');
         const bookingParams = {
-            book_hash: rate.book_hash,
+            book_hash: updatedHash, // Use the hash returned from prebook!
             guests: guests,
             email: email,
             phone: phone,
@@ -270,12 +291,16 @@ async function processRealBooking(guests, email, phone, specialRequests) {
         // Step 3: Finish booking
         updateLoadingMessage('Finalizing your booking...');
         const finishResult = await HotelAPI.finishBooking(createResult.partner_order_id);
+        
+        if (!finishResult.success) {
+            return { success: false, error: finishResult.error || 'Failed to finalize booking process' };
+        }
 
         // Step 4: Poll for confirmation
         updateLoadingMessage('Confirming with hotel...');
         const statusResult = await HotelAPI.pollBookingStatus(createResult.partner_order_id);
 
-        if (statusResult.success && statusResult.status === 'confirmed') {
+        if (statusResult.success && (statusResult.status === 'confirmed' || statusResult.data?.status === 'ok')) {
             return {
                 success: true,
                 partner_order_id: createResult.partner_order_id,

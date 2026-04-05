@@ -45,17 +45,64 @@ logging.basicConfig(
 )
 logger = logging.getLogger('etg_sync')
 
+import requests
+import json
+import gzip
+import io
+
+def process_and_ingest(url, sync_type):
+    """Download, parse, and upsert ETG static data to Supabase"""
+    logger.info(f"Starting ingestion from URL: {url}")
+    try:
+        # 1. Download the file
+        response = requests.get(url, stream=True, timeout=300)
+        response.raise_for_status()
+        
+        # ETG often sends gzipped content
+        content = response.content
+        if url.endswith('.gz') or response.headers.get('Content-Encoding') == 'gzip':
+            with gzip.GzipFile(fileobj=io.BytesIO(content)) as f:
+                data = json.load(f)
+        else:
+            data = response.json()
+            
+        # 2. Extract hotels list (RateHawk schema: {"data": [...hotels...]})
+        hotels = data.get('data', [])
+        if not isinstance(hotels, list):
+            logger.error(f"Unexpected data format: 'data' is not a list")
+            return False
+            
+        logger.info(f"Processing {len(hotels)} hotels from {sync_type} sync...")
+        
+        # 3. Batch Upsert to Supabase (Batching to avoid timeout/memory issues)
+        batch_size = 100
+        for i in range(0, len(hotels), batch_size):
+            batch = hotels[i:i + batch_size]
+            for hotel in batch:
+                hotel_id = hotel.get('id')
+                if hotel_id:
+                    # Upsert into hotel_cache
+                    supabase_service.cache_hotel(hotel_id, hotel)
+            
+            if (i // batch_size) % 5 == 0: # Log every 5 batches
+                logger.info(f"Processed {min(i + batch_size, len(hotels))}/{len(hotels)} hotels...")
+                
+        logger.info(f"✅ Successfully ingested {len(hotels)} hotels into Supabase.")
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Ingestion failed: {e}")
+        return False
+
 def sync_full_dump():
     """Execute weekly full /hotel/dump/"""
     logger.info("Starting WEEKLY FULL /hotel/dump/ sync...")
     try:
-        # Trigger the ETG API for a full dump
         result = etg_service.get_hotel_dump(language="en", inventory="all")
         if result.get('success'):
             url = result.get('data', {}).get('url')
             if url:
-                logger.info(f"Successfully retrieved full dump URL: {url}")
-                logger.info("TODO: Implement download and database upsert logic here")
+                process_and_ingest(url, "Full")
             else:
                 logger.warning("ETG returned success but no URL found in response")
         else:
@@ -67,13 +114,11 @@ def sync_incremental_dump():
     """Execute daily /hotel/dump/incremental/"""
     logger.info("Starting DAILY INCREMENTAL /hotel/dump/incremental/ sync...")
     try:
-        # Trigger the ETG API for an incremental dump
         result = etg_service.get_hotel_incremental_dump(language="en")
         if result.get('success'):
             url = result.get('data', {}).get('url')
             if url:
-                logger.info(f"Successfully retrieved incremental dump URL: {url}")
-                logger.info("TODO: Implement download and database upsert logic here")
+                process_and_ingest(url, "Incremental")
             else:
                 logger.warning("ETG returned success but no URL found in response")
         else:

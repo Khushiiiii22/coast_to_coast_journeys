@@ -21,23 +21,30 @@ def format_cancellation_policies(rate):
     if not penalties:
         return cancellation_info
         
-    # Check for free cancellation deadline
+    # Check for free cancellation deadline (v3 priority)
+    # v3 provides 'from_orig_time' which is the literal time at the property
     free_cancel_limit = penalties.get('free_cancellation_before')
+    orig_time = penalties.get('from_orig_time')
     
-    if free_cancel_limit:
+    if free_cancel_limit or orig_time:
         cancellation_info['is_free_cancellation'] = True
+        display_time = orig_time if orig_time else free_cancel_limit
+        is_utc = not bool(orig_time) # If using raw utc limit, add UTC+0
+        
         try:
             # Parse datetime e.g. "2025-10-21T08:59:00"
-            dt = datetime.strptime(free_cancel_limit, "%Y-%m-%dT%H:%M:%S")
-            # Format nicely with UTC indication
+            clean_time = display_time.split('.')[0] # Remove milliseconds if present
+            dt = datetime.strptime(clean_time, "%Y-%m-%dT%H:%M:%S")
+            suffix = " (UTC+0)" if is_utc else ""
             cancellation_info['free_cancellation_formatted'] = {
-                'datetime': dt.strftime("%d %b %Y, %H:%M (UTC+0)"),
-                'raw': free_cancel_limit
+                'datetime': dt.strftime("%d %b %Y, %H:%M") + suffix,
+                'raw': display_time
             }
-        except Exception:
-             cancellation_info['free_cancellation_formatted'] = {
-                'datetime': f"{free_cancel_limit} (UTC+0)",
-                'raw': free_cancel_limit
+        except Exception as e:
+            print(f"⚠️ Error parsing cancellation date {display_time}: {e}")
+            cancellation_info['free_cancellation_formatted'] = {
+                'datetime': f"{display_time}" + (" (UTC+0)" if is_utc else ""),
+                'raw': display_time
             }
     
     # process detailed policies
