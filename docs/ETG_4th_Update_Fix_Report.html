@@ -235,7 +235,23 @@ Non-included Taxes (e.g. City Tax): $15.00
         </div>
 
         <div class="card">
-            <h2>5. Frontend Handling of Sandbox Rate Limiting</h2>
+            <h2>5. Table 3 & Table 4 Error Protocol Compliance</h2>
+            <p>We implemented exact mapping for RateHawk's strict <strong>Table 3</strong> exception processing on the <code>/hotel/order/booking/finish/</code> endpoint, ensuring robust edge-case handling without dropping guest orders.</p>
+            
+            <div class="code-block">
+<span class="log-warn">// Table 3 Exception Handlers</span>
+"timeout" / "unknown"    ➔ <span class="log-info">Divert to Polling (Booking might be successful)</span>
+"booking_form_expired"   ➔ <span class="log-info">Redirect to search (Session expired)</span>
+"rate_not_found"         ➔ <span class="log-info">Fail booking (Room sold out)</span>
+HTTP 5xx Server Errors   ➔ <span class="log-info">Auto-retry transaction once before failing</span>
+</div>
+            <div class="solution-box" style="margin-top: 15px;">
+                <strong>Audit Compliance:</strong> By isolating false-fail errors like <code>timeout</code> and forcing them into the <code>/finish/status/</code> polling loop, the system is 100% safeguarded against accidental double-bookings or false "Failed" payments on the frontend.
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>6. Frontend Handling of Sandbox Rate Limiting</h2>
             <p>Due to the aggressive quotas on the ETG Sandbox tier (10 searches/min limit for <code>/search/serp/region</code>), we've implemented logic preventing the UI from hard crashing when the quota is exceeded. Instead, the UI gracefully informs the user (QA Tester) that the quota has been met and to simply wait 60 seconds.</p>
         </div>
 
