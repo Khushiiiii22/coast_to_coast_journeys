@@ -760,11 +760,40 @@ function initDatePickers() {
     if (document.getElementById('returnDate')) {
         flatpickr("#returnDate", commonConfig);
     }
-    if (document.getElementById('checkInDate')) {
-        flatpickr("#checkInDate", commonConfig);
-    }
-    if (document.getElementById('checkOutDate')) {
-        flatpickr("#checkOutDate", commonConfig);
+
+    // Hotel Linked Dates
+    const checkInInput = document.getElementById('checkInDate');
+    const checkOutInput = document.getElementById('checkOutDate');
+
+    if (checkInInput && checkOutInput) {
+        const checkInPicker = flatpickr("#checkInDate", {
+            ...commonConfig,
+            onChange: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length > 0) {
+                    const nextDay = new Date(selectedDates[0]);
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    checkOutPicker.set("minDate", nextDay);
+                    
+                    // If current checkout is <= new checkin, force it to next day
+                    if (checkOutPicker.selectedDates.length > 0 && checkOutPicker.selectedDates[0] <= selectedDates[0]) {
+                        checkOutPicker.setDate(nextDay);
+                        // Trigger change for UI displays
+                        checkOutInput.dispatchEvent(new Event('change'));
+                    }
+                }
+            }
+        });
+
+        const checkOutPicker = flatpickr("#checkOutDate", {
+            ...commonConfig,
+            minDate: (checkInPicker.selectedDates.length > 0) 
+                ? new Date(new Date(checkInPicker.selectedDates[0]).getTime() + 24*60*60*1000)
+                : "today"
+        });
+    } else {
+        // Fallback if only one exists (unlikely in current templates)
+        if (checkInInput) flatpickr("#checkInDate", commonConfig);
+        if (checkOutInput) flatpickr("#checkOutDate", commonConfig);
     }
 }
 
@@ -894,9 +923,10 @@ function initEventListeners() {
     if (DOM.flightSearchForm) {
         DOM.flightSearchForm.addEventListener('submit', handleFlightSearch);
     }
-    if (DOM.hotelSearchForm) {
-        DOM.hotelSearchForm.addEventListener('submit', handleHotelSearch);
-    }
+    // Hotel Search is now handled by inline scripts in each template for better 2024 multi-room support
+    // if (DOM.hotelSearchForm) {
+    //     DOM.hotelSearchForm.addEventListener('submit', handleHotelSearch);
+    // }
     if (DOM.contactForm) {
         DOM.contactForm.addEventListener('submit', handleContactForm);
     }

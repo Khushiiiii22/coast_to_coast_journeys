@@ -428,9 +428,9 @@
     <!-- Supabase and Auth Guard -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-client.js"></script>
-    <script src="../js/auth-guard.js"></script>
-    <script src="../js/hotel-api.js"></script>
-    <script src="../js/main.js"></script>
+    <script src="../js/auth-guard.js?v=3"></script>
+    <script src="../js/hotel-api.js?v=3"></script>
+    <script src="../js/main.js?v=3"></script>
 
     <script>
         // Get booking details from sessionStorage
@@ -459,7 +459,9 @@
             document.getElementById('checkin').textContent = formatDate(searchParams.checkin) || '-';
             document.getElementById('checkout').textContent = formatDate(searchParams.checkout) || '-';
             document.getElementById('nights').textContent = rate.nights || calculateNights(searchParams.checkin, searchParams.checkout);
-            document.getElementById('guests').textContent = `${searchParams.adults} Adults`;
+            const totalAdultsDisplay = parseInt(searchParams.adults || 2);
+            const totalChildrenDisplay = (searchParams.children_ages && Array.isArray(searchParams.children_ages)) ? searchParams.children_ages.length : 0;
+            document.getElementById('guests').textContent = `${totalAdultsDisplay} Adult${totalAdultsDisplay > 1 ? 's' : ''}${totalChildrenDisplay > 0 ? ', ' + totalChildrenDisplay + ' Child' + (totalChildrenDisplay > 1 ? 'ren' : '') : ''}`;
             // roomType is set below (after meal info is computed)
 
             // Price - total amount (includes commission, taxes, and any extras like breakfast)
@@ -469,7 +471,7 @@
             const extraPrice = parseFloat(rate.extra_price || 0);
             const extraType = rate.extra_type || 'none';
             const nightsCount = parseInt(rate.nights || calculateNights(searchParams.checkin, searchParams.checkout) || 1);
-            const roomsCount = parseInt(searchParams.rooms) || 1;
+            const roomsCount = Array.isArray(searchParams.rooms) ? searchParams.rooms.length : (parseInt(searchParams.rooms) || 1);
 
             // Room type line — show meal plan if breakfast was added
             const mealLabel = (rate.meal_info && rate.meal_info.display_name) || '';
@@ -495,10 +497,14 @@
                 displayTaxAmount = Math.round(totalPayableNow * (0.15 / 1.15));
             }
 
-            // 1. Rate breakdown: pre-tax base per night × nights × rooms
+            // 1. Rate breakdown: get the price for ONE room for ONE night
+            // Formula: Total_PreTax / (Nights * Rooms)
             const baseAmount = Math.round(totalPayableNow - displayTaxAmount);
-            const perNightBase = nightsCount > 0 ? Math.round(baseAmount / nightsCount) : baseAmount;
-            const rateLabel = `${nightsCount} night${nightsCount > 1 ? 's' : ''} × ${roomsCount} room${roomsCount > 1 ? 's' : ''} × ${HotelUtils.formatPrice(perNightBase, originalCurrency)}`;
+            const perRoomNightlyBase = (nightsCount > 0 && roomsCount > 0) 
+                ? Math.round(baseAmount / (nightsCount * roomsCount)) 
+                : baseAmount;
+            
+            const rateLabel = `${nightsCount} night${nightsCount > 1 ? 's' : ''} × ${roomsCount} room${roomsCount > 1 ? 's' : ''} × ${HotelUtils.formatPrice(perRoomNightlyBase, originalCurrency)}`;
             document.getElementById('rateBreakdownLabel').textContent = rateLabel;
             document.getElementById('rateBreakdownAmount').innerHTML = HotelUtils.formatPrice(baseAmount, originalCurrency);
 
@@ -624,8 +630,8 @@
 
         function renderGuestInputs(roomIdx, guestIdx, type, age) {
             const isLead = (roomIdx === 0 && guestIdx === 0);
-            const label = type === 'adult' ? `Adult ${guestIdx + 1}` : `Child ${guestIdx - (modifyRooms[roomIdx]?.adults || 2) + 1} (${age} yrs)`;
-            // Wait, I don't have access to modifyRooms here, but I have the age already.
+            
+            // Fix: avoid using undefined modifyRooms
             const displayLabel = type === 'adult' ? `Adult ${guestIdx + 1}` : `Child (Age: ${age})`;
 
             return `
