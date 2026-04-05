@@ -6,6 +6,9 @@ Updated to match ETG Sandbox API documentation (23 endpoints)
 import requests
 import base64
 from datetime import datetime, date
+import traceback
+import hashlib
+from cachetools import TTLCache
 from typing import Optional, List, Dict, Any
 import uuid
 import sys
@@ -57,6 +60,9 @@ class ETGApiService:
                 "https": self.proxy_url
             }
             print(f"✅ Static IP Proxy configured")
+            
+        # Sandbox Quota Workaround (Cache for 10 minutes)
+        self.search_cache = TTLCache(maxsize=100, ttl=600)
         
         self._validate_credentials()
     
@@ -97,8 +103,18 @@ class ETGApiService:
         
         return log_entry
     
-    def _make_request(self, endpoint: str, data: dict = None, method: str = "POST", timeout: int = 30) -> dict:
+    def _make_request(self, endpoint: str, data: dict = None, method: str = "POST", timeout: int = 30, retry_count: int = 0) -> dict:
         """Make a request to ETG API with detailed logging"""
+        
+        # ⚡ Cache Interception for strict ETG Sandbox quotas
+        cache_key = None
+        if method == "POST" and any(ep in endpoint for ep in ["/search/serp/region/", "/search/serp/hotels/", "/search/hp/", "/search/serp/geo/"]):
+            # Normalize and stringify data
+            cache_key = hashlib.md5(f"{endpoint}_{json.dumps(data or {}, sort_keys=True)}".encode('utf-8')).hexdigest()
+            if cache_key in self.search_cache:
+                print(f"⚡ CACHE HIT: Returning cached API result for {endpoint} (Bypassing Sandbox Quota)")
+                return self.search_cache[cache_key]
+
         url = f"{self.base_url}{endpoint}"
         
         headers = {
@@ -127,11 +143,28 @@ class ETGApiService:
             print(f"📥 Response Status: {response.status_code}")
             
             response.raise_for_status()
-            return {
+            
+            # --- Transparent Quota Retry Logic (Sandbox Only) ---
+            if response_json.get("status") == "error" and response_json.get("error") == "too_many_requests":
+                if retry_count < 2:
+                    sleep_sec = 20
+                    print(f"⚠️ Sandbox Quota Exceeded! Sleeping for {sleep_sec}s to automatically bypass this for QA...")
+                    import time
+                    time.sleep(sleep_sec)
+                    print(f"🔄 Retrying {endpoint} after quota reset wait...")
+                    return self._make_request(endpoint, data, method, timeout, retry_count + 1)
+            # ----------------------------------------------------
+            
+            result = {
                 "success": True,
                 "data": response_json,
                 "status_code": response.status_code
             }
+            
+            if cache_key:
+                self.search_cache[cache_key] = result
+                
+            return result
         except requests.exceptions.Timeout:
             duration_ms = (datetime.now() - start_time).total_seconds() * 1000
             self._log_api_call(endpoint, data or {}, {"error": "Timeout"}, 408, duration_ms)
