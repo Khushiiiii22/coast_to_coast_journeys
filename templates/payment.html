@@ -475,7 +475,7 @@
                         style="height: 24px; opacity: 0.6;">
                     <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg" alt="PayPal"
                         style="height: 24px; opacity: 0.6;">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa"
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d6/Visa_2021.svg" alt="Visa"
                         style="height: 18px; opacity: 0.6;">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard"
                         style="height: 24px; opacity: 0.6;">
@@ -624,7 +624,7 @@
                                 style="color: #ef4444;">*</span></label>
                         <div style="display: flex; gap: 6px; align-items: center;">
                             <span style="font-size: 0.8rem; color: #6b7280;">Available payment methods</span>
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa"
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d6/Visa_2021.svg" alt="Visa"
                                 style="height: 16px;">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg"
                                 alt="Mastercard" style="height: 20px;">
@@ -1046,7 +1046,7 @@
                 checkin: bookingData.search_params.checkin,
                 checkout: bookingData.search_params.checkout,
                 total_amount: bookingData.total,
-                currency: 'INR',
+                currency: bookingData.rate.currency || bookingData.currency || 'INR',
                 email: email,
                 phone: phone,
                 user_id: userId,
@@ -1091,16 +1091,26 @@
             });
 
             try {
+                const rateCurrency = bookingData.rate.currency || bookingData.currency || 'INR';
+                let razorpayAmount = bookingData.total;
+                
+                // If the booking is not in INR, convert it for Razorpay (which expects INR)
+                if (rateCurrency !== 'INR' && typeof HotelUtils !== 'undefined') {
+                    razorpayAmount = HotelUtils.convertCurrency(bookingData.total, rateCurrency, 'INR');
+                }
+
                 const response = await fetch('/api/payment/create-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        amount: bookingData.total,
+                        amount: razorpayAmount,
                         currency: 'INR',
                         booking_details: {
                             hotel_name: bookingData.hotel.name,
                             checkin: bookingData.search_params.checkin,
-                            checkout: bookingData.search_params.checkout
+                            checkout: bookingData.search_params.checkout,
+                            original_amount: bookingData.total,
+                            original_currency: rateCurrency
                         }
                     })
                 });
@@ -1394,7 +1404,7 @@
                             total_amount: bookingData.total || 0,
                             room_name: bookingData.rate?.room_name || '',
                             meal_plan: bookingData.rate?.meal_info?.display_name || bookingData.rate?.meal_plan || '',
-                            currency: 'INR'
+                            currency: bookingData.rate.currency || bookingData.currency || 'INR'
                         };
                         console.log('📦 Email payload:', emailPayload);
 
@@ -1421,7 +1431,9 @@
                 document.getElementById('confirmHotelName').textContent = bookingData.hotel.name || '-';
                 document.getElementById('confirmCheckin').textContent = formatDate(bookingData.search_params.checkin);
                 document.getElementById('confirmCheckout').textContent = formatDate(bookingData.search_params.checkout);
-                document.getElementById('confirmAmount').textContent = `₹${(bookingData.total || 0).toLocaleString('en-IN')}`;
+                const originalCurrency = bookingData.rate.currency || bookingData.currency || 'INR';
+                const currencySymbol = originalCurrency === 'INR' ? '₹' : (originalCurrency === 'USD' ? '$' : originalCurrency + ' ');
+                document.getElementById('confirmAmount').textContent = `${currencySymbol}${(bookingData.total || 0).toLocaleString('en-IN')}`;
                 document.getElementById('confirmEmail').textContent = bookingData.guest?.email || bookingData.email || '-';
 
                 document.getElementById('confirmationModal').style.display = 'block';

@@ -62,7 +62,7 @@ def debug_email_test():
             results['steps'].append("Testing Brevo API connectivity...")
             
             # Send test email
-            test_email = "khushikumari62406@gmail.com"
+            test_email = "info@coasttocoastjourneys.com"
             
             headers = {
                 "accept": "application/json",
@@ -541,6 +541,23 @@ def search_by_destination():
                     residency=data.get('residency', 'gb')
                 )
             
+            # Check if RateHawk returned an error
+            if result.get('status') == 'error' or not result.get('success', True):
+                error_msg = result.get('error', 'Unknown API error')
+                # Check for validation errors in debug data
+                if 'data' in result and isinstance(result['data'], dict):
+                    debug = result['data'].get('debug', {})
+                    if debug.get('validation_error'):
+                        error_msg = debug['validation_error']
+                
+                print(f"❌ RateHawk search error: {error_msg}")
+                # If it's a critical validation error (like dates), return early
+                if any(kw in str(error_msg).lower() for kw in ['checkin', 'checkout', 'date', 'invalid_params']):
+                    return jsonify({
+                        'success': False, 
+                        'error': f"Search failed: {error_msg}. Please check your dates and try again."
+                    }), 400
+
             # Check if RateHawk returned hotels
             if result.get('success') and result.get('data'):
                 inner_data = result['data'].get('data', result['data'])
@@ -637,6 +654,20 @@ def search_by_destination():
                     result = {}
                 
                 # Process results from Step 4 suggest-based search
+                if result.get('status') == 'error' or not result.get('success', True):
+                    error_msg = result.get('error', 'Unknown API error')
+                    if 'data' in result and isinstance(result['data'], dict):
+                        debug = result['data'].get('debug', {})
+                        if debug.get('validation_error'):
+                            error_msg = debug['validation_error']
+                    
+                    print(f"❌ RateHawk suggest-search error: {error_msg}")
+                    if any(kw in str(error_msg).lower() for kw in ['checkin', 'checkout', 'date', 'invalid_params']):
+                        return jsonify({
+                            'success': False, 
+                            'error': f"Search failed: {error_msg}. Please check your dates and try again."
+                        }), 400
+
                 if result.get('success') and result.get('data'):
                     search_data = result['data'].get('data', result['data'])
                     etg_hotels = search_data.get('hotels', [])
@@ -667,17 +698,16 @@ def search_by_destination():
                             'source': 'ratehawk'
                         })
         
-        # Step 5: NO Google Places fallback
-        # Google Places hotels have ChIJ... IDs with no ETG book_hash,
-        # so the full booking chain (hotelpage → prebook → create → finish → check)
-        # can never fire. This was blocking ETG certification.
-        # Instead, return an informative error so the user knows to search a supported destination.
-        print(f"❌ No ETG hotels found for {data['destination']} — NOT falling back to Google")
+        # Step 5: Final fallback - NO hotels found
+        print(f"🛑 No hotels found for {location_name} after all attempts")
+        
+        # Improvement: Better error message for the user
         return jsonify({
             'success': False,
-            'error': f"No bookable hotels found for '{data['destination']}'. Please try Paris, Dubai, or Moscow.",
-            'supported_destinations': ['Paris', 'Moscow', 'Dubai']
-        }), 400
+            'error': f"No availability found for '{location_name}' on these dates. Please try different dates or search for a nearby popular destination like Dubai or London.",
+            'hotels': [],
+            'source': 'none'
+        })
     
 
     except Exception as e:
@@ -3408,6 +3438,7 @@ def send_booking_confirmation():
                 if db_booking.get('success') and db_booking.get('data'):
                     db_data = db_booking['data']
                     amount = db_data.get('total_amount', 0) or 0
+                    booking_currency = db_data.get('currency', 'INR')
                     # Also fill in any missing fields from DB
                     if not hotel_name or hotel_name == 'Hotel':
                         hotel_name = db_data.get('hotel_name', hotel_name)
@@ -3422,9 +3453,14 @@ def send_booking_confirmation():
                             g = guests[0]
                             if isinstance(g, dict):
                                 customer_name = f"{g.get('first_name', '')} {g.get('last_name', '')}".strip()
-                    print(f"📦 Pulled amount from DB: {amount}")
+                    print(f"📦 Pulled amount {amount} and currency {booking_currency} from DB")
+                else:
+                    booking_currency = 'INR'
             except Exception as db_err:
                 print(f"⚠️ Could not fetch booking from DB: {db_err}")
+                booking_currency = 'INR'
+        else:
+            booking_currency = data.get('currency', 'INR')
         
         email_details = {
             'booking_id': data.get('partner_order_id'),
@@ -3438,7 +3474,7 @@ def send_booking_confirmation():
             'checkin': checkin,
             'checkout': checkout,
             'amount': amount,
-            'currency': data.get('currency', 'INR')
+            'currency': booking_currency
         }
         
         print(f"📧 Sending booking confirmation to {data.get('email')} | Amount: {amount}")

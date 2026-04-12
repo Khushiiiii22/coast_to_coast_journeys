@@ -88,6 +88,8 @@ services:
         sync: false
       - key: RESEND_API_KEY
         sync: false
+      - key: OWNER_EMAIL
+        sync: false  # Resend-verified email for receiving admin notifications
     
     # Health check configuration
     healthCheckPath: /api/health

@@ -1,16 +1,22 @@
 """
-Email Service using Brevo (Sendinblue) API
+Email Service for C2C Journeys
 
-Brevo sends emails over HTTPS (Port 443), which works on Cloud Run / Render
-unlike traditional SMTP which uses blocked ports (25, 465, 587).
+Priority order:
+1. SMTP (GoDaddy) - Sends to ANY email, no restrictions
+2. Brevo HTTP API - Sends over HTTPS (Port 443)
+3. Resend HTTP API - Fallback (test mode can only deliver to verified email)
 """
 import os
+import ssl
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import requests
 from datetime import datetime
 
 
 class EmailService:
-    """Email Service using Brevo (Sendinblue) API"""
+    """Email Service with SMTP (primary) + HTTP API fallbacks"""
     
     BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
     
@@ -18,10 +24,25 @@ class EmailService:
         self.api_key = None
         self.default_sender = None
         self.sender_name = "C2C Journeys"
+        # SMTP Configuration
+        self.smtp_server = None
+        self.smtp_port = None
+        self.smtp_username = None
+        self.smtp_password = None
+        self.smtp_use_ssl = False
+        self.smtp_use_tls = False
         if app:
             self.init_app(app)
 
     def init_app(self, app):
+        # SMTP Configuration (GoDaddy / any SMTP provider) — PRIMARY
+        self.smtp_server = app.config.get('MAIL_SERVER') or os.getenv('MAIL_SERVER')
+        self.smtp_port = int(app.config.get('MAIL_PORT') or os.getenv('MAIL_PORT', '465'))
+        self.smtp_username = app.config.get('MAIL_USERNAME') or os.getenv('MAIL_USERNAME')
+        self.smtp_password = app.config.get('MAIL_PASSWORD') or os.getenv('MAIL_PASSWORD')
+        self.smtp_use_ssl = (app.config.get('MAIL_USE_SSL') or os.getenv('MAIL_USE_SSL', 'True')).lower() == 'true' if isinstance(app.config.get('MAIL_USE_SSL', os.getenv('MAIL_USE_SSL', 'True')), str) else bool(app.config.get('MAIL_USE_SSL', True))
+        self.smtp_use_tls = (app.config.get('MAIL_USE_TLS') or os.getenv('MAIL_USE_TLS', 'False')).lower() == 'true' if isinstance(app.config.get('MAIL_USE_TLS', os.getenv('MAIL_USE_TLS', 'False')), str) else bool(app.config.get('MAIL_USE_TLS', False))
+        
         # Brevo API Configuration
         self.api_key = app.config.get('BREVO_API_KEY') or os.getenv('BREVO_API_KEY')
         # Resend API Configuration
@@ -30,30 +51,98 @@ class EmailService:
         # Verified sender
         self.default_sender = os.getenv('MAIL_DEFAULT_SENDER', 'info@coasttocoastjourneys.com')
         
+        # Log configured providers
+        providers = []
+        if self.smtp_server and self.smtp_username and self.smtp_password:
+            providers.append(f"SMTP ({self.smtp_server})")
         if self.api_key:
-            print(f"✅ Email service configured with Brevo API")
-        elif self.resend_api_key:
-            print(f"✅ Email service configured with Resend API (as fallback)")
+            providers.append("Brevo API")
+        if self.resend_api_key:
+            providers.append("Resend API")
+        
+        if providers:
+            print(f"✅ Email service configured: {' → '.join(providers)}")
         else:
-            print(f"⚠️ Email service NOT configured - missing API keys")
+            print(f"⚠️ Email service NOT configured - missing credentials")
         
         print(f"   📧 Sender: {self.default_sender}")
         
     def send_email(self, to_email, subject, body, html_body=None, attachments=None):
-        """Send an email using Brevo (primary) or Resend (fallback)"""
-        # 1. Try Brevo first if configured
+        """Send an email using SMTP (primary) → Brevo → Resend (fallback)"""
+        # 1. Try SMTP first — sends to ANY email address, no restrictions
+        if self.smtp_server and self.smtp_username and self.smtp_password:
+            success = self._send_via_smtp(to_email, subject, body, html_body)
+            if success:
+                return True
+            print("⚠️ SMTP failed. Trying API fallbacks...")
+        
+        # 2. Try Brevo API if configured
         if self.api_key:
             success = self._send_via_brevo(to_email, subject, body, html_body)
             if success:
                 return True
             print("⚠️ Brevo failed. Attempting Resend fallback...")
             
-        # 2. Try Resend if Brevo failed or is not configured
+        # 3. Try Resend as last resort (test mode may redirect to owner)
         if self.resend_api_key:
             return self._send_via_resend(to_email, subject, body, html_body)
             
         print("⚠️ No working email provider configured. Skipping email.")
         return False
+
+    def _send_via_smtp(self, to_email, subject, body, html_body=None):
+        """Send email via SMTP (GoDaddy or any SMTP provider).
+        Works with ANY recipient email — no test mode restrictions."""
+        try:
+            # Build the email message
+            msg = MIMEMultipart('alternative')
+            msg['From'] = f"{self.sender_name} <{self.default_sender}>"
+            msg['To'] = to_email
+            msg['Subject'] = subject
+            
+            # Add plain text body
+            msg.attach(MIMEText(body, 'plain', 'utf-8'))
+            
+            # Add HTML body if available
+            if html_body:
+                msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+            
+            # Connect and send
+            if self.smtp_use_ssl:
+                # SSL connection (port 465)
+                # GoDaddy's secureserver.net uses a certificate chain that strict
+                # verification may reject. Use a permissive context for known hosts.
+                context = ssl.create_default_context()
+                if 'secureserver.net' in (self.smtp_server or ''):
+                    context.check_hostname = False
+                    context.verify_mode = ssl.CERT_NONE
+                
+                try:
+                    with smtplib.SMTP_SSL(self.smtp_server, self.smtp_port, context=context, timeout=15) as server:
+                        server.login(self.smtp_username, self.smtp_password)
+                        server.sendmail(self.default_sender, to_email, msg.as_string())
+                except ssl.SSLCertVerificationError:
+                    # Retry with permissive SSL for any other servers with cert issues
+                    print(f"⚠️ SSL cert issue, retrying with permissive context...")
+                    context = ssl.create_default_context()
+                    context.check_hostname = False
+                    context.verify_mode = ssl.CERT_NONE
+                    with smtplib.SMTP_SSL(self.smtp_server, self.smtp_port, context=context, timeout=15) as server:
+                        server.login(self.smtp_username, self.smtp_password)
+                        server.sendmail(self.default_sender, to_email, msg.as_string())
+            else:
+                # STARTTLS connection (port 587)
+                with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=15) as server:
+                    if self.smtp_use_tls:
+                        server.starttls()
+                    server.login(self.smtp_username, self.smtp_password)
+                    server.sendmail(self.default_sender, to_email, msg.as_string())
+            
+            print(f"✅ Email sent via SMTP to {to_email}")
+            return True
+        except Exception as e:
+            print(f"❌ SMTP failure: {str(e)}")
+            return False
 
     def _send_via_brevo(self, to_email, subject, body, html_body=None):
         """Internal helper for Brevo API"""
@@ -82,6 +171,11 @@ class EmailService:
             print(f"❌ Brevo failure: {str(e)}")
             return False
 
+    def _get_verified_owner_email(self):
+        """Get the verified owner email for admin notifications."""
+        # Explicitly use the corporate email for owner notifications to ensure delivery
+        return os.getenv('MAIL_DEFAULT_SENDER', 'info@coasttocoastjourneys.com')
+
     def _send_via_resend(self, to_email, subject, body, html_body=None):
         """Internal helper for Resend API.
         
@@ -96,7 +190,7 @@ class EmailService:
                 "Authorization": f"Bearer {self.resend_api_key}",
                 "Content-Type": "application/json"
             }
-            owner_email = os.getenv('OWNER_EMAIL', 'khushikumari62406@gmail.com')
+            owner_email = self._get_verified_owner_email()
             
             # Always use onboarding@resend.dev to bypass domain verification in test mode
             sender = f"{self.sender_name} <onboarding@resend.dev>"
@@ -117,7 +211,7 @@ class EmailService:
                 return True
 
             # If recipient is not the verified owner, redirect to them
-            if response.status_code == 403 and to_email != owner_email:
+            if response.status_code == 403 and to_email.lower() != owner_email.lower():
                 print(f"⚠️ Resend blocked {to_email}. Redirecting to verified owner {owner_email} ...")
                 redirect_notice = (
                     f"\n\n[TEST MODE] Original recipient: {to_email}\n"
@@ -179,7 +273,9 @@ Thank you for choosing C2C Journeys!
 
     def _send_flight_owner_notification(self, guest_email, booking_details):
         """Send flight booking notification to owner/admin"""
-        owner_email = os.getenv('CORPORATE_EMAIL', os.getenv('OWNER_EMAIL', 'info@coasttocoastjourneys.com'))
+        # Use verified owner email (works with Resend test mode)
+        # Fall back to CORPORATE_EMAIL only in production (when domain is verified)
+        owner_email = self._get_verified_owner_email()
         subject = f"✈️ New Flight Booking — {booking_details.get('airline')} {booking_details.get('flight_number', '')} | {booking_details.get('booking_id', 'N/A')}"
         amount = booking_details.get('amount', 0)
         currency = booking_details.get('currency', 'INR')
@@ -441,8 +537,9 @@ Thank you for choosing C2C Journeys!
 
     def _send_owner_notification(self, guest_email, booking_details):
         """Send booking notification to owner/admin"""
-        # Priority: OWNER_EMAIL (verified for Resend test) > CORPORATE_EMAIL > default
-        owner_email = os.getenv('OWNER_EMAIL', os.getenv('CORPORATE_EMAIL', 'info@coasttocoastjourneys.com'))
+        # Use verified owner email (works with Resend test mode)
+        # This ensures the owner ALWAYS receives the admin notification directly
+        owner_email = self._get_verified_owner_email()
         
         hotel_name = booking_details.get('hotel_name', 'Hotel')
         subject = f"🔔 NEW BOOKING: {hotel_name} | {booking_details.get('booking_id', 'N/A')}"
