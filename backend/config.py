@@ -26,10 +26,11 @@ class Config:
     ETG_API_BASE_URL = os.getenv('ETG_API_BASE_URL', 'https://api.worldota.net/api/b2b/v3')
     
     # AIR iQ Flight API Configuration
-    AIR_IQ_BASE_URL = os.getenv('AIR_IQ_BASE_URL', 'https://omairiq.azurewebsites.net')
-    AIR_IQ_LOGIN_ID = os.getenv('AIR_IQ_LOGIN_ID', '9555202202')
-    AIR_IQ_PASSWORD = os.getenv('AIR_IQ_PASSWORD', '112233344')
-    AIR_IQ_API_KEY = os.getenv('AIR_IQ_API_KEY', 'NTMzNDUwMDpBSVJJUSBURVNUIEFQSToxODkxOTMwMDM1OTk2OlBvTjE2NGNkLy9heE53WC9hM00rS1ZrcnJSa2Q0S05adHl3Q0NHZmU4Uzg9')
+    # AIR iQ Flight API Configuration
+    AIR_IQ_BASE_URL = os.getenv('AIR_IQ_BASE_URL')
+    AIR_IQ_LOGIN_ID = os.getenv('AIR_IQ_LOGIN_ID')
+    AIR_IQ_PASSWORD = os.getenv('AIR_IQ_PASSWORD')
+    AIR_IQ_API_KEY = os.getenv('AIR_IQ_API_KEY')
     
     # Supabase Configuration
     SUPABASE_URL = os.getenv('SUPABASE_URL')
