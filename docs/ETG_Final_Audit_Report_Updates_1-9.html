@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETG & RateHawk v3 Certification | Final Re-Audit Report</title>
+    <style>
+        :root {
+            --primary: #0056b3;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --bg: #f8f9fa;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: 0 auto; padding: 40px 20px; background: var(--bg); }
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); padding: 40px; margin-bottom: 30px; }
+        .header { text-align: center; border-bottom: 3px solid var(--primary); padding-bottom: 20px; margin-bottom: 40px; }
+        .logo { font-size: 2rem; font-weight: 800; color: var(--primary); letter-spacing: -1px; }
+        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; margin-bottom: 10px; }
+        .status-passed { background: #d4edda; color: #155724; }
+        h2 { color: var(--primary); border-left: 5px solid var(--primary); padding-left: 15px; margin-top: 40px; }
+        .audit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .item { border: 1px solid #e1e4e8; border-radius: 8px; padding: 20px; background: #fff; }
+        .item-id { font-weight: 800; color: #666; font-size: 0.8rem; text-transform: uppercase; }
+        .item-title { font-weight: 700; font-size: 1.1rem; margin: 5px 0 10px; }
+        code { background: #f1f3f5; padding: 2px 5px; border-radius: 4px; font-family: 'Courier New', Courier, monospace; }
+        .tech-note { background: #e7f3ff; border-left: 4px solid #007bff; padding: 15px; margin-top: 15px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="header">
+            <div class="logo">C2C JOURNEYS | TECHNICAL AUDIT</div>
+            <p><strong>ATTN: Mikhail (RateHawk Certification Team)</strong></p>
+            <h1>Final Re-Audit Report (Updates 1-9)</h1>
+            <div class="status-badge status-passed">✅ FULL COMPLIANCE VERIFIED</div>
+        </div>
+
+        <p>This report documents the re-audit of the Coast to Coast Journeys booking engine following the implementation of all requested fixes in Updates 1 through 9. We have verified that the system strictly adheres to the RateHawk v3 API protocol, specifically regarding the "Prebook -> Hash Handover" sequence and Table 3/4 error protocol compliance.</p>
+
+        <h2>1. Search & Rate Compliance</h2>
+        <div class="audit-grid">
+            <div class="item">
+                <div class="item-id">Point 1</div>
+                <div class="item-title">Search Payload Compliance</div>
+                <p>Verified that the system uses the <code>guests</code> data structure instead of <code>rooms</code> for multi-room searches, preventing 400 Bad Request errors on certain sandboxes.</p>
+                <div class="tech-note">Path: <code>backend/services/etg_service.py</code> Line 428</div>
+            </div>
+            <div class="item">
+                <div class="item-id">Point 2</div>
+                <div class="item-title">Rate Processing Recovery</div>
+                <p>Confimed that the hotel details page recovers the full array of rates (transformed and enriched) rather than just the cheapest result, allowing full room selection.</p>
+                <div class="tech-note">Function: <code>transform_etg_hotels</code> Line 891</div>
+            </div>
+        </div>
+
+        <h2>2. Financial Transparency</h2>
+        <div class="item">
+            <div class="item-id">Point 3</div>
+            <div class="item-title">The "Markup Firewall"</div>
+            <p>Requirement: Markup must NOT apply to on-property taxes (resort fees, city taxes).<br>
+            <strong>Status:</strong> Implementation verified. Non-included taxes are subtracted from the total before calculating commission. Guest is shown the "Pay Now" vs "Pay at Hotel" breakdown clearly.</p>
+            <div class="tech-note">Verified in <code>hotel_routes.py</code> Lines 825-854 and <code>payment.html</code>.</div>
+        </div>
+
+        <h2>3. Booking Sequence Compliance</h2>
+        <div class="audit-grid">
+            <div class="item">
+                <div class="item-id">Point 9</div>
+                <div class="item-title">Hash Handover (Prebook Fix)</div>
+                <p><strong>RE-FIXED:</strong> The system now mandates an intermediate <code>/hotel/prebook</code> call on the frontend before the order form is created. This ensures the <code>book_hash</code> is fresh and active.</p>
+                <div class="tech-note">Fix verified in <code>templates/payment.html</code> Line 1045.</div>
+            </div>
+            <div class="item">
+                <div class="item-id">Point 4</div>
+                <div class="item-title">Booking State Linkage</div>
+                <p>Requirement: Status must lock to "processing" immediately.<br>
+                <strong>Verified:</strong> Supabase state is updated to <code>processing</code> BEFORE the final <code>/finish</code> call.</p>
+                <div class="tech-note">Verified in <code>hotel_routes.py</code> Line 2855.</div>
+            </div>
+        </div>
+
+        <h2>4. Error & Status Protocols (Table 3/4)</h2>
+        <div class="audit-grid">
+            <div class="item">
+                <div class="item-id">Point 5 & 6</div>
+                <div class="item-title">Table 3/4 Implementation</div>
+                <p>Mapped all 13 required error states from Table 4 (soldout, 3ds, provider_error, etc.). Implemented retry logic for 5xx and polling triggers for timeouts.</p>
+                <div class="tech-note">Verified in <code>hotel_routes.py</code> Lines 2876-3029.</div>
+            </div>
+            <div class="item">
+                <div class="item-id">Point 7</div>
+                <div class="item-title">Static Data Ingestion</div>
+                <p>Automated weekly full dumps and daily incremental syncs to ensure room details and images are never stale.</p>
+                <div class="tech-note">Script: <code>scripts/sync_etg_static_data.py</code>.</div>
+            </div>
+        </div>
+
+        <h2>5. Email & Notification</h2>
+        <div class="item">
+            <div class="item-id">Point 8</div>
+            <div class="item-title">Dual-Channel Confirmation</div>
+            <p>Verification confirms that the guest receives a custom-markup invoice, while the corporate admin receives a net-price notification for financial reconciliation.</p>
+            <div class="tech-note">Implemented in <code>email_service.py</code> with Brevo/Resend fallback.</div>
+        </div>
+
+        <div style="margin-top: 50px; text-align: center; font-size: 0.8rem; color: #999;">
+            Document Generated: April 2026 | C2C Journeys Technical Engineering
+        </div>
+    </div>
+</body>
+</html>

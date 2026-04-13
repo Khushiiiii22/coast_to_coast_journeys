@@ -473,7 +473,10 @@
         }
 
         function loadFlightDetails() {
-            if (!flightBooking.airline) {
+            // Check if we have the new nested structure or the old flat one
+            const flight = flightBooking.outbound || flightBooking;
+
+            if (!flight.airline) {
                 if (typeof showNotification === 'function') {
                     showNotification('No flight selected! Redirecting...', 'warning');
                 }
@@ -482,32 +485,34 @@
             }
 
             // Populate flight summary
-            document.getElementById('airlineName').textContent = flightBooking.airline || 'Airline';
-            document.getElementById('flightNumber').textContent = flightBooking.flightNumber || '';
-            document.getElementById('departTime').textContent = flightBooking.departTime || '--:--';
-            document.getElementById('arriveTime').textContent = flightBooking.arriveTime || '--:--';
-            document.getElementById('originCode').textContent = flightBooking.origin || '---';
-            document.getElementById('destCode').textContent = flightBooking.destination || '---';
-            document.getElementById('flightDuration').textContent = flightBooking.duration || '--';
-            document.getElementById('flightDate').textContent = formatDateDisplay(flightBooking.date);
-            document.getElementById('travelerCount').textContent = flightBooking.travelers || '1';
+            document.getElementById('airlineName').textContent = flight.airline?.name || flight.airline || 'Airline';
+            document.getElementById('flightNumber').textContent = flight.flight_number || flight.flightNumber || '';
+            document.getElementById('departTime').textContent = flight.depart_time || flight.departTime || '--:--';
+            document.getElementById('arriveTime').textContent = flight.arrival_time || flight.arriveTime || '--:--';
+            document.getElementById('originCode').textContent = flight.origin || '---';
+            document.getElementById('destCode').textContent = flight.destination || '---';
+            document.getElementById('flightDuration').textContent = flight.duration || '--';
+            document.getElementById('flightDate').textContent = formatDateDisplay(flight.date);
+            document.getElementById('travelerCount').textContent = flight.travelers || '1';
 
             // Stops
-            const stops = parseInt(flightBooking.stops || '0');
+            const stops = parseInt(flight.stops || '0');
             const stopsText = stops === 0 ? 'Non-stop' : stops + (stops === 1 ? ' stop' : ' stops');
             const stopsEl = document.getElementById('flightStops');
             stopsEl.textContent = stopsText;
             stopsEl.style.color = stops === 0 ? '#10b981' : '#ef4444';
 
             // Class
-            const fc = flightBooking.flightClass || 'economy';
+            const fc = flight.flightClass || flight.class || 'economy';
             document.getElementById('flightClass').textContent = fc.charAt(0).toUpperCase() + fc.slice(1);
 
             // Price - use the correct currency
-            const price = parseFloat(flightBooking.price || 0);
-            const currency = flightBooking.currency || 'INR';
-            const travelers = parseInt(flightBooking.travelers || 1);
-            const totalPrice = price * travelers;
+            const price = parseFloat(flight.price || 0);
+            const currency = flight.currency || 'INR';
+            const travelers = parseInt(flight.travelers || 1);
+            
+            // Total price should come from the main booking object if available
+            const totalPrice = flightBooking.totalPrice || (price * travelers);
 
             // Use HotelUtils.formatPrice if available, otherwise fallback
             if (typeof HotelUtils !== 'undefined' && HotelUtils.formatPrice) {

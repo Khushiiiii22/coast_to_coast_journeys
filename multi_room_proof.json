@@ -1,0 +1,138 @@
+{
+  "timestamp": "2026-04-05T09:06:26.460427",
+  "rooms_data": [
+    {
+      "guests": [
+        {
+          "first_name": "Adult One",
+          "last_name": "Room One",
+          "gender": "male",
+          "is_child": false,
+          "age": null
+        },
+        {
+          "first_name": "Adult Two",
+          "last_name": "Room One",
+          "gender": "female",
+          "is_child": false,
+          "age": null
+        }
+      ]
+    },
+    {
+      "guests": [
+        {
+          "first_name": "Adult One",
+          "last_name": "Room Two",
+          "gender": "male",
+          "is_child": false,
+          "age": null
+        },
+        {
+          "first_name": "Child One",
+          "last_name": "Room Two",
+          "gender": "female",
+          "is_child": true,
+          "age": 7
+        }
+      ]
+    }
+  ],
+  "form_data": {
+    "book_hash": "test_hash_12345",
+    "partner_order_id": "CTC-20260405090626-7C9538BD",
+    "language": "en",
+    "user_ip": "127.0.0.1",
+    "rooms": [
+      {
+        "guests": [
+          {
+            "first_name": "Adult One",
+            "last_name": "Room One",
+            "gender": "male",
+            "is_child": false,
+            "age": null
+          },
+          {
+            "first_name": "Adult Two",
+            "last_name": "Room One",
+            "gender": "female",
+            "is_child": false,
+            "age": null
+          }
+        ]
+      },
+      {
+        "guests": [
+          {
+            "first_name": "Adult One",
+            "last_name": "Room Two",
+            "gender": "male",
+            "is_child": false,
+            "age": null
+          },
+          {
+            "first_name": "Child One",
+            "last_name": "Room Two",
+            "gender": "female",
+            "is_child": true,
+            "age": 7
+          }
+        ]
+      }
+    ]
+  },
+  "finish_data": {
+    "partner": {
+      "partner_order_id": "CTC-20260405090626-7C9538BD"
+    },
+    "user": {
+      "email": "test@c2cjourneys.com",
+      "phone": "919934547108"
+    },
+    "language": "en",
+    "rooms": [
+      {
+        "guests": [
+          {
+            "first_name": "Adult One",
+            "last_name": "Room One",
+            "gender": "male",
+            "is_child": false,
+            "age": null
+          },
+          {
+            "first_name": "Adult Two",
+            "last_name": "Room One",
+            "gender": "female",
+            "is_child": false,
+            "age": null
+          }
+        ]
+      },
+      {
+        "guests": [
+          {
+            "first_name": "Adult One",
+            "last_name": "Room Two",
+            "gender": "male",
+            "is_child": false,
+            "age": null
+          },
+          {
+            "first_name": "Child One",
+            "last_name": "Room Two",
+            "gender": "female",
+            "is_child": true,
+            "age": 7
+          }
+        ]
+      }
+    ],
+    "payment_type": {
+      "type": "deposit",
+      "amount": "15000",
+      "currency_code": "INR"
+    }
+  }
+}

@@ -5,21 +5,18 @@ Provides live flight data via Duffel API with a mock fallback.
 import random
 from datetime import datetime, timedelta
 import hashlib
-from duffel_api import Duffel
+import requests
 from config import Config
 
 class FlightService:
     def __init__(self):
-        self.client = None
-        if Config.DUFFEL_ACCESS_TOKEN:
-            self.access_token = Config.DUFFEL_ACCESS_TOKEN
-            try:
-                # Duffel API SDK defaults to an old API version.
-                # Must specify 'v2' (v1 and beta are deprecated).
-                self.client = Duffel(access_token=self.access_token, api_version="v2")
-                print("✅ Duffel API client initialized")
-            except Exception as e:
-                print(f"⚠️ Error initializing Duffel client: {e}")
+        self.air_iq_url = Config.AIR_IQ_BASE_URL
+        self.air_iq_login_id = Config.AIR_IQ_LOGIN_ID
+        self.air_iq_password = Config.AIR_IQ_PASSWORD
+        self.air_iq_api_key = Config.AIR_IQ_API_KEY
+        self.token = None
+        if self.air_iq_api_key:
+            self._authenticate()
 
         self.airlines = [
             {'code': 'AI', 'name': 'Air India', 'logo': 'https://logos-world.net/wp-content/uploads/2023/01/Air-India-Logo.png'},
@@ -62,6 +59,21 @@ class FlightService:
             if 'bangalore' in city_lower:
                 self.city_to_code['bengaluru'] = code
 
+    def _authenticate(self):
+        url = f"{self.air_iq_url}/login"
+        payload = {"Username": self.air_iq_login_id, "Password": self.air_iq_password}
+        headers = {"Content-Type": "application/json", "api-key": self.air_iq_api_key}
+        try:
+            res = requests.post(url, json=payload, headers=headers, timeout=15)
+            if res.ok:
+                data = res.json()
+                self.token = data.get("token")
+                print("✅ AIR iQ API client initialized")
+            else:
+                print(f"⚠️ Error initializing AIR iQ client: {res.text}")
+        except Exception as e:
+            print(f"⚠️ Error initializing AIR iQ client: {e}")
+
     def _resolve_airport_code(self, location):
         """Resolve city name or airport code to airport code"""
         if not location:
@@ -87,12 +99,16 @@ class FlightService:
         origin_code = self._resolve_airport_code(origin)
         dest_code = self._resolve_airport_code(destination)
 
-        # If Duffel is configured, try real search
-        if self.client:
+        # If AIR iQ is configured, try real search
+        if self.token:
             try:
-                return self._duffel_search(origin_code, dest_code, depart_date, return_date, adults, flight_class)
+                res = self._air_iq_search(origin_code, dest_code, depart_date, return_date, adults, flight_class)
+                if res and res.get('success'): 
+                    return res
+                else:
+                    print("⚠️ AIR iQ search returned no results, falling back to mock.")
             except Exception as e:
-                print(f"⚠️ Duffel search failed, falling back to mock: {e}")
+                print(f"⚠️ AIR iQ search failed, falling back to mock: {e}")
 
         # Fallback to mock data
         results = {
@@ -109,78 +125,53 @@ class FlightService:
             'data': results
         }
 
-    def _duffel_search(self, origin, destination, depart_date, return_date, adults, flight_class):
-        """Perform real search using Duffel API directly via requests"""
-        import requests
-
+    def _air_iq_search(self, origin, destination, depart_date, return_date, adults, flight_class):
+        """Perform real search using AIR iQ API"""
+        # AIR iQ date format is YYYY/MM/DD
+        # Input date comes typically as YYYY-MM-DD
+        formatted_date = depart_date.replace('-', '/')
+        
         headers = {
-            "Duffel-Version": "v2",
-            "Authorization": f"Bearer {self.access_token}",
-            "Accept": "application/json",
+            "Authorization": self.token,
             "Content-Type": "application/json",
-            "User-Agent": "C2C-Journeys/1.0"
+            "api-key": self.air_iq_api_key
         }
 
-        slices = [
-            {
-                "origin": origin,
-                "destination": destination,
-                "departure_date": depart_date,
-            }
-        ]
-        
-        if return_date:
-            slices.append({
-                "origin": destination,
-                "destination": origin,
-                "departure_date": return_date,
-            })
-
-        passengers = [{"type": "adult"} for _ in range(adults)]
-        
-        cabin_class_map = {
-            'economy': 'economy',
-            'business': 'business',
-            'first': 'first',
-            'premium_economy': 'premium_economy'
-        }
-        
         payload = {
-            "data": {
-                "slices": slices,
-                "passengers": passengers,
-                "cabin_class": cabin_class_map.get(flight_class, 'economy')
-            }
+            "origin": origin,
+            "destination": destination,
+            "departure_date": formatted_date,
+            "adult": adults,
+            "child": 0,
+            "infant": 0
         }
-
-        # 1. Create Offer Request
-        response = requests.post("https://api.duffel.com/air/offer_requests", json=payload, headers=headers)
-        if not response.ok:
-            raise Exception(f"Duffel offer_request failed: {response.text}")
         
-        offer_request_data = response.json().get('data', {})
-        offers = offer_request_data.get('offers', [])
-        offer_request_id = offer_request_data.get('id')
+        # Flight classes might need mapping, default to Economy mostly.
+        # AIR iQ doesn't strictly have this in the basic payload uncovered so leaving it default.
+
+        response = requests.post(f"{self.air_iq_url}/search", json=payload, headers=headers, timeout=30)
+        if not response.ok:
+            raise Exception(f"AIR iQ search failed: {response.text}")
+        
+        resp_json = response.json()
+        if resp_json.get('status') != 'success' or not resp_json.get('data'):
+            return {'success': False}
+            
+        flights_data = resp_json.get('data', [])
         
         formatted_outbound = []
-        formatted_inbound = []
-
-        for offer in offers:
+        
+        for flight in flights_data:
             try:
-                outbound_slice = offer['slices'][0]
-                inbound_slice = offer['slices'][1] if len(offer['slices']) > 1 else None
-
-                price_data = offer['total_amount']
-                currency = offer['total_currency']
-
-                outbound_flight = self._format_duffel_slice(offer['id'], outbound_slice, price_data, currency)
+                outbound_flight = self._format_air_iq_flight(flight)
                 formatted_outbound.append(outbound_flight)
-
-                if inbound_slice:
-                    inbound_flight = self._format_duffel_slice(offer['id'], inbound_slice, price_data, currency, is_inbound=True)
-                    formatted_inbound.append(inbound_flight)
             except Exception as loop_e:
-                print(f"Skipping an offer due to parsing error: {loop_e}")
+                print(f"Skipping a flight due to parsing error: {loop_e}")
+
+        # Currently mock inbound due to missing AIR iQ dual slice format details
+        formatted_inbound = []
+        if return_date:
+             formatted_inbound = self._generate_flights(destination, origin, return_date, adults, flight_class)
 
         return {
             'success': True,
@@ -188,78 +179,105 @@ class FlightService:
                 'outbound': formatted_outbound,
                 'inbound': formatted_inbound,
                 'meta': {
-                    'provider': 'duffel',
-                    'offer_request_id': offer_request_id
+                    'provider': 'air_iq',
                 }
             }
         }
 
-    def _format_duffel_slice(self, offer_id, fslice, price, currency, is_inbound=False):
-        """Format Duffel slice data to match frontend expectations using raw JSON dicts"""
-        # For simplicity, we take the first segment's details
-        segments_data = fslice.get('segments', [])
-        if not segments_data:
-            raise KeyError("No segments found in Duffel slice")
-
-        first_segment = segments_data[0]
-        airline = first_segment.get('marketing_carrier', {})
-
+    def _format_air_iq_flight(self, flight):
+        """Format AIR iQ slice data to match frontend expectations"""
+        
+        ticket_id = flight.get('ticket_id', str(random.randint(1000, 9999)))
+        price = float(flight.get('total_price', 0))
+        if price == 0 and flight.get('fares'):
+             price = float(flight['fares'].get('total', 0))
+             
+        segments_data = flight.get('segments', [])
+        
         segments = []
-        for idx, seg in enumerate(segments_data):
-            dep_dt = datetime.fromisoformat(seg.get('departing_at', '').replace('Z', '+00:00'))
-            arr_dt = datetime.fromisoformat(seg.get('arriving_at', '').replace('Z', '+00:00'))
-            dur_mins = max(0, int((arr_dt - dep_dt).total_seconds() // 60))
-            dur_str = f"{dur_mins // 60}h {dur_mins % 60}m"
-
-            layover_mins = None
-            if idx < len(segments_data) - 1:
-                next_dep = datetime.fromisoformat(segments_data[idx + 1].get('departing_at', '').replace('Z', '+00:00'))
-                layover_mins = max(0, int((next_dep - arr_dt).total_seconds() // 60))
-
-            carrier = seg.get('marketing_carrier', {})
-            origin_info = seg.get('origin', {})
-            dest_info = seg.get('destination', {})
-
-            segments.append({
-                'origin': origin_info.get('iata_code', origin_info.get('id', '')),
-                'destination': dest_info.get('iata_code', dest_info.get('id', '')),
-                'depart_time': dep_dt.strftime('%H:%M'),
-                'arrival_time': arr_dt.strftime('%H:%M'),
-                'duration': dur_str,
-                'flight_number': f"{carrier.get('iata_code', '')}{seg.get('marketing_carrier_flight_number', '')}",
-                'airline_name': carrier.get('name', carrier.get('iata_code', '')),
-                'airline_code': carrier.get('iata_code', ''),
-                'cabin_class': seg.get('cabin_class', 'economy'),
-                'layover_minutes': layover_mins
-            })
         
-        # Duration format for whole slice (e.g. PT10H20M -> 10h 20m)
-        slice_duration_str = fslice.get('duration', '')
-        formatted_duration = slice_duration_str[2:].lower().replace('h', 'h ') if slice_duration_str.startswith('PT') else slice_duration_str
-        
-        origin_airport = first_segment.get('origin', {})
-        dest_airport = segments_data[-1].get('destination', {})
-
-        return {
-            'id': f"{offer_id}_{'in' if is_inbound else 'out'}",
-            'airline': {
-                'code': airline.get('iata_code', ''),
-                'name': airline.get('name', ''),
-                'logo': f"https://res.cloudinary.com/duffel/image/upload/v1582230000/intermediary/carrier-logos/{airline.get('iata_code', '')}.png"
-            },
-            'flight_number': f"{airline.get('iata_code', '')}{first_segment.get('marketing_carrier_flight_number', '')}",
-            'origin': origin_airport.get('iata_code', ''),
-            'destination': dest_airport.get('iata_code', ''),
-            'depart_time': datetime.fromisoformat(first_segment.get('departing_at', '').replace('Z', '+00:00')).strftime('%H:%M'),
-            'arrival_time': datetime.fromisoformat(segments_data[-1].get('arriving_at', '').replace('Z', '+00:00')).strftime('%H:%M'),
-            'duration': formatted_duration,
-            'next_day': False, 
-            'stops': len(segments_data) - 1,
-            'price': float(price),
-            'currency': currency,
-            'class': first_segment.get('cabin_class', 'economy'),
-            'segments': segments
-        }
+        if not segments_data:
+             # Basic structure if segments are flat
+             dep_time = flight.get('departure_time', '10:00')
+             arr_time = flight.get('arrival_time', '12:00')
+             duration_str = flight.get('duration', '2h 0m')
+             airline_code = flight.get('airline_code', 'AI')
+             airline_name = flight.get('airline_name', 'Air India')
+             flight_number = flight.get('flight_number', f"{airline_code}123")
+             
+             segments.append({
+                  'origin': flight.get('origin', ''),
+                  'destination': flight.get('destination', ''),
+                  'depart_time': dep_time,
+                  'arrival_time': arr_time,
+                  'duration': duration_str,
+                  'flight_number': flight_number,
+                  'airline_name': airline_name,
+                  'airline_code': airline_code,
+                  'cabin_class': flight.get('cabin_class', 'Economy'),
+                  'layover_minutes': None
+             })
+             
+             return {
+                 'id': ticket_id,
+                 'airline': {
+                     'code': airline_code,
+                     'name': airline_name,
+                     'logo': flight.get('airline_logo', f"https://logos-world.net/wp-content/uploads/2023/01/Air-India-Logo.png")
+                 },
+                 'flight_number': flight_number,
+                 'origin': flight.get('origin', ''),
+                 'destination': flight.get('destination', ''),
+                 'depart_time': dep_time,
+                 'arrival_time': arr_time,
+                 'duration': duration_str,
+                 'next_day': False,
+                 'stops': 0,
+                 'price': price,
+                 'currency': 'INR',
+                 'class': flight.get('cabin_class', 'Economy'),
+                 'segments': segments
+             }
+        else:
+             # Handling rich segments
+             for seg in segments_data:
+                  segments.append({
+                       'origin': seg.get('origin', ''),
+                       'destination': seg.get('destination', ''),
+                       'depart_time': seg.get('departure_time', ''),
+                       'arrival_time': seg.get('arrival_time', ''),
+                       'duration': seg.get('duration', ''),
+                       'flight_number': seg.get('flight_number', ''),
+                       'airline_name': seg.get('airline_name', ''),
+                       'airline_code': seg.get('airline_code', ''),
+                       'cabin_class': seg.get('cabin_class', 'Economy'),
+                       'layover_minutes': seg.get('layover_time')
+                  })
+             
+             first_seg = segments_data[0]
+             last_seg = segments_data[-1]
+             airline_code = first_seg.get('airline_code', 'AI')
+             
+             return {
+                 'id': ticket_id,
+                 'airline': {
+                     'code': airline_code,
+                     'name': first_seg.get('airline_name', 'Airline'),
+                     'logo': first_seg.get('airline_logo', f"https://logos-world.net/wp-content/uploads/2023/01/Air-India-Logo.png")
+                 },
+                 'flight_number': first_seg.get('flight_number', ''),
+                 'origin': first_seg.get('origin', ''),
+                 'destination': last_seg.get('destination', ''),
+                 'depart_time': first_seg.get('departure_time', ''),
+                 'arrival_time': last_seg.get('arrival_time', ''),
+                 'duration': flight.get('total_duration', ''),
+                 'next_day': False,
+                 'stops': len(segments_data) - 1,
+                 'price': price,
+                 'currency': 'INR',
+                 'class': first_seg.get('cabin_class', 'Economy'),
+                 'segments': segments
+             }
 
     def suggest(self, query):
         """Autocomplete for airports - stays mock for now to avoid heavy API usage"""

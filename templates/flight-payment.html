@@ -747,15 +747,17 @@
 
         // Load booking details
         async function loadBookingDetails() {
-            if (!flightBooking.airline || !flightBooking.passenger) {
+            const flight = flightBooking.outbound || flightBooking;
+            const passenger = flightBooking.passenger;
+
+            if (!flight.airline || !passenger) {
                 alert('No flight booking data found! Redirecting...');
                 window.location.href = 'flight-booking.html';
                 return;
             }
 
-            const passenger = flightBooking.passenger;
-            const currency = flightBooking.currency || 'INR';
-            const totalPrice = parseFloat(flightBooking.totalPrice || flightBooking.price || 0);
+            const currency = flight.currency || 'INR';
+            const totalPrice = parseFloat(flightBooking.totalPrice || flight.price || 0);
 
             // Passenger review
             document.getElementById('reviewName').textContent = `${passenger.firstName} ${passenger.lastName}`;
@@ -767,23 +769,23 @@
             }
 
             // Flight summary
-            document.getElementById('airlineName').textContent = flightBooking.airline || 'Airline';
-            document.getElementById('flightNumber').textContent = flightBooking.flightNumber || '';
-            document.getElementById('departTime').textContent = flightBooking.departTime || '--:--';
-            document.getElementById('arriveTime').textContent = flightBooking.arriveTime || '--:--';
-            document.getElementById('originCode').textContent = flightBooking.origin || '---';
-            document.getElementById('destCode').textContent = flightBooking.destination || '---';
-            document.getElementById('flightDuration').textContent = flightBooking.duration || '--';
-            document.getElementById('flightDate').textContent = formatDateDisplay(flightBooking.date);
-            document.getElementById('travelerCount').textContent = flightBooking.travelers || '1';
+            document.getElementById('airlineName').textContent = flight.airline?.name || flight.airline || 'Airline';
+            document.getElementById('flightNumber').textContent = flight.flight_number || flight.flightNumber || '';
+            document.getElementById('departTime').textContent = flight.depart_time || flight.departTime || '--:--';
+            document.getElementById('arriveTime').textContent = flight.arrival_time || flight.arriveTime || '--:--';
+            document.getElementById('originCode').textContent = flight.origin || '---';
+            document.getElementById('destCode').textContent = flight.destination || '---';
+            document.getElementById('flightDuration').textContent = flight.duration || '--';
+            document.getElementById('flightDate').textContent = formatDateDisplay(flight.date);
+            document.getElementById('travelerCount').textContent = flight.travelers || '1';
 
-            const stops = parseInt(flightBooking.stops || '0');
+            const stops = parseInt(flight.stops || '0');
             const stopsText = stops === 0 ? 'Non-stop' : stops + (stops === 1 ? ' stop' : ' stops');
             const stopsEl = document.getElementById('flightStops');
             stopsEl.textContent = stopsText;
             stopsEl.style.color = stops === 0 ? '#10b981' : '#ef4444';
 
-            const fc = flightBooking.flightClass || 'economy';
+            const fc = flight.flightClass || flight.class || 'economy';
             document.getElementById('flightClass').textContent = fc.charAt(0).toUpperCase() + fc.slice(1);
 
             // Total price
@@ -808,6 +810,7 @@
             });
 
             try {
+                const flight = flightBooking.outbound || flightBooking;
                 const response = await fetch('/api/payment/create-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -815,9 +818,9 @@
                         amount: flightBooking.total,
                         currency: 'INR',
                         booking_details: {
-                            flight: `${flightBooking.airline} ${flightBooking.flightNumber}`,
-                            route: `${flightBooking.origin} → ${flightBooking.destination}`,
-                            date: flightBooking.date
+                            flight: `${flight.airline?.name || flight.airline || ''} ${flight.flight_number || flight.flightNumber || ''}`,
+                            route: `${flight.origin || ''} → ${flight.destination || ''}`,
+                            date: flight.date
                         }
                     })
                 });
@@ -832,7 +835,7 @@
                     currency: data.currency,
                     order_id: data.order_id,
                     name: 'C2C Journeys',
-                    description: `Flight: ${flightBooking.airline} ${flightBooking.origin}→${flightBooking.destination}`,
+                    description: `Flight: ${flight.airline?.name || flight.airline || ''} ${flight.origin}→${flight.destination}`,
                     handler: async function (response) {
                         await verifyRazorpayPayment(response);
                     },
@@ -871,6 +874,7 @@
 
         async function verifyRazorpayPayment(razorpayResponse) {
             try {
+                const flight = flightBooking.outbound || flightBooking;
                 const passenger = flightBooking.passenger || {};
                 const response = await fetch('/api/payment/flight/verify', {
                     method: 'POST',
@@ -881,19 +885,19 @@
                         razorpay_signature: razorpayResponse.razorpay_signature,
                         amount: flightBooking.total,
                         flight: {
-                            flightId: flightBooking.flightId || '',
-                            airline: flightBooking.airline || '',
-                            flightNumber: flightBooking.flightNumber || '',
-                            origin: flightBooking.origin || '',
-                            destination: flightBooking.destination || '',
-                            date: flightBooking.date || '',
-                            flightClass: flightBooking.flightClass || 'economy',
-                            travelers: flightBooking.travelers || 1,
-                            currency: flightBooking.currency || 'INR',
-                            departTime: flightBooking.departTime || '',
-                            arriveTime: flightBooking.arriveTime || '',
-                            duration: flightBooking.duration || '',
-                            stops: flightBooking.stops || '0'
+                            flightId: flight.id || flight.flightId || '',
+                            airline: flight.airline?.name || flight.airline || '',
+                            flightNumber: flight.flight_number || flight.flightNumber || '',
+                            origin: flight.origin || '',
+                            destination: flight.destination || '',
+                            date: flight.date || '',
+                            flightClass: flight.flightClass || flight.class || 'economy',
+                            travelers: flight.travelers || 1,
+                            currency: flight.currency || 'INR',
+                            departTime: flight.depart_time || flight.departTime || '',
+                            arriveTime: flight.arrival_time || flight.arriveTime || '',
+                            duration: flight.duration || '',
+                            stops: flight.stops || '0'
                         },
                         passenger: {
                             firstName: passenger.firstName || '',
@@ -1079,27 +1083,28 @@
 
                 // Send confirmation email via flight endpoint
                 try {
+                    const flight = flightBooking.outbound || flightBooking;
                     await fetch('/api/flights/send-confirmation', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             booking_id: referenceId,
                             amount: flightBooking.total || 0,
-                            currency: flightBooking.currency || 'INR',
+                            currency: flight.currency || 'INR',
                             flight: {
-                                flightId: flightBooking.flightId || '',
-                                airline: flightBooking.airline || '',
-                                flightNumber: flightBooking.flightNumber || '',
-                                origin: flightBooking.origin || '',
-                                destination: flightBooking.destination || '',
-                                date: flightBooking.date || '',
-                                flightClass: flightBooking.flightClass || 'economy',
-                                travelers: flightBooking.travelers || 1,
-                                currency: flightBooking.currency || 'INR',
-                                departTime: flightBooking.departTime || '',
-                                arriveTime: flightBooking.arriveTime || '',
-                                duration: flightBooking.duration || '',
-                                stops: flightBooking.stops || '0'
+                                flightId: flight.id || flight.flightId || '',
+                                airline: flight.airline?.name || flight.airline || '',
+                                flightNumber: flight.flight_number || flight.flightNumber || '',
+                                origin: flight.origin || '',
+                                destination: flight.destination || '',
+                                date: flight.date || '',
+                                flightClass: flight.flightClass || flight.class || 'economy',
+                                travelers: flight.travelers || 1,
+                                currency: flight.currency || 'INR',
+                                departTime: flight.depart_time || flight.departTime || '',
+                                arriveTime: flight.arrival_time || flight.arriveTime || '',
+                                duration: flight.duration || '',
+                                stops: flight.stops || '0'
                             },
                             passenger: {
                                 firstName: passenger.firstName || '',
