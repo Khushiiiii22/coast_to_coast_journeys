@@ -568,12 +568,17 @@ def search_by_destination():
 
                 if etg_hotels and len(etg_hotels) > 0:
                     # Proceed with transformation...
-                    # NOTE: We do NOT call /hotel/info/ for every search result.
-                    # ETG certification requires using cached static data from dumps
-                    # instead of bombarding /hotel/info/ (would hit RPM limits).
-                    # Static data (names, images) comes from local DB / dumps.
-                    static_hotel_map = {}
+                    # --- PERFORMANCE FIX: Bulk Static Data Enrichment ---
+                    # Instead of an empty map or sequential lookups, we now use parallel fetching.
+                    hotel_ids = [h.get('hotel_id') or h.get('id') for h in etg_hotels if h.get('hotel_id') or h.get('id')]
                     
+                    if hotel_ids:
+                        print(f"📦 Fetching static info for {len(hotel_ids)} hotels in parallel...")
+                        static_res = etg_service.get_hotels_static(hotel_ids, language='en')
+                        if static_res.get('success'):
+                            static_hotel_map = static_res['data'].get('data', {})
+                            print(f"✅ Successfully enriched {len(static_hotel_map)} hotels with static data")
+
                     # Calculate nights for correct inclusive price display
                     from datetime import datetime
                     try:

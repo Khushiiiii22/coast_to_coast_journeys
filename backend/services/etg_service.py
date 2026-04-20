@@ -15,6 +15,8 @@ import sys
 import os
 import json
 import logging
+import concurrent.futures
+from pathlib import Path
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -61,8 +63,14 @@ class ETGApiService:
             }
             print(f"✅ Static IP Proxy configured")
             
+            
         # Sandbox Quota Workaround (Cache for 10 minutes)
         self.search_cache = TTLCache(maxsize=100, ttl=600)
+        
+        # Local Static Data Cache (Persist to disk to survive restarts)
+        self.static_cache_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'hotel_static_cache.json')
+        os.makedirs(os.path.dirname(self.static_cache_file), exist_ok=True)
+        self.static_cache = self._load_static_cache()
         
         self._validate_credentials()
     
@@ -102,6 +110,24 @@ class ETGApiService:
         print(f"📝 ETG API LOG: {endpoint} | Status: {status_code} | Duration: {duration_ms:.0f}ms")
         
         return log_entry
+
+    def _load_static_cache(self) -> Dict[str, Any]:
+        """Load static data cache from disk"""
+        if os.path.exists(self.static_cache_file):
+            try:
+                with open(self.static_cache_file, 'r') as f:
+                    return json.load(f)
+            except:
+                return {}
+        return {}
+
+    def _save_static_cache(self):
+        """Save static data cache to disk"""
+        try:
+            with open(self.static_cache_file, 'w') as f:
+                json.dump(self.static_cache, f, indent=2)
+        except Exception as e:
+            print(f"⚠️ Failed to save static cache: {e}")
     
     def _make_request(self, endpoint: str, data: dict = None, method: str = "POST", timeout: int = 30, retry_count: int = 0) -> dict:
         """Make a request to ETG API with detailed logging"""
@@ -265,73 +291,69 @@ class ETGApiService:
 
     def get_hotels_static(self, hotel_ids: List[str], language: str = "en") -> dict:
         """
-        Fetch hotel static data for multiple IDs
-        Used to enrich search results with names/images
-        
-        RateHawk /hotel/info/ takes a single 'id' per request.
-        We iterate over hotel IDs and collect results.
+        Fetch hotel static data for multiple IDs in PARALLEL.
+        Enriches search results with names, images, and addresses.
         """
         all_hotel_data = {}
+        ids_to_fetch = []
         
-        for hotel_id in hotel_ids:
+        # 1. Check local cache first
+        for hid in hotel_ids:
+            if hid in self.static_cache:
+                all_hotel_data[hid] = self.static_cache[hid]
+            else:
+                ids_to_fetch.append(hid)
+        
+        if not ids_to_fetch:
+            return {'success': True, 'data': {'data': all_hotel_data}}
+            
+        print(f"🚀 Parallel Fetching {len(ids_to_fetch)} hotels from RateHawk...")
+        
+        def fetch_single_hotel(hotel_id):
             try:
-                data = {
-                    "id": hotel_id,
-                    "language": language
-                }
-                result = self._make_request("/hotel/info/", data, timeout=10)
-                
+                result = self._make_request("/hotel/info/", {"id": hotel_id, "language": language}, timeout=10)
                 if result.get('success') and result.get('data'):
-                    response_data = result['data']
-                    # RateHawk wraps response in 'data' key
-                    hotel_info = response_data.get('data', response_data)
+                    resp = result['data']
+                    h_info = resp.get('data', resp)
                     
-                    if isinstance(hotel_info, dict):
-                        # Extract images from images_ext (modern) or images (deprecated)
+                    if isinstance(h_info, dict):
+                        # Standardize image array
                         images = []
+                        img_ext = h_info.get('images_ext', {})
+                        if isinstance(img_ext, dict):
+                            for cat_imgs in img_ext.values():
+                                for img in (cat_imgs or []):
+                                    url = img if isinstance(img, str) else img.get('url')
+                                    if url: images.append(url)
                         
-                        # Prefer images_ext (categorized images - modern field)
-                        images_ext = hotel_info.get('images_ext', {})
-                        if images_ext and isinstance(images_ext, dict):
-                            # images_ext is a dict with categories: exterior, guest_rooms, lobby, pool, etc.
-                            for category, img_list in images_ext.items():
-                                if isinstance(img_list, list):
-                                    for img in img_list:
-                                        if isinstance(img, str) and img:
-                                            images.append(img)
-                                        elif isinstance(img, dict) and img.get('url'):
-                                            images.append(img['url'])
-                        
-                        # Fallback to deprecated images field
                         if not images:
-                            raw_images = hotel_info.get('images', [])
-                            if isinstance(raw_images, list):
-                                for img in raw_images:
-                                    if isinstance(img, str) and img:
-                                        images.append(img)
-                                    elif isinstance(img, dict) and img.get('url'):
-                                        images.append(img['url'])
-                        
-                        # Store hotel info with extracted images
-                        hotel_info['images'] = images
-                        hotel_info['id'] = hotel_id
-                        all_hotel_data[hotel_id] = hotel_info
-                        
-                        if images:
-                            print(f"📸 Got {len(images)} images for hotel {hotel_id}")
-                        else:
-                            print(f"⚠️ No images found for hotel {hotel_id}")
-                            
+                            for img in (h_info.get('images', []) or []):
+                                url = img if isinstance(img, str) else img.get('url')
+                                if url: images.append(url)
+                                
+                        h_info['images'] = images[:20] # Cap images for performance
+                        return hotel_id, h_info
+                return hotel_id, None
             except Exception as e:
-                print(f"⚠️ Failed to fetch static data for hotel {hotel_id}: {e}")
-                continue
-        
-        # Return in a format compatible with the existing code
+                print(f"⚠️ Worker Error for {hotel_id}: {e}")
+                return hotel_id, None
+
+        # 2. Fetch missing IDs in parallel (Max 10 workers to stay safe)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            future_to_id = {executor.submit(fetch_single_hotel, hid): hid for hid in ids_to_fetch}
+            for future in concurrent.futures.as_completed(future_to_id):
+                hid, h_info = future.result()
+                if h_info:
+                    all_hotel_data[hid] = h_info
+                    self.static_cache[hid] = h_info # Add to runtime cache
+
+        # 3. Save updated cache to disk
+        if ids_to_fetch:
+            self._save_static_cache()
+            
         return {
             'success': True,
-            'data': {
-                'data': all_hotel_data  # Dict keyed by hotel_id
-            }
+            'data': {'data': all_hotel_data}
         }
     
     # ==========================================
@@ -632,7 +654,7 @@ class ETGApiService:
         return f"CTC-{datetime.now().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:8].upper()}"
     
     @staticmethod
-    def format_guests_for_search(adults: int, children_ages: List[int] = None, rooms: list = None) -> List[Dict]:
+    def format_guests_for_search(adults: int = 2, children_ages: List[int] = None, rooms: list = None) -> List[Dict]:
         """
         Format guest configuration for ETG v3 search API (rooms array).
         Returns a list of rooms, where each room is a dict: {"adults": N, "children": [age1, age2]}
