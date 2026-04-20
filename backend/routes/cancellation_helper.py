@@ -7,6 +7,8 @@ def format_cancellation_policies(rate):
     """
     cancellation_info = {
         'is_free_cancellation': False,
+        'free_cancellation_before': None,  # UTC raw limit (ETG priority)
+        'from_orig_time': None,            # Local property time (ETG priority)
         'free_cancellation_formatted': None,
         'policies': []
     }
@@ -28,6 +30,9 @@ def format_cancellation_policies(rate):
     
     if free_cancel_limit or orig_time:
         cancellation_info['is_free_cancellation'] = True
+        cancellation_info['free_cancellation_before'] = free_cancel_limit
+        cancellation_info['from_orig_time'] = orig_time
+        
         display_time = orig_time if orig_time else free_cancel_limit
         is_utc = not bool(orig_time) # If using raw utc limit, add UTC+0
         

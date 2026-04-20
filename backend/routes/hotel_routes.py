@@ -1470,12 +1470,18 @@ def get_hotel_details():
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
         
-        guests = etg_service.format_guests_for_search(
-            adults=data['adults'],
-            children_ages=data.get('children_ages', [])
-        )
+        # Handle multi-room search (ETG v3 requirement)
+        rooms = data.get('rooms')
+        if rooms:
+            # Use provided rooms array directly
+            guests = etg_service.format_guests_for_search(rooms=rooms)
+        else:
+            # Fallback to legacy adults/children ages
+            guests = etg_service.format_guests_for_search(
+                adults=data.get('adults', 2),
+                children_ages=data.get('children_ages', [])
+            )
         
-
         # ETG Sandbox often rejects INR. We force USD for the API call and convert locally.
         user_currency = data.get('currency', 'INR')
         api_currency = 'USD' if user_currency == 'INR' else user_currency
@@ -2182,10 +2188,17 @@ def get_enriched_hotel_details():
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
         
-        guests = etg_service.format_guests_for_search(
-            adults=data['adults'],
-            children_ages=data.get('children_ages', [])
-        )
+        # Handle multi-room search (ETG v3 requirement)
+        rooms = data.get('rooms')
+        if rooms:
+            # Use provided rooms array directly
+            guests = etg_service.format_guests_for_search(rooms=rooms)
+        else:
+            # Fallback to legacy adults/children ages
+            guests = etg_service.format_guests_for_search(
+                adults=data.get('adults', 2),
+                children_ages=data.get('children_ages', [])
+            )
         
         # ETG Sandbox often rejects INR. We force USD for the API call and convert locally.
         user_currency = data.get('currency', 'INR')
@@ -2483,8 +2496,10 @@ def enrich_rate_with_room_data(rate, room_groups):
         markup_factor = 1 + (COMMISSION_PERCENT / 100)
         sales_prepaid = api_prepaid_base * markup_factor
         
-        # Final display price = Marked-up Prepaid + Raw Property Fees
-        final_sales_price = sales_prepaid + api_non_included_tax
+        # Mikhail Requirement (Update 5): 
+        # The 'price' shown on site must ONLY be the amount paid to us (prepaid).
+        # We must NOT add property_payable fees to this total.
+        final_sales_price = sales_prepaid 
         
         enriched_rate['price'] = round(final_sales_price, 2)
         enriched_rate['prepaid_amount'] = round(sales_prepaid, 2)

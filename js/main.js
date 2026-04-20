@@ -505,13 +505,25 @@ async function handleHotelSearch(e) {
 
     // Parse rooms and guests from display text
     const roomsText = DOM.roomsCount.textContent;
-    const rooms = parseInt(roomsText) || 1;
+    const roomsCount = parseInt(roomsText) || 1;
 
     const adults = parseInt(document.getElementById('hotelAdults')?.value) || 2;
     const children = parseInt(document.getElementById('hotelChildren')?.value) || 0;
     const childrenAges = [];
     for (let i = 0; i < children; i++) {
         childrenAges.push(8); // Default child age
+    }
+
+    // Construct a basic rooms array to satisfy ETG v3 requirements throughout the funnel
+    const rooms = [];
+    let remAdults = adults;
+    for (let i = 0; i < roomsCount; i++) {
+        const roomAdults = i === 0 ? Math.ceil(remAdults / (roomsCount - i)) : Math.floor(remAdults / (roomsCount - i));
+        rooms.push({
+            adults: roomAdults,
+            children_ages: i === 0 ? childrenAges : []
+        });
+        remAdults -= roomAdults;
     }
 
     const regionId = document.getElementById('hotelRegionId')?.value || null;
@@ -521,7 +533,7 @@ async function handleHotelSearch(e) {
         region_id: regionId,
         checkin: document.getElementById('checkInDate').value,
         checkout: document.getElementById('checkOutDate').value,
-        rooms: rooms,
+        rooms: rooms,  // Now passes an array of objects
         adults: adults,
         children_ages: childrenAges,
         currency: DOM.currencySelect ? DOM.currencySelect.value : 'INR'

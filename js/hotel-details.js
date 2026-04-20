@@ -98,6 +98,7 @@ async function fetchHotelDetails() {
                 checkout: searchParams?.checkout || getDefaultCheckout(),
                 adults: searchParams?.adults || 2,
                 children_ages: searchParams?.children_ages || [],
+                rooms: searchParams?.rooms || null,
                 currency: searchParams?.currency || localStorage.getItem('ctc_currency') || 'INR'
             });
 
@@ -124,7 +125,8 @@ async function fetchHotelDetails() {
             hotel_id: hotelId,
             checkin: searchParams?.checkin || getDefaultCheckin(),
             checkout: searchParams?.checkout || getDefaultCheckout(),
-            adults: searchParams?.adults || 2
+            adults: searchParams?.adults || 2,
+            rooms: searchParams?.rooms || null
         });
 
         if (result.success && result.data && (result.data.name || result.data.hotels?.length > 0)) {
@@ -1229,7 +1231,7 @@ function createRateCard(rate, index, customBadge = null) {
             <span class="room-feature size"><i class="fas fa-ruler-combined"></i> ${roomSize} sq ft</span>
             <span class="room-feature sleeps"><i class="fas fa-users"></i> Sleeps ${sleepsCount}</span>
             <span class="room-feature bed"><i class="fas fa-bed"></i> ${bedType}</span>
-            <span class="room-feature paylater"><i class="fas fa-check"></i> Reserve now, pay later</span>
+            <span class="room-feature guarantee"><i class="fas fa-certificate"></i> Best Value Guarantee</span>
             ${hasWifi ? `<span class="room-feature wifi"><i class="fas fa-wifi"></i> Free WiFi</span>` : ''}
         </div>
     `;
@@ -1313,31 +1315,35 @@ function createRateCard(rate, index, customBadge = null) {
     const urgencyHtml = showUrgency ? `<span class="urgency-notice">We have ${roomsLeft} left</span>` : '';
 
     // Tax info display - ETG-compliant: distinguish included vs non-included taxes
-    const taxData = rate.tax_data || {};
-    const allTaxes = taxData.taxes || [];
-    const nonIncludedTaxes = allTaxes.filter(tax => tax.included_by_supplier === false);
+    const taxInfo = rate.tax_info || { included_taxes: [], non_included_taxes: [], has_non_included_taxes: false };
+    const nonIncludedTaxes = taxInfo.non_included_taxes || [];
     
     // Dynamic tax note: only show "Includes taxes" if NO non-included taxes exist
-    let taxNoteHtml = nonIncludedTaxes.length === 0 
+    let taxNoteHtml = !taxInfo.has_non_included_taxes 
         ? '<small class="taxes-note" style="color:#059669"><i class="fas fa-check-circle"></i> Includes taxes & fees</small>'
         : '<small class="taxes-note" style="color:#b45309"><i class="fas fa-plus-circle"></i> Plus fees payable at property</small>';
 
     // If there are non-included taxes, show them clearly (ETG certification requirement)
-    if (nonIncludedTaxes.length > 0) {
+    if (taxInfo.has_non_included_taxes) {
         const taxItems = nonIncludedTaxes.map(tax => {
             const amount = parseFloat(tax.amount || 0);
             const currency = tax.currency_code || 'USD';
-            const displayName = tax.name ? tax.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Property Fee';
-            return `<div style="display:flex;justify-content:space-between;font-size:0.72rem;padding:2px 0"><span>${displayName}</span><span>${currency} ${amount.toFixed(2)}</span></div>`;
+            const displayName = tax.display_name || (tax.name ? tax.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Property Fee');
+            return `<div style="display:flex;justify-content:space-between;font-size:0.75rem;padding:3px 0;border-bottom:1px dashed #fde68a">
+                        <span>${displayName}</span>
+                        <span style="font-weight:600">${currency} ${amount.toLocaleString()}</span>
+                    </div>`;
         }).join('');
 
         taxNoteHtml = `
-            <div style="margin-top:6px;padding:8px 10px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;">
-                <div style="font-size:0.78rem;font-weight:600;color:#92400e;margin-bottom:4px;">
-                    <i class="fas fa-info-circle"></i> Payable at Property (Not included):
+            <div style="margin-top:8px;padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                <div style="font-size:0.78rem;font-weight:700;color:#92400e;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+                    <i class="fas fa-hotel"></i> Payable at Property (Check-in):
                 </div>
                 ${taxItems}
-                <div style="font-size:0.72rem;color:#b45309;margin-top:4px;">These fees must be paid directly to the hotel upon check-in.</div>
+                <div style="font-size:0.7rem;color:#b45309;margin-top:6px;font-style:italic;">
+                    Note: These fees are not included in the total prepaid price and must be paid directly to the hotel.
+                </div>
             </div>
         `;
     }

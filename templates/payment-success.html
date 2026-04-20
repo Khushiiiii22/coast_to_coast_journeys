@@ -273,13 +273,53 @@
                         <strong>${data.hotel}</strong>
                     </div>
                     <div class="detail-row">
-                        <span>Amount Paid</span>
-                        <strong>₹${formatNumber(data.amount)}</strong>
+                        <span>Amount Paid (Online)</span>
+                        <strong style="color: #16a34a;">₹${formatNumber(data.amount)}</strong>
                     </div>
+                    ${(() => {
+                        const bookingData = JSON.parse(sessionStorage.getItem('ctc_booking_data') || '{}');
+                        const taxInfo = bookingData.rate?.tax_info || {};
+                        if (taxInfo.has_non_included_taxes && taxInfo.non_included_taxes.length > 0) {
+                            const fees = taxInfo.non_included_taxes.map(t => `${t.currency_code} ${parseFloat(t.amount).toLocaleString()}`).join(', ');
+                            return `
+                                <div class="detail-row" style="background: #fffbeb; padding: 10px; border-radius: 8px; margin-top: 10px; border: 1px solid #fde68a;">
+                                    <span style="color: #92400e; font-size: 0.85rem;">Due at Property (Check-in)</span>
+                                    <strong style="color: #b45309;">${fees}</strong>
+                                </div>
+                            `;
+                        }
+                        return '';
+                    })()}
                     <div class="detail-row">
                         <span>Status</span>
                         <strong style="color: #28a745;">Confirmed</strong>
                     </div>
+                    
+                    ${(() => {
+                        const bookingData = JSON.parse(sessionStorage.getItem('ctc_booking_data') || '{}');
+                        const searchParams = bookingData.search_params || {};
+                        const rooms = bookingData.rooms || [];
+                        
+                        if (rooms.length > 0) {
+                            return `
+                                <div class="guest-confirmation-box" style="margin-top: 20px; text-align: left; padding: 15px; background: #f0f9ff; border-radius: 12px; border: 1px solid #bae6fd;">
+                                    <h4 style="font-size: 0.9rem; font-weight: 700; color: #0369a1; margin-bottom: 10px;">
+                                        <i class="fas fa-users"></i> Guest Information
+                                    </h4>
+                                    ${rooms.map((room, idx) => {
+                                        const guest = room.guests?.[0] || {};
+                                        return `
+                                            <div style="font-size: 0.85rem; padding: 6px 0; border-bottom: 1px solid #e0f2fe; display: flex; justify-content: space-between;">
+                                                <span style="color: #0c4a6e;">Room ${idx + 1} Guest</span>
+                                                <strong style="color: #075985;">${guest.first_name || '-'} ${guest.last_name || '-'}</strong>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            `;
+                        }
+                        return '';
+                    })()}
                 </div>
                 
                 <p style="color: #666; margin: 20px 0;">

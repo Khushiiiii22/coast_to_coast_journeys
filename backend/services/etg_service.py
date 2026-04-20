@@ -589,8 +589,11 @@ class ETGApiService:
             # Fallback for legacy single-room guest list
             data["rooms"] = [{"guests": guests}]
         
+        # Sanitize and add user comment
         if user_comment:
-            data["user"]["comment"] = user_comment
+            sanitized_comment = str(user_comment).strip()
+            if sanitized_comment:
+                data["user"]["comment"] = sanitized_comment
             
         return self._make_request("/hotel/order/booking/finish/", data, timeout=180)
     
@@ -639,13 +642,39 @@ class ETGApiService:
             formatted_rooms = []
             for room in rooms:
                 entry = {"adults": int(room.get("adults", 1))}
-                child_ages = room.get("childAges", room.get("children_ages", []))
+                # Support multiple naming conventions for child ages
+                child_ages = room.get("children", room.get("childAges", room.get("children_ages", [])))
                 if child_ages and isinstance(child_ages, list):
                     entry["children"] = [int(a) for a in child_ages]
                 else:
                     entry["children"] = []
                 formatted_rooms.append(entry)
             return formatted_rooms
+        
+        # Rooms Reconstructor (Fix for Mikhail's 5th Update)
+        # If rooms is an integer (e.g., 2) but no array was provided, distribute guests across rooms
+        if isinstance(rooms, (int, str)) and str(rooms).isdigit() and int(rooms) > 1:
+            rooms_count = int(rooms)
+            total_adults = int(adults)
+            children_ages = children_ages or []
+            
+            # Simple distribution: Give 1 adult to each room until we run out
+            # Remaining adults go into the first room
+            room_list = []
+            for i in range(rooms_count):
+                room_adults = 1 if total_adults > 0 else 0
+                total_adults -= 1
+                room_list.append({"adults": room_adults, "children": []})
+            
+            # Put extra adults in the first room
+            if total_adults > 0:
+                room_list[0]["adults"] += total_adults
+                
+            # Put all children in the first room for simplicity (valid per ETG)
+            if children_ages:
+                room_list[0]["children"] = [int(a) for a in children_ages]
+                
+            return room_list
 
         # Single-room fallback logic
         if children_ages is None:

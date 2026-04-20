@@ -370,7 +370,10 @@ function createHotelCardHorizontal(hotel) {
         })()}
                         </div>
                     </div>
-                    ${hotel.is_refundable ? '<span class="refundable-badge"><i class="fas fa-check-circle"></i> Fully refundable</span>' : ''}
+                    ${(() => {
+                        const cancelStatus = HotelUtils.getCancellationStatus(hotel);
+                        return cancelStatus.isRefundable ? '<span class="refundable-badge"><i class="fas fa-check-circle"></i> Fully refundable</span>' : '';
+                    })()}
                 </div>
             </div>
         </div>
