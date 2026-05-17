@@ -599,13 +599,18 @@ class ETGApiService:
         Finish/Start booking process
         POST /hotel/order/booking/finish/
         """
+        # Safeguard customer privacy: Always send corporate email to RateHawk B2B API
+        # to prevent whitelisting rejection and B2B net-price voucher exposure.
+        from config import Config
+        etg_email = getattr(Config, 'CORPORATE_EMAIL', 'info@c2cjourneys.com')
+
         data = {
             "partner": {
                 "partner_order_id": partner_order_id
             },
             "user": {
-                "email": email,
-                "phone": phone
+                "email": etg_email,
+                "phone": phone or "0000000000"
             },
             "language": language,
             "payment_type": {

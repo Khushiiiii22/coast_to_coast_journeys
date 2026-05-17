@@ -2975,6 +2975,7 @@ def create_booking():
 
 
 @hotel_bp.route('/book/finish', methods=['POST'])
+@hotel_bp.route('/booking/finish', methods=['POST'])
 def finish_booking():
     """
     Finalize booking and start status polling
@@ -3165,6 +3166,7 @@ def check_booking_status():
 
 
 @hotel_bp.route('/book/poll', methods=['POST'])
+@hotel_bp.route('/booking/finish/status', methods=['POST'])
 def poll_booking_status():
     """
     Poll booking status until final (with timeout)
