@@ -240,6 +240,8 @@ ALTER TABLE hotel_bookings ADD COLUMN IF NOT EXISTS payment_id VARCHAR(100);
 ALTER TABLE hotel_bookings ADD COLUMN IF NOT EXISTS booking_source VARCHAR(50) DEFAULT 'website';
 ALTER TABLE hotel_bookings ADD COLUMN IF NOT EXISTS booked_by UUID REFERENCES auth.users(id);
 ALTER TABLE hotel_bookings ADD COLUMN IF NOT EXISTS special_requests TEXT;
+ALTER TABLE hotel_bookings ADD COLUMN IF NOT EXISTS customer_email VARCHAR(255);
+ALTER TABLE hotel_bookings ADD COLUMN IF NOT EXISTS customer_phone VARCHAR(50);
 ALTER TABLE hotel_bookings ADD COLUMN IF NOT EXISTS refund_amount DECIMAL(12,2);
 ALTER TABLE hotel_bookings ADD COLUMN IF NOT EXISTS refund_status VARCHAR(50);
 
