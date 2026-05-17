@@ -289,6 +289,17 @@ class ETGApiService:
         """
         return self._make_request(f"/hotel/content/?id={hotel_id}&language={language}", method="GET")
 
+    def get_hotel_info(self, hotel_id: str, language: str = "en") -> dict:
+        """
+        Retrieve detailed hotel info (includes metapolicy_struct, metapolicy_extra_info)
+        POST /hotel/info/
+        """
+        data = {
+            "id": hotel_id,
+            "language": language
+        }
+        return self._make_request("/hotel/info/", data)
+
     def get_hotels_static(self, hotel_ids: List[str], language: str = "en") -> dict:
         """
         Fetch hotel static data for multiple IDs in PARALLEL.

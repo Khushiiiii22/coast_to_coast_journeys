@@ -1067,7 +1067,7 @@ function updateMainCancellationPolicy(rates) {
 
     if (!titleEl || !rates || rates.length === 0) return;
 
-    const freeRates = rates.filter(r => r.cancellation_info?.is_free_cancellation);
+    const freeRates = rates.filter(r => HotelUtils.getCancellationStatus(r).isRefundable);
 
     if (freeRates.length > 0) {
         const deadline = freeRates[0].cancellation_info.free_cancellation_formatted;
@@ -1315,20 +1315,20 @@ function createRateCard(rate, index, customBadge = null) {
     const urgencyHtml = showUrgency ? `<span class="urgency-notice">We have ${roomsLeft} left</span>` : '';
 
     // Tax info display - ETG-compliant: distinguish included vs non-included taxes
-    const taxInfo = rate.tax_info || { included_taxes: [], non_included_taxes: [], has_non_included_taxes: false };
-    const nonIncludedTaxes = taxInfo.non_included_taxes || [];
+    const propertyFees = rate.property_payable_fees || [];
+    const hasPropertyFees = propertyFees.length > 0;
     
     // Dynamic tax note: only show "Includes taxes" if NO non-included taxes exist
-    let taxNoteHtml = !taxInfo.has_non_included_taxes 
+    let taxNoteHtml = !hasPropertyFees 
         ? '<small class="taxes-note" style="color:#059669"><i class="fas fa-check-circle"></i> Includes taxes & fees</small>'
         : '<small class="taxes-note" style="color:#b45309"><i class="fas fa-plus-circle"></i> Plus fees payable at property</small>';
 
     // If there are non-included taxes, show them clearly (ETG certification requirement)
-    if (taxInfo.has_non_included_taxes) {
-        const taxItems = nonIncludedTaxes.map(tax => {
-            const amount = parseFloat(tax.amount || 0);
-            const currency = tax.currency_code || 'USD';
-            const displayName = tax.display_name || (tax.name ? tax.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Property Fee');
+    if (hasPropertyFees) {
+        const taxItems = propertyFees.map(fee => {
+            const amount = parseFloat(fee.amount_native || 0);
+            const currency = fee.currency_native || 'USD';
+            const displayName = fee.name || 'Property Fee';
             return `<div style="display:flex;justify-content:space-between;font-size:0.75rem;padding:3px 0;border-bottom:1px dashed #fde68a">
                         <span>${displayName}</span>
                         <span style="font-weight:600">${currency} ${amount.toLocaleString()}</span>
@@ -1619,9 +1619,8 @@ function showCancellationModal(rateIndex) {
     let rate = {};
     try { rate = JSON.parse(card?.dataset?.rateJson || '{}'); } catch (e) { }
 
-    const cancellationInfo = rate.cancellation_info || {};
-    const deadline = cancellationInfo.free_cancellation_formatted;
-    const dateStr = deadline ? (deadline.datetime || deadline) : '';
+    const cancelStatus = HotelUtils.getCancellationStatus(rate);
+    const dateStr = cancelStatus.deadline || rate.free_cancellation_before || rate.cancellation_info?.free_cancellation_before || '';
 
     // Parse free cancel date for display
     let freeCancelShortDate = '';

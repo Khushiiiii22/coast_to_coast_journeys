@@ -669,10 +669,11 @@ const HotelUtils = {
     getCancellationStatus(rate) {
         const cancelInfo = rate.cancellation_info || {};
         
-        // v3 priority: from_orig_time (local) or free_cancellation_before (UTC)
-        const deadlineDate = cancelInfo.free_cancellation_before || cancelInfo.from_orig_time;
+        // v3 priority: free_cancellation_before might be on the rate root or inside cancellation_info
+        const deadlineDate = rate.free_cancellation_before || cancelInfo.free_cancellation_before || cancelInfo.from_orig_time;
         
-        let isRefundable = !!cancelInfo.is_free_cancellation;
+        // Sometimes backend provides is_free_cancellation directly
+        let isRefundable = !!(cancelInfo.is_free_cancellation || rate.is_free_cancellation);
         let formattedDeadline = '';
 
         if (deadlineDate) {

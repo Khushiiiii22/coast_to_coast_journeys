@@ -33,7 +33,7 @@ def debug_email_test():
         
         # Check Brevo config
         brevo_key = current_app.config.get('BREVO_API_KEY') or os_lib.getenv('BREVO_API_KEY')
-        mail_sender = current_app.config.get('MAIL_DEFAULT_SENDER') or os_lib.getenv('MAIL_DEFAULT_SENDER', 'info@coasttocoastjourneys.com')
+        mail_sender = current_app.config.get('MAIL_DEFAULT_SENDER') or os_lib.getenv('MAIL_DEFAULT_SENDER', 'info@c2cjourneys.com')
         
         results = {
             "config": {
@@ -62,7 +62,7 @@ def debug_email_test():
             results['steps'].append("Testing Brevo API connectivity...")
             
             # Send test email
-            test_email = "info@coasttocoastjourneys.com"
+            test_email = "info@c2cjourneys.com"
             
             headers = {
                 "accept": "application/json",
@@ -896,36 +896,8 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
         if hotel_name and '_' in hotel_name:
             hotel_name = hotel_name.replace('_', ' ').replace('  ', ' ').title()
         
-        # Perform full transformation of all rates for the details page
-        enriched_rates = transform_rates(
-            rates,
-            target_currency=target_currency,
-            conversion_rates=conversion_rates,
-            meal_display_map=MEAL_TYPE_DISPLAY,
-            room_groups=room_groups,
-            nights=nights
-        )
 
-        transformed.append({
-            'id': hotel_id,
-            'name': hotel_name,
-            'price': lowest_price,
-            'prepaid_amount': prepay_to_charge, # Corrected amount for payment gateway
-            'property_payable_fees': best_rate_fees, # Transparency Disclosure
-            'currency': target_currency,
-            'meal_type': best_meal_value,
-            'meal_display': best_meal_display,
-            'has_breakfast': has_breakfast,
-            'no_child_meal': no_child_meal,
-            'star_rating': static_info.get('star_rating') or hotel.get('star_rating'),
-            'address': static_info.get('address') or hotel.get('address', ''),
-            'latitude': static_info.get('latitude') or hotel.get('latitude'),
-            'longitude': static_info.get('longitude') or hotel.get('longitude'),
-            'images': hotel.get('images', []),
-            'amenities': hotel.get('amenities', []),
-            'rates': enriched_rates  # CRITICAL: Preserve full rates for Details Page
-        })
-        
+
         # Image logic - prioritize API images
         image_url = None
         all_images = []
@@ -1098,7 +1070,6 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map, 
         rate['currency'] = target_currency
         rate['meal_display'] = meal_display_map.get(rate.get('meal', 'nomeal'), rate.get('meal', 'Room Only').title())
 
-        transformed_rates.append(rate)
         tax_info = parse_taxes(
             payment_options.get('tax_data', {}), 
             target_currency, 
@@ -1145,7 +1116,13 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map, 
                 'fixed_count': fixed_count,
             },
             'tax_info': tax_info,
-            'cancellation_info': format_cancellation_policies(rate)
+            'cancellation_info': format_cancellation_policies(rate),
+            # ETG Certification Fix: Include room static data, property fees, and prepaid breakdown
+            'room_static': rate.get('room_static', {}),
+            'property_payable_fees': rate.get('property_payable_fees', []),
+            'prepaid_amount': rate.get('prepaid_amount', prepay_to_charge),
+            'original_price': rate.get('original_price', round(display_nightly_inclusive * 1.25, 2)),
+            'net_price': rate.get('net_price', api_total)
         }
         
         transformed_rates.append(transformed_rate)
@@ -1588,19 +1565,14 @@ def get_hotel_policies(hotel_id):
         except Exception as e:
             print(f"⚠️ Local cache read failed for {hotel_id}: {e}")
 
-        # ── Strategy 1: Try /hotel/info/ API (contains metapolicy_struct) ──
-        if not hotel_data:
-            try:
-                info_result = etg_service._make_request('/hotel/info/', {'id': hotel_id, 'language': 'en'}, timeout=15)
-                if info_result.get('success'):
-                    info_data = info_result.get('data', {})
-                    if isinstance(info_data, dict) and 'data' in info_data and info_data['data']:
-                        info_data = info_data['data']
-                    if isinstance(info_data, dict) and (info_data.get('metapolicy_struct') or info_data.get('metapolicy_extra_info')):
-                        hotel_data = info_data
-                        print(f"✅ Policies for {hotel_id}: sourced from /hotel/info/")
-            except Exception as e:
-                print(f"⚠️ /hotel/info/ failed for {hotel_id}: {e}")
+        # ── Strategy 1: Try /hotel/info/ API (DISABLED FOR LIVE TRAFFIC) ──
+        # ETG Certification Fix: /hotel/info/ should NOT be called during search flow.
+        # Policy data must come from the local static dump cache (Strategy 0).
+        # if not hotel_data:
+        #     try:
+        #         info_result = etg_service._make_request('/hotel/info/', {'id': hotel_id, 'language': 'en'}, timeout=15)
+        #         if info_result.get('success'): ...
+        #     except Exception as e: ...
 
         # ── Strategy 2: Fall back to /hotel/static/ ──
         if not hotel_data:
@@ -2221,22 +2193,50 @@ def get_enriched_hotel_details():
         if not rates_result.get('success'):
             return jsonify(rates_result)
         
-        # 2. Fetch hotel static data for room groups
-        static_result = etg_service.get_hotel_static(data['hotel_id'])
+        # 2. Fetch hotel static data for room groups (Robust v3 fallback strategy)
+        static_data = None
         
-        room_groups = {}
-        if static_result.get('success'):
-            static_data = static_result.get('data', {})
-            if isinstance(static_data, dict) and static_data.get('data'):
-                static_data = static_data['data']
+        # Strategy A: Check local cache first
+        cached_static = etg_service.static_cache.get(data['hotel_id'])
+        if cached_static and cached_static.get('room_groups'):
+            static_data = cached_static
+            static_result = {'success': True, 'data': {'data': cached_static}}
+            print(f"⚡ Static Cache Hit for {data['hotel_id']} room groups")
+        
+        # Strategy B: Try B2B v3 /hotel/info/
+        if not static_data:
+            static_result = etg_service.get_hotel_info(data['hotel_id'])
+            if static_result.get('success'):
+                s_data = static_result.get('data', {})
+                if isinstance(s_data, dict) and s_data.get('data'):
+                    s_data = s_data['data']
+                if isinstance(s_data, dict) and s_data.get('room_groups'):
+                    static_data = s_data
+                    print(f"✅ Loaded {len(s_data.get('room_groups', []))} room groups from /hotel/info/")
+        
+        # Strategy C: Fall back to GET /hotel/static/ (often contains fuller room groups in sandbox)
+        if not static_data or not static_data.get('room_groups'):
+            print(f"⚠️ Room groups empty/missing in /hotel/info/ for {data['hotel_id']}. Falling back to /hotel/static/...")
+            static_result = etg_service.get_hotel_static(data['hotel_id'])
+            if static_result.get('success'):
+                s_data = static_result.get('data', {})
+                if isinstance(s_data, dict) and s_data.get('data'):
+                    s_data = s_data['data']
+                if isinstance(s_data, dict) and s_data.get('room_groups'):
+                    static_data = s_data
+                    print(f"✅ Loaded {len(s_data.get('room_groups', []))} room groups from /hotel/static/ fallback")
+        
+        # Save successfully retrieved static data to cache
+        if static_data and static_data.get('room_groups'):
+            etg_service.static_cache[data['hotel_id']] = static_data
+            etg_service._save_static_cache()
             
-            # Build room groups lookup keyed by rg_ext[*].rg
-            # Static data has NO "rg_hash" field — the join key lives inside
-            # the rg_ext array, one entry per room-group identifier.
+        room_groups = {}
+        if static_data:
             for rg in static_data.get('room_groups', []):
                 # Process images once per room_group (shared across all rg values)
                 processed_images = []
-                for img in rg.get('images', []):
+                for img in (rg.get('images') or []):
                     if isinstance(img, str):
                         processed_url = process_etg_image_url(img)
                         if processed_url:
@@ -2251,7 +2251,7 @@ def get_enriched_hotel_details():
                     'name': rg.get('name', rg.get('room_name', '')),
                     'name_struct': rg.get('name_struct', {}),
                     'images': processed_images,
-                    'room_amenities': rg.get('room_amenities', []),
+                    'room_amenities': rg.get('room_amenities') or [],
                     'bed_type': rg.get('name_struct', {}).get('bedding_type', ''),
                     'bathroom': rg.get('name_struct', {}).get('bathroom', ''),
                     'quality': rg.get('name_struct', {}).get('quality', '')
@@ -2259,7 +2259,7 @@ def get_enriched_hotel_details():
 
                 # Each static room_group's rg_ext array contains the rg values
                 # that dynamic rates reference via rate['rg_ext']['rg'].
-                rg_ext_list = rg.get('rg_ext', [])
+                rg_ext_list = rg.get('rg_ext') or []
                 if isinstance(rg_ext_list, list):
                     for rg_ext_entry in rg_ext_list:
                         rg_val = rg_ext_entry.get('rg') if isinstance(rg_ext_entry, dict) else None
@@ -2267,6 +2267,13 @@ def get_enriched_hotel_details():
                             rg_data_copy = dict(rg_data)
                             rg_data_copy['rg_key'] = rg_val
                             room_groups[rg_val] = rg_data_copy
+                        
+                        # ETG Certification Fix: Map by structural signature as fallback
+                        sig = make_rg_signature(rg_ext_entry)
+                        if sig:
+                            rg_data_copy = dict(rg_data)
+                            rg_data_copy['rg_key'] = sig
+                            room_groups[sig] = rg_data_copy
                 elif isinstance(rg_ext_list, dict):
                     # Occasionally rg_ext may arrive as a plain dict
                     rg_val = rg_ext_list.get('rg')
@@ -2274,6 +2281,13 @@ def get_enriched_hotel_details():
                         rg_data_copy = dict(rg_data)
                         rg_data_copy['rg_key'] = rg_val
                         room_groups[rg_val] = rg_data_copy
+                    
+                    # ETG Certification Fix: Map by structural signature as fallback
+                    sig = make_rg_signature(rg_ext_list)
+                    if sig:
+                        rg_data_copy = dict(rg_data)
+                        rg_data_copy['rg_key'] = sig
+                        room_groups[sig] = rg_data_copy
         
         # 3. Transform and enrich!
         # transform_etg_hotels expects a list of hotels from the search response
@@ -2461,17 +2475,36 @@ def format_room_groups(room_groups):
 # Commission markup (Net price + Commission = Sales price)
 COMMISSION_PERCENT = 15
 
-def enrich_rate_with_room_data(rate, room_groups):
+def make_rg_signature(rg_ext):
+    """
+    Generate a stable, sorted string signature of structural classification attributes in rg_ext.
+    Allows dynamic-to-static room group matching when exact 'rg' hash keys are absent or differ.
+    """
+    if not rg_ext:
+        return ""
+    if isinstance(rg_ext, list):
+        if len(rg_ext) > 0 and isinstance(rg_ext[0], dict):
+            rg_ext = rg_ext[0]
+        else:
+            return ""
+    if not isinstance(rg_ext, dict):
+        return ""
+    
+    # Extract classification attributes, sorting the keys to maintain a stable string signature
+    parts = []
+    for k in sorted(rg_ext.keys()):
+        if k != 'rg' and rg_ext[k] is not None:
+            parts.append(f"{k}:{rg_ext[k]}")
+    return ",".join(parts)
+
+
+def enrich_rate_with_room_data(rate: dict, room_groups: dict) -> dict:
     """
     Enrich a rate with room static data.
 
     Matching logic (IMPORTANT):
-        Dynamic side: rate['rg_ext']['rg']                    — the join value
-        Static side:  room_group['rg_ext'][n]['rg']           — indexed as dict key
-
-    The room_groups dict passed in is already keyed by rg_ext[*].rg values
-    (built in the enriched-hotel-details endpoint — NOT by a "rg_hash" field,
-    which does not exist in static data).
+        1. Exact 'rg' match: Dynamic rate['rg_ext']['rg'] matches room_group['rg_ext'][n]['rg']
+        2. Structural Signature match: If exact 'rg' is missing or fails, match on classification attributes in 'rg_ext'
 
     Tax handling:
     - tax_data.taxes contains all taxes
@@ -2489,7 +2522,7 @@ def enrich_rate_with_room_data(rate, room_groups):
         
         # Identify non-included taxes
         api_non_included_tax = 0
-        tax_data = rate.get('tax_data', {}) or {}
+        tax_data = rate.get('payment_options', {}).get('tax_data', {}) or {}
         for tax in tax_data.get('taxes', []):
             if not tax.get('included_by_supplier', True):
                 api_non_included_tax += float(tax.get('amount', 0))
@@ -2518,32 +2551,46 @@ def enrich_rate_with_room_data(rate, room_groups):
         enriched_rate['price'] = 0
     
     # ── Room-group matching ───────────────────────────────────────────────────
-    # Dynamic rate carries rg_ext as a plain dict: rate['rg_ext']['rg']
-    # Static room_groups dict is keyed by those same rg values
-    # (built from static room_group['rg_ext'][n]['rg'] — no "rg_hash" exists).
     rg_ext = rate.get('rg_ext', {})
+    rg_key = None
     if isinstance(rg_ext, list):
-        # Defensive: some API versions may return rg_ext as a list
-        rg_key = rg_ext[0].get('rg') if rg_ext and isinstance(rg_ext[0], dict) else None
-    else:
+        if rg_ext and isinstance(rg_ext[0], dict):
+            rg_key = rg_ext[0].get('rg')
+    elif isinstance(rg_ext, dict):
         rg_key = rg_ext.get('rg')
 
-    # Try to find matching static room group
-    room_data = room_groups.get(rg_key, {})
+    # Try Exact Match on 'rg' key
+    room_data = room_groups.get(rg_key, {}) if rg_key is not None else {}
+    
+    # Fallback: Try match on structural signature of rg_ext features
+    if not room_data:
+        sig = make_rg_signature(rg_ext)
+        if sig:
+            room_data = room_groups.get(sig, {})
 
     if room_data:
+        # Safely extract and process image URLs (handles both strings and dicts from ETG API)
+        raw_images = room_data.get('images', [])
+        processed_images = []
+        for img in raw_images:
+            raw_url = img.get('url') if isinstance(img, dict) else img
+            if isinstance(raw_url, str):
+                processed_url = process_etg_image_url(raw_url)
+                if processed_url:
+                    processed_images.append(processed_url)
+
         enriched_rate['room_static'] = {
             'matched': True,
-            'rg_key': rg_key,   # rg_ext.rg value used for the join
+            'rg_key': rg_key or make_rg_signature(rg_ext),
             'room_name': room_data.get('name', ''),
-            'images': room_data.get('images', [])[:5],
+            'images': processed_images[:10],
             'amenities': room_data.get('room_amenities', [])[:10]
         }
     else:
         # No static match — fall back to the rate's own embedded room name
         enriched_rate['room_static'] = {
             'matched': False,
-            'rg_key': rg_key,
+            'rg_key': rg_key or make_rg_signature(rg_ext),
             'room_name': rate.get('room_name', rate.get('room_data_trans', {}).get('main_name', 'Room')),
             'images': [],
             'amenities': []
@@ -2555,7 +2602,7 @@ def enrich_rate_with_room_data(rate, room_groups):
     # - included_by_supplier: boolean (false = must be paid at check-in)
     # - amount: tax amount as string
     # - currency_code: currency of the tax
-    tax_data = rate.get('tax_data', {})
+    tax_data = rate.get('payment_options', {}).get('tax_data', {})
     taxes = tax_data.get('taxes', [])
     
     # Separate included and non-included taxes
@@ -2797,10 +2844,71 @@ def create_booking():
         
         book_hash = data['book_hash']
         
-        # Frontend already called prebook (Step 6 in booking flow).
-        # Do NOT call prebook again here — it wastes quota and slows the flow.
-        # Trust the book_hash is valid (prebook was already done by the frontend).
-        print(f"📋 Proceeding to booking form with validated hash: {book_hash[:50]}...")
+        # ── MANDATORY PREBOOK STEP (ETG v3 Certification Requirement) ──
+        # The h- hash from /search/hp/ MUST go through /hotel/prebook/ before /booking/form.
+        # Prebook validates availability, checks price changes, and returns a confirmed hash.
+        print(f"🔄 Calling /hotel/prebook/ for hash: {book_hash[:50]}...")
+        
+        prebook_result = etg_service.prebook(
+            book_hash=book_hash,
+            price_increase_percent=5
+        )
+        
+        if not prebook_result.get('success'):
+            prebook_error = prebook_result.get('error', 'Prebook failed')
+            print(f"❌ Prebook failed: {prebook_error}")
+            return jsonify({
+                'success': False,
+                'error': 'This room is no longer available at the selected price. Please search again.',
+                'error_code': 'PREBOOK_FAILED',
+                'details': str(prebook_error)
+            }), 400
+        
+        # Extract prebook data — ETG may return a NEW hash or confirm the existing one
+        prebook_data = prebook_result.get('data', {})
+        if isinstance(prebook_data, dict) and 'data' in prebook_data:
+            prebook_data = prebook_data['data']
+        
+        # Check for price changes
+        price_changed = prebook_data.get('price_changed', False)
+        if price_changed:
+            print(f"⚠️ Price changed during prebook for {book_hash[:30]}...")
+            # Extract new price for logging and returning to frontend
+            payment_options = prebook_data.get('payment_options', {})
+            payment_types = payment_options.get('payment_types', [])
+            new_total = 0
+            if payment_types:
+                new_total = float(payment_types[0].get('amount', 0))
+                print(f"   New price from prebook: {new_total}")
+                
+            # Mikhail Requirement: If price changes during prebook, we MUST notify the frontend
+            # before completing the booking so the user can see the new price and re-confirm.
+            # Extract the new confirmed hash to pass back
+            confirmed_hash = None
+            if 'hotels' in prebook_data and prebook_data['hotels'] and 'rates' in prebook_data['hotels'][0] and prebook_data['hotels'][0]['rates']:
+                confirmed_hash = prebook_data['hotels'][0]['rates'][0].get('book_hash')
+            if not confirmed_hash:
+                confirmed_hash = prebook_data.get('book_hash') or prebook_data.get('hash') or book_hash
+                
+            return jsonify({
+                'success': False,
+                'error': 'The price of this room has changed. Please review the new price before continuing.',
+                'error_code': 'PRICE_CHANGED',
+                'new_price': new_total,
+                'confirmed_hash': confirmed_hash
+            }), 400
+        
+        # Use the prebook-confirmed hash (may be the same or a refreshed one)
+        # Extract from deeply nested ETG v3 structure if present: hotels[0].rates[0].book_hash
+        confirmed_hash = None
+        if 'hotels' in prebook_data and prebook_data['hotels'] and 'rates' in prebook_data['hotels'][0] and prebook_data['hotels'][0]['rates']:
+            confirmed_hash = prebook_data['hotels'][0]['rates'][0].get('book_hash')
+        
+        # Fallbacks
+        if not confirmed_hash:
+            confirmed_hash = prebook_data.get('book_hash') or prebook_data.get('hash') or book_hash
+            
+        print(f"✅ Prebook successful. Using confirmed hash: {confirmed_hash[:50]}...")
         
         # Generate unique partner order ID
         partner_order_id = etg_service.generate_partner_order_id()
@@ -2808,10 +2916,10 @@ def create_booking():
         # Get user IP
         user_ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
         
-        # Create booking in ETG using the validated hash
+        # Create booking in ETG using the PREBOOK-VALIDATED hash
         # Support for 4th update: pass 'rooms' if available, fallback to 'guests'
         etg_result = etg_service.create_booking(
-            book_hash=book_hash,
+            book_hash=confirmed_hash,
             partner_order_id=partner_order_id,
             guests=data.get('guests'),
             rooms=data.get('rooms'),
@@ -2911,7 +3019,7 @@ def finish_booking():
         # Support for 4th update: pass 'rooms' if stored in DB
         result = etg_service.finish_booking(
             partner_order_id=partner_order_id,
-            email=booking_info.get('customer_email') or booking_info.get('email', 'info@coasttocoastjourneys.com'),
+            email=booking_info.get('customer_email') or booking_info.get('email', 'info@c2cjourneys.com'),
             phone=booking_info.get('customer_phone') or booking_info.get('phone', '0000000000'),
             guests=booking_info.get('guests', []),
             rooms=booking_info.get('rooms'),

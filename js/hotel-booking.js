@@ -94,12 +94,9 @@ function populateBookingSummary() {
     document.getElementById('btnTotalPrice').textContent = total.toLocaleString('en-IN');
 
     // Cancellation policy (use real data if available)
-    const cancellationInfo = rate.cancellation_info || {};
-    if (cancellationInfo.is_free_cancellation) {
-        const deadline = cancellationInfo.free_cancellation_formatted?.datetime || 'before check-in';
-        document.getElementById('cancellationText').innerHTML = `<span style="color: #22c55e;"><i class="fas fa-check-circle"></i> Free cancellation until ${deadline}</span>`;
-    } else if (rate.cancellation === 'free') {
-        document.getElementById('cancellationText').innerHTML = `<span style="color: #22c55e;"><i class="fas fa-check-circle"></i> Free cancellation available</span>`;
+    const cancelStatus = HotelUtils.getCancellationStatus(rate);
+    if (cancelStatus.isRefundable) {
+        document.getElementById('cancellationText').innerHTML = `<span style="color: #22c55e;"><i class="fas fa-check-circle"></i> Free cancellation until ${cancelStatus.deadline || 'before check-in'}</span>`;
     } else {
         document.getElementById('cancellationText').innerHTML = `<span style="color: #f59e0b;"><i class="fas fa-exclamation-circle"></i> This booking is non-refundable</span>`;
     }
@@ -178,7 +175,15 @@ async function handleBookingSubmit(e) {
 
     const email = document.getElementById('email').value;
     const phone = document.getElementById('phone').value;
-    const specialRequests = document.getElementById('specialRequests')?.value || '';
+    let specialRequests = document.getElementById('specialRequests')?.value || '';
+    
+    // B2B travel agency workflow: include breakfast pre-purchase notice in hotel comments
+    if (rate && rate.extra_type === 'breakfast') {
+        const breakfastNotice = `[SPECIAL REQUEST: Guest has pre-purchased breakfast add-on via travel agency partner Coast to Coast Journeys. Please ensure breakfast is included for all guests during this stay.]`;
+        specialRequests = specialRequests 
+            ? `${specialRequests}\n${breakfastNotice}` 
+            : breakfastNotice;
+    }
 
     // Show loading
     showLoadingOverlay('Processing your booking...');

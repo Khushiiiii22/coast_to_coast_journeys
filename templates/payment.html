@@ -1062,6 +1062,35 @@
 
                 const data = await response.json();
                 if (!data.success) {
+                    // ETG Certification: Handle price_changed correctly in the UI
+                    if (data.error_code === 'PRICE_CHANGED') {
+                        // Calculate new total in INR with our 15% commission markup
+                        const newTotalUSD = data.new_price || 0;
+                        const conversionRate = 86.5; // From backend constants
+                        const newTotalINR = Math.round(newTotalUSD * 1.15 * conversionRate);
+                        
+                        // Update UI
+                        document.getElementById('totalAmountValue').textContent = `₹${newTotalINR.toLocaleString('en-IN')}`;
+                        
+                        // Show notification using the style ETG wants to see
+                        const notification = document.createElement('div');
+                        notification.className = `notification notification-warning`;
+                        notification.innerHTML = `
+                            <div class="notification-content" style="display: flex; align-items: center; gap: 10px; padding: 15px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-bottom: 20px;">
+                                <i class="fas fa-exclamation-triangle" style="font-size: 1.2rem;"></i>
+                                <span>The price has changed to ₹${newTotalINR.toLocaleString('en-IN')}. Please review and click the payment button again to proceed.</span>
+                            </div>
+                        `;
+                        const summaryDiv = document.querySelector('.booking-summary');
+                        summaryDiv.insertBefore(notification, summaryDiv.firstChild);
+                        
+                        // Update state so next click uses new data
+                        bookingData.total = newTotalINR;
+                        bookingData.rate.book_hash = data.confirmed_hash; // use the new p- hash
+                        sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
+                        
+                        throw new Error('Price updated. Please review the new price and try again.');
+                    }
                     throw new Error(data.error || 'Failed to create booking');
                 }
 
@@ -1355,88 +1384,23 @@
             bookNowBtn.disabled = true;
 
             try {
-                // Create booking in backend (mock mode)
+                // Create booking in backend (this calls ETG /order/booking/form/)
                 const bookingId = await createBackendBooking();
+                
+                if (!bookingId) {
+                    throw new Error("Failed to create booking form.");
+                }
 
-                // Simulate payment processing delay
+                // Simulate payment processing delay for the test card
                 await new Promise(resolve => setTimeout(resolve, 1500));
-
-                // Generate unique reference ID
-                const referenceId = generateReferenceId();
-
-                // Store payment success info
-                sessionStorage.setItem('paymentSuccess', JSON.stringify({
-                    payment_id: `TEST_${referenceId}`,
-                    reference_id: referenceId,
-                    amount: bookingData.total,
-                    hotel: bookingData.hotel.name,
-                    payment_method: 'Test Card',
-                    test_mode: true
-                }));
-
-                // Send booking confirmation email
-                let guestsStr = 'Guest';
-                if (bookingData.rooms && Array.isArray(bookingData.rooms)) {
-                    const allGuestNames = [];
-                    bookingData.rooms.forEach(room => {
-                        if (room.guests && Array.isArray(room.guests)) {
-                            room.guests.forEach(g => {
-                                allGuestNames.push(`${g.first_name || ''} ${g.last_name || ''}`.trim());
-                            });
-                        }
-                    });
-                    if (allGuestNames.length > 0) guestsStr = allGuestNames.join(', ');
-                }
-
-                const customerEmail = bookingData.email || (bookingData.guest && bookingData.guest.email);
-                const customerPhone = bookingData.phone || (bookingData.guest && bookingData.guest.phone);
-
-                if (customerEmail) {
-                    try {
-                        const emailPayload = {
-                            partner_order_id: bookingData.partner_order_id || referenceId,
-                            email: customerEmail,
-                            phone: customerPhone,
-                            hotel_name: bookingData.hotel.name,
-                            checkin: bookingData.search_params.checkin,
-                            checkout: bookingData.search_params.checkout,
-                            guests: guestsStr,
-                            total_amount: bookingData.total || 0,
-                            room_name: bookingData.rate?.room_name || '',
-                            meal_plan: bookingData.rate?.meal_info?.display_name || bookingData.rate?.meal_plan || '',
-                            currency: bookingData.rate.currency || bookingData.currency || 'INR'
-                        };
-                        console.log('📦 Email payload:', emailPayload);
-
-                        const emailResponse = await fetch('/api/hotels/booking/send-confirmation', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(emailPayload)
-                        });
-                        const emailResult = await emailResponse.json();
-                        console.log('✅ Email API response:', emailResult);
-                    } catch (emailError) {
-                        console.error('❌ Email send error:', emailError);
-                        // Don't block booking confirmation if email fails
-                    }
-                } else {
-                    console.warn('⚠️ No customer email found - skipping email send');
-                }
 
                 // Hide card form
                 hideTestCardForm();
 
-                // Populate and show confirmation modal
-                document.getElementById('confirmRefId').textContent = referenceId;
-                document.getElementById('confirmHotelName').textContent = bookingData.hotel.name || '-';
-                document.getElementById('confirmCheckin').textContent = formatDate(bookingData.search_params.checkin);
-                document.getElementById('confirmCheckout').textContent = formatDate(bookingData.search_params.checkout);
-                const originalCurrency = bookingData.rate.currency || bookingData.currency || 'INR';
-                const currencySymbol = originalCurrency === 'INR' ? '₹' : (originalCurrency === 'USD' ? '$' : originalCurrency + ' ');
-                document.getElementById('confirmAmount').textContent = `${currencySymbol}${(bookingData.total || 0).toLocaleString('en-IN')}`;
-                document.getElementById('confirmEmail').textContent = bookingData.guest?.email || bookingData.email || '-';
-
-                document.getElementById('confirmationModal').style.display = 'block';
+                // ── MANDATORY ETG STEP: Finish Booking ──
+                // This will call ETG's /order/booking/finish/ API and redirect to payment-success.html
+                const partnerOrderId = bookingData.partner_order_id;
+                await finalizeBookingWithETG(partnerOrderId);
 
             } catch (error) {
                 console.error('Test payment error:', error);

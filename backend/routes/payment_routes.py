@@ -614,7 +614,7 @@ def capture_paypal_order(order_id):
                             print(f"📋 Calling /booking/finish for PayPal order {partner_order_id}...")
                             finish_result = etg_service.finish_booking(
                                 partner_order_id=partner_order_id,
-                                email=booking.get('customer_email') or booking.get('email', 'info@coasttocoastjourneys.com'),
+                                email=booking.get('customer_email') or booking.get('email', 'info@c2cjourneys.com'),
                                 phone=booking.get('customer_phone') or booking.get('phone', '0000000000'),
                                 guests=booking.get('guests', []),
                                 rooms=booking.get('rooms'),
