@@ -2991,6 +2991,20 @@ def create_booking():
         if not db_result.get('success'):
             error_msg = db_result.get('error', 'Unknown database error')
             print(f"❌ Supabase booking creation failed: {error_msg}")
+            
+            # Developer Bypass: If running locally in DEBUG mode, allow testing to proceed with a mock ID
+            # so the developer is not blocked by a paused/offline Supabase project!
+            from config import get_config
+            if get_config().DEBUG:
+                print("⚠️ Local development mode detected. Proceeding with offline DB fallback ID.")
+                return jsonify({
+                    'success': True,
+                    'partner_order_id': partner_order_id,
+                    'etg_response': etg_result.get('data'),
+                    'booking_id': f"MOCK-DB-ID-{partner_order_id}",
+                    'db_warning': f"Database connection failed: {error_msg}. Proceeding in offline mock mode."
+                })
+                
             return jsonify({
                 'success': False,
                 'error': f"Database Connection/Write Error: {error_msg}. Please verify your Supabase project status (e.g. if it is paused or suspended).",
@@ -3037,10 +3051,25 @@ def finish_booking():
         
         # Fetch booking details from DB to provide to ETG
         db_booking = supabase_service.get_booking_by_partner_order_id(partner_order_id)
-        if not db_booking.get('success') or not db_booking.get('data'):
-            return jsonify({'success': False, 'error': 'Booking record not found'}), 404
         
-        booking_info = db_booking['data']
+        booking_info = None
+        if db_booking.get('success') and db_booking.get('data'):
+            booking_info = db_booking['data']
+        else:
+            from config import get_config
+            if get_config().DEBUG:
+                print("⚠️ Local development mode detected. Constructing offline mock booking info for finalization.")
+                booking_info = {
+                    'customer_email': 'test@c2cjourneys.com',
+                    'customer_phone': '9999999999',
+                    'guests': [{'first_name': 'Test', 'last_name': 'User', 'is_child': False}],
+                    'total_amount': 100,
+                    'currency': 'INR',
+                    'special_requests': 'Local Dev Test Booking'
+                }
+                
+        if not booking_info:
+            return jsonify({'success': False, 'error': f"Booking record not found: {db_booking.get('error', 'Unknown database error')}"}), 404
         
         # Mikhail Requirement (Update 6): Update to "processing" IMMEDIATELY before starting finalization
         # This ensures the frontend sees "In Progress" even if the API call is slow.
