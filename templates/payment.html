@@ -1071,7 +1071,7 @@
                 const data = await response.json();
                 if (!data.success) {
                     // 1. Session Expired (Hash Invalid)
-                    if (data.error_code === 'booking_form_expired' || data.error?.toLowerCase().includes('expired')) {
+                    if (data.error_code === 'booking_form_expired' || data.error_code === 'SESSION_EXPIRED' || (data.error?.toLowerCase().includes('expired') && !data.error?.toLowerCase().includes('database'))) {
                         const notification = document.createElement('div');
                         notification.innerHTML = `
                             <div class="notification-error" style="background: #fee2e2; border: 1px solid #ef4444; border-radius: 12px; padding: 20px; color: #991b1b; margin-bottom: 25px;">

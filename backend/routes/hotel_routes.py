@@ -2993,7 +2993,7 @@ def create_booking():
             print(f"❌ Supabase booking creation failed: {error_msg}")
             return jsonify({
                 'success': False,
-                'error': f"Database Connection/Write Error: {error_msg}. Please verify your Supabase project status (e.g. if it is paused or has expired).",
+                'error': f"Database Connection/Write Error: {error_msg}. Please verify your Supabase project status (e.g. if it is paused or suspended).",
                 'error_code': 'DATABASE_ERROR'
             }), 500
             
