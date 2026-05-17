@@ -21,27 +21,38 @@ class SupabaseService:
     def client(self):
         """Lazy initialization of Supabase client with health check"""
         if self._client is None:
+            from supabase import create_client
+            
+            # 1. Try with Service Role Key first
             try:
-                from supabase import create_client, Client
                 self._client = create_client(
                     Config.SUPABASE_URL,
                     Config.SUPABASE_SERVICE_ROLE_KEY
                 )
-                # Quick health check - only do once or if unhealthy
-                if not self._health_checked or not self._is_healthy:
-                    try:
-                        # Attempt to check connection with a 2-second timeout equivalent
-                        # We use a simple select that should fail fast if host is unreachable
-                        self._client.table('hotel_bookings').select('id', count='exact').limit(1).execute()
-                        self._is_healthy = True
-                    except Exception as he:
-                        print(f"⚠️  Supabase Health Check Failed: {he}")
-                        self._is_healthy = False
-                    self._health_checked = True
+                self._client.table('hotel_bookings').select('id', count='exact').limit(1).execute()
+                self._is_healthy = True
+                self._health_checked = True
+                print("✅ Supabase successfully connected via Service Role key.")
             except Exception as e:
-                print(f"⚠️  Warning: Could not initialize Supabase client: {e}")
-                self._client = None
-                self._is_healthy = False
+                print(f"⚠️  Supabase Service Role connection failed: {e}")
+                print("🔄 Attempting automatic self-healing fallback to Anon Key...")
+                
+                # 2. Fall back to Anon Key (Self-Healing Safeguard)
+                try:
+                    self._client = create_client(
+                        Config.SUPABASE_URL,
+                        Config.SUPABASE_ANON_KEY
+                    )
+                    self._client.table('hotel_bookings').select('id', count='exact').limit(1).execute()
+                    self._is_healthy = True
+                    self._health_checked = True
+                    print("✅ Supabase successfully connected via self-healed Anon key!")
+                except Exception as he:
+                    print(f"❌ Supabase Anon Key health check also failed: {he}")
+                    self._client = None
+                    self._is_healthy = False
+                    self._health_checked = True
+                    
         return self._client if self._is_healthy else None
     
     def _execute_query(self, operation):
