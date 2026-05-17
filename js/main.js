@@ -1409,7 +1409,7 @@ function initBookingTimer() {
     const TIMER_DURATION = 15 * 60; // 15 minutes in seconds
 
     let startTime = sessionStorage.getItem(TIMER_KEY);
-    if (!startTime) {
+    if (!startTime || (Math.floor((Date.now() - parseInt(startTime)) / 1000) > TIMER_DURATION)) {
         startTime = Date.now();
         sessionStorage.setItem(TIMER_KEY, startTime);
     }
