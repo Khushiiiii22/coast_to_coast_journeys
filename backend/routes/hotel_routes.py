@@ -2975,7 +2975,7 @@ def create_booking():
             'hotel_name': data.get('hotel_name', ''),
             'check_in': data.get('checkin'),
             'check_out': data.get('checkout'),
-            'rooms': data.get('rooms') or [{"guests": data.get('guests', [])}],
+            'rooms': len(data.get('rooms')) if isinstance(data.get('rooms'), list) else 1,
             'guests': data.get('guests') or (data.get('rooms', [{}])[0].get('guests', []) if data.get('rooms') else []),
             'customer_email': data.get('email'),
             'customer_phone': data.get('phone'),
