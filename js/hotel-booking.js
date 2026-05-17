@@ -175,15 +175,7 @@ async function handleBookingSubmit(e) {
 
     const email = document.getElementById('email').value;
     const phone = document.getElementById('phone').value;
-    let specialRequests = document.getElementById('specialRequests')?.value || '';
-    
-    // B2B travel agency workflow: include breakfast pre-purchase notice in hotel comments
-    if (rate && rate.extra_type === 'breakfast') {
-        const breakfastNotice = `[SPECIAL REQUEST: Guest has pre-purchased breakfast add-on via travel agency partner Coast to Coast Journeys. Please ensure breakfast is included for all guests during this stay.]`;
-        specialRequests = specialRequests 
-            ? `${specialRequests}\n${breakfastNotice}` 
-            : breakfastNotice;
-    }
+    const specialRequests = document.getElementById('specialRequests')?.value || '';
 
     // Show loading
     showLoadingOverlay('Processing your booking...');
@@ -234,17 +226,17 @@ async function processRealBooking(guests, email, phone, specialRequests) {
         // Extraction logic matches verified backend test: data.data.hotels[0].rates[0].book_hash
         const etgData = prebookResult.data?.data || {};
         let updatedHash = null;
-        
+
         if (etgData.hotels && etgData.hotels[0] && etgData.hotels[0].rates && etgData.hotels[0].rates[0]) {
             updatedHash = etgData.hotels[0].rates[0].book_hash;
         }
-        
+
         // Fallbacks
         updatedHash = updatedHash || etgData.hash || prebookResult.data?.hash || rate.book_hash;
-        
-        console.log('🔗 Booking sequence hash update:', { 
-            original: rate.book_hash.substring(0, 15) + '...', 
-            updated: updatedHash.substring(0, 15) + '...' 
+
+        console.log('🔗 Booking sequence hash update:', {
+            original: rate.book_hash.substring(0, 15) + '...',
+            updated: updatedHash.substring(0, 15) + '...'
         });
 
         // FIX F: Handle price_changed during prebook
@@ -264,7 +256,7 @@ async function processRealBooking(guests, email, phone, specialRequests) {
 
             // Update global state so next click uses new data
             bookingData.total_amount = newTotalINR;
-            
+
             // IMPORTANT: We must update the rate object too so the next attempt uses the NEW hash
             rate.book_hash = updatedHash;
 
@@ -296,7 +288,7 @@ async function processRealBooking(guests, email, phone, specialRequests) {
         // Step 3: Finish booking
         updateLoadingMessage('Finalizing your booking...');
         const finishResult = await HotelAPI.finishBooking(createResult.partner_order_id);
-        
+
         if (!finishResult.success) {
             return { success: false, error: finishResult.error || 'Failed to finalize booking process' };
         }
