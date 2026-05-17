@@ -14,10 +14,12 @@ class SupabaseService:
     """Service class for Supabase operations"""
     
     _client = None
+    _health_checked = False
+    _is_healthy = False
     
     @property
     def client(self):
-        """Lazy initialization of Supabase client"""
+        """Lazy initialization of Supabase client with health check"""
         if self._client is None:
             try:
                 from supabase import create_client, Client
@@ -25,10 +27,22 @@ class SupabaseService:
                     Config.SUPABASE_URL,
                     Config.SUPABASE_SERVICE_ROLE_KEY
                 )
+                # Quick health check - only do once or if unhealthy
+                if not self._health_checked or not self._is_healthy:
+                    try:
+                        # Attempt to check connection with a 2-second timeout equivalent
+                        # We use a simple select that should fail fast if host is unreachable
+                        self._client.table('hotel_bookings').select('id', count='exact').limit(1).execute()
+                        self._is_healthy = True
+                    except Exception as he:
+                        print(f"⚠️  Supabase Health Check Failed: {he}")
+                        self._is_healthy = False
+                    self._health_checked = True
             except Exception as e:
                 print(f"⚠️  Warning: Could not initialize Supabase client: {e}")
                 self._client = None
-        return self._client
+                self._is_healthy = False
+        return self._client if self._is_healthy else None
     
     def _execute_query(self, operation):
         """Execute a query with error handling"""

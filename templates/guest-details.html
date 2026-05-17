@@ -448,7 +448,9 @@
 
             const hotel = bookingData.hotel;
             const rate = bookingData.rate;
-            const searchParams = bookingData.search_params;
+            const searchParams = bookingData.search_params || {
+                checkin: '', checkout: '', adults: 2, rooms: [{ adults: 2, children: 0, childAges: [] }]
+            };
 
             // Hotel details
             document.getElementById('hotelName').textContent = hotel.name || 'Hotel';

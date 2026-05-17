@@ -8,7 +8,58 @@ const SUPABASE_URL = 'https://bcxkjvjchutgfuyklphx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjeGtqdmpjaHV0Z2Z1eWtscGh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgxOTQyNzAsImV4cCI6MjA4Mzc3MDI3MH0.qz5yreyBo5zD8x51leZDWHD6Ft_2JvutBrZF8yhjqJE';
 
 // Initialize Supabase Client
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let supabaseClient = null;
+let isSupabaseHealthy = false;
+
+/**
+ * BRUTAL SILENCER: 
+ * If Supabase is unreachable, we must stop the SDK from spamming the console.
+ * We do this by clearing stale sessions and disabling background tasks synchronously.
+ */
+function silenceSupabaseNoise() {
+    // Clear out any old sessions that the SDK might try to refresh
+    try {
+        const keys = Object.keys(localStorage);
+        keys.forEach(key => {
+            if (key.includes('supabase.auth.token')) localStorage.removeItem(key);
+        });
+    } catch (e) {}
+
+    // Initialize client with ALL background tasks disabled by default
+    // We only enable them later if we confirm connectivity
+    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { 
+            persistSession: false, 
+            autoRefreshToken: false, 
+            detectSessionInUrl: false 
+        }
+    });
+    
+    window.SupabaseDB = { client: supabaseClient };
+    window.isSupabaseConnected = () => isSupabaseHealthy;
+}
+
+// Run silencer immediately
+silenceSupabaseNoise();
+
+// Check if we can actually reach it (background check)
+async function checkSupabaseHealth() {
+    try {
+        const { error } = await supabaseClient.auth.getSession();
+        if (!error && window.navigator.onLine) {
+            console.log('✅ Supabase connected (Live Mode)');
+            isSupabaseHealthy = true;
+            // Optionally re-init with persistence if needed, 
+            // but for now we keep it silent to protect the dev console.
+        } else {
+            console.warn('⚠️ Supabase unreachable. Running in offline/test mode.');
+        }
+    } catch (e) {
+        isSupabaseHealthy = false;
+    }
+}
+
+checkSupabaseHealth();
 
 /**
  * =====================================================

@@ -829,8 +829,9 @@
                 return;
             }
 
-            // Check if guest info is present
-            if (!bookingData.guest && !bookingData.guestName) {
+            // Check if guest info is present (rooms is the current format, guest/guestName are legacy)
+            const hasGuestData = (bookingData.rooms && bookingData.rooms.length > 0) || bookingData.guest || bookingData.guestName;
+            if (!hasGuestData) {
                 alert('Please enter guest details first.');
                 window.location.href = 'guest-details.html';
                 return;
@@ -1054,50 +1055,81 @@
             };
 
             try {
+                // Set a 60-second safety timeout so it doesn't hang forever
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 60000);
+
                 const response = await fetch('/api/hotels/book', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
                 });
+                
+                clearTimeout(timeoutId);
 
                 const data = await response.json();
                 if (!data.success) {
-                    // ETG Certification: Handle price_changed correctly in the UI
-                    if (data.error_code === 'PRICE_CHANGED') {
-                        // Calculate new total in INR with our 15% commission markup
-                        const newTotalUSD = data.new_price || 0;
-                        const conversionRate = 86.5; // From backend constants
-                        const newTotalINR = Math.round(newTotalUSD * 1.15 * conversionRate);
-                        
-                        // Update UI
-                        document.getElementById('totalAmountValue').textContent = `₹${newTotalINR.toLocaleString('en-IN')}`;
-                        
-                        // Show notification using the style ETG wants to see
+                    // 1. Session Expired (Hash Invalid)
+                    if (data.error_code === 'booking_form_expired' || data.error?.toLowerCase().includes('expired')) {
                         const notification = document.createElement('div');
-                        notification.className = `notification notification-warning`;
                         notification.innerHTML = `
-                            <div class="notification-content" style="display: flex; align-items: center; gap: 10px; padding: 15px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-bottom: 20px;">
-                                <i class="fas fa-exclamation-triangle" style="font-size: 1.2rem;"></i>
-                                <span>The price has changed to ₹${newTotalINR.toLocaleString('en-IN')}. Please review and click the payment button again to proceed.</span>
+                            <div class="notification-error" style="background: #fee2e2; border: 1px solid #ef4444; border-radius: 12px; padding: 20px; color: #991b1b; margin-bottom: 25px;">
+                                <div style="display: flex; gap: 12px;">
+                                    <i class="fas fa-clock" style="font-size: 1.5rem;"></i>
+                                    <div>
+                                        <h4 style="margin: 0 0 5px; font-weight: 700;">Price Hold Expired</h4>
+                                        <p style="margin: 0 0 15px; font-size: 0.9rem;">Your booking session has timed out (usually after 20 minutes). Prices and availability may have changed.</p>
+                                        <button onclick="window.location.href='index.html'" class="btn btn-primary" style="background: #ef4444; border: none; padding: 8px 20px; font-size: 0.85rem;">
+                                            Start New Search
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        const summaryDiv = document.querySelector('.booking-summary');
+                        summaryDiv.insertBefore(notification, summaryDiv.firstChild);
+                        notification.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        throw new Error('Session expired');
+                    }
+
+                    // 2. Price Changed (Hash still valid, but amount updated)
+                    if (data.error_code === 'PRICE_CHANGED') {
+                        const newTotal = data.new_price_inr || Math.round(data.new_price * 86.5 * 1.15); // Fallback conversion
+                        
+                        document.getElementById('totalAmount').innerHTML = `₹${newTotal.toLocaleString('en-IN')}`;
+                        
+                        const notification = document.createElement('div');
+                        notification.innerHTML = `
+                            <div class="notification-warning" style="background: #fffbeb; border: 1px solid #f59e0b; border-radius: 12px; padding: 20px; color: #92400e; margin-bottom: 25px;">
+                                <div style="display: flex; gap: 12px;">
+                                    <i class="fas fa-exclamation-circle" style="font-size: 1.5rem;"></i>
+                                    <div>
+                                        <h4 style="margin: 0 0 5px; font-weight: 700;">Price Updated</h4>
+                                        <p style="margin: 0 0 15px; font-size: 0.9rem;">The hotel price has updated to ₹${newTotal.toLocaleString('en-IN')}. Please click 'Pay Now' again to accept and proceed.</p>
+                                    </div>
+                                </div>
                             </div>
                         `;
                         const summaryDiv = document.querySelector('.booking-summary');
                         summaryDiv.insertBefore(notification, summaryDiv.firstChild);
                         
-                        // Update state so next click uses new data
-                        bookingData.total = newTotalINR;
-                        bookingData.rate.book_hash = data.confirmed_hash; // use the new p- hash
+                        bookingData.total = newTotal;
+                        bookingData.rate.book_hash = data.confirmed_hash; 
                         sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
                         
-                        throw new Error('Price updated. Please review the new price and try again.');
+                        throw new Error('Price updated');
                     }
                     throw new Error(data.error || 'Failed to create booking');
                 }
 
-                bookingData.real_booking_id = data.booking_id;
+                // Fallback for when Supabase is offline (ERR_NAME_NOT_RESOLVED)
+                // Use partner_order_id if booking_id is missing
+                bookingData.real_booking_id = data.booking_id || data.partner_order_id;
                 bookingData.partner_order_id = data.partner_order_id;
+                
                 sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
-                return data.booking_id;
+                return bookingData.real_booking_id;
             } catch (e) {
                 console.error(e);
                 alert('Booking creation failed: ' + e.message);
@@ -1257,7 +1289,7 @@
             
             try {
                 // 1. Trigger the /finish/ call
-                const finishResponse = await fetch('/api/hotels/booking/finish', {
+                const finishResponse = await fetch('/api/hotels/book/finish', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ partner_order_id: partnerOrderId })
@@ -1267,7 +1299,7 @@
                 
                 // 2. Regardless of initial finish status (since we poll on backend now), 
                 // we call our status check which handles the 180s logic.
-                const statusResponse = await fetch('/api/hotels/booking/finish/status', {
+                const statusResponse = await fetch('/api/hotels/book/status', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ partner_order_id: partnerOrderId })
@@ -1297,6 +1329,10 @@
         // Verify Razorpay payment on backend
         async function verifyRazorpayPayment(razorpayResponse, bookingId) {
             try {
+                // Set a 60-second safety timeout so it doesn't hang forever
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 60000);
+
                 const response = await fetch('/api/payment/verify', {
                     method: 'POST',
                     headers: {
@@ -1307,8 +1343,11 @@
                         razorpay_payment_id: razorpayResponse.razorpay_payment_id,
                         razorpay_signature: razorpayResponse.razorpay_signature,
                         booking_id: bookingId
-                    })
+                    }),
+                    signal: controller.signal
                 });
+                
+                clearTimeout(timeoutId);
 
                 const data = await response.json();
 

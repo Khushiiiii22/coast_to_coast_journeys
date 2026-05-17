@@ -890,7 +890,7 @@ function displayRates(rates) {
         const badges = ['Cheapest Option', 'Best Seller', 'Great Value', 'Popular', 'Upgrade your stay', 'Limited Availability'];
         ratesToShow.forEach((rate, index) => {
             const badge = index === 0 ? 'Cheapest Option' : badges[index % badges.length];
-            const card = createRateCard(rate, index, badge);
+            const card = createRateCard(rate, index, badge, hotelImages);
             container.appendChild(card);
         });
         updateMainCancellationPolicy(rates);
@@ -1007,14 +1007,6 @@ function displayRates(rates) {
         }
     ];
 
-    const roomImages = {
-        'Standard Room': ['https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600'],
-        'Deluxe Room': ['https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600'],
-        'Superior Room': ['https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600'],
-        'Junior Suite': ['https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600'],
-        'Executive Suite': ['https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=600']
-    };
-
     roomTiers.forEach((tier, i) => {
         const tierPrice = Math.round(basePrice * tier.priceMultiplier);
         const cancelInfo = tier.cancellable ? makeFreeCancelInfo(freeCancelStr) : makeNonRefundInfo();
@@ -1036,7 +1028,7 @@ function displayRates(rates) {
             cancellation_info: cancelInfo,
             room_static: {
                 matched: true,
-                images: roomImages[tier.name] || roomImages['Standard Room']
+                images: []
             },
             _roomTypeConfig: {
                 ...tier,
@@ -1047,7 +1039,7 @@ function displayRates(rates) {
             }
         };
 
-        const card = createRateCard(modifiedRate, i, tier.badge);
+        const card = createRateCard(modifiedRate, i, tier.badge, hotelImages);
         container.appendChild(card);
     });
 
@@ -1140,9 +1132,10 @@ function buildTaxDisplayHtml(rate) {
 /**
  * Create rate card element (Expedia Style)
  */
-function createRateCard(rate, index, customBadge = null) {
+function createRateCard(rate, index, popularityBadge = null, providedHotelImages = null) {
     const card = document.createElement('div');
-    card.className = 'rate-card';
+    card.className = 'rate-card animate-in';
+    card.style.animationDelay = `${index * 0.05}s`;
     card.dataset.rateIndex = index;
     card.dataset.basePrice = rate.price; // used by updateExtras when toggling add-ons
     card.dataset.rateCurrency = rate.currency || currentHotel?.currency || 'USD'; // currency for price formatting
@@ -1159,9 +1152,6 @@ function createRateCard(rate, index, customBadge = null) {
     const totalPrice = HotelUtils.formatPrice(price * nights, rateCurrency);
     const originalTotal = HotelUtils.formatPrice(originalPrice * nights, rateCurrency);
 
-    // Use custom badge if provided, otherwise use defaults
-    const popularityBadges = ['Popular among travelers', 'Upgrade your stay', 'Great value', 'Best seller'];
-    const popularityBadge = customBadge || (index < popularityBadges.length ? popularityBadges[index] : '');
     const badgeClass = index === 0 ? 'popular' : (index === 1 ? 'upgrade' : 'value');
 
     // Store rate data on card for showRoomDetails to read
@@ -1169,7 +1159,14 @@ function createRateCard(rate, index, customBadge = null) {
 
     // Room static data
     const roomStatic = rate.room_static || {};
-    const roomImages = roomStatic.images || [];
+    let roomImages = roomStatic.images || [];
+    
+    // Explicitly use providedHotelImages if room images are empty
+    if (roomImages.length === 0 && providedHotelImages && providedHotelImages.length > 0) {
+        roomImages = providedHotelImages.slice(0, 5);
+        if (roomImages.length > 0) console.log(`[Images] Room "${rate.room_name || 'Room'}" using hotel fallback images.`);
+    }
+    
     const roomName = rate.room_name || roomStatic.room_name || 'Standard Room';
 
     // Get room type config if available
@@ -1190,8 +1187,10 @@ function createRateCard(rate, index, customBadge = null) {
 
     // Room image HTML with carousel
     let roomImageHtml = '';
-    const imageCount = roomImages.length || Math.floor(Math.random() * 10 + 5);
-    const mainImage = roomImages[0] || `https://images.unsplash.com/photo-${1566073771259 + index}-6a8506099945?w=600`;
+    const imageCount = roomImages.length;
+    // Real API image from room or hotel; if both fail, use a high-quality hotel placeholder
+    const fallbackPlaceholder = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80';
+    const mainImage = roomImages[0] || (providedHotelImages && providedHotelImages[0]) || fallbackPlaceholder;
 
     roomImageHtml = `
         <div class="room-image-carousel" data-index="0" data-images='${JSON.stringify(roomImages.slice(0, 5))}'>
@@ -1847,6 +1846,10 @@ function selectRate(rate, index) {
         rate: rateForCheckout,
         search_params: searchParams
     });
+
+    // Clear any old booking timers!
+    sessionStorage.removeItem('ctc_booking_timer_start');
+    sessionStorage.removeItem('ctc_booking_timer_hash');
 
     showNotification(`${rate.room_name} selected! Redirecting to checkout...`, 'success');
 

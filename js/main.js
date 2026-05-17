@@ -1433,6 +1433,8 @@ function initBookingTimer() {
 
     const countdownEl = document.getElementById('bookingCountdown');
 
+    let timerInterval;
+
     function updateTimer() {
         const elapsed = Math.floor((Date.now() - startTime) / 1000);
         const remaining = Math.max(0, TIMER_DURATION - elapsed);
@@ -1446,7 +1448,7 @@ function initBookingTimer() {
             timerDiv.querySelector('i').style.color = '#dc2626';
             timerDiv.querySelector('.booking-timer-text').innerHTML =
                 '<strong style="color: #dc2626;">Your price hold has expired.</strong> Prices may have changed. Please search again.';
-            clearInterval(timerInterval);
+            if (timerInterval) clearInterval(timerInterval);
         } else if (remaining <= 120) {
             // Last 2 minutes - turn red
             timerDiv.style.background = 'linear-gradient(135deg, #fee2e2, #fecaca)';
@@ -1456,7 +1458,7 @@ function initBookingTimer() {
     }
 
     updateTimer();
-    const timerInterval = setInterval(updateTimer, 1000);
+    timerInterval = setInterval(updateTimer, 1000);
 }
 
 

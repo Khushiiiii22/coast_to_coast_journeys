@@ -747,8 +747,8 @@ def suggest_locations():
 
 # RateHawk CDN base URL for images
 CDN_BASE = 'https://cdn.worldota.net/t/'
-# RateHawk size format: crop/WIDTHxHEIGHT (crops to fit), or WIDTHxHEIGHT
-IMG_SIZE = 'crop/640x400'
+# RateHawk size format: WIDTHxHEIGHT (the CDN rejects 'crop/' prefix with HTTP 400)
+IMG_SIZE = '640x400'
 IMG_SIZE_THUMB = '240x240'
 
 def process_etg_image_url(raw_url):
@@ -758,20 +758,23 @@ def process_etg_image_url(raw_url):
     
     url = raw_url.strip()
     
-    # Replace {size} placeholder with actual dimensions
-    if '{size}' in url:
-        url = url.replace('{size}', IMG_SIZE)
-    
-    # Some RateHawk URLs are relative paths like '/content/12345/abcdef.jpg'
-    # They need the CDN base prepended
-    if url.startswith('/'):
-        url = CDN_BASE + IMG_SIZE + url
-    
-    # Ensure URL starts with http
-    if not url.startswith('http'):
-        url = CDN_BASE + IMG_SIZE + '/' + url
+    # 1. Handle absolute URLs (already have http/https)
+    if url.startswith('http'):
+        return url.replace('{size}', IMG_SIZE)
         
-    return url
+    # 2. Handle protocol-relative URLs (start with //)
+    if url.startswith('//'):
+        return ('https:' + url).replace('{size}', IMG_SIZE)
+        
+    # 3. Handle relative paths (e.g. /content/... or content/...)
+    # Remove leading slash and existing {size} tokens to build a clean path
+    clean_path = url.lstrip('/')
+    if '{size}/' in clean_path:
+        clean_path = clean_path.replace('{size}/', '')
+    elif '{size}' in clean_path:
+        clean_path = clean_path.replace('{size}', '')
+        
+    return f"{CDN_BASE}{IMG_SIZE}/{clean_path}"
 
 
 def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=None, MEAL_TYPE_DISPLAY=None, room_groups=None, nights=1):
@@ -905,7 +908,7 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
         # 1. Try static data images first (highest quality source)
         if static_info.get('images'):
             img_list = static_info['images']
-            for img in img_list[:10]:  # Limit to 10 images per hotel
+            for img in img_list[:50]:  # Increase variety for room fallbacks
                 if isinstance(img, str):
                     processed_url = process_etg_image_url(img)
                     if processed_url:
@@ -917,7 +920,7 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
         
         # 2. Try search response images
         if not all_images and hotel.get('images'):
-            for img in hotel['images'][:10]:
+            for img in hotel['images'][:50]:
                 if isinstance(img, str):
                     processed_url = process_etg_image_url(img)
                     if processed_url:
@@ -986,7 +989,7 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
             },
             'static_data': static_info,
             'discount': 15,
-            'rates': transform_rates(rates, target_currency, conversion_rates, MEAL_TYPE_DISPLAY, room_groups, nights)
+            'rates': transform_rates(rates, target_currency, conversion_rates, MEAL_TYPE_DISPLAY, room_groups, nights, hotel_images=all_images)
         }
         
         transformed.append(transformed_hotel)
@@ -994,14 +997,14 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
     return transformed
 
 
-def transform_rates(rates, target_currency, conversion_rates, meal_display_map, room_groups=None, nights=1):
+def transform_rates(rates, target_currency, conversion_rates, meal_display_map, room_groups=None, nights=1, hotel_images=None):
     """Transform rate data with proper meal_data, cancellation info, and optional room enrichment"""
     transformed_rates = []
     
     for rate in rates[:20]:  # Increased limit to 20 rates to show more variety
         # Enrich with room static data if provided
         if room_groups:
-            rate = enrich_rate_with_room_data(rate, room_groups)
+            rate = enrich_rate_with_room_data(rate, room_groups, hotel_images=hotel_images)
         payment_options = rate.get('payment_options', {})
         payment_types = payment_options.get('payment_types', [{}])
         rate_currency = payment_options.get('currency_code', 'USD')
@@ -2490,15 +2493,26 @@ def make_rg_signature(rg_ext):
     if not isinstance(rg_ext, dict):
         return ""
     
-    # Extract classification attributes, sorting the keys to maintain a stable string signature
+    # Priority keys for structural matching
+    # We ignore transient keys like 'view' or 'class' which might differ between 
+    # static and dynamic data but maintain 'bedding_type' and 'capacity'.
+    STABLE_KEYS = {'bedding_type', 'capacity', 'bathroom', 'room_type'}
+    
     parts = []
     for k in sorted(rg_ext.keys()):
-        if k != 'rg' and rg_ext[k] is not None:
+        if k in STABLE_KEYS and rg_ext[k] is not None:
             parts.append(f"{k}:{rg_ext[k]}")
+            
+    # If no stable keys found, fall back to all keys (original behavior)
+    if not parts:
+        for k in sorted(rg_ext.keys()):
+            if k != 'rg' and rg_ext[k] is not None:
+                parts.append(f"{k}:{rg_ext[k]}")
+                
     return ",".join(parts)
 
 
-def enrich_rate_with_room_data(rate: dict, room_groups: dict) -> dict:
+def enrich_rate_with_room_data(rate: dict, room_groups: dict, hotel_images: list = None) -> dict:
     """
     Enrich a rate with room static data.
 
@@ -2579,20 +2593,31 @@ def enrich_rate_with_room_data(rate: dict, room_groups: dict) -> dict:
                 if processed_url:
                     processed_images.append(processed_url)
 
+        # Determine final image set
+        final_images = processed_images[:10]
+        image_source = 'room_static'
+        
+        if not final_images:
+            final_images = hotel_images[:5] if hotel_images else []
+            image_source = 'hotel_fallback' if final_images else 'none'
+
         enriched_rate['room_static'] = {
             'matched': True,
             'rg_key': rg_key or make_rg_signature(rg_ext),
             'room_name': room_data.get('name', ''),
-            'images': processed_images[:10],
+            'images': final_images,
+            'image_source': image_source,
             'amenities': room_data.get('room_amenities', [])[:10]
         }
     else:
-        # No static match — fall back to the rate's own embedded room name
+        # No match — fall back to hotel-level images from ETG API
+        fallback_images = hotel_images[:5] if hotel_images else []
         enriched_rate['room_static'] = {
             'matched': False,
             'rg_key': rg_key or make_rg_signature(rg_ext),
             'room_name': rate.get('room_name', rate.get('room_data_trans', {}).get('main_name', 'Room')),
-            'images': [],
+            'images': fallback_images,
+            'image_source': 'hotel_fallback' if fallback_images else 'none',
             'amenities': []
         }
     

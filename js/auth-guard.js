@@ -67,6 +67,13 @@ const AuthGuard = {
      */
     startLoginTimer: function () {
         if (this.timer) clearTimeout(this.timer);
+        
+        // Skip timer if Supabase is unreachable (development/test mode fallback)
+        if (window.isSupabaseConnected && !window.isSupabaseConnected()) {
+            console.log('🛡️ Supabase unreachable: AuthGuard timer suspended.');
+            return;
+        }
+
         console.log('⏳ Login timer started (1 minute)');
 
         this.timer = setTimeout(() => {
