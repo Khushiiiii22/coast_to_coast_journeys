@@ -3,6 +3,7 @@ Payment Routes
 API endpoints for payment processing
 """
 from flask import Blueprint, request, jsonify, current_app
+from datetime import datetime
 import hmac
 import hashlib
 from services.admin_service import require_auth
@@ -134,7 +135,7 @@ def verify_payment():
                 # Mark as 'processing' (not confirmed yet — wait for ETG)
                 supabase.table('hotel_bookings').update({
                     'status': 'processing',
-                    'updated_at': 'NOW()'
+                    'updated_at': datetime.utcnow().isoformat() + 'Z'
                 }).eq('id', data['booking_id']).execute()
 
                 # Fetch updated booking record to get newest data and partner_order_id
@@ -176,7 +177,7 @@ def verify_payment():
                         print(f"❌ /booking/finish failed with terminal error: {finish_result.get('error')}")
                         supabase.table('hotel_bookings').update({
                             'status': 'payment_received_booking_failed',
-                            'updated_at': 'NOW()'
+                            'updated_at': datetime.utcnow().isoformat() + 'Z'
                         }).eq('id', data['booking_id']).execute()
                     else:
                         # ── FIX #4 & #5: Poll /finish/status until ETG confirms ──
@@ -209,14 +210,14 @@ def verify_payment():
                             print(f"✅ ETG confirmed booking {partner_order_id}")
                             supabase.table('hotel_bookings').update({
                                 'status': 'confirmed',
-                                'updated_at': 'NOW()'
+                                'updated_at': datetime.utcnow().isoformat() + 'Z'
                             }).eq('id', data['booking_id']).execute()
                         else:
                             # Payment received but ETG confirmation pending / failed
                             print(f"⚠️ ETG did not confirm within polling window for {partner_order_id}")
                             supabase.table('hotel_bookings').update({
                                 'status': 'pending_etg_confirmation',
-                                'updated_at': 'NOW()'
+                                'updated_at': datetime.utcnow().isoformat() + 'Z'
                             }).eq('id', data['booking_id']).execute()
 
                 else:
@@ -224,7 +225,7 @@ def verify_payment():
                     # Still mark confirmed for payment received (no ETG order to finish)
                     supabase.table('hotel_bookings').update({
                         'status': 'confirmed',
-                        'updated_at': 'NOW()'
+                        'updated_at': datetime.utcnow().isoformat() + 'Z'
                     }).eq('id', data['booking_id']).execute()
 
                 # ── Send confirmation email (regardless of ETG status — payment captured) ──
@@ -295,7 +296,7 @@ def create_refund():
                     # Update payment status
                     supabase.table('payments').update({
                         'status': 'refunded',
-                        'updated_at': 'NOW()'
+                        'updated_at': datetime.utcnow().isoformat() + 'Z'
                     }).eq('razorpay_payment_id', data['payment_id']).execute()
                 except Exception as db_error:
                     print(f"Database update error: {db_error}")
@@ -596,7 +597,7 @@ def capture_paypal_order(order_id):
                     # Mark as 'processing' initially
                     supabase.table('hotel_bookings').update({
                         'status': 'processing',
-                        'updated_at': 'NOW()'
+                        'updated_at': datetime.utcnow().isoformat() + 'Z'
                     }).eq('id', data['booking_id']).execute()
 
                     # Fetch full booking record to get partner_order_id
@@ -632,7 +633,7 @@ def capture_paypal_order(order_id):
                                 print(f"❌ /booking/finish failed for PayPal order: {finish_result.get('error')}")
                                 supabase.table('hotel_bookings').update({
                                     'status': 'payment_received_booking_failed',
-                                    'updated_at': 'NOW()'
+                                    'updated_at': datetime.utcnow().isoformat() + 'Z'
                                 }).eq('id', data['booking_id']).execute()
                             else:
                                 # ── FIX #4 & #5: Poll /finish/status until ETG confirms ──
@@ -664,19 +665,19 @@ def capture_paypal_order(order_id):
                                     print(f"✅ ETG confirmed PayPal booking {partner_order_id}")
                                     supabase.table('hotel_bookings').update({
                                         'status': 'confirmed',
-                                        'updated_at': 'NOW()'
+                                        'updated_at': datetime.utcnow().isoformat() + 'Z'
                                     }).eq('id', data['booking_id']).execute()
                                 else:
                                     print(f"⚠️ ETG did not confirm PayPal order within polling window for {partner_order_id}")
                                     supabase.table('hotel_bookings').update({
                                         'status': 'pending_etg_confirmation',
-                                        'updated_at': 'NOW()'
+                                        'updated_at': datetime.utcnow().isoformat() + 'Z'
                                     }).eq('id', data['booking_id']).execute()
                         else:
                             print(f"⚠️ No partner_order_id found for PayPal booking {data['booking_id']}")
                             supabase.table('hotel_bookings').update({
                                 'status': 'confirmed',
-                                'updated_at': 'NOW()'
+                                'updated_at': datetime.utcnow().isoformat() + 'Z'
                             }).eq('id', data['booking_id']).execute()
 
                         # ── Send confirmation email ──

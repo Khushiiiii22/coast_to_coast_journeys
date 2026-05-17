@@ -108,10 +108,9 @@ def send_flight_confirmation_email():
 
         # Save to Supabase if available
         try:
-            from config import Config
-            if hasattr(Config, 'SUPABASE_URL') and Config.SUPABASE_URL:
-                from supabase import create_client
-                supabase = create_client(Config.SUPABASE_URL, Config.SUPABASE_KEY)
+            from services.supabase_service import supabase_service
+            supabase = supabase_service.client
+            if supabase:
                 import time, random
                 timestamp = hex(int(time.time()))[2:].upper()
                 rand_part = ''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=4))
@@ -277,10 +276,9 @@ def create_flight_booking():
 
         # Try to store in Supabase if available
         try:
-            from config import Config
-            if hasattr(Config, 'SUPABASE_URL') and Config.SUPABASE_URL:
-                from supabase import create_client
-                supabase = create_client(Config.SUPABASE_URL, Config.SUPABASE_KEY)
+            from services.supabase_service import supabase_service
+            supabase = supabase_service.client
+            if supabase:
                 supabase.table('flight_bookings').insert(booking_record).execute()
         except Exception as db_err:
             print(f"[Flight Booking] DB save skipped: {db_err}")
