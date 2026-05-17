@@ -2963,6 +2963,15 @@ def create_booking():
         
         db_result = supabase_service.create_booking(booking_data)
         
+        if not db_result.get('success'):
+            error_msg = db_result.get('error', 'Unknown database error')
+            print(f"❌ Supabase booking creation failed: {error_msg}")
+            return jsonify({
+                'success': False,
+                'error': f"Database Connection/Write Error: {error_msg}. Please verify your Supabase project status (e.g. if it is paused or has expired).",
+                'error_code': 'DATABASE_ERROR'
+            }), 500
+            
         return jsonify({
             'success': True,
             'partner_order_id': partner_order_id,
