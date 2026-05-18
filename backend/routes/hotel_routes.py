@@ -2991,20 +2991,6 @@ def create_booking():
         if not db_result.get('success'):
             error_msg = db_result.get('error', 'Unknown database error')
             print(f"❌ Supabase booking creation failed: {error_msg}")
-            
-            # Developer Bypass: If running locally in DEBUG mode, allow testing to proceed with a mock ID
-            # so the developer is not blocked by a paused/offline Supabase project!
-            from config import get_config
-            if get_config().DEBUG:
-                print("⚠️ Local development mode detected. Proceeding with offline DB fallback ID.")
-                return jsonify({
-                    'success': True,
-                    'partner_order_id': partner_order_id,
-                    'etg_response': etg_result.get('data'),
-                    'booking_id': f"MOCK-DB-ID-{partner_order_id}",
-                    'db_warning': f"Database connection failed: {error_msg}. Proceeding in offline mock mode."
-                })
-                
             return jsonify({
                 'success': False,
                 'error': f"Database Connection/Write Error: {error_msg}. Please verify your Supabase project status (e.g. if it is paused or suspended).",
@@ -3055,18 +3041,6 @@ def finish_booking():
         booking_info = None
         if db_booking.get('success') and db_booking.get('data'):
             booking_info = db_booking['data']
-        else:
-            from config import get_config
-            if get_config().DEBUG:
-                print("⚠️ Local development mode detected. Constructing offline mock booking info for finalization.")
-                booking_info = {
-                    'customer_email': 'test@c2cjourneys.com',
-                    'customer_phone': '9999999999',
-                    'guests': [{'first_name': 'Test', 'last_name': 'User', 'is_child': False}],
-                    'total_amount': 100,
-                    'currency': 'INR',
-                    'special_requests': 'Local Dev Test Booking'
-                }
                 
         if not booking_info:
             return jsonify({'success': False, 'error': f"Booking record not found: {db_booking.get('error', 'Unknown database error')}"}), 404
@@ -3079,13 +3053,17 @@ def finish_booking():
         )
         
         # Finalize with ETG
-        # Support for 4th update: pass 'rooms' if stored in DB
+        # Bug #4 Fix: DB stores 'rooms' as integer count, but ETG needs guest array.
+        # Use the 'guests' JSONB column which has the actual guest details.
+        # Pass guests as the guest list; do NOT pass the integer rooms value to ETG.
+        guests_for_etg = booking_info.get('guests', [])
+        
         result = etg_service.finish_booking(
             partner_order_id=partner_order_id,
             email=booking_info.get('customer_email') or booking_info.get('email', 'info@c2cjourneys.com'),
             phone=booking_info.get('customer_phone') or booking_info.get('phone', '0000000000'),
-            guests=booking_info.get('guests', []),
-            rooms=booking_info.get('rooms'),
+            guests=guests_for_etg,
+            rooms=None,  # Do NOT pass integer; let etg_service use guests fallback
             amount=booking_info.get('total_amount', 0),
             currency=booking_info.get('currency', 'INR'),
             user_comment=booking_info.get('special_requests')
@@ -3180,6 +3158,10 @@ def check_booking_status():
     """
     Check booking status (poll until complete)
     
+    Bug #5 Fix: Frontend expects {success, status, error} at the top level,
+    but the raw ETG result nests status inside data.data.status.
+    This route now flattens the response for the frontend.
+    
     Request Body:
     {
         "partner_order_id": "CTC-20260201-ABC123"
@@ -3198,33 +3180,64 @@ def check_booking_status():
             print(f"🧪 Mocking booking status for certification ID: {partner_order_id}")
             return jsonify({
                 'success': True,
-                'data': {
-                    'status': 'ok',
-                    'data': {
-                        'order_id': partner_order_id,
-                        'status': 'confirmed'
-                    }
-                }
+                'status': 'confirmed'
             })
 
         result = etg_service.check_booking_status(partner_order_id)
         
-        # Update status in database based on response
-        if result.get('success') and result.get('data'):
-            status = result['data'].get('status', 'unknown')
-            update_data = {
-                'status': 'confirmed' if status == 'ok' else status,
-                'booking_response': result['data']
-            }
-            supabase_service.update_booking_by_partner_order_id(
-                partner_order_id,
-                update_data
-            )
+        if not result.get('success'):
+            return jsonify({
+                'success': False,
+                'status': 'failed',
+                'error': result.get('error', 'Failed to check booking status')
+            })
         
-        return jsonify(result)
+        # Extract the actual status from the deeply nested ETG response
+        # ETG returns: {data: {status: "ok", data: {status: "confirmed", ...}}}
+        etg_data = result.get('data', {})
+        if isinstance(etg_data, dict) and 'data' in etg_data:
+            etg_inner = etg_data.get('data', {})
+            if isinstance(etg_inner, dict) and 'data' in etg_inner:
+                etg_inner = etg_inner['data']
+        else:
+            etg_inner = etg_data
+        
+        # Determine the booking status
+        # ETG top-level status "ok" means the API call succeeded
+        # The actual booking status is in the inner data
+        api_status = etg_data.get('status', '')
+        booking_status = 'unknown'
+        
+        if isinstance(etg_inner, dict):
+            booking_status = etg_inner.get('status', 'unknown')
+        
+        # Map ETG statuses to our frontend-expected statuses
+        if api_status == 'ok' and booking_status in ('ok', 'confirmed'):
+            final_status = 'confirmed'
+        elif booking_status in ('pending', 'processing'):
+            final_status = 'pending'
+        else:
+            final_status = booking_status or 'unknown'
+        
+        # Update status in database
+        update_data = {
+            'status': final_status,
+            'booking_response': etg_data
+        }
+        supabase_service.update_booking_by_partner_order_id(
+            partner_order_id,
+            update_data
+        )
+        
+        # Return flattened response that frontend expects
+        return jsonify({
+            'success': True,
+            'status': final_status,
+            'data': etg_data
+        })
     
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'status': 'failed', 'error': str(e)}), 500
 
 
 @hotel_bp.route('/book/poll', methods=['POST'])
