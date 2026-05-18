@@ -2968,6 +2968,22 @@ def create_booking():
             return jsonify(etg_result), 400
         
         # Save booking to Supabase
+        # Extract the REAL ETG payment amount/currency from /booking/form/ response
+        # ETG's /finish/ endpoint MUST receive the exact same amount and currency
+        # that /booking/form/ returned — NOT the frontend's converted INR amount.
+        etg_response_data = etg_result.get('data', {})
+        if isinstance(etg_response_data, dict) and 'data' in etg_response_data:
+            etg_form_data = etg_response_data['data']
+        else:
+            etg_form_data = etg_response_data
+        
+        etg_payment_amount = None
+        etg_payment_currency = None
+        payment_types = etg_form_data.get('payment_types', []) if isinstance(etg_form_data, dict) else []
+        if payment_types:
+            etg_payment_amount = payment_types[0].get('amount')
+            etg_payment_currency = payment_types[0].get('currency_code')
+        
         booking_data = {
             'partner_order_id': partner_order_id,
             'user_id': data.get('user_id'),
@@ -2980,11 +2996,13 @@ def create_booking():
             'customer_email': data.get('email'),
             'customer_phone': data.get('phone'),
             'special_requests': data.get('special_requests'),
-            'total_amount': data.get('total_amount', 0),
-            'currency': data.get('currency', 'INR'),
+            'total_amount': float(etg_payment_amount) if etg_payment_amount else data.get('total_amount', 0),
+            'currency': etg_payment_currency or data.get('currency', 'USD'),
             'status': 'created',
             'booking_response': etg_result.get('data')
         }
+        
+        print(f"💰 ETG payment: {etg_payment_amount} {etg_payment_currency} | Frontend sent: {data.get('total_amount')} {data.get('currency')}")
         
         db_result = supabase_service.create_booking(booking_data)
         
@@ -3058,14 +3076,27 @@ def finish_booking():
         # Pass guests as the guest list; do NOT pass the integer rooms value to ETG.
         guests_for_etg = booking_info.get('guests', [])
         
+        # Sanitize phone: ETG requires minimum 5 characters
+        phone = booking_info.get('customer_phone') or booking_info.get('phone', '0000000000')
+        phone = str(phone).strip()
+        if len(phone) < 5:
+            phone = phone.ljust(5, '0')  # Pad with zeros if too short
+        
+        # Use the ETG-original amount and currency stored during /book
+        # These come from the /booking/form/ response, not the frontend's converted INR
+        etg_amount = booking_info.get('total_amount', 0)
+        etg_currency = booking_info.get('currency', 'USD')
+        
+        print(f"📤 Finishing booking {partner_order_id}: amount={etg_amount} {etg_currency}, phone={phone}")
+        
         result = etg_service.finish_booking(
             partner_order_id=partner_order_id,
             email=booking_info.get('customer_email') or booking_info.get('email', 'info@c2cjourneys.com'),
-            phone=booking_info.get('customer_phone') or booking_info.get('phone', '0000000000'),
+            phone=phone,
             guests=guests_for_etg,
             rooms=None,  # Do NOT pass integer; let etg_service use guests fallback
-            amount=booking_info.get('total_amount', 0),
-            currency=booking_info.get('currency', 'INR'),
+            amount=etg_amount,
+            currency=etg_currency,
             user_comment=booking_info.get('special_requests')
         )
         
@@ -3076,6 +3107,28 @@ def finish_booking():
         error_msg = result.get('error', '')
         error_str = str(error_msg).lower()
         status_code = result.get('status_code', 0)
+        
+        # Extract detailed ETG error info if available
+        etg_error_response = result.get('response', {})
+        if isinstance(etg_error_response, dict):
+            validation_error = etg_error_response.get('debug', {}).get('validation_error', '')
+            etg_error_type = etg_error_response.get('error', '')
+            if validation_error:
+                print(f"❌ ETG validation error on /finish/: {validation_error}")
+            if etg_error_type:
+                print(f"❌ ETG error type: {etg_error_type}")
+        
+        # 0. 400 Bad Request -> Likely validation error (invalid params)
+        if status_code == 400:
+            detail = validation_error if isinstance(etg_error_response, dict) and validation_error else str(error_msg)
+            supabase_service.update_booking_by_partner_order_id(
+                partner_order_id, {'status': 'failed'}
+            )
+            return jsonify({
+                'success': False,
+                'error': f'Booking rejected by hotel system: {detail}',
+                'error_code': 'INVALID_PARAMS'
+            }), 400
         
         # 1. 5xx Server Error -> Retry once
         if status_code and 500 <= status_code < 600:

@@ -168,6 +168,22 @@ class ETGApiService:
             
             print(f"📥 Response Status: {response.status_code}")
             
+            # Handle 400 errors gracefully - return parsed response so callers
+            # can extract detailed validation errors from ETG's response body
+            if response.status_code == 400:
+                validation_error = ''
+                if isinstance(response_json, dict):
+                    debug = response_json.get('debug', {})
+                    if isinstance(debug, dict):
+                        validation_error = debug.get('validation_error', '')
+                print(f"⚠️ ETG 400 Bad Request: {response_json.get('error', 'unknown')} | Validation: {validation_error}")
+                return {
+                    "success": False,
+                    "error": response_json.get('error', 'Bad Request'),
+                    "status_code": 400,
+                    "response": response_json
+                }
+            
             response.raise_for_status()
             
             # --- Transparent Quota Retry Logic (Sandbox Only) ---
