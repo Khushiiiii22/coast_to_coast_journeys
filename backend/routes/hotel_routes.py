@@ -3102,7 +3102,7 @@ def finish_booking():
         
         result = etg_service.finish_booking(
             partner_order_id=partner_order_id,
-            email=booking_info.get('customer_email') or booking_info.get('email', 'info@c2cjourneys.com'),
+            email='info@coasttocoastjourneys.com',  # Send ETG voucher to C2C, not customer
             phone=phone,
             guests=guests_for_etg,
             rooms=None,  # Do NOT pass integer; let etg_service use guests fallback
