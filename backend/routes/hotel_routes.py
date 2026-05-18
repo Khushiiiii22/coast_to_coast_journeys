@@ -3076,6 +3076,17 @@ def finish_booking():
         # Pass guests as the guest list; do NOT pass the integer rooms value to ETG.
         guests_for_etg = booking_info.get('guests', [])
         
+        # Sanitize guest names: ETG prohibits digits and non-word symbols other than '-,.
+        import re
+        allowed_chars_pattern = re.compile(r"[^\w\s'\-,\.]") # Matches anything NOT allowed
+        for guest in guests_for_etg:
+            if 'first_name' in guest and guest['first_name']:
+                guest['first_name'] = allowed_chars_pattern.sub('', str(guest['first_name'])).strip()
+                guest['first_name'] = ''.join([i for i in guest['first_name'] if not i.isdigit()])
+            if 'last_name' in guest and guest['last_name']:
+                guest['last_name'] = allowed_chars_pattern.sub('', str(guest['last_name'])).strip()
+                guest['last_name'] = ''.join([i for i in guest['last_name'] if not i.isdigit()])
+        
         # Sanitize phone: ETG requires minimum 5 characters
         phone = booking_info.get('customer_phone') or booking_info.get('phone', '0000000000')
         phone = str(phone).strip()

@@ -212,18 +212,41 @@
     </aside>
 
     <!-- Finalizing Booking Overlay (ETG Certification Requirement) -->
-    <div id="finalizingOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; backdrop-filter:blur(5px);">
-        <div class="processing-container" style="max-width:400px; padding:40px; background:white; border-radius:16px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); border:1px solid #e5e7eb;">
-            <div class="spinner-loader" style="width:60px; height:60px; border:5px solid #f3f3f3; border-top:5px solid #2563eb; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 24px;"></div>
-            <h2 style="font-size:1.5rem; font-weight:700; color:#111827; margin-bottom:12px;">Finalizing Your Booking</h2>
-            <p id="finalizingMessage" style="color:#4b5563; line-height:1.5; margin-bottom:0;">Please do not refresh or close this window.<br><span style="font-size:0.9rem; color:#6b7280; margin-top:8px; display:block;">Confirming your room with the hotel...</span></p>
+    <div id="finalizingOverlay"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; backdrop-filter:blur(5px);">
+        <div class="processing-container"
+            style="max-width:400px; padding:40px; background:white; border-radius:16px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); border:1px solid #e5e7eb;">
+            <div class="spinner-loader"
+                style="width:60px; height:60px; border:5px solid #f3f3f3; border-top:5px solid #2563eb; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 24px;">
+            </div>
+            <h2 style="font-size:1.5rem; font-weight:700; color:#111827; margin-bottom:12px;">Finalizing Your Booking
+            </h2>
+            <p id="finalizingMessage" style="color:#4b5563; line-height:1.5; margin-bottom:0;">Please do not refresh or
+                close this window.<br><span
+                    style="font-size:0.9rem; color:#6b7280; margin-top:8px; display:block;">Confirming your room with
+                    the hotel...</span></p>
         </div>
     </div>
 
     <style>
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #finalizingOverlay { display: none !important; } /* Hidden by default */
-        #finalizingOverlay.active { display: flex !important; }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #finalizingOverlay {
+            display: none !important;
+        }
+
+        /* Hidden by default */
+        #finalizingOverlay.active {
+            display: flex !important;
+        }
     </style>
 
     <!-- Header -->
@@ -863,7 +886,7 @@
             const propertyFees = rate.property_payable_fees || [];
             const prepaidAmount = rate.prepaid_amount || rate.total_price || 0;
             const totalPayableNow = Math.round(prepaidAmount);
-            
+
             // Crucial: Update global bookingData.total to the prepaid amount for the payment gateway
             bookingData.total = totalPayableNow;
 
@@ -875,7 +898,7 @@
                             <i class="fas fa-hotel"></i> Mandatory Local Fees (Pay at Property)
                         </h4>
                 `;
-                
+
                 propertyFees.forEach(fee => {
                     feeHtml += `
                         <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #92400e; margin-bottom: 4px;">
@@ -884,14 +907,14 @@
                         </div>
                     `;
                 });
-                
+
                 feeHtml += `
                         <p style="margin: 8px 0 0; font-size: 0.72rem; color: #b45309; line-height: 1.4; font-style: italic;">
                             These fees are NOT included in your prepaid total and must be paid directly to the hotel in their local currency.
                         </p>
                     </div>
                 `;
-                
+
                 // Avoid double insertion if function is called multiple times
                 if (!document.getElementById('propertyFeeNotice')) {
                     const priceSummary = document.querySelector('.price-summary');
@@ -942,13 +965,13 @@
             // Populate Guest Details (4th Update)
             const reviewContainer = document.getElementById('reviewName').parentElement.parentElement.parentElement;
             const rooms = bookingData.rooms || [];
-            
+
             if (rooms.length > 0) {
                 // Clear existing review items after the first 3 (which are fixed icons)
                 const reviewBox = document.querySelector('.booking-summary');
                 const email = bookingData.email || '-';
                 const phone = bookingData.phone || '-';
-                
+
                 let guestHtml = `
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <h2>Review Information</h2>
@@ -1065,7 +1088,7 @@
                     body: JSON.stringify(payload),
                     signal: controller.signal
                 });
-                
+
                 clearTimeout(timeoutId);
 
                 const data = await response.json();
@@ -1096,9 +1119,9 @@
                     // 2. Price Changed (Hash still valid, but amount updated)
                     if (data.error_code === 'PRICE_CHANGED') {
                         const newTotal = data.new_price_inr || Math.round(data.new_price * 86.5 * 1.15); // Fallback conversion
-                        
+
                         document.getElementById('totalAmount').innerHTML = `₹${newTotal.toLocaleString('en-IN')}`;
-                        
+
                         const notification = document.createElement('div');
                         notification.innerHTML = `
                             <div class="notification-warning" style="background: #fffbeb; border: 1px solid #f59e0b; border-radius: 12px; padding: 20px; color: #92400e; margin-bottom: 25px;">
@@ -1113,11 +1136,11 @@
                         `;
                         const summaryDiv = document.querySelector('.booking-summary');
                         summaryDiv.insertBefore(notification, summaryDiv.firstChild);
-                        
+
                         bookingData.total = newTotal;
-                        bookingData.rate.book_hash = data.confirmed_hash; 
+                        bookingData.rate.book_hash = data.confirmed_hash;
                         sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
-                        
+
                         throw new Error('Price updated');
                     }
                     throw new Error(data.error || 'Failed to create booking');
@@ -1127,7 +1150,7 @@
                 // Use partner_order_id if booking_id is missing
                 bookingData.real_booking_id = data.booking_id || data.partner_order_id;
                 bookingData.partner_order_id = data.partner_order_id;
-                
+
                 sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
                 return bookingData.real_booking_id;
             } catch (e) {
@@ -1154,7 +1177,7 @@
             try {
                 const rateCurrency = bookingData.rate.currency || bookingData.currency || 'INR';
                 let razorpayAmount = bookingData.total;
-                
+
                 // If the booking is not in INR, convert it for Razorpay (which expects INR)
                 if (rateCurrency !== 'INR' && typeof HotelUtils !== 'undefined') {
                     razorpayAmount = HotelUtils.convertCurrency(bookingData.total, rateCurrency, 'INR');
@@ -1283,10 +1306,10 @@
         async function finalizeBookingWithETG(partnerOrderId) {
             const overlay = document.getElementById('finalizingOverlay');
             const message = document.getElementById('finalizingMessage');
-            
+
             overlay.classList.add('active');
             overlay.style.display = 'flex'; // Force display
-            
+
             try {
                 // 1. Trigger the /finish/ call
                 const finishResponse = await fetch('/api/hotels/book/finish', {
@@ -1294,9 +1317,9 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ partner_order_id: partnerOrderId })
                 });
-                
+
                 const finishData = await finishResponse.json();
-                
+
                 // 2. Regardless of initial finish status (since we poll on backend now), 
                 // we call our status check which handles the 180s logic.
                 const statusResponse = await fetch('/api/hotels/book/status', {
@@ -1304,9 +1327,9 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ partner_order_id: partnerOrderId })
                 });
-                
+
                 const statusData = await statusResponse.json();
-                
+
                 if (statusData.success && statusData.status === 'confirmed') {
                     // Success! Redirect to confirmation
                     window.location.href = `payment-success.html?partner_order_id=${partnerOrderId}`;
@@ -1318,7 +1341,7 @@
                     overlay.style.display = 'none';
                     alert(`Booking could not be confirmed: ${statusData.error || 'Unknown error'}`);
                 }
-                
+
             } catch (error) {
                 console.error('Finalization error:', error);
                 overlay.style.display = 'none';
@@ -1346,7 +1369,7 @@
                     }),
                     signal: controller.signal
                 });
-                
+
                 clearTimeout(timeoutId);
 
                 const data = await response.json();
@@ -1425,7 +1448,7 @@
             try {
                 // Create booking in backend (this calls ETG /order/booking/form/)
                 const bookingId = await createBackendBooking();
-                
+
                 if (!bookingId) {
                     throw new Error("Failed to create booking form.");
                 }
