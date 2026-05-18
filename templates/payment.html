@@ -1320,9 +1320,9 @@
 
                 const finishData = await finishResponse.json();
 
-                // 2. Regardless of initial finish status (since we poll on backend now), 
-                // we call our status check which handles the 180s logic.
-                const statusResponse = await fetch('/api/hotels/book/status', {
+                // 2. Regardless of initial finish status (since we poll on backend now)
+                // 2. We call our status check which handles the 180s logic.
+                const statusResponse = await fetch('/api/hotels/book/poll', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ partner_order_id: partnerOrderId })
@@ -1331,10 +1331,25 @@
                 const statusData = await statusResponse.json();
 
                 if (statusData.success && statusData.status === 'confirmed') {
-                    // Success! Redirect to confirmation
+                    // Success! Set session data for confirmation page
+                    const paymentDisplay = {
+                        payment_id: partnerOrderId,
+                        amount: bookingData.total || 0,
+                        hotel: bookingData.hotel?.name || 'Hotel Booking'
+                    };
+                    sessionStorage.setItem('paymentSuccess', JSON.stringify(paymentDisplay));
+                    
+                    // Redirect to confirmation
                     window.location.href = `payment-success.html?partner_order_id=${partnerOrderId}`;
                 } else if (statusData.status === 'pending') {
                     // Pending - redirect but show special status
+                    const paymentDisplay = {
+                        payment_id: partnerOrderId,
+                        amount: bookingData.total || 0,
+                        hotel: bookingData.hotel?.name || 'Hotel Booking'
+                    };
+                    sessionStorage.setItem('paymentSuccess', JSON.stringify(paymentDisplay));
+                    
                     window.location.href = `payment-success.html?partner_order_id=${partnerOrderId}&pending=true`;
                 } else {
                     // Final Failure
