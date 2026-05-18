@@ -3278,10 +3278,12 @@ def check_booking_status():
         # Map ETG statuses to our frontend-expected statuses
         if api_status == 'ok' and booking_status in ('ok', 'confirmed'):
             final_status = 'confirmed'
-        elif booking_status in ('pending', 'processing'):
+        elif api_status in ('pending', 'processing') or booking_status in ('pending', 'processing'):
             final_status = 'pending'
         else:
-            final_status = booking_status or 'unknown'
+            final_status = booking_status if booking_status != 'unknown' else api_status
+            if final_status == '':
+                final_status = 'unknown'
         
         # Update status in database
         update_data = {
