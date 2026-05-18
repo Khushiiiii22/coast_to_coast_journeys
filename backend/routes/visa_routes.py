@@ -57,7 +57,7 @@ def submit_visa_application():
 
         # Log the "Email" (Simulate sending)
         print("\n" + "="*50)
-        print(f"📧 SENDING EMAIL to admin@c2cjourneys.com")
+        print(f"📧 SENDING EMAIL to info@coasttocoastjourneys.com")
         print(f"Subject: {subject}")
         print(body)
         print("="*50 + "\n")

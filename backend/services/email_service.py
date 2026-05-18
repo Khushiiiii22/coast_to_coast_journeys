@@ -799,7 +799,7 @@ Thank you for choosing C2C Journeys!
                                 © 2026 Coast to Coast Journeys. All Rights Reserved.
                             </p>
                             <p style="color: #cbd5e1; font-size: 10px; margin: 0;">
-                                c2cjourneys.com
+                                coasttocoastjourneys.com
                             </p>
                         </td>
                     </tr>

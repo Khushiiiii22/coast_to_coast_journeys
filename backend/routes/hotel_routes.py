@@ -33,7 +33,7 @@ def debug_email_test():
         
         # Check Brevo config
         brevo_key = current_app.config.get('BREVO_API_KEY') or os_lib.getenv('BREVO_API_KEY')
-        mail_sender = current_app.config.get('MAIL_DEFAULT_SENDER') or os_lib.getenv('MAIL_DEFAULT_SENDER', 'info@c2cjourneys.com')
+        mail_sender = current_app.config.get('MAIL_DEFAULT_SENDER') or os_lib.getenv('MAIL_DEFAULT_SENDER', 'info@coasttocoastjourneys.com')
         
         results = {
             "config": {
@@ -62,7 +62,7 @@ def debug_email_test():
             results['steps'].append("Testing Brevo API connectivity...")
             
             # Send test email
-            test_email = "info@c2cjourneys.com"
+            test_email = "info@coasttocoastjourneys.com"
             
             headers = {
                 "accept": "application/json",
