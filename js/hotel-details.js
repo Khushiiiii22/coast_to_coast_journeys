@@ -18,38 +18,44 @@ let hotelImages = [];
  * Initialize hotel details page
  */
 async function initHotelDetails() {
-    // Get search parameters
+    // Get hotel from session
+    currentHotel = SearchSession.getSelectedHotel();
     searchParams = SearchSession.getSearchParams();
+
+    if (!currentHotel) {
+        // Try to get from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const hotelId = urlParams.get('id');
+
+        if (!hotelId) {
+            showNotification('No hotel selected', 'error');
+            setTimeout(() => window.location.href = 'hotel-results.html', 2000);
+            return;
+        }
+
+        // If we have demo hotel data in search results
+        const searchResults = SearchSession.getSearchResults();
+        if (searchResults?.data?.hotels) {
+            currentHotel = searchResults.data.hotels.find(h => h.id === hotelId);
+        }
+    }
 
     if (!searchParams) {
         showNotification('Search parameters not found', 'warning');
     }
 
-    // Retrieve cached hotel info for immediate visual display (skeleton / fast-load)
-    const cachedHotel = SearchSession.getSelectedHotel();
-    if (cachedHotel) {
-        console.log("⚡ Displaying cached basic hotel details immediately...");
-        currentHotel = cachedHotel;
-        displayHotelDetails(cachedHotel);
-        
-        // Show loading state for rates to prevent clicking stale rates (with m-... hashes)
-        const ratesContainer = document.getElementById('ratesList');
-        if (ratesContainer) {
-            ratesContainer.innerHTML = `
-                <div class="loading-rates-placeholder" style="padding: 60px 20px; text-align: center; color: #64748b; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.1);">
-                    <i class="fas fa-spinner fa-spin fa-3x" style="color: #1e40af; margin-bottom: 16px;"></i>
-                    <h4 style="font-size: 1.125rem; color: #1f2937; margin-bottom: 6px; font-weight: 600;">Verifying Latest Rates & Availability</h4>
-                    <p style="font-size: 0.875rem;">Connecting to partner APIs for live booking rates and room options...</p>
-                </div>
-            `;
-        }
-    } else {
-        showLoading();
-    }
+    // Display hotel data
+    if (currentHotel) {
+        displayHotelDetails(currentHotel);
 
-    // ALWAYS fetch fresh details from the API to get valid booking hashes (h-...) 
-    // and properly match static room group images/amenities.
-    await fetchHotelDetails();
+        // For Google Places hotels, fetch additional photos for gallery is completely disabled
+        // if (currentHotel.id && currentHotel.id.startsWith('google_')) {
+        //     fetchGooglePlacePhotos(currentHotel.id);
+        // }
+    } else {
+        // Fetch from API
+        await fetchHotelDetails();
+    }
 
     setupEventListeners();
     setupTabNavigation();
@@ -93,7 +99,6 @@ async function fetchHotelDetails() {
                 currentHotel = enrichedResult.data.hotels[0];
                 currentHotel.room_groups_matched = enrichedResult.data.room_groups_count || 0;
                 displayHotelDetails(currentHotel);
-                SearchSession.saveSelectedHotel(currentHotel); // Update cached hotel in session with new h-... hashes
                 console.log(`✅ Loaded hotel with ${enrichedResult.data.room_groups_count} room groups matched`);
                 return;
             } else if (hotelId.startsWith('demo_')) {
@@ -119,7 +124,6 @@ async function fetchHotelDetails() {
         if (result.success && result.data && (result.data.name || result.data.hotels?.length > 0)) {
             currentHotel = result.data.hotels ? result.data.hotels[0] : result.data;
             displayHotelDetails(currentHotel);
-            SearchSession.saveSelectedHotel(currentHotel); // Update cached hotel in session
         } else {
             console.log('API returned success but no hotel data. Falling back to demo.');
             showDemoHotel(hotelId);
