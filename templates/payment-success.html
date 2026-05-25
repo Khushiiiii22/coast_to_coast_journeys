@@ -274,7 +274,13 @@
                     </div>
                     <div class="detail-row">
                         <span>Amount Paid (Online)</span>
-                        <strong style="color: #16a34a;">₹${formatNumber(data.amount)}</strong>
+                        <strong style="color: #16a34a;">${(() => {
+                            const bookingData = JSON.parse(sessionStorage.getItem('ctc_booking_data') || '{}');
+                            const currency = bookingData.rate?.currency || bookingData.currency || 'INR';
+                            const symbols = { 'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'AED': 'AED ' };
+                            const symbol = symbols[currency] || currency + ' ';
+                            return `${symbol}${formatNumber(data.amount)}`;
+                        })()}</strong>
                     </div>
                     ${(() => {
                         const bookingData = JSON.parse(sessionStorage.getItem('ctc_booking_data') || '{}');

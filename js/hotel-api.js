@@ -83,7 +83,7 @@ const HotelAPI = {
                 checkout: params.checkout,
                 adults: params.adults || 2,
                 children_ages: params.children_ages || [],
-                rooms: params.rooms || null, // Multi-room array for ETG v3
+                rooms: params.rooms || [],
                 radius: params.radius || 10000,
                 currency: params.currency || 'USD',
                 residency: params.residency || 'in'  // ETG/RateHawk residency parameter
@@ -103,6 +103,7 @@ const HotelAPI = {
                 checkout: params.checkout,
                 adults: params.adults || 2,
                 children_ages: params.children_ages || [],
+                rooms: params.rooms || [],
                 currency: params.currency || 'USD'
             })
         });
@@ -151,7 +152,7 @@ const HotelAPI = {
                 checkout: params.checkout,
                 adults: params.adults || 2,
                 children_ages: params.children_ages || [],
-                rooms: params.rooms || null,
+                rooms: params.rooms || [],
                 currency: params.currency || 'USD'
             })
         });
@@ -203,7 +204,7 @@ const HotelAPI = {
                 checkout: params.checkout,
                 adults: params.adults || 2,
                 children_ages: params.children_ages || [],
-                rooms: params.rooms || null,
+                rooms: params.rooms || [],
                 currency: params.currency || 'USD'
             })
         });
@@ -343,15 +344,7 @@ const SearchSession = {
     },
 
     save(key, data) {
-        try {
-            sessionStorage.setItem(key, JSON.stringify(data));
-        } catch (error) {
-            console.warn(`⚠️ Storage Quota exceeded for ${key}:`, error);
-            if (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
-                // Potential fallback: clean up other sessions or just ignore
-                console.log('Clearing old session data might help if persistency is not required.');
-            }
-        }
+        sessionStorage.setItem(key, JSON.stringify(data));
     },
 
     get(key) {
@@ -414,13 +407,11 @@ const SearchSession = {
  */
 const HotelUtils = {
     // Currency conversion rates (base: INR)
-    // Updated to match backend rates: USD_TO_INR = 86.5, EUR_TO_INR = 92.0, GBP_TO_INR = 108.0
-    // ETG Certification Note: Fixed platform conversion rate 1 USD = 86.5 INR.
     conversionRates: {
         'INR': 1,
-        'USD': 0.01156, // 1 / 86.5
-        'EUR': 0.01087, // 1 / 92.0
-        'GBP': 0.00926, // 1 / 108.0
+        'USD': 0.012,
+        'EUR': 0.011,
+        'GBP': 0.0095,
         'AED': 0.044
     },
 
@@ -457,13 +448,6 @@ const HotelUtils = {
 
         // Get user's selected currency
         const displayCurrency = this.getSelectedCurrency();
-
-        // Safety-check: if currencies match, return amount as-is
-        if (originalCurrency === displayCurrency) {
-            const symbol = symbols[displayCurrency] || displayCurrency + ' ';
-            const locale = displayCurrency === 'INR' ? 'en-IN' : 'en-US';
-            return `${symbol}${parseFloat(amount).toLocaleString(locale)}`;
-        }
 
         // Convert if needed
         const convertedAmount = this.convertCurrency(amount, originalCurrency, displayCurrency);
@@ -609,9 +593,8 @@ const HotelUtils = {
         const mealInfo = rate.meal_info || {};
         // Always use meal_data.value (via meal_info.value); fallback chain stops here.
         const code = mealInfo.value || rate.meal_plan || rate.meal || 'nomeal';
-        const isNoMeal = (code.toLowerCase() === 'nomeal' || code.toLowerCase() === 'room-only');
         const displayName = this.getMealPlanText(code);
-        
+        const isNoMeal = (code === 'nomeal' || code === 'room-only');
         const noChildMeal = !!mealInfo.no_child_meal;
         const isFixedCount = !!mealInfo.is_fixed_count;
         const fixedCount = mealInfo.fixed_count;
@@ -650,12 +633,12 @@ const HotelUtils = {
                 </div>`;
         }
 
-        // No-child-meal warning (ETG Certification Fix: Show even if no children in current search)
-        if (!isNoMeal && noChildMeal) {
+        // No-child-meal warning (only shown when children are in the party)
+        if (!isNoMeal && noChildMeal && numChildren > 0) {
             html += `
-                <div class="meal-note meal-note--warning" style="background:#fffbeb;border:1px solid #fde68a;padding:8px 10px;border-radius:8px;margin-top:8px;font-size:0.8rem;color:#92400e;display:flex;align-items:center;gap:8px;">
+                <div class="meal-note meal-note--warning">
                     <i class="fas fa-exclamation-triangle"></i>
-                    <span><strong>Child Meal Policy:</strong> Meals for children are not included in this plan. Please contact the property for child-meal details.</span>
+                    <span><strong>Meal not included for children</strong> — ${displayName} applies to adults only. Meals for children (${numChildren} child${numChildren > 1 ? 'ren' : ''}) are not part of this plan.</span>
                 </div>`;
         }
 
@@ -663,53 +646,8 @@ const HotelUtils = {
     },
 
     /**
-     * Centralized logic to determine if a rate is refundable and get its deadline.
-     * ETG Certification Fix (Mikhail Update 5): Must accurately check free_cancellation_before date.
+     * Parse guests from form
      */
-    getCancellationStatus(rate) {
-        const cancelInfo = rate.cancellation_info || {};
-        
-        // v3 priority: free_cancellation_before might be on the rate root or inside cancellation_info
-        const deadlineDate = rate.free_cancellation_before || cancelInfo.free_cancellation_before || cancelInfo.from_orig_time;
-        
-        // Sometimes backend provides is_free_cancellation directly
-        let isRefundable = !!(cancelInfo.is_free_cancellation || rate.is_free_cancellation);
-        let formattedDeadline = '';
-
-        if (deadlineDate) {
-            try {
-                // Parse datetime e.g. "2026-05-20T00:00:00"
-                const now = new Date();
-                const deadline = new Date(deadlineDate);
-                
-                // If the deadline is in the future, it's definitely refundable
-                if (deadline > now) {
-                    isRefundable = true;
-                    formattedDeadline = deadline.toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                    });
-                } else if (isRefundable) {
-                    // Deadline passed but backend still says refundable?
-                    // Usually means we've entered the penalty phase.
-                    isRefundable = false;
-                }
-            } catch (e) {
-                console.warn('⚠️ Error parsing deadline date:', deadlineDate, e);
-            }
-        }
-
-        // Final safety check: if we have a formatted date from backend but JS failed to parse
-        const backendFormatted = cancelInfo.free_cancellation_formatted?.datetime || cancelInfo.free_cancellation_formatted || '';
-
-        return {
-            isRefundable,
-            deadline: formattedDeadline || backendFormatted
-        };
-    },
-
-    /**
     parseGuests(rooms, adultsPerRoom, childrenPerRoom) {
         const guests = [];
         for (let i = 0; i < rooms; i++) {
@@ -722,52 +660,16 @@ const HotelUtils = {
     },
 
     /**
-     * Format cancellation policy stages into human-readable HTML
-     * ETG v3 Requirement: Detailed date-based penalties must be visible on checkout.
+     * Get cancellation status for a hotel
      */
-    formatCancellationPolicyHtml(cancelInfo, currency = 'INR') {
-        if (!cancelInfo) return '<span style="color:#ef4444">Non-Refundable</span>';
-        
-        const steps = cancelInfo.policy_steps || [];
-        const isNonRefundable = (cancelInfo.tag === 'non_refundable' || steps.length === 0);
-        
-        if (isNonRefundable) {
-            return '<div style="color:#ef4444; font-weight:600;"><i class="fas fa-times-circle"></i> This rate is Non-Refundable</div>';
-        }
-
-        let html = '<div class="cancellation-timeline" style="font-size:0.85rem; border-left:2px solid #3b82f6; padding-left:15px; margin-top:8px;">';
-        
-        // 1. Highlight the current status
-        const status = this.getCancellationStatus(cancelInfo);
-        html += `<div style="margin-bottom:12px;">
-                    <span style="background:${status.isRefundable ? '#dcfce7' : '#fee2e2'}; color:${status.isRefundable ? '#166534' : '#991b1b'}; padding:4px 8px; border-radius:6px; font-weight:600; font-size:0.75rem;">
-                        ${status.isRefundable ? '<i class="fas fa-check"></i> Currently Refundable' : '<i class="fas fa-exclamation-triangle"></i> Cancellation Penalty Applies'}
-                    </span>
-                 </div>`;
-
-        // 2. Render steps as a timeline
-        steps.forEach((step, index) => {
-            const date = new Date(step.from_orig_time || step.from_date);
-            const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-            const isPenalty = step.amount_original > 0;
-            const currencySymbol = currency === 'INR' ? '₹' : (currency === 'USD' ? '$' : currency + ' ');
-            const fee = isPenalty ? `${currencySymbol}${Math.round(step.amount_original).toLocaleString()}` : 'No Fee';
-            const color = isPenalty ? '#ef4444' : '#10b981';
-
-            html += `<div style="margin-bottom:10px; position:relative;">
-                        <div style="position:absolute; left:-21px; top:4px; width:10px; height:10px; border-radius:50%; background:${color}; border:2px solid white;"></div>
-                        <div style="font-weight:600; color:#1e293b;">From ${formattedDate}</div>
-                        <div style="color:${color}; font-size:0.8rem;">Penalty: <strong>${fee}</strong></div>
-                     </div>`;
-        });
-
-        // 3. Final reminder
-        html += `<div style="font-size:0.75rem; color:#64748b; margin-top:15px; font-style:italic;">
-                    * All times are in the hotel's local timezone.
-                 </div>`;
-        html += '</div>';
-
-        return html;
+    getCancellationStatus(hotel) {
+        if (!hotel || !hotel.rates || hotel.rates.length === 0) return { isRefundable: false };
+        const rate = hotel.rates[0];
+        const policies = rate?.payment_options?.cancellation_penalties?.policies || [];
+        if (policies.length === 0) return { isRefundable: false };
+        // Check if there is a policy that is free cancellation (amount_charge === '0.00' or 0)
+        const hasFreeCancel = policies.some(p => parseFloat(p.amount_charge || '1') === 0);
+        return { isRefundable: hasFreeCancel };
     }
 };
 

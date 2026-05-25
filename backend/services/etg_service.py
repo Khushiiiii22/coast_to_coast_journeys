@@ -692,7 +692,7 @@ class ETGApiService:
             for room in rooms:
                 entry = {"adults": int(room.get("adults", 1))}
                 # Support multiple naming conventions for child ages
-                child_ages = room.get("children", room.get("childAges", room.get("children_ages", [])))
+                child_ages = room.get("childAges", room.get("children_ages", []))
                 if child_ages and isinstance(child_ages, list):
                     entry["children"] = [int(a) for a in child_ages]
                 else:

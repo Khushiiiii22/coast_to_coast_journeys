@@ -18,48 +18,42 @@ let hotelImages = [];
  * Initialize hotel details page
  */
 async function initHotelDetails() {
-    // Get hotel from session (used for context: name, images, search params)
-    const sessionHotel = SearchSession.getSelectedHotel();
+    // Get hotel from session
+    currentHotel = SearchSession.getSelectedHotel();
     searchParams = SearchSession.getSearchParams();
 
-    // Get hotel ID from URL or session
-    const urlParams = new URLSearchParams(window.location.search);
-    const hotelId = urlParams.get('id') || (sessionHotel && sessionHotel.id);
+    if (!currentHotel) {
+        // Try to get from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const hotelId = urlParams.get('id');
 
-    if (!hotelId) {
-        showNotification('No hotel selected', 'error');
-        setTimeout(() => window.location.href = 'hotel-results.html', 2000);
-        return;
+        if (!hotelId) {
+            showNotification('No hotel selected', 'error');
+            setTimeout(() => window.location.href = 'hotel-results.html', 2000);
+            return;
+        }
+
+        // If we have demo hotel data in search results
+        const searchResults = SearchSession.getSearchResults();
+        if (searchResults?.data?.hotels) {
+            currentHotel = searchResults.data.hotels.find(h => h.id === hotelId);
+        }
     }
 
     if (!searchParams) {
         showNotification('Search parameters not found', 'warning');
     }
 
-    // ALWAYS fetch fresh hotel data from ETG API (/search/hp/)
-    // This is required for ETG certification — Mikhail needs to see the hotelpage call
-    // Session data is only used as fallback if API call fails
-    const isETGHotel = hotelId && !hotelId.startsWith('google_') && !hotelId.startsWith('ChIJ') && !hotelId.startsWith('demo_');
-
-    if (isETGHotel) {
-        // Always call the ETG API for real hotels
-        await fetchHotelDetails();
-
-        // If fetchHotelDetails didn't set currentHotel, use session data as fallback
-        if (!currentHotel && sessionHotel) {
-            currentHotel = sessionHotel;
-            displayHotelDetails(currentHotel);
-        }
-    } else if (sessionHotel && (sessionHotel.id?.startsWith('google_') || sessionHotel.id?.startsWith('ChIJ'))) {
-        // For Google hotels, use session data
-        currentHotel = sessionHotel;
+    // Display hotel data
+    if (currentHotel) {
         displayHotelDetails(currentHotel);
 
-        if (currentHotel.id && currentHotel.id.startsWith('google_')) {
-            fetchGooglePlacePhotos(currentHotel.id);
-        }
+        // For Google Places hotels, fetch additional photos for gallery is completely disabled
+        // if (currentHotel.id && currentHotel.id.startsWith('google_')) {
+        //     fetchGooglePlacePhotos(currentHotel.id);
+        // }
     } else {
-        // No session data, try API
+        // Fetch from API
         await fetchHotelDetails();
     }
 
@@ -98,7 +92,6 @@ async function fetchHotelDetails() {
                 checkout: searchParams?.checkout || getDefaultCheckout(),
                 adults: searchParams?.adults || 2,
                 children_ages: searchParams?.children_ages || [],
-                rooms: searchParams?.rooms || null,
                 currency: searchParams?.currency || localStorage.getItem('ctc_currency') || 'INR'
             });
 
@@ -125,8 +118,7 @@ async function fetchHotelDetails() {
             hotel_id: hotelId,
             checkin: searchParams?.checkin || getDefaultCheckin(),
             checkout: searchParams?.checkout || getDefaultCheckout(),
-            adults: searchParams?.adults || 2,
-            rooms: searchParams?.rooms || null
+            adults: searchParams?.adults || 2
         });
 
         if (result.success && result.data && (result.data.name || result.data.hotels?.length > 0)) {
@@ -140,6 +132,112 @@ async function fetchHotelDetails() {
         console.error('Error fetching hotel:', error);
         showDemoHotel(hotelId);
     }
+}
+
+/**
+ * Show demo hotel data
+ */
+function showDemoHotel(hotelId) {
+    currentHotel = generateDemoHotelDetails(hotelId);
+    displayHotelDetails(currentHotel);
+    showNotification('Showing demo data. Connect backend for real results.', 'info');
+}
+
+/**
+ * Generate demo hotel details
+ */
+function generateDemoHotelDetails(hotelId) {
+    const names = ['The Grand Palace', 'Ocean View Resort', 'Mountain Retreat', 'City Center Hotel'];
+    const name = names[Math.floor(Math.random() * names.length)];
+    const destination = searchParams?.destination || 'Paris';
+
+    return {
+        id: hotelId,
+        name: name,
+        property_type: 'Hotel',
+        star_rating: Math.floor(Math.random() * 2) + 4,
+        guest_rating: (Math.random() * 1 + 4).toFixed(1),
+        review_count: Math.floor(Math.random() * 500) + 100,
+        address: `123 Hotel Street, ${destination}`,
+        description: `Experience luxury and comfort at ${name}. Our hotel offers world-class amenities, exceptional service, and a prime location. Whether you're traveling for business or leisure, we ensure an unforgettable stay with our modern facilities and warm hospitality.`,
+        images: [
+            'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800',
+            'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800',
+            'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800',
+            'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800',
+            'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800',
+            'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800'
+        ],
+        latitude: 48.8566 + (Math.random() - 0.5) * 0.1,
+        longitude: 2.3522 + (Math.random() - 0.5) * 0.1,
+        amenities: ['wifi', 'pool', 'parking', 'spa', 'restaurant', 'gym', 'bar', 'room_service'],
+        rates: [
+            {
+                book_hash: `demo_hash_1_${Date.now()}`,
+                room_name: 'Deluxe Room',
+                room_description: 'Spacious room with city view, king bed, and modern amenities.',
+                meal_plan: 'breakfast',
+                meal_info: { display_name: 'Breakfast included', no_child_meal: false },
+                price: Math.floor(Math.random() * 5000) + 8000,
+                original_price: Math.floor(Math.random() * 3000) + 12000,
+                currency: 'INR',
+                cancellation: 'free',
+                cancellation_info: {
+                    is_free_cancellation: true,
+                    free_cancellation_formatted: { datetime: 'Feb 10, 2026 at 11:59 PM' },
+                    policies: [
+                        { type: 'free', end_formatted: 'Feb 10, 2026' },
+                        { type: 'full_penalty', start_formatted: 'Feb 11, 2026', penalty_amount: 8000 }
+                    ]
+                },
+                features: ['King Bed', 'City View', '45 sqm', 'Free WiFi'],
+                room_static: {
+                    matched: true,
+                    images: ['https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600']
+                }
+            },
+            {
+                book_hash: `demo_hash_2_${Date.now()}`,
+                room_name: 'Premium Suite',
+                room_description: 'Luxurious suite with separate living area and premium amenities.',
+                meal_plan: 'halfboard',
+                meal_info: { display_name: 'Breakfast + Dinner included', no_child_meal: false },
+                price: Math.floor(Math.random() * 8000) + 15000,
+                original_price: Math.floor(Math.random() * 5000) + 20000,
+                currency: 'INR',
+                cancellation: 'free',
+                cancellation_info: {
+                    is_free_cancellation: true,
+                    free_cancellation_formatted: { datetime: 'Feb 9, 2026 at 11:59 PM' },
+                    policies: [
+                        { type: 'free', end_formatted: 'Feb 9, 2026' },
+                        { type: 'partial_penalty', start_formatted: 'Feb 10, 2026', penalty_amount: 7500 },
+                        { type: 'full_penalty', start_formatted: 'Feb 11, 2026', penalty_amount: 15000 }
+                    ]
+                },
+                features: ['King Bed', 'Sea View', '65 sqm', 'Lounge Access', 'Butler Service'],
+                room_static: {
+                    matched: true,
+                    images: ['https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600']
+                }
+            },
+            {
+                book_hash: `demo_hash_3_${Date.now()}`,
+                room_name: 'Standard Room',
+                room_description: 'Comfortable room with all essential amenities for a pleasant stay.',
+                meal_plan: 'nomeal',
+                meal_info: { display_name: 'Room only (no meals)', no_child_meal: true },
+                price: Math.floor(Math.random() * 3000) + 5000,
+                currency: 'INR',
+                cancellation: 'non-refundable',
+                features: ['Queen Bed', 'Garden View', '30 sqm', 'Free WiFi'],
+                room_static: {
+                    matched: true,
+                    images: ['https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=600']
+                }
+            }
+        ]
+    };
 }
 
 /**
@@ -590,9 +688,9 @@ async function fetchHotelPolicies(hotelId) {
     const loadingEl = document.getElementById('policiesLoading');
     const errorEl = document.getElementById('policiesError');
 
-    if (!hotelId || hotelId.startsWith('google_') || hotelId.startsWith('ChIJ')) {
+    if (!hotelId || hotelId.startsWith('google_') || hotelId.startsWith('demo_') || hotelId.startsWith('test_')) {
         loadingEl?.classList.add('hidden');
-        // Show default policies
+        // Show default policies for demo
         displayDefaultPolicies();
         return;
     }
@@ -615,43 +713,10 @@ async function fetchHotelPolicies(hotelId) {
 }
 
 /**
- * Fetch additional photos for Google Places hotels
- * Updates the gallery with real photos from Google Places API
+ * Fetch additional photos for Google Places hotels is completely disabled.
  */
 async function fetchGooglePlacePhotos(hotelId) {
-    try {
-        // Extract place_id from hotel ID (remove 'google_' prefix)
-        const placeId = hotelId.replace('google_', '');
-
-        if (!placeId) {
-            console.log('No place ID found for Google Places hotel');
-            return;
-        }
-
-        console.log(`📸 Fetching Google Places photos for: ${placeId}`);
-
-        const result = await HotelAPI.getGooglePlacePhotos(placeId);
-
-        if (result.success && result.data?.photo_urls?.length > 0) {
-            // Update the hotelImages array with new photos
-            hotelImages = result.data.photo_urls;
-
-            // Update currentHotel images
-            if (currentHotel) {
-                currentHotel.images = hotelImages;
-            }
-
-            // Refresh the photo gallery display
-            displayPhotoGallery(hotelImages);
-
-            console.log(`✅ Loaded ${hotelImages.length} photos from Google Places`);
-        } else {
-            console.log('No additional photos from Google Places');
-        }
-    } catch (error) {
-        console.log('Could not fetch Google Places photos:', error);
-        // Keep existing images, no need to show error
-    }
+    console.log('Google Places photo fetching is completely disabled. Relying only on RateHawk/ETG.');
 }
 
 /**
@@ -890,7 +955,7 @@ function displayRates(rates) {
         const badges = ['Cheapest Option', 'Best Seller', 'Great Value', 'Popular', 'Upgrade your stay', 'Limited Availability'];
         ratesToShow.forEach((rate, index) => {
             const badge = index === 0 ? 'Cheapest Option' : badges[index % badges.length];
-            const card = createRateCard(rate, index, badge, hotelImages);
+            const card = createRateCard(rate, index, badge);
             container.appendChild(card);
         });
         updateMainCancellationPolicy(rates);
@@ -1007,6 +1072,14 @@ function displayRates(rates) {
         }
     ];
 
+    const roomImages = {
+        'Standard Room': ['https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600'],
+        'Deluxe Room': ['https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600'],
+        'Superior Room': ['https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600'],
+        'Junior Suite': ['https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600'],
+        'Executive Suite': ['https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=600']
+    };
+
     roomTiers.forEach((tier, i) => {
         const tierPrice = Math.round(basePrice * tier.priceMultiplier);
         const cancelInfo = tier.cancellable ? makeFreeCancelInfo(freeCancelStr) : makeNonRefundInfo();
@@ -1028,7 +1101,7 @@ function displayRates(rates) {
             cancellation_info: cancelInfo,
             room_static: {
                 matched: true,
-                images: []
+                images: roomImages[tier.name] || roomImages['Standard Room']
             },
             _roomTypeConfig: {
                 ...tier,
@@ -1039,7 +1112,7 @@ function displayRates(rates) {
             }
         };
 
-        const card = createRateCard(modifiedRate, i, tier.badge, hotelImages);
+        const card = createRateCard(modifiedRate, i, tier.badge);
         container.appendChild(card);
     });
 
@@ -1059,7 +1132,7 @@ function updateMainCancellationPolicy(rates) {
 
     if (!titleEl || !rates || rates.length === 0) return;
 
-    const freeRates = rates.filter(r => HotelUtils.getCancellationStatus(r).isRefundable);
+    const freeRates = rates.filter(r => r.cancellation_info?.is_free_cancellation);
 
     if (freeRates.length > 0) {
         const deadline = freeRates[0].cancellation_info.free_cancellation_formatted;
@@ -1132,10 +1205,9 @@ function buildTaxDisplayHtml(rate) {
 /**
  * Create rate card element (Expedia Style)
  */
-function createRateCard(rate, index, popularityBadge = null, providedHotelImages = null) {
+function createRateCard(rate, index, customBadge = null) {
     const card = document.createElement('div');
-    card.className = 'rate-card animate-in';
-    card.style.animationDelay = `${index * 0.05}s`;
+    card.className = 'rate-card';
     card.dataset.rateIndex = index;
     card.dataset.basePrice = rate.price; // used by updateExtras when toggling add-ons
     card.dataset.rateCurrency = rate.currency || currentHotel?.currency || 'USD'; // currency for price formatting
@@ -1152,6 +1224,9 @@ function createRateCard(rate, index, popularityBadge = null, providedHotelImages
     const totalPrice = HotelUtils.formatPrice(price * nights, rateCurrency);
     const originalTotal = HotelUtils.formatPrice(originalPrice * nights, rateCurrency);
 
+    // Use custom badge if provided, otherwise use defaults
+    const popularityBadges = ['Popular among travelers', 'Upgrade your stay', 'Great value', 'Best seller'];
+    const popularityBadge = customBadge || (index < popularityBadges.length ? popularityBadges[index] : '');
     const badgeClass = index === 0 ? 'popular' : (index === 1 ? 'upgrade' : 'value');
 
     // Store rate data on card for showRoomDetails to read
@@ -1160,14 +1235,22 @@ function createRateCard(rate, index, popularityBadge = null, providedHotelImages
     // Room static data
     const roomStatic = rate.room_static || {};
     let roomImages = roomStatic.images || [];
+
+    // Fallback to distinct overall hotel photos from ETG API if room images are empty
+    const roomName = rate.room_name || roomStatic.room_name || 'Standard Room';
     
-    // Explicitly use providedHotelImages if room images are empty
-    if (roomImages.length === 0 && providedHotelImages && providedHotelImages.length > 0) {
-        roomImages = providedHotelImages.slice(0, 5);
-        if (roomImages.length > 0) console.log(`[Images] Room "${rate.room_name || 'Room'}" using hotel fallback images.`);
+    // Hash the room name so the same room type always gets the same fallback photos
+    let nameHash = 0;
+    const normalizedName = roomName.toLowerCase();
+    for (let i = 0; i < normalizedName.length; i++) {
+        nameHash = ((nameHash << 5) - nameHash) + normalizedName.charCodeAt(i);
+        nameHash = nameHash & nameHash;
     }
     
-    const roomName = rate.room_name || roomStatic.room_name || 'Standard Room';
+    if ((roomImages.length === 0 || roomStatic.matched === false || roomStatic.image_source === 'hotel_fallback') && hotelImages && hotelImages.length > 0) {
+        const offset = Math.abs(nameHash) % hotelImages.length;
+        roomImages = [...hotelImages.slice(offset), ...hotelImages.slice(0, offset)].slice(0, 5);
+    }
 
     // Get room type config if available
     const roomTypeConfig = rate._roomTypeConfig || {};
@@ -1187,10 +1270,8 @@ function createRateCard(rate, index, popularityBadge = null, providedHotelImages
 
     // Room image HTML with carousel
     let roomImageHtml = '';
-    const imageCount = roomImages.length;
-    // Real API image from room or hotel; if both fail, use a high-quality hotel placeholder
-    const fallbackPlaceholder = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80';
-    const mainImage = roomImages[0] || (providedHotelImages && providedHotelImages[0]) || fallbackPlaceholder;
+    const imageCount = roomImages.length || Math.floor(Math.random() * 10 + 5);
+    const mainImage = roomImages[0] || `https://images.unsplash.com/photo-${1566073771259 + (Math.abs(nameHash) % 10)}-6a8506099945?w=600`;
 
     roomImageHtml = `
         <div class="room-image-carousel" data-index="0" data-images='${JSON.stringify(roomImages.slice(0, 5))}'>
@@ -1230,7 +1311,7 @@ function createRateCard(rate, index, popularityBadge = null, providedHotelImages
             <span class="room-feature size"><i class="fas fa-ruler-combined"></i> ${roomSize} sq ft</span>
             <span class="room-feature sleeps"><i class="fas fa-users"></i> Sleeps ${sleepsCount}</span>
             <span class="room-feature bed"><i class="fas fa-bed"></i> ${bedType}</span>
-            <span class="room-feature guarantee"><i class="fas fa-certificate"></i> Best Value Guarantee</span>
+            <span class="room-feature paylater"><i class="fas fa-check"></i> Reserve now, pay later</span>
             ${hasWifi ? `<span class="room-feature wifi"><i class="fas fa-wifi"></i> Free WiFi</span>` : ''}
         </div>
     `;
@@ -1253,60 +1334,37 @@ function createRateCard(rate, index, popularityBadge = null, providedHotelImages
         `;
     }
 
-    // ── Cancellation Policy Section (ETG-compliant) ──────────────────────
-    const cancelStatus = HotelUtils.getCancellationStatus(rate);
-    const isRefundable = cancelStatus.isRefundable;
-    const deadline = cancelStatus.deadline;
+    // ── Cancellation Policy Section ────────────────────
+    const cancellationInfo = rate.cancellation_info || {};
 
-    let refundableHtml = `
-        <div class="cancellation-policy-section">
-            <div class="cp-header" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-                ${isRefundable 
-                    ? `<i class="fas fa-check-circle" style="color:#059669;font-size:1.1rem;"></i>` 
-                    : `<i class="fas fa-times-circle" style="color:#ef4444;font-size:1.1rem;"></i>`}
-                <span class="cp-title" style="font-weight:600;font-size:0.9rem;${isRefundable ? 'color:#065f46;' : 'color:#7f1d1d;'}">
-                    ${isRefundable ? `Free cancellation until ${deadline}` : 'Non-refundable rate'}
-                </span>
-            </div>
-            <div class="cp-header">
-                <a class="cp-more-details" onclick="showCancellationModal(${index})">View all policy details <i class="fas fa-chevron-right"></i></a>
-            </div>
-        </div>
-    `;
-
-    // Extras section (Breakfast add-on) - uses mealInfo and hasBreakfastIncluded declared above
-    const breakfastPrice = Math.floor(price * 0.05) + 10; // ~5% of room price + base
-    const breakfastPriceFormatted = HotelUtils.formatPrice(breakfastPrice, rateCurrency);
-
-    let extrasHtml = '';
-    if (!hasBreakfastIncluded) {
-        extrasHtml = `
-            <div class="extras-section">
-                <div class="extras-header">
-                    <span class="extras-title">Extras</span>
-                    <span class="extras-price-label">per night</span>
+    let refundableHtml = '';
+    
+    if (cancellationInfo.is_free_cancellation && cancellationInfo.free_cancellation_formatted) {
+        const deadline = cancellationInfo.free_cancellation_formatted.datetime || cancellationInfo.free_cancellation_formatted.raw;
+        refundableHtml = `
+            <div class="rate-refundable-status free-cancellation" style="display:flex;align-items:flex-start;gap:8px;margin-top:12px;padding:10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
+                <i class="fas fa-check-circle" style="color:#059669;font-size:1.1rem;margin-top:2px;"></i>
+                <div class="status-content">
+                    <strong style="display:block;color:#065f46;font-size:0.9rem;">Free cancellation</strong>
+                    <span style="display:block;color:#047857;font-size:0.8rem;margin-top:2px;">Before ${deadline}</span>
+                    <a href="#" style="display:block;color:#059669;font-size:0.75rem;margin-top:4px;text-decoration:none;font-weight:600;" onclick="showCancellationModal(${index}); return false;">View all policy details <i class="fas fa-chevron-right"></i></a>
                 </div>
-                <label class="extra-option selected">
-                    <input type="radio" name="extras_${index}" value="none" checked onchange="updateExtras(${index}, 'none', 0)">
-                    <span class="extra-radio"></span>
-                    <span class="extra-name">No extras</span>
-                    <span class="extra-price">+ ₹0</span>
-                </label>
-                <label class="extra-option">
-                    <input type="radio" name="extras_${index}" value="breakfast" onchange="updateExtras(${index}, 'breakfast', ${breakfastPrice})">
-                    <span class="extra-radio"></span>
-                    <span class="extra-name">Breakfast</span>
-                    <span class="extra-price">+ ${breakfastPriceFormatted}</span>
-                </label>
             </div>
         `;
     } else {
-        extrasHtml = `
-            <div class="included-meal-badge">
-                <i class="fas fa-utensils"></i> ${mealInfo.display_name || 'Breakfast included'}
+        refundableHtml = `
+            <div class="rate-refundable-status non-refundable" style="display:flex;align-items:flex-start;gap:8px;margin-top:12px;padding:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;">
+                <i class="fas fa-times-circle" style="color:#dc2626;font-size:1.1rem;margin-top:2px;"></i>
+                <div class="status-content">
+                    <strong style="display:block;color:#991b1b;font-size:0.9rem;">Non-refundable rate</strong>
+                    <a href="#" style="display:block;color:#dc2626;font-size:0.75rem;margin-top:4px;text-decoration:none;font-weight:600;" onclick="showCancellationModal(${index}); return false;">View all policy details <i class="fas fa-chevron-right"></i></a>
+                </div>
             </div>
         `;
     }
+
+    // Extras section has been fully removed. The meal badge is already displayed at the top via mealBadgeHtml.
+    let extrasHtml = '';
 
     // Urgency notice (randomly show for some rooms)
     const showUrgency = Math.random() > 0.6;
@@ -1314,35 +1372,27 @@ function createRateCard(rate, index, popularityBadge = null, providedHotelImages
     const urgencyHtml = showUrgency ? `<span class="urgency-notice">We have ${roomsLeft} left</span>` : '';
 
     // Tax info display - ETG-compliant: distinguish included vs non-included taxes
-    const propertyFees = rate.property_payable_fees || [];
-    const hasPropertyFees = propertyFees.length > 0;
-    
-    // Dynamic tax note: only show "Includes taxes" if NO non-included taxes exist
-    let taxNoteHtml = !hasPropertyFees 
-        ? '<small class="taxes-note" style="color:#059669"><i class="fas fa-check-circle"></i> Includes taxes & fees</small>'
-        : '<small class="taxes-note" style="color:#b45309"><i class="fas fa-plus-circle"></i> Plus fees payable at property</small>';
+    let taxNoteHtml = '<small class="taxes-note" style="color:#059669"><i class="fas fa-check-circle"></i> Includes taxes & fees</small>';
+
+    const taxInfo = rate.tax_info || {};
+    const nonIncludedTaxes = taxInfo.non_included_taxes || [];
 
     // If there are non-included taxes, show them clearly (ETG certification requirement)
-    if (hasPropertyFees) {
-        const taxItems = propertyFees.map(fee => {
-            const amount = parseFloat(fee.amount_native || 0);
-            const currency = fee.currency_native || 'USD';
-            const displayName = fee.name || 'Property Fee';
-            return `<div style="display:flex;justify-content:space-between;font-size:0.75rem;padding:3px 0;border-bottom:1px dashed #fde68a">
-                        <span>${displayName}</span>
-                        <span style="font-weight:600">${currency} ${amount.toLocaleString()}</span>
-                    </div>`;
+    if (nonIncludedTaxes.length > 0) {
+        const taxItems = nonIncludedTaxes.map(tax => {
+            const amount = parseFloat(tax.amount || 0);
+            const currency = tax.currency_code || 'USD';
+            const displayName = tax.display_name || tax.name || 'Property Fee';
+            return `<div style="display:flex;justify-content:space-between;font-size:0.72rem;padding:2px 0"><span>${displayName}</span><span>${currency} ${amount.toFixed(2)}</span></div>`;
         }).join('');
 
         taxNoteHtml = `
-            <div style="margin-top:8px;padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                <div style="font-size:0.78rem;font-weight:700;color:#92400e;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-                    <i class="fas fa-hotel"></i> Payable at Property (Check-in):
+            <div style="margin-top:6px;padding:8px 10px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;">
+                <div style="font-size:0.78rem;font-weight:600;color:#92400e;margin-bottom:4px;">
+                    <i class="fas fa-info-circle"></i> Additional fees payable at property:
                 </div>
                 ${taxItems}
-                <div style="font-size:0.7rem;color:#b45309;margin-top:6px;font-style:italic;">
-                    Note: These fees are not included in the total prepaid price and must be paid directly to the hotel.
-                </div>
+                <div style="font-size:0.72rem;color:#b45309;margin-top:4px;">These fees are not included in the price shown and must be paid at check-in.</div>
             </div>
         `;
     }
@@ -1433,34 +1483,7 @@ function navigateRoomImage(btn, direction) {
     imageEl.style.backgroundImage = `url('${images[currentIndex]}')`;
 }
 
-// Update extras selection and visually update card prices
-function updateExtras(rateIndex, extraType, extraPrice) {
-    const card = document.querySelector(`.rate-card[data-rate-index="${rateIndex}"]`);
-    if (!card) return;
-
-    // Update selected state
-    card.querySelectorAll('.extra-option').forEach(opt => opt.classList.remove('selected'));
-    const selectedInput = card.querySelector(`input[value="${extraType}"]`);
-    if (selectedInput) selectedInput.closest('.extra-option').classList.add('selected');
-
-    // Store extra selection for booking
-    if (!window.rateExtras) window.rateExtras = {};
-    window.rateExtras[rateIndex] = { type: extraType, price: extraPrice };
-
-    // Update the card's displayed prices to include the extra
-    const baseNightly = parseFloat(card.dataset.basePrice || 0);
-    if (!baseNightly) return;  // base price not set yet — card will read it on reserve
-
-    const nights = searchParams ? HotelUtils.calculateNights(searchParams.checkin, searchParams.checkout) : 1;
-    const newNightly = baseNightly + extraPrice;
-    const newTotal = newNightly * nights;
-
-    const nightlyEl = card.querySelector('.nightly-price');
-    const totalEl = card.querySelector('.total-price');
-    const extraCurrency = card.dataset.rateCurrency || currentHotel?.currency || 'USD';
-    if (nightlyEl) nightlyEl.innerHTML = `${HotelUtils.formatPrice(newNightly, extraCurrency)} <small>nightly</small>`;
-    if (totalEl) totalEl.innerHTML = `${HotelUtils.formatPrice(newTotal, extraCurrency)} <small>total</small>`;
-}
+// updateExtras function removed per ETG auditor request
 
 // Show room details modal / overlay panel
 function showRoomDetails(rateIndex) {
@@ -1478,10 +1501,8 @@ function showRoomDetails(rateIndex) {
     }
 
     const cancelInfo = rate.cancellation_info || {};
-    const cancelStatus = HotelUtils.getCancellationStatus(rate);
-    const isFreeCancellation = cancelStatus.isRefundable;
-    const deadline = cancelStatus.deadline;
-
+    const isFreeCancellation = cancelInfo.is_free_cancellation;
+    const deadline = cancelInfo.free_cancellation_formatted?.datetime || cancelInfo.free_cancellation_formatted || '';
     const mealDisplay = rate.meal_info?.display_name || 'Room Only';
     const roomName = rate.room_name || 'Room';
 
@@ -1618,8 +1639,9 @@ function showCancellationModal(rateIndex) {
     let rate = {};
     try { rate = JSON.parse(card?.dataset?.rateJson || '{}'); } catch (e) { }
 
-    const cancelStatus = HotelUtils.getCancellationStatus(rate);
-    const dateStr = cancelStatus.deadline || rate.free_cancellation_before || rate.cancellation_info?.free_cancellation_before || '';
+    const cancellationInfo = rate.cancellation_info || {};
+    const deadline = cancellationInfo.free_cancellation_formatted;
+    const dateStr = deadline ? (deadline.datetime || deadline) : '';
 
     // Parse free cancel date for display
     let freeCancelShortDate = '';
@@ -1793,12 +1815,6 @@ function switchCancellationTab(btn, tab) {
  * Select a rate and proceed to booking
  */
 function selectRate(rate, index) {
-    // Guard: Google Places hotels cannot be booked via ETG
-    if (currentHotel && currentHotel.id && (currentHotel.id.startsWith('google_') || currentHotel.id.startsWith('ChIJ'))) {
-        showNotification('This hotel is not available for online booking. Please search for hotels in Paris, Dubai, or Moscow for bookable rates.', 'warning');
-        return;
-    }
-
     selectedRate = rate;
 
     // Update UI
@@ -1808,35 +1824,17 @@ function selectRate(rate, index) {
     const selectedCard = document.querySelector(`.rate-card[data-rate-index="${index}"]`);
     if (selectedCard) selectedCard.classList.add('selected');
 
-    // Pick up any extras the user selected (e.g. breakfast add-on)
-    const extras = (window.rateExtras && window.rateExtras[index]) || { type: 'none', price: 0 };
-
-    // Calculate totals including extras
+    // Calculate totals
     const nights = searchParams ? HotelUtils.calculateNights(searchParams.checkin, searchParams.checkout) : 1;
     const baseNightlyPrice = rate.price;
-    const extraNightlyPrice = extras.price || 0;
-    const nightlyWithExtras = baseNightlyPrice + extraNightlyPrice;
-    const totalPrice = nightlyWithExtras * nights;
+    const totalPrice = baseNightlyPrice * nights;
 
     // Build the rate object that checkout pages will read
-    // ETG Certification Requirement (Updates 3 & 4): Keep track of prepaid vs property-payable
     const rateForCheckout = {
         ...rate,
-        // Overwrite price fields to include the extras
-        price: nightlyWithExtras,
-        base_nightly_price: baseNightlyPrice,
-        extra_price: extraNightlyPrice,
-        extra_type: extras.type,
+        price: baseNightlyPrice,
         total_price: totalPrice,
-        // Mikhail Requirement: The actual amount to be charged to the card
-        prepaid_amount: (rate.prepaid_amount || 0) + (extraNightlyPrice * nights),
-        property_payable_fees: rate.property_payable_fees || [],
-        nights: nights,
-        // Meal plan may change if breakfast extra was added
-        meal_plan: extras.type === 'breakfast' ? 'breakfast' : rate.meal_plan,
-        meal_info: extras.type === 'breakfast'
-            ? { ...rate.meal_info, value: 'breakfast', display_name: 'Breakfast Included', has_breakfast: true }
-            : rate.meal_info,
+        nights: nights
     };
 
     // Save to session
@@ -1847,15 +1845,12 @@ function selectRate(rate, index) {
         search_params: searchParams
     });
 
-    // Clear any old booking timers!
-    sessionStorage.removeItem('ctc_booking_timer_start');
-    sessionStorage.removeItem('ctc_booking_timer_hash');
-
     showNotification(`${rate.room_name} selected! Redirecting to checkout...`, 'success');
 
     // Redirect to checkout page
     setTimeout(() => {
-        window.location.href = 'guest-details.html';
+        // Appended timestamp to force browser to ignore cached HTML
+        window.location.href = 'guest-details.html?v=' + Date.now();
     }, 800);
 }
 

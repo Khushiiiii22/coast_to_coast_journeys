@@ -485,7 +485,7 @@ def search_by_destination():
         rooms_data = data.get('rooms')  # multi-room array if available
 
         
-        print(f"🔍 Hotel Search Request: {data['destination']}")
+        print(f"🔍 Hotel Search Request: {data['destination']} | Guests: Rooms={data.get('rooms')} Adults={data.get('adults')} ChildrenAges={data.get('children_ages')}")
         
         # Step 1: Check if destination matches a known location
         hotel_ids_to_search = None
@@ -844,7 +844,7 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
             # Identify Property-Payable (Non-Included) Taxes
             api_non_included_tax = 0
             property_fees = []
-            tax_data = payment_options.get('tax_data', {}) or {}
+            tax_data = payment_types[0].get('tax_data', {}) if payment_types and isinstance(payment_types, list) and len(payment_types) > 0 else {}
             
             for tax in tax_data.get('taxes', []):
                 amt = float(tax.get('amount', 0))
@@ -1014,7 +1014,8 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map, 
         
         # 2. Extract and Convert Included Taxes
         api_included_tax = 0
-        for tax in payment_options.get('tax_data', {}).get('taxes', []):
+        tax_data = payment_types[0].get('tax_data', {}) if payment_types and isinstance(payment_types, list) and len(payment_types) > 0 else {}
+        for tax in tax_data.get('taxes', []):
             if tax.get('included_by_supplier', True):
                 val = float(tax.get('amount', 0))
                 # Currency conversion for taxes
@@ -1028,7 +1029,7 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map, 
         # We add these to the display total to satisfy "Includes all taxes"
         api_non_included_tax = 0
         property_fees = []
-        for tax in payment_options.get('tax_data', {}).get('taxes', []):
+        for tax in tax_data.get('taxes', []):
             if not tax.get('included_by_supplier', True):
                 amt = float(tax.get('amount', 0))
                 api_non_included_tax += amt
@@ -1074,7 +1075,7 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map, 
         rate['meal_display'] = meal_display_map.get(rate.get('meal', 'nomeal'), rate.get('meal', 'Room Only').title())
 
         tax_info = parse_taxes(
-            payment_options.get('tax_data', {}), 
+            tax_data, 
             target_currency, 
             rate_currency, 
             conversion_rates
@@ -1190,6 +1191,7 @@ def parse_taxes(tax_data, target_currency='USD', source_currency='USD', conversi
                 'name': name,
                 'amount': amount,
                 'currency': currency,
+                'currency_code': currency,
                 'included': False
             }
             non_included_taxes.append(tax_item)
@@ -1299,16 +1301,8 @@ def search_hotels_via_google(destination: str, checkin: str, checkout: str) -> l
             # Estimate price based on rating (rough approximation)
             base_price = 2000 + (rating * 1500) + (idx * 200)
             
-            # Get photos from Google Places - use actual photos if available
-            photos = place.get('photos', [])
+            # Google Places photos are completely disabled to rely strictly on RateHawk/ETG images.
             hotel_images = []
-            
-            for photo in photos[:5]:  # Get up to 5 photos
-                photo_ref = photo.get('photo_reference') if isinstance(photo, dict) else None
-                if photo_ref:
-                    photo_url = get_google_photo_url(photo_ref, 800)
-                    if photo_url:
-                        hotel_images.append(photo_url)
             
             # Use fallback if no Google photos available
             if not hotel_images:
@@ -1369,62 +1363,19 @@ def search_hotels_via_google(destination: str, checkin: str, checkout: str) -> l
 def get_google_place_photos(place_id):
     """
     Get photos for a Google Places hotel
-    Returns array of photo URLs for the hotel gallery
-    
-    Args:
-        place_id: Google Place ID (without 'google_' prefix)
+    Returns empty photos array since Google Places photo integration is completely disabled.
     """
     try:
-        if not google_maps_service.is_available():
-            return jsonify({
-                'success': False,
-                'error': 'Google Maps API not configured'
-            }), 400
-        
-        print(f"📸 Fetching photos for place_id: {place_id}")
-        
-        # Get photos directly from Google Places API
-        try:
-            raw_result = google_maps_service.client.place(
-                place_id=place_id,
-                fields=['photos', 'name']
-            )
-            
-            photos = []
-            photo_data = raw_result.get('result', {}).get('photos', [])
-            
-            print(f"📸 Found {len(photo_data)} photos from Google Places")
-            
-            for photo in photo_data[:10]:  # Get up to 10 photos
-                photo_ref = photo.get('photo_reference')
-                if photo_ref:
-                    photo_url = get_google_photo_url(photo_ref, 800)
-                    if photo_url:
-                        photos.append({
-                            'url': photo_url,
-                            'width': photo.get('width'),
-                            'height': photo.get('height')
-                        })
-            
-            print(f"✅ Returning {len(photos)} photo URLs")
-            
-            return jsonify({
-                'success': True,
-                'data': {
-                    'photos': photos,
-                    'photo_urls': [p['url'] for p in photos],  # Simple array of URLs
-                    'place_name': raw_result.get('result', {}).get('name', ''),
-                    'total_photos': len(photos)
-                }
-            })
-            
-        except Exception as e:
-            print(f"❌ Error fetching place photos: {e}")
-            return jsonify({
-                'success': False,
-                'error': str(e)
-            }), 500
-            
+        print(f"📸 Google Places photo endpoint called for place_id: {place_id} (disabled)")
+        return jsonify({
+            'success': True,
+            'data': {
+                'photos': [],
+                'photo_urls': [],
+                'place_name': '',
+                'total_photos': 0
+            }
+        })
     except Exception as e:
         print(f"❌ Google Photos endpoint error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -1568,27 +1519,25 @@ def get_hotel_policies(hotel_id):
         except Exception as e:
             print(f"⚠️ Local cache read failed for {hotel_id}: {e}")
 
-        # ── Strategy 1: Try /hotel/info/ API (DISABLED FOR LIVE TRAFFIC) ──
-        # ETG Certification Fix: /hotel/info/ should NOT be called during search flow.
-        # Policy data must come from the local static dump cache (Strategy 0).
-        # if not hotel_data:
-        #     try:
-        #         info_result = etg_service._make_request('/hotel/info/', {'id': hotel_id, 'language': 'en'}, timeout=15)
-        #         if info_result.get('success'): ...
-        #     except Exception as e: ...
-
-        # ── Strategy 2: Fall back to /hotel/static/ ──
+        # ── Strategy 0.5: Local Supabase Cache (avoid live /hotel/info/ or /hotel/static/ calls) ──
         if not hotel_data:
             try:
-                static_result = etg_service.get_hotel_static(hotel_id)
-                if static_result.get('success'):
-                    static_data = static_result.get('data', {})
-                    if isinstance(static_data, dict) and static_data.get('data'):
-                        static_data = static_data['data']
-                    hotel_data = static_data if isinstance(static_data, dict) else {}
-                    print(f"⚠️ Policies for {hotel_id}: fell back to /hotel/static/")
+                cached = supabase_service.get_cached_hotel(hotel_id)
+                if cached.get('success') and cached.get('data'):
+                    rows = cached.get('data', [])
+                    if rows and isinstance(rows, list) and len(rows) > 0:
+                        cached_data = rows[0].get('hotel_data', {})
+                        if isinstance(cached_data, dict) and (cached_data.get('metapolicy_struct') or cached_data.get('metapolicy_extra_info')):
+                            hotel_data = cached_data
+                            print(f"✅ Policies for {hotel_id}: loaded successfully from Supabase cache")
             except Exception as e:
-                print(f"⚠️ /hotel/static/ also failed for {hotel_id}: {e}")
+                print(f"⚠️ Supabase cache check failed for hotel policies: {e}")
+
+        # ── Strategy 1 & 2 (DISABLED for RateHawk compliance: ZERO real-time /hotel/info or /hotel/static calls) ──
+        # To comply with the strict separation of static data, we serve only from offline cached DB.
+        # if not hotel_data:
+        #     # Live calls are disabled during customer page loads.
+        #     print(f"⚠️ Policies cache miss for {hotel_id} - serving fallback/mock policies only")
 
         # Extract policy information
         # NOTE: policy_struct is deprecated - we only use metapolicy_struct and metapolicy_extra_info
@@ -2118,14 +2067,29 @@ def get_room_groups(hotel_id):
         under rg_ext['rg'] so that the dynamic rate can look it up instantly.
     """
     try:
-        # Fetch hotel static data
-        result = etg_service.get_hotel_static(hotel_id)
-        
+        # Fetch hotel static data from Supabase cache to avoid live calls (RateHawk compliance)
+        result = {'success': False, 'error': 'Cache miss'}
+        try:
+            cached = supabase_service.get_cached_hotel(hotel_id)
+            if cached.get('success') and cached.get('data'):
+                rows = cached.get('data', [])
+                if rows and isinstance(rows, list) and len(rows) > 0:
+                    result = {
+                        'success': True,
+                        'data': rows[0].get('hotel_data', {})
+                    }
+                    print(f"✅ Room groups for {hotel_id}: loaded successfully from local static cache")
+        except Exception as e:
+            print(f"⚠️ Failed to load cached static data for room-groups: {e}")
+            
+        # If cache miss, DO NOT make a live API call to /hotel/static/ (RateHawk compliance)
+        # Instead, mock a successful empty response to prevent frontend breaking
         if not result.get('success'):
-            return jsonify({
-                'success': False,
-                'error': result.get('error', 'Failed to fetch hotel static data')
-            }), 400
+            print(f"⚠️ Static cache miss for room-groups of {hotel_id} - serving empty list to avoid live /hotel/static/")
+            result = {
+                'success': True,
+                'data': {'room_groups': []}
+            }
         
         hotel_data = result.get('data', {})
         if isinstance(hotel_data, dict) and hotel_data.get('data'):
@@ -2196,43 +2160,31 @@ def get_enriched_hotel_details():
         if not rates_result.get('success'):
             return jsonify(rates_result)
         
-        # 2. Fetch hotel static data for room groups (Robust v3 fallback strategy)
-        static_data = None
-        
-        # Strategy A: Check local cache first
-        cached_static = etg_service.static_cache.get(data['hotel_id'])
-        if cached_static and cached_static.get('room_groups'):
-            static_data = cached_static
-            static_result = {'success': True, 'data': {'data': cached_static}}
-            print(f"⚡ Static Cache Hit for {data['hotel_id']} room groups")
-        
-        # Strategy B: Try B2B v3 /hotel/info/
-        if not static_data:
-            static_result = etg_service.get_hotel_info(data['hotel_id'])
-            if static_result.get('success'):
-                s_data = static_result.get('data', {})
-                if isinstance(s_data, dict) and s_data.get('data'):
-                    s_data = s_data['data']
-                if isinstance(s_data, dict) and s_data.get('room_groups'):
-                    static_data = s_data
-                    print(f"✅ Loaded {len(s_data.get('room_groups', []))} room groups from /hotel/info/")
-        
-        # Strategy C: Fall back to GET /hotel/static/ (often contains fuller room groups in sandbox)
-        if not static_data or not static_data.get('room_groups'):
-            print(f"⚠️ Room groups empty/missing in /hotel/info/ for {data['hotel_id']}. Falling back to /hotel/static/...")
-            static_result = etg_service.get_hotel_static(data['hotel_id'])
-            if static_result.get('success'):
-                s_data = static_result.get('data', {})
-                if isinstance(s_data, dict) and s_data.get('data'):
-                    s_data = s_data['data']
-                if isinstance(s_data, dict) and s_data.get('room_groups'):
-                    static_data = s_data
-                    print(f"✅ Loaded {len(s_data.get('room_groups', []))} room groups from /hotel/static/ fallback")
-        
-        # Save successfully retrieved static data to cache
-        if static_data and static_data.get('room_groups'):
-            etg_service.static_cache[data['hotel_id']] = static_data
-            etg_service._save_static_cache()
+        # 2. Fetch hotel static data for room groups from cache to avoid live calls (RateHawk compliance)
+        static_result = {'success': False, 'error': 'Cache miss'}
+        try:
+            cached = supabase_service.get_cached_hotel(data['hotel_id'])
+            if cached.get('success') and cached.get('data'):
+                rows = cached.get('data', [])
+                if rows and isinstance(rows, list) and len(rows) > 0:
+                    static_result = {
+                        'success': True,
+                        'data': rows[0].get('hotel_data', {})
+                    }
+                    print(f"✅ Static data for {data['hotel_id']}: loaded successfully from local static cache")
+        except Exception as e:
+            print(f"⚠️ Failed to load cached static data for {data['hotel_id']}: {e}")
+            
+        # If cache miss, DO NOT make a live API call to /hotel/static/ (RateHawk compliance)
+        # Instead, mock a successful empty response to prevent frontend breaking
+        if not static_result.get('success'):
+            print(f"⚠️ Static cache miss for {data['hotel_id']} - serving mock/empty room groups to avoid live /hotel/static/")
+            static_result = {
+                'success': True,
+                'data': {'room_groups': []}
+            }
+            
+        static_data = static_result.get('data', {})
             
         room_groups = {}
         if static_data:
@@ -2611,13 +2563,12 @@ def enrich_rate_with_room_data(rate: dict, room_groups: dict, hotel_images: list
         }
     else:
         # No match — fall back to hotel-level images from ETG API
-        fallback_images = hotel_images[:5] if hotel_images else []
         enriched_rate['room_static'] = {
             'matched': False,
             'rg_key': rg_key or make_rg_signature(rg_ext),
             'room_name': rate.get('room_name', rate.get('room_data_trans', {}).get('main_name', 'Room')),
-            'images': fallback_images,
-            'image_source': 'hotel_fallback' if fallback_images else 'none',
+            'images': [],
+            'image_source': 'none',
             'amenities': []
         }
     
@@ -2627,7 +2578,11 @@ def enrich_rate_with_room_data(rate: dict, room_groups: dict, hotel_images: list
     # - included_by_supplier: boolean (false = must be paid at check-in)
     # - amount: tax amount as string
     # - currency_code: currency of the tax
-    tax_data = rate.get('payment_options', {}).get('tax_data', {})
+    tax_data = {}
+    payment_options = rate.get('payment_options', {})
+    payment_types = payment_options.get('payment_types', [])
+    if payment_types and isinstance(payment_types, list) and len(payment_types) > 0:
+        tax_data = payment_types[0].get('tax_data', {})
     taxes = tax_data.get('taxes', [])
     
     # Separate included and non-included taxes

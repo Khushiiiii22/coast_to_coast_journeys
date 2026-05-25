@@ -261,34 +261,67 @@
         <h1><i class="fas fa-user-edit"></i> Enter Guest Details</h1>
 
         <div class="checkout-grid">
-            <div class="left-column">                <!-- Contact Information -->
+            <div class="left-column">
+                <!-- Contact Information -->
                 <div class="booking-summary" style="margin-bottom: 30px;">
-                    <h2><i class="fas fa-address-card" style="color: #3b82f6; margin-right: 10px;"></i>Contact Info</h2>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
-                        <div class="form-group">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Email Address <span style="color: #ef4444;">*</span></label>
-                            <input type="email" id="email" required class="form-control" placeholder="john@example.com"
-                                style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem;">
+                    <h2><i class="fas fa-address-card" style="color: #3b82f6; margin-right: 10px;"></i>Contact
+                        Information
+                    </h2>
+                    <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">We will send your confirmation
+                        and notify you of any changes to your hotel booking status.</p>
+                    <form id="guestForm">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">First Name <span
+                                        style="color: #ef4444;">*</span></label>
+                                <input type="text" id="firstName" required class="form-control" placeholder="John"
+                                    style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; transition: border 0.2s;"
+                                    onfocus="this.style.borderColor='#3b82f6'"
+                                    onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Last Name <span
+                                        style="color: #ef4444;">*</span></label>
+                                <input type="text" id="lastName" required class="form-control" placeholder="Doe"
+                                    style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; transition: border 0.2s;"
+                                    onfocus="this.style.borderColor='#3b82f6'"
+                                    onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Phone Number <span style="color: #ef4444;">*</span></label>
-                            <input type="tel" id="getPhone" required class="form-control" placeholder="+91 98765 43210"
-                                style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Email Address <span
+                                        style="color: #ef4444;">*</span></label>
+                                <input type="email" id="email" required class="form-control"
+                                    placeholder="john@example.com"
+                                    style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; transition: border 0.2s;"
+                                    onfocus="this.style.borderColor='#3b82f6'"
+                                    onblur="this.style.borderColor='#e2e8f0'">
+                                <small style="color: #64748b; font-size: 0.8rem;">Confirmation email will be sent
+                                    here</small>
+                            </div>
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Phone Number <span
+                                        style="color: #ef4444;">*</span></label>
+                                <input type="tel" id="phone" required class="form-control" placeholder="+91 98765 43210"
+                                    style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; transition: border 0.2s;"
+                                    onfocus="this.style.borderColor='#3b82f6'"
+                                    onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
                         </div>
-                    </div>
+                        <div style="margin-top: 20px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Special Requests <span
+                                    style="color: #64748b; font-weight: normal;">(Optional)</span></label>
+                            <textarea id="specialRequests" class="form-control"
+                                placeholder="E.g., High floor, twin beds, quiet room, etc."
+                                style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; min-height: 80px; resize: vertical; transition: border 0.2s;"
+                                onfocus="this.style.borderColor='#3b82f6'"
+                                onblur="this.style.borderColor='#e2e8f0'"></textarea>
+                            <small style="color: #64748b; font-size: 0.8rem;">Special requests are subject to
+                                availability and cannot be guaranteed.</small>
+                        </div>
+                    </form>
                 </div>
-
-                <!-- Dynamic Guest Details Container -->
-                <div id="guestDetailsContainer">
-                    <!-- Guest forms will be injected here -->
-                </div>
-
-                <div class="booking-summary" style="margin-bottom: 30px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Special Requests <span style="color: #64748b; font-weight: normal;">(Optional)</span></label>
-                    <textarea id="specialRequests" class="form-control" placeholder="E.g., High floor, twin beds, quiet room, etc."
-                        style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; min-height: 80px; resize: vertical;"></textarea>
-                </div>
-
 
 
                 <!-- Booking Cut-off Warning -->
@@ -362,6 +395,9 @@
                         title="Taxes and service charges included in the price">Taxes & fees</span>
                     <span id="taxAmount" style="color: #333; font-weight: 600;">--</span>
                 </div>
+                
+                <!-- Non-included Taxes Container -->
+                <div id="nonIncludedTaxesContainer"></div>
 
                 <!-- Total -->
                 <div style="border-top: 2px solid #e2e8f0; margin-top: 8px; padding-top: 16px;">
@@ -428,9 +464,9 @@
     <!-- Supabase and Auth Guard -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-client.js"></script>
-    <script src="../js/auth-guard.js?v=3"></script>
-    <script src="../js/hotel-api.js?v=3"></script>
-    <script src="../js/main.js?v=3"></script>
+    <script src="../js/auth-guard.js"></script>
+    <script src="../js/hotel-api.js"></script>
+    <script src="../js/main.js"></script>
 
     <script>
         // Get booking details from sessionStorage
@@ -448,9 +484,7 @@
 
             const hotel = bookingData.hotel;
             const rate = bookingData.rate;
-            const searchParams = bookingData.search_params || {
-                checkin: '', checkout: '', adults: 2, rooms: [{ adults: 2, children: 0, childAges: [] }]
-            };
+            const searchParams = bookingData.search_params;
 
             // Hotel details
             document.getElementById('hotelName').textContent = hotel.name || 'Hotel';
@@ -461,9 +495,7 @@
             document.getElementById('checkin').textContent = formatDate(searchParams.checkin) || '-';
             document.getElementById('checkout').textContent = formatDate(searchParams.checkout) || '-';
             document.getElementById('nights').textContent = rate.nights || calculateNights(searchParams.checkin, searchParams.checkout);
-            const totalAdultsDisplay = parseInt(searchParams.adults || 2);
-            const totalChildrenDisplay = (searchParams.children_ages && Array.isArray(searchParams.children_ages)) ? searchParams.children_ages.length : 0;
-            document.getElementById('guests').textContent = `${totalAdultsDisplay} Adult${totalAdultsDisplay > 1 ? 's' : ''}${totalChildrenDisplay > 0 ? ', ' + totalChildrenDisplay + ' Child' + (totalChildrenDisplay > 1 ? 'ren' : '') : ''}`;
+            document.getElementById('guests').textContent = `${searchParams.adults} Adults`;
             // roomType is set below (after meal info is computed)
 
             // Price - total amount (includes commission, taxes, and any extras like breakfast)
@@ -473,7 +505,7 @@
             const extraPrice = parseFloat(rate.extra_price || 0);
             const extraType = rate.extra_type || 'none';
             const nightsCount = parseInt(rate.nights || calculateNights(searchParams.checkin, searchParams.checkout) || 1);
-            const roomsCount = Array.isArray(searchParams.rooms) ? searchParams.rooms.length : (parseInt(searchParams.rooms) || 1);
+            const roomsCount = parseInt(searchParams.rooms) || 1;
 
             // Room type line — show meal plan if breakfast was added
             const mealLabel = (rate.meal_info && rate.meal_info.display_name) || '';
@@ -499,14 +531,10 @@
                 displayTaxAmount = Math.round(totalPayableNow * (0.15 / 1.15));
             }
 
-            // 1. Rate breakdown: get the price for ONE room for ONE night
-            // Formula: Total_PreTax / (Nights * Rooms)
+            // 1. Rate breakdown: pre-tax base per night × nights × rooms
             const baseAmount = Math.round(totalPayableNow - displayTaxAmount);
-            const perRoomNightlyBase = (nightsCount > 0 && roomsCount > 0) 
-                ? Math.round(baseAmount / (nightsCount * roomsCount)) 
-                : baseAmount;
-            
-            const rateLabel = `${nightsCount} night${nightsCount > 1 ? 's' : ''} × ${roomsCount} room${roomsCount > 1 ? 's' : ''} × ${HotelUtils.formatPrice(perRoomNightlyBase, originalCurrency)}`;
+            const perNightBase = nightsCount > 0 ? Math.round(baseAmount / nightsCount) : baseAmount;
+            const rateLabel = `${nightsCount} night${nightsCount > 1 ? 's' : ''} × ${roomsCount} room${roomsCount > 1 ? 's' : ''} × ${HotelUtils.formatPrice(perNightBase, originalCurrency)}`;
             document.getElementById('rateBreakdownLabel').textContent = rateLabel;
             document.getElementById('rateBreakdownAmount').innerHTML = HotelUtils.formatPrice(baseAmount, originalCurrency);
 
@@ -532,8 +560,27 @@
 
             // Breakfast extra is already included in totalPayableNow — no separate line item
 
-            // Non-included taxes (payable at property) — kept for data, not displayed
+            // Non-included taxes (payable at property)
             const nonIncludedTaxes = (rate.tax_info && rate.tax_info.non_included_taxes) || [];
+            if (nonIncludedTaxes.length > 0) {
+                const container = document.getElementById('nonIncludedTaxesContainer');
+                let html = '<div style="margin-top: 12px; padding: 12px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;">';
+                html += '<div style="font-size:0.85rem;font-weight:600;color:#991b1b;margin-bottom:6px;">To pay upon arrival (not included in the price):</div>';
+                
+                nonIncludedTaxes.forEach(tax => {
+                    const taxAmt = parseFloat(tax.amount || 0).toFixed(2);
+                    html += `
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #7f1d1d; margin-bottom: 4px;">
+                            <span>${tax.display_name || tax.name}</span>
+                            <span style="font-weight: 600;">${taxAmt} ${tax.currency_code || tax.currency || 'USD'}</span>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
             const includedTaxesAmount = 0;  // already bundled into the total
 
             // Store for payment
@@ -577,92 +624,22 @@
                 }
             }
 
-            // PRE-FILL CONTACT DETAILS
+            // PRE-FILL USER DETAILS
             if (typeof AuthGuard !== 'undefined' && window.supabase) {
                 const session = await AuthGuard.checkSession();
                 if (session && session.user) {
                     const user = session.user;
                     const meta = user.user_metadata || {};
+
                     if (user.email) document.getElementById('email').value = user.email;
-                    if (meta.phone) document.getElementById('getPhone').value = meta.phone;
+                    if (meta.phone) document.getElementById('phone').value = meta.phone;
+                    if (meta.full_name) {
+                        const parts = meta.full_name.split(' ');
+                        document.getElementById('firstName').value = parts[0];
+                        document.getElementById('lastName').value = parts.slice(1).join(' ') || '';
+                    }
                 }
             }
-
-            // RENDER DYNAMIC GUEST FORMS
-            renderGuestForms(searchParams.rooms || [{ adults: 2, children: 0, childAges: [] }]);
-        }
-
-        function renderGuestForms(rooms) {
-            // Handle legacy rooms (if it was a simple number)
-            if (!Array.isArray(rooms)) {
-                const count = parseInt(rooms) || 1;
-                rooms = [];
-                for(let i=0; i<count; i++) rooms.push({ adults: 2, children: 0, childAges: [] });
-            }
-
-            const container = document.getElementById('guestDetailsContainer');
-            if (!container) return;
-
-            let html = '';
-            rooms.forEach((room, roomIdx) => {
-                html += `
-                    <div class="booking-summary guest-card" style="margin-bottom: 30px; border-left: 5px solid #3b82f6;">
-                        <h3 style="margin-bottom: 20px; color: #1e293b; font-size: 1.25rem;">
-                            <i class="fas fa-bed" style="margin-right: 10px; color: #3b82f6;"></i>Room ${roomIdx + 1}
-                        </h3>
-                `;
-
-                // Adults
-                for (let i = 0; i < room.adults; i++) {
-                    html += renderGuestInputs(roomIdx, i, 'adult', null);
-                }
-
-                // Children
-                if (room.children > 0 && room.childAges) {
-                    room.childAges.forEach((age, childIdx) => {
-                        html += renderGuestInputs(roomIdx, room.adults + childIdx, 'child', age);
-                    });
-                }
-
-                html += `</div>`;
-            });
-
-            container.innerHTML = html;
-        }
-
-        function renderGuestInputs(roomIdx, guestIdx, type, age) {
-            const isLead = (roomIdx === 0 && guestIdx === 0);
-            
-            // Fix: avoid using undefined modifyRooms
-            const displayLabel = type === 'adult' ? `Adult ${guestIdx + 1}` : `Child (Age: ${age})`;
-
-            return `
-                <div class="guest-input-row" data-room="${roomIdx}" data-guest="${guestIdx}" data-type="${type}" data-age="${age || ''}" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px dashed #e2e8f0;">
-                    <div style="font-weight: 600; font-size: 0.9rem; color: #64748b; margin-bottom: 10px;">
-                        ${displayLabel} ${isLead ? '<span style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; margin-left: 8px;">Lead Guest</span>' : ''}
-                    </div>
-                    <div style="display: grid; grid-template-columns: 100px 1fr 1fr; gap: 15px;">
-                        <div class="form-group">
-                            <label style="display: block; margin-bottom: 6px; font-size: 0.85rem;">Title <span style="color: #ef4444;">*</span></label>
-                            <select class="guest-gender" required style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px;">
-                                <option value="male">Mr.</option>
-                                <option value="female">Ms.</option>
-                                <option value="female">Mrs.</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label style="display: block; margin-bottom: 6px; font-size: 0.85rem;">First Name <span style="color: #ef4444;">*</span></label>
-                            <input type="text" class="guest-firstname form-control" placeholder="First Name" required
-                                style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px;">
-                        </div>
-                        <div class="form-group">
-                            <label style="display: block; margin-bottom: 6px; font-size: 0.85rem;">Last Name <span style="color: #ef4444;">*</span></label>
-                            <input type="text" class="guest-lastname form-control" placeholder="Last Name" required
-                                style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px;">
-                        </div>
-                    </div>
-                </div>
-            `;
         }
 
         function formatDate(dateStr) {
@@ -701,100 +678,59 @@
             }
         }
 
-        function highlightField(field) {
-            field.style.borderColor = '#ef4444';
-            field.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.15)';
-            // Add error message if not already present
-            if (!field.parentElement.querySelector('.field-error')) {
-                const msg = document.createElement('span');
-                msg.className = 'field-error';
-                msg.style.cssText = 'color: #ef4444; font-size: 0.8rem; margin-top: 4px; display: block;';
-                msg.innerHTML = '<i class="fas fa-exclamation-circle" style="margin-right: 4px;"></i>Required';
-                field.parentElement.appendChild(msg);
-            }
-        }
-
         function proceedToPayment() {
-            // Clear previous errors
-            document.querySelectorAll('.field-error').forEach(e => e.remove());
-            document.querySelectorAll('.form-control, select').forEach(e => {
-                e.style.borderColor = '';
-                e.style.boxShadow = '';
-            });
-
-            // 1. Validate Contact Info
+            // Validate form
+            const firstName = document.getElementById('firstName');
+            const lastName = document.getElementById('lastName');
             const email = document.getElementById('email');
-            const phone = document.getElementById('getPhone');
+            const phone = document.getElementById('phone');
+            const specialRequests = document.getElementById('specialRequests').value;
+
+            const requiredFields = [firstName, lastName, email, phone];
             let hasError = false;
 
-            if (!email.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-                highlightField(email);
-                hasError = true;
-            }
-            if (!phone.value.trim()) {
-                highlightField(phone);
-                hasError = true;
-            }
-
-            // 2. Collect & Validate All Guests
-            const guestRows = document.querySelectorAll('.guest-input-row');
-            const roomsData = [];
-            let currentRoomIdx = -1;
-            let currentRoom = null;
-
-            guestRows.forEach(row => {
-                const roomIdx = parseInt(row.dataset.room);
-                const guestIdx = parseInt(row.dataset.guest);
-                const type = row.dataset.type;
-                const age = row.dataset.age;
-
-                const firstName = row.querySelector('.guest-firstname');
-                const lastName = row.querySelector('.guest-lastname');
-                const gender = row.querySelector('.guest-gender');
-
-                if (!firstName.value.trim()) { highlightField(firstName); hasError = true; }
-                if (!lastName.value.trim()) { highlightField(lastName); hasError = true; }
-
-                if (roomIdx !== currentRoomIdx) {
-                    if (currentRoom) roomsData.push(currentRoom);
-                    currentRoomIdx = roomIdx;
-                    currentRoom = { guests: [] };
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    highlightField(field);
+                    hasError = true;
                 }
-
-                let guestObj = {
-                    first_name: firstName.value.trim(),
-                    last_name: lastName.value.trim(),
-                    is_child: type === 'child'
-                };
-                if (type === 'child' && age) {
-                    guestObj.age = parseInt(age);
-                }
-                
-                currentRoom.guests.push(guestObj);
             });
-            if (currentRoom) roomsData.push(currentRoom);
+
+            // Email format validation
+            if (email.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+                highlightField(email);
+                const errMsg = email.parentElement.querySelector('.field-error');
+                if (errMsg) errMsg.innerHTML = '<i class="fas fa-exclamation-circle" style="margin-right: 4px;"></i>Please enter a valid email address';
+                hasError = true;
+            }
 
             if (hasError) {
                 if (typeof showNotification === 'function') {
-                    showNotification('Please fill in all required guest details.', 'warning');
+                    showNotification('Please fill in all required fields.', 'warning');
                 }
-                const firstErr = document.querySelector('.field-error');
-                if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Scroll to first error
+                const firstError = document.querySelector('[style*="border-color: rgb(239, 68, 68)"]');
+                if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
 
-            // 3. Save to Session
-            bookingData.rooms = roomsData;
+            // Save details to booking data
+            bookingData.guest = {
+                firstName: firstName.value.trim(),
+                lastName: lastName.value.trim(),
+                email: email.value.trim(),
+                phone: phone.value.trim(),
+                specialRequests: specialRequests
+            };
+
+            // Also store top-level for compat with old code if needed
             bookingData.email = email.value.trim();
             bookingData.phone = phone.value.trim();
-            bookingData.specialRequests = document.getElementById('specialRequests').value;
-            
-            // Set lead guest name for display/legacy
-            if (roomsData.length > 0 && roomsData[0].guests.length > 0) {
-                bookingData.guestName = roomsData[0].guests[0].first_name + ' ' + roomsData[0].guests[0].last_name;
-            }
+            bookingData.guestName = firstName.value.trim() + ' ' + lastName.value.trim();
 
             sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
+
+            // Redirect to payment
             window.location.href = 'payment.html';
         }
 

@@ -30,3 +30,295 @@
  * Debugger PIN: 664-016-237
 127.0.0.1 - - [18/May/2026 18:49:00] "GET /api/health HTTP/1.1" 200 -
 127.0.0.1 - - [18/May/2026 18:49:06] "GET /api/hotels/debug/email-test HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2026 10:49:04] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+127.0.0.1 - - [22/May/2026 10:49:04] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+127.0.0.1 - - [22/May/2026 10:49:04] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+127.0.0.1 - - [22/May/2026 10:49:04] "GET /hotel-booking.html HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2026 10:49:05] "GET /assets/images/c2c-logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2026 20:05:31] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2026 20:05:31] "[33mGET /css/variables.css HTTP/1.1[0m" 404 -
+127.0.0.1 - - [22/May/2026 20:05:31] "GET /js/supabase-client.js HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2026 20:05:31] "GET /css/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2026 20:05:31] "GET /js/main.js?v=3 HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2026 20:05:31] "GET /js/hotel-search.js?v=3 HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2026 20:05:31] "GET /assets/images/c2c-logo.png HTTP/1.1" 200 -
+ * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
+✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
+✅ AIR iQ API client initialized
+✅ Supabase successfully connected via Service Role key.
+✅ Razorpay payment service initialized
+✅ PayPal payment service initialized (live mode)
+✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
+   📧 Sender: info@coasttocoastjourneys.com
+🔑 Resend API Key loaded: True
+📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+📁 Templates exists: True
+🚀 Starting C2C Journeys API Server...
+📍 Running on http://0.0.0.0:5000
+🔧 Debug mode: True
+
+📚 API Documentation:
+   GET  /api              - API info and endpoints
+   GET  /api/health       - Health check
+   POST /api/hotels/...   - Hotel endpoints
+   POST /api/maps/...     - Maps endpoints
+
+🔍 Requesting: hotel-booking.html
+📄 Trying to serve HTML: hotel-booking.html
+📁 From directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+🔎 Full path: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates/hotel-booking.html
+🔍 Requesting: apple-touch-icon.png
+🔍 Requesting: apple-touch-icon-precomposed.png
+✓ Exists: True
+🔍 Requesting: favicon.ico
+✅ Successfully served from templates
+🔍 Requesting: assets/images/c2c-logo.png
+🔍 Requesting: css/variables.css
+🔍 Requesting: css/main.css
+🔍 Requesting: js/supabase-client.js
+🔍 Requesting: js/main.js
+🔍 Requesting: js/hotel-search.js
+🔍 Requesting: assets/images/c2c-logo.png
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 664-016-237
+ * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/services/etg_service.py', reloading
+✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
+✅ AIR iQ API client initialized
+✅ Supabase successfully connected via Service Role key.
+✅ Razorpay payment service initialized
+✅ PayPal payment service initialized (live mode)
+✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
+   📧 Sender: info@coasttocoastjourneys.com
+🔑 Resend API Key loaded: True
+📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+📁 Templates exists: True
+🚀 Starting C2C Journeys API Server...
+📍 Running on http://0.0.0.0:5000
+🔧 Debug mode: True
+
+📚 API Documentation:
+   GET  /api              - API info and endpoints
+   GET  /api/health       - Health check
+   POST /api/hotels/...   - Hotel endpoints
+   POST /api/maps/...     - Maps endpoints
+
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 664-016-237
+ * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
+✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
+✅ AIR iQ API client initialized
+✅ Supabase successfully connected via Service Role key.
+✅ Razorpay payment service initialized
+✅ PayPal payment service initialized (live mode)
+✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
+   📧 Sender: info@coasttocoastjourneys.com
+🔑 Resend API Key loaded: True
+📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+📁 Templates exists: True
+🚀 Starting C2C Journeys API Server...
+📍 Running on http://0.0.0.0:5000
+🔧 Debug mode: True
+
+📚 API Documentation:
+   GET  /api              - API info and endpoints
+   GET  /api/health       - Health check
+   POST /api/hotels/...   - Hotel endpoints
+   POST /api/maps/...     - Maps endpoints
+
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 664-016-237
+ * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
+✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
+✅ AIR iQ API client initialized
+✅ Supabase successfully connected via Service Role key.
+✅ Razorpay payment service initialized
+✅ PayPal payment service initialized (live mode)
+✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
+   📧 Sender: info@coasttocoastjourneys.com
+🔑 Resend API Key loaded: True
+📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+📁 Templates exists: True
+🚀 Starting C2C Journeys API Server...
+📍 Running on http://0.0.0.0:5000
+🔧 Debug mode: True
+
+📚 API Documentation:
+   GET  /api              - API info and endpoints
+   GET  /api/health       - Health check
+   POST /api/hotels/...   - Hotel endpoints
+   POST /api/maps/...     - Maps endpoints
+
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 664-016-237
+ * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
+✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
+✅ AIR iQ API client initialized
+✅ Supabase successfully connected via Service Role key.
+✅ Razorpay payment service initialized
+✅ PayPal payment service initialized (live mode)
+✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
+   📧 Sender: info@coasttocoastjourneys.com
+🔑 Resend API Key loaded: True
+📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+📁 Templates exists: True
+🚀 Starting C2C Journeys API Server...
+📍 Running on http://0.0.0.0:5000
+🔧 Debug mode: True
+
+📚 API Documentation:
+   GET  /api              - API info and endpoints
+   GET  /api/health       - Health check
+   POST /api/hotels/...   - Hotel endpoints
+   POST /api/maps/...     - Maps endpoints
+
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 664-016-237
+ * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
+✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
+✅ AIR iQ API client initialized
+✅ Supabase successfully connected via Service Role key.
+✅ Razorpay payment service initialized
+✅ PayPal payment service initialized (live mode)
+✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
+   📧 Sender: info@coasttocoastjourneys.com
+🔑 Resend API Key loaded: True
+📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+📁 Templates exists: True
+🚀 Starting C2C Journeys API Server...
+📍 Running on http://0.0.0.0:5000
+🔧 Debug mode: True
+
+📚 API Documentation:
+   GET  /api              - API info and endpoints
+   GET  /api/health       - Health check
+   POST /api/hotels/...   - Hotel endpoints
+   POST /api/maps/...     - Maps endpoints
+
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 664-016-237
+ * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
+✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
+✅ AIR iQ API client initialized
+✅ Supabase successfully connected via Service Role key.
+✅ Razorpay payment service initialized
+✅ PayPal payment service initialized (live mode)
+✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
+   📧 Sender: info@coasttocoastjourneys.com
+🔑 Resend API Key loaded: True
+📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+📁 Templates exists: True
+🚀 Starting C2C Journeys API Server...
+📍 Running on http://0.0.0.0:5000
+🔧 Debug mode: True
+
+📚 API Documentation:
+   GET  /api              - API info and endpoints
+   GET  /api/health       - Health check
+   POST /api/hotels/...   - Hotel endpoints
+   POST /api/maps/...     - Maps endpoints
+
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 664-016-237
+ * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
+✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
+✅ AIR iQ API client initialized
+✅ Supabase successfully connected via Service Role key.
+✅ Razorpay payment service initialized
+✅ PayPal payment service initialized (live mode)
+✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
+   📧 Sender: info@coasttocoastjourneys.com
+🔑 Resend API Key loaded: True
+📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+📁 Templates exists: True
+🚀 Starting C2C Journeys API Server...
+📍 Running on http://0.0.0.0:5000
+🔧 Debug mode: True
+
+📚 API Documentation:
+   GET  /api              - API info and endpoints
+   GET  /api/health       - Health check
+   POST /api/hotels/...   - Hotel endpoints
+   POST /api/maps/...     - Maps endpoints
+
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 664-016-237
+ * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
+✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
+✅ AIR iQ API client initialized
+✅ Supabase successfully connected via Service Role key.
+✅ Razorpay payment service initialized
+✅ PayPal payment service initialized (live mode)
+✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
+   📧 Sender: info@coasttocoastjourneys.com
+🔑 Resend API Key loaded: True
+📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+📁 Templates exists: True
+🚀 Starting C2C Journeys API Server...
+📍 Running on http://0.0.0.0:5000
+🔧 Debug mode: True
+
+📚 API Documentation:
+   GET  /api              - API info and endpoints
+   GET  /api/health       - Health check
+   POST /api/hotels/...   - Hotel endpoints
+   POST /api/maps/...     - Maps endpoints
+
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 664-016-237
+ * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
+✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
+✅ AIR iQ API client initialized
+✅ Supabase successfully connected via Service Role key.
+✅ Razorpay payment service initialized
+✅ PayPal payment service initialized (live mode)
+✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
+   📧 Sender: info@coasttocoastjourneys.com
+🔑 Resend API Key loaded: True
+📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+📁 Templates exists: True
+🚀 Starting C2C Journeys API Server...
+📍 Running on http://0.0.0.0:5000
+🔧 Debug mode: True
+
+📚 API Documentation:
+   GET  /api              - API info and endpoints
+   GET  /api/health       - Health check
+   POST /api/hotels/...   - Hotel endpoints
+   POST /api/maps/...     - Maps endpoints
+
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 664-016-237
+ * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
+✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
+✅ AIR iQ API client initialized
+✅ Supabase successfully connected via Service Role key.
+✅ Razorpay payment service initialized
+✅ PayPal payment service initialized (live mode)
+✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
+   📧 Sender: info@coasttocoastjourneys.com
+🔑 Resend API Key loaded: True
+📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+📁 Templates exists: True
+🚀 Starting C2C Journeys API Server...
+📍 Running on http://0.0.0.0:5000
+🔧 Debug mode: True
+
+📚 API Documentation:
+   GET  /api              - API info and endpoints
+   GET  /api/health       - Health check
+   POST /api/hotels/...   - Hotel endpoints
+   POST /api/maps/...     - Maps endpoints
+
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 664-016-237

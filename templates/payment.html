@@ -852,6 +852,31 @@
                 return;
             }
 
+            // Sync legacy guest info into bookingData.rooms if not present
+            if (!bookingData.rooms || bookingData.rooms.length === 0) {
+                const guest = bookingData.guest || {};
+                const firstName = guest.firstName || bookingData.guestName?.split(' ')[0] || 'Guest';
+                const lastName = guest.lastName || bookingData.guestName?.split(' ').slice(1).join(' ') || 'User';
+                
+                // Ensure email and phone are top-level if they are in the guest object
+                if (guest.email && !bookingData.email) bookingData.email = guest.email;
+                if (guest.phone && !bookingData.phone) bookingData.phone = guest.phone;
+                
+                // Construct multi-room guests based on actual rooms count or default to 1 room
+                const roomsCount = parseInt(bookingData.search_params?.rooms) || 1;
+                const roomsList = [];
+                for (let rIdx = 0; rIdx < roomsCount; rIdx++) {
+                    roomsList.push({
+                        guests: [{
+                            first_name: firstName,
+                            last_name: lastName
+                        }]
+                    });
+                }
+                bookingData.rooms = roomsList;
+                sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
+            }
+
             // Check if guest info is present (rooms is the current format, guest/guestName are legacy)
             const hasGuestData = (bookingData.rooms && bookingData.rooms.length > 0) || bookingData.guest || bookingData.guestName;
             if (!hasGuestData) {
