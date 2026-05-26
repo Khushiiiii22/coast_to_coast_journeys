@@ -457,9 +457,8 @@
                     </div>
                 </div>
 
-                <!-- Currency Note -->
-                <p id="currencyNote" style="margin: 12px 0 0 0; font-size: 0.8rem; color: #64748b;">Rates are quoted in
-                    INR (₹).</p>
+                <!-- Currency Note Removed as per user request -->
+                <p id="currencyNote" style="display: none;"></p>
 
                 <!-- Price may increase warning -->
                 <div
@@ -952,6 +951,9 @@
 
             // Helper: format price with currency
             function fmtPrice(amount) {
+                if (typeof HotelUtils !== 'undefined') {
+                    return HotelUtils.formatPrice(amount, originalCurrency);
+                }
                 return `${currencySymbol}${Math.round(amount).toLocaleString('en-IN')}`;
             }
 
@@ -983,7 +985,8 @@
 
             // 5. Currency note
             const currencyNames = { 'INR': 'INR (₹)', 'USD': 'USD ($)', 'EUR': 'EUR (€)', 'GBP': 'GBP (£)' };
-            document.getElementById('currencyNote').textContent = `Rates are quoted in ${currencyNames[originalCurrency] || originalCurrency}.`;
+            const displayCurrency = typeof HotelUtils !== 'undefined' ? HotelUtils.getSelectedCurrency() : originalCurrency;
+            document.getElementById('currencyNote').textContent = `Rates are quoted in ${currencyNames[displayCurrency] || displayCurrency}.`;
 
 
 

@@ -276,9 +276,12 @@
                         <span>Amount Paid (Online)</span>
                         <strong style="color: #16a34a;">${(() => {
                             const bookingData = JSON.parse(sessionStorage.getItem('ctc_booking_data') || '{}');
-                            const currency = bookingData.rate?.currency || bookingData.currency || 'INR';
+                            const originalCurrency = bookingData.rate?.currency || bookingData.currency || 'INR';
+                            if (typeof HotelUtils !== 'undefined') {
+                                return HotelUtils.formatPrice(data.amount, originalCurrency);
+                            }
                             const symbols = { 'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'AED': 'AED ' };
-                            const symbol = symbols[currency] || currency + ' ';
+                            const symbol = symbols[originalCurrency] || originalCurrency + ' ';
                             return `${symbol}${formatNumber(data.amount)}`;
                         })()}</strong>
                     </div>
@@ -358,6 +361,7 @@
             return parseFloat(num || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 });
         }
     </script>
+    <script src="/js/hotel-api.js"></script>
 </body>
 
 </html>
