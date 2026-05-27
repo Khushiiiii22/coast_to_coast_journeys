@@ -2,7 +2,7 @@
 C2C Journeys - Hotel Routes
 API routes for hotel search and booking
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from services.etg_service import etg_service
 from services.supabase_service import supabase_service
 from services.google_maps_service import google_maps_service
@@ -2171,10 +2171,29 @@ def get_enriched_hotel_details():
                         'success': True,
                         'data': rows[0].get('hotel_data', {})
                     }
-                    print(f"✅ Static data for {data['hotel_id']}: loaded successfully from local static cache")
+                    print(f"✅ Static data for {data['hotel_id']}: loaded successfully from Supabase")
         except Exception as e:
-            print(f"⚠️ Failed to load cached static data for {data['hotel_id']}: {e}")
+            print(f"⚠️ Failed to load cached static data from Supabase for {data['hotel_id']}: {e}")
             
+        # Fallback to local JSON cache if Supabase miss/fail
+        if not static_result.get('success'):
+            try:
+                import os
+                static_cache_path = os.path.join(current_app.root_path, 'data', 'hotel_static_cache.json')
+                local_cache = etg_service.get_cached_hotels_from_json([data['hotel_id']], static_cache_path)
+                if local_cache and data['hotel_id'] in local_cache:
+                    # Supabase returns {'data': {'hotel_data': ...}}
+                    # local JSON returns direct dict for the hotel
+                    static_result = {
+                        'success': True,
+                        'data': {'data': local_cache[data['hotel_id']]}
+                    }
+                    print(f"✅ Static data for {data['hotel_id']}: loaded successfully from local JSON")
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                print(f"⚠️ Failed to load from local JSON cache: {e}")
+
         # If cache miss, DO NOT make a live API call to /hotel/static/ (RateHawk compliance)
         # Instead, mock a successful empty response to prevent frontend breaking
         if not static_result.get('success'):
@@ -2190,17 +2209,32 @@ def get_enriched_hotel_details():
         if static_data:
             for rg in static_data.get('room_groups', []):
                 # Process images once per room_group (shared across all rg values)
+                # ETG Certification Fix: Prioritize 'images_ext' which contains room-specific 
+                # images, falling back to legacy 'images' array.
                 processed_images = []
-                for img in (rg.get('images') or []):
-                    if isinstance(img, str):
-                        processed_url = process_etg_image_url(img)
-                        if processed_url:
-                            processed_images.append(processed_url)
-                    elif isinstance(img, dict):
-                        img_url = img.get('url', img.get('src', ''))
-                        processed_url = process_etg_image_url(img_url)
-                        if processed_url:
-                            processed_images.append(processed_url)
+                
+                # 1. Try modern images_ext
+                images_ext = rg.get('images_ext')
+                if images_ext and isinstance(images_ext, list) and len(images_ext) > 0:
+                    for img in images_ext:
+                        if isinstance(img, dict):
+                            img_url = img.get('url', img.get('src', ''))
+                            processed_url = process_etg_image_url(img_url)
+                            if processed_url:
+                                processed_images.append(processed_url)
+                
+                # 2. Fallback to legacy images array
+                if not processed_images:
+                    for img in (rg.get('images') or []):
+                        if isinstance(img, str):
+                            processed_url = process_etg_image_url(img)
+                            if processed_url:
+                                processed_images.append(processed_url)
+                        elif isinstance(img, dict):
+                            img_url = img.get('url', img.get('src', ''))
+                            processed_url = process_etg_image_url(img_url)
+                            if processed_url:
+                                processed_images.append(processed_url)
 
                 rg_data = {
                     'name': rg.get('name', rg.get('room_name', '')),
@@ -2371,17 +2405,29 @@ def format_room_groups(room_groups):
         }
         
         # Process images
-        for img in rg.get('images', []):
-            if isinstance(img, str):
-                processed_url = process_etg_image_url(img)
-                if processed_url:
-                    formatted_rg['images'].append(processed_url)
-            elif isinstance(img, dict):
-                # Handle different image format
-                img_url = img.get('url', img.get('src', ''))
-                processed_url = process_etg_image_url(img_url)
-                if processed_url:
-                    formatted_rg['images'].append(processed_url)
+        # ETG Certification Fix: Prioritize 'images_ext' which contains room-specific 
+        # images, falling back to legacy 'images' array.
+        images_ext = rg.get('images_ext')
+        if images_ext and isinstance(images_ext, list) and len(images_ext) > 0:
+            for img in images_ext:
+                if isinstance(img, dict):
+                    img_url = img.get('url', img.get('src', ''))
+                    processed_url = process_etg_image_url(img_url)
+                    if processed_url:
+                        formatted_rg['images'].append(processed_url)
+                        
+        if not formatted_rg['images']:
+            for img in rg.get('images', []):
+                if isinstance(img, str):
+                    processed_url = process_etg_image_url(img)
+                    if processed_url:
+                        formatted_rg['images'].append(processed_url)
+                elif isinstance(img, dict):
+                    # Handle different image format
+                    img_url = img.get('url', img.get('src', ''))
+                    processed_url = process_etg_image_url(img_url)
+                    if processed_url:
+                        formatted_rg['images'].append(processed_url)
         
         # Process amenities
         amenity_labels = {
@@ -2445,10 +2491,14 @@ def make_rg_signature(rg_ext):
     if not isinstance(rg_ext, dict):
         return ""
     
-    # Priority keys for structural matching
-    # We ignore transient keys like 'view' or 'class' which might differ between 
-    # static and dynamic data but maintain 'bedding_type' and 'capacity'.
-    STABLE_KEYS = {'bedding_type', 'capacity', 'bathroom', 'room_type'}
+    # Priority keys for structural matching (ETG v3)
+    # We must include all structural classifiers to ensure distinct room groups
+    # (like River View vs City View, or Balcony vs No Balcony) do not overwrite each other.
+    # Exclude 'rg' (dynamic hash) and 'floor' (often missing in dynamic rates).
+    STABLE_KEYS = {
+        'balcony', 'bathroom', 'bedding', 'bedrooms', 'capacity', 
+        'club', 'family', 'quality', 'class', 'sex', 'view'
+    }
     
     parts = []
     for k in sorted(rg_ext.keys()):
@@ -2458,7 +2508,7 @@ def make_rg_signature(rg_ext):
     # If no stable keys found, fall back to all keys (original behavior)
     if not parts:
         for k in sorted(rg_ext.keys()):
-            if k != 'rg' and rg_ext[k] is not None:
+            if k != 'rg' and k != 'floor' and rg_ext[k] is not None:
                 parts.append(f"{k}:{rg_ext[k]}")
                 
     return ",".join(parts)
@@ -2553,6 +2603,7 @@ def enrich_rate_with_room_data(rate: dict, room_groups: dict, hotel_images: list
             final_images = hotel_images[:5] if hotel_images else []
             image_source = 'hotel_fallback' if final_images else 'none'
 
+        print(f"\n\n🔎 MATCH DEBUG:\nRate rg_ext: {rg_ext}\nStatic sig keys: {list(room_groups.keys())}\nMatched sig: {rg_key or make_rg_signature(rg_ext)}\nMatched data: {room_data != {}}\nImage source: {image_source}\n\n")
         enriched_rate['room_static'] = {
             'matched': True,
             'rg_key': rg_key or make_rg_signature(rg_ext),
@@ -2563,6 +2614,7 @@ def enrich_rate_with_room_data(rate: dict, room_groups: dict, hotel_images: list
         }
     else:
         # No match — fall back to hotel-level images from ETG API
+        print(f"\n\n🔎 MATCH DEBUG:\nRate rg_ext: {rg_ext}\nStatic sig keys: {list(room_groups.keys())}\nMatched sig: {rg_key or make_rg_signature(rg_ext)}\nMatched data: {room_data != {}}\nImage source: {image_source}\n\n")
         enriched_rate['room_static'] = {
             'matched': False,
             'rg_key': rg_key or make_rg_signature(rg_ext),
@@ -2823,6 +2875,85 @@ def create_booking():
                 pass
         
         book_hash = data['book_hash']
+        
+        # ── ETG CERTIFICATION FIX: Resolve match_hash (m-) → book_hash (h-) ──
+        # The SERP endpoints (/search/serp/hotels/, /search/serp/region/) return match_hashes
+        # which start with "m-". These CANNOT be sent to /hotel/prebook/.
+        # Only book_hashes (starting with "h-") from /search/hp/ are valid for prebook.
+        # If the frontend sends a stale m- hash, we resolve it here by calling /search/hp/.
+        if book_hash.startswith('m-'):
+            print(f"⚠️ Received match_hash ({book_hash[:50]}). Resolving to book_hash via /search/hp/...")
+            
+            hotel_id = data.get('hotel_id')
+            checkin_str = data.get('checkin')
+            checkout_str = data.get('checkout')
+            
+            if hotel_id and checkin_str and checkout_str:
+                # Build guests array from rooms data for /search/hp/
+                rooms_data = data.get('rooms', [])
+                guests_for_hp = []
+                for room in rooms_data:
+                    room_guests = room.get('guests', [])
+                    adults_count = sum(1 for g in room_guests if not g.get('is_child', False))
+                    children_ages = [int(g.get('age', 10)) for g in room_guests if g.get('is_child', False)]
+                    guests_for_hp.append({
+                        'adults': max(adults_count, 1),
+                        'children': children_ages
+                    })
+                if not guests_for_hp:
+                    guests_for_hp = [{'adults': 2, 'children': []}]
+                
+                # ETG sandbox rejects INR — force USD for API call
+                req_currency = data.get('currency', 'INR')
+                api_currency = 'USD' if req_currency == 'INR' else req_currency
+                
+                hp_result = etg_service.get_hotel_page(
+                    hotel_id=hotel_id,
+                    checkin=checkin_str,
+                    checkout=checkout_str,
+                    guests=guests_for_hp,
+                    currency=api_currency
+                )
+                
+                if hp_result.get('success'):
+                    hp_data = hp_result.get('data', {})
+                    if isinstance(hp_data, dict) and 'data' in hp_data:
+                        hp_data = hp_data['data']
+                    
+                    hp_hotels = hp_data.get('hotels', [])
+                    if hp_hotels and hp_hotels[0].get('rates'):
+                        fresh_hash = hp_hotels[0]['rates'][0].get('book_hash')
+                        if fresh_hash and fresh_hash.startswith('h-'):
+                            print(f"✅ Resolved to book_hash: {fresh_hash[:50]}...")
+                            book_hash = fresh_hash
+                        else:
+                            print(f"❌ /search/hp/ rate has no valid h- book_hash")
+                            return jsonify({
+                                'success': False,
+                                'error': 'Could not obtain a valid booking hash. Please search again.',
+                                'error_code': 'HASH_RESOLUTION_FAILED'
+                            }), 400
+                    else:
+                        print(f"❌ /search/hp/ returned no hotels/rates")
+                        return jsonify({
+                            'success': False,
+                            'error': 'This hotel is no longer available. Please search again.',
+                            'error_code': 'HASH_RESOLUTION_FAILED'
+                        }), 400
+                else:
+                    print(f"❌ /search/hp/ call failed: {hp_result.get('error')}")
+                    return jsonify({
+                        'success': False,
+                        'error': 'Failed to verify room availability. Please try again.',
+                        'error_code': 'HASH_RESOLUTION_FAILED'
+                    }), 400
+            else:
+                print(f"❌ Cannot resolve m- hash: missing hotel_id/checkin/checkout in request")
+                return jsonify({
+                    'success': False,
+                    'error': 'Missing booking details. Please search again.',
+                    'error_code': 'HASH_RESOLUTION_FAILED'
+                }), 400
         
         # ── MANDATORY PREBOOK STEP (ETG v3 Certification Requirement) ──
         # The h- hash from /search/hp/ MUST go through /hotel/prebook/ before /booking/form.
