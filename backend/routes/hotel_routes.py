@@ -1061,14 +1061,15 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map, 
         # Property fees converted for display
         display_property_fees = api_non_included_tax * (conversion_rates.get(f"{rate_currency}_TO_{target_currency}", 1) if target_currency != rate_currency else 1)
         
-        # Grand total for the user
-        display_total_with_fees = prepay_to_charge + display_property_fees
+        # Grand total for the user (What they pay NOW)
+        # Mikhail Requirement: The price shown MUST NOT include property_payable fees.
+        display_total = prepay_to_charge
         
         # Nightly inclusive price for display
-        display_nightly_inclusive = display_total_with_fees / (nights if nights > 0 else 1)
+        display_nightly = display_total / (nights if nights > 0 else 1)
         
         # Save enriched data back to the rate object
-        rate['price'] = display_nightly_inclusive
+        rate['price'] = display_nightly
         rate['prepaid_amount'] = prepay_to_charge
         rate['property_payable_fees'] = property_fees
         rate['currency'] = target_currency
@@ -1105,8 +1106,8 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map, 
         transformed_rate = {
             'book_hash': rate.get('book_hash') or rate.get('match_hash', ''),
             'room_name': room_name,
-            'price': round(display_nightly_inclusive, 2), # ALL-INCLUSIVE NIGHTLY
-            'total_price': round(display_total_with_fees, 2), # ALL-INCLUSIVE TOTAL
+            'price': round(display_nightly, 2), # PREPAID NIGHTLY ONLY
+            'total_price': round(display_total, 2), # PREPAID TOTAL ONLY
             'nights': nights,
             'currency': target_currency,
             'meal': meal_value,
@@ -1125,7 +1126,7 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map, 
             'room_static': rate.get('room_static', {}),
             'property_payable_fees': rate.get('property_payable_fees', []),
             'prepaid_amount': rate.get('prepaid_amount', prepay_to_charge),
-            'original_price': rate.get('original_price', round(display_nightly_inclusive * 1.25, 2)),
+            'original_price': rate.get('original_price', round(display_nightly * 1.25, 2)),
             'net_price': rate.get('net_price', api_total)
         }
         
