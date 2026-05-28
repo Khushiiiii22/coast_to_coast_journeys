@@ -241,8 +241,8 @@ const HotelAPI = {
      * @param {string} params.checkout - Check-out date
      * @param {number} params.total_amount - Total amount
      */
-    async createBooking(params) {
-        return this.request('/hotels/book', {
+    async initBooking(params) {
+        return this.request('/hotels/book/init', {
             method: 'POST',
             body: JSON.stringify(params)
         });
@@ -251,12 +251,10 @@ const HotelAPI = {
     /**
      * Finish booking process
      */
-    async finishBooking(partnerOrderId) {
+    async finishBooking(params) {
         return this.request('/hotels/book/finish', {
             method: 'POST',
-            body: JSON.stringify({
-                partner_order_id: partnerOrderId
-            })
+            body: JSON.stringify(params)
         });
     },
 

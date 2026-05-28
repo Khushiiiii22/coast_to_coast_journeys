@@ -1071,121 +1071,19 @@
 
         // Create booking in backend (RateHawk + DB)
         async function createBackendBooking() {
-            if (bookingData.real_booking_id) return bookingData.real_booking_id;
-
-            const email = bookingData.email;
-            const phone = bookingData.phone;
-            const rooms = bookingData.rooms;
-
-            if (!email || !phone || !rooms) {
-                alert('Missing guest details. Please verify your details.');
-                window.location.href = 'guest-details.html';
+            const partnerOrderId = bookingData.rate?.partner_order_id;
+            
+            if (!partnerOrderId) {
+                alert('No valid order ID found. The room reservation may have expired. Please go back and select the room again.');
+                window.location.href = 'index.html';
                 return null;
             }
-
-            // Get session user id if available
-            let userId = null;
-            if (typeof AuthGuard !== 'undefined') {
-                const session = await AuthGuard.checkSession();
-                if (session?.user) userId = session.user.id;
-            }
-
-            const payload = {
-                book_hash: bookingData.rate.book_hash,
-                rooms: rooms, // Multi-room guest array (4th Update)
-                hotel_id: bookingData.hotel.id,
-                hotel_name: bookingData.hotel.name,
-                checkin: bookingData.search_params.checkin,
-                checkout: bookingData.search_params.checkout,
-                total_amount: bookingData.total,
-                currency: bookingData.rate.currency || bookingData.currency || 'INR',
-                email: email,
-                phone: phone,
-                user_id: userId,
-                special_requests: bookingData.specialRequests
-            };
-
-            try {
-                // Set a 60-second safety timeout so it doesn't hang forever
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 60000);
-
-                const response = await fetch('/api/hotels/book', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                    signal: controller.signal
-                });
-
-                clearTimeout(timeoutId);
-
-                const data = await response.json();
-                if (!data.success) {
-                    // 1. Session Expired (Hash Invalid)
-                    if (data.error_code === 'booking_form_expired' || data.error_code === 'SESSION_EXPIRED' || (data.error?.toLowerCase().includes('expired') && !data.error?.toLowerCase().includes('database'))) {
-                        const notification = document.createElement('div');
-                        notification.innerHTML = `
-                            <div class="notification-error" style="background: #fee2e2; border: 1px solid #ef4444; border-radius: 12px; padding: 20px; color: #991b1b; margin-bottom: 25px;">
-                                <div style="display: flex; gap: 12px;">
-                                    <i class="fas fa-clock" style="font-size: 1.5rem;"></i>
-                                    <div>
-                                        <h4 style="margin: 0 0 5px; font-weight: 700;">Price Hold Expired</h4>
-                                        <p style="margin: 0 0 15px; font-size: 0.9rem;">Your booking session has timed out (usually after 20 minutes). Prices and availability may have changed.</p>
-                                        <button onclick="window.location.href='index.html'" class="btn btn-primary" style="background: #ef4444; border: none; padding: 8px 20px; font-size: 0.85rem;">
-                                            Start New Search
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        const summaryDiv = document.querySelector('.booking-summary');
-                        summaryDiv.insertBefore(notification, summaryDiv.firstChild);
-                        notification.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        throw new Error('Session expired');
-                    }
-
-                    // 2. Price Changed (Hash still valid, but amount updated)
-                    if (data.error_code === 'PRICE_CHANGED') {
-                        const newTotal = data.new_price_inr || Math.round(data.new_price * 86.5 * 1.15); // Fallback conversion
-
-                        document.getElementById('totalAmount').innerHTML = `₹${newTotal.toLocaleString('en-IN')}`;
-
-                        const notification = document.createElement('div');
-                        notification.innerHTML = `
-                            <div class="notification-warning" style="background: #fffbeb; border: 1px solid #f59e0b; border-radius: 12px; padding: 20px; color: #92400e; margin-bottom: 25px;">
-                                <div style="display: flex; gap: 12px;">
-                                    <i class="fas fa-exclamation-circle" style="font-size: 1.5rem;"></i>
-                                    <div>
-                                        <h4 style="margin: 0 0 5px; font-weight: 700;">Price Updated</h4>
-                                        <p style="margin: 0 0 15px; font-size: 0.9rem;">The hotel price has updated to ₹${newTotal.toLocaleString('en-IN')}. Please click 'Pay Now' again to accept and proceed.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        const summaryDiv = document.querySelector('.booking-summary');
-                        summaryDiv.insertBefore(notification, summaryDiv.firstChild);
-
-                        bookingData.total = newTotal;
-                        bookingData.rate.book_hash = data.confirmed_hash;
-                        sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
-
-                        throw new Error('Price updated');
-                    }
-                    throw new Error(data.error || 'Failed to create booking');
-                }
-
-                // Fallback for when Supabase is offline (ERR_NAME_NOT_RESOLVED)
-                // Use partner_order_id if booking_id is missing
-                bookingData.real_booking_id = data.booking_id || data.partner_order_id;
-                bookingData.partner_order_id = data.partner_order_id;
-
-                sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
-                return bookingData.real_booking_id;
-            } catch (e) {
-                console.error(e);
-                alert('Booking creation failed: ' + e.message);
-                return null;
-            }
+            
+            // Set at top level for compatibility with the rest of the script
+            bookingData.partner_order_id = partnerOrderId;
+            bookingData.real_booking_id = partnerOrderId;
+            
+            return partnerOrderId;
         }
 
         // Initiate Razorpay payment
@@ -1343,7 +1241,13 @@
                 const finishResponse = await fetch('/api/hotels/book/finish', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ partner_order_id: partnerOrderId })
+                    body: JSON.stringify({ 
+                        partner_order_id: partnerOrderId,
+                        rooms: bookingData.rooms,
+                        email: bookingData.email || (bookingData.guest && bookingData.guest.email) || '',
+                        phone: bookingData.phone || (bookingData.guest && bookingData.guest.phone) || '',
+                        special_requests: bookingData.specialRequests || ''
+                    })
                 });
 
                 const finishData = await finishResponse.json();

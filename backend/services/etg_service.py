@@ -7,8 +7,7 @@ import requests
 import base64
 from datetime import datetime, date
 import traceback
-import hashlib
-from cachetools import TTLCache
+
 from typing import Optional, List, Dict, Any
 import uuid
 import sys
@@ -64,8 +63,7 @@ class ETGApiService:
             print(f"✅ Static IP Proxy configured")
             
             
-        # Sandbox Quota Workaround (Cache for 10 minutes)
-        self.search_cache = TTLCache(maxsize=100, ttl=600)
+
         
         # Local Static Data Cache (Persist to disk to survive restarts)
         self.static_cache_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'hotel_static_cache.json')
@@ -131,15 +129,7 @@ class ETGApiService:
     
     def _make_request(self, endpoint: str, data: dict = None, method: str = "POST", timeout: int = 30, retry_count: int = 0) -> dict:
         """Make a request to ETG API with detailed logging"""
-        
-        # ⚡ Cache Interception for strict ETG Sandbox quotas
-        cache_key = None
-        if method == "POST" and any(ep in endpoint for ep in ["/search/serp/region/", "/search/serp/hotels/", "/search/hp/", "/search/serp/geo/"]):
-            # Normalize and stringify data
-            cache_key = hashlib.md5(f"{endpoint}_{json.dumps(data or {}, sort_keys=True)}".encode('utf-8')).hexdigest()
-            if cache_key in self.search_cache:
-                print(f"⚡ CACHE HIT: Returning cached API result for {endpoint} (Bypassing Sandbox Quota)")
-                return self.search_cache[cache_key]
+
 
         url = f"{self.base_url}{endpoint}"
         
@@ -202,9 +192,6 @@ class ETGApiService:
                 "data": response_json,
                 "status_code": response.status_code
             }
-            
-            if cache_key:
-                self.search_cache[cache_key] = result
                 
             return result
         except requests.exceptions.Timeout:

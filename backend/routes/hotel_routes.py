@@ -2082,6 +2082,16 @@ def get_room_groups(hotel_id):
         except Exception as e:
             print(f"⚠️ Failed to load cached static data for room-groups: {e}")
             
+        # Fallback to local JSON cache if Supabase miss/fail
+        if not result.get('success'):
+            local_static = etg_service.static_cache.get(hotel_id)
+            if local_static:
+                result = {
+                    'success': True,
+                    'data': local_static
+                }
+                print(f"✅ Room groups for {hotel_id}: loaded successfully from local JSON cache")
+            
         # If cache miss, DO NOT make a live API call to /hotel/static/ (RateHawk compliance)
         # Instead, mock a successful empty response to prevent frontend breaking
         if not result.get('success'):
@@ -2175,6 +2185,16 @@ def get_enriched_hotel_details():
         except Exception as e:
             print(f"⚠️ Failed to load cached static data for {data['hotel_id']}: {e}")
             
+        # Fallback to local JSON cache if Supabase miss/fail
+        if not static_result.get('success'):
+            local_static = etg_service.static_cache.get(data['hotel_id'])
+            if local_static:
+                static_result = {
+                    'success': True,
+                    'data': {'data': local_static}
+                }
+                print(f"✅ Static data for {data['hotel_id']}: loaded successfully from local JSON")
+
         # If cache miss, DO NOT make a live API call to /hotel/static/ (RateHawk compliance)
         # Instead, mock a successful empty response to prevent frontend breaking
         if not static_result.get('success'):
@@ -2212,33 +2232,20 @@ def get_enriched_hotel_details():
                     'quality': rg.get('name_struct', {}).get('quality', '')
                 }
 
-                # Each static room_group's rg_ext array contains the rg values
-                # that dynamic rates reference via rate['rg_ext']['rg'].
-                rg_ext_list = rg.get('rg_ext') or []
-                if isinstance(rg_ext_list, list):
-                    for rg_ext_entry in rg_ext_list:
-                        rg_val = rg_ext_entry.get('rg') if isinstance(rg_ext_entry, dict) else None
-                        if rg_val is not None:
-                            rg_data_copy = dict(rg_data)
-                            rg_data_copy['rg_key'] = rg_val
-                            room_groups[rg_val] = rg_data_copy
-                        
-                        # ETG Certification Fix: Map by structural signature as fallback
-                        sig = make_rg_signature(rg_ext_entry)
-                        if sig:
-                            rg_data_copy = dict(rg_data)
-                            rg_data_copy['rg_key'] = sig
-                            room_groups[sig] = rg_data_copy
-                elif isinstance(rg_ext_list, dict):
-                    # Occasionally rg_ext may arrive as a plain dict
-                    rg_val = rg_ext_list.get('rg')
-                    if rg_val is not None:
-                        rg_data_copy = dict(rg_data)
-                        rg_data_copy['rg_key'] = rg_val
-                        room_groups[rg_val] = rg_data_copy
-                    
-                    # ETG Certification Fix: Map by structural signature as fallback
-                    sig = make_rg_signature(rg_ext_list)
+                # The live search API references the room group via rate['room_data_trans']['rg_ext']['rg']
+                # This 'rg' value precisely matches the 'room_group_id' in the static data!
+                rg_val = rg.get('room_group_id')
+                
+                if rg_val is not None:
+                    rg_data_copy = dict(rg_data)
+                    rg_data_copy['rg_key'] = rg_val
+                    room_groups[rg_val] = rg_data_copy
+                
+                # ETG Certification Fix: Map by structural signature as fallback
+                # In case room_group_id doesn't match perfectly, we can still fall back to structural mapping
+                rg_ext = rg.get('rg_ext', {})
+                if isinstance(rg_ext, dict):
+                    sig = make_rg_signature(rg_ext)
                     if sig:
                         rg_data_copy = dict(rg_data)
                         rg_data_copy['rg_key'] = sig
@@ -2517,7 +2524,8 @@ def enrich_rate_with_room_data(rate: dict, room_groups: dict, hotel_images: list
         enriched_rate['price'] = 0
     
     # ── Room-group matching ───────────────────────────────────────────────────
-    rg_ext = rate.get('rg_ext', {})
+    room_data_trans = rate.get('room_data_trans', {})
+    rg_ext = room_data_trans.get('rg_ext', {})
     rg_key = None
     if isinstance(rg_ext, list):
         if rg_ext and isinstance(rg_ext[0], dict):
@@ -2776,15 +2784,14 @@ def prebook_rate():
 # BOOKING ENDPOINTS
 # ==========================================
 
-@hotel_bp.route('/book', methods=['POST'])
-def create_booking():
+@hotel_bp.route('/book/init', methods=['POST'])
+def init_booking():
     """
-    Create a new hotel booking
+    Initialize a new hotel booking before the user enters guest details.
     
     Request Body:
     {
         "book_hash": "hash_from_prebook",
-        "guests": [{"first_name": "John", "last_name": "Doe"}],
         "user_id": "optional_user_id",
         "hotel_name": "Hotel Name",
         "checkin": "2026-02-01",
@@ -2799,9 +2806,6 @@ def create_booking():
         for field in required:
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
-                
-        if 'guests' not in data and 'rooms' not in data:
-            return jsonify({'success': False, 'error': 'Missing field: guests or rooms'}), 400
         
         # Booking cut-off validation for create_booking as well
         checkin_str = data.get('checkin')
@@ -2824,71 +2828,10 @@ def create_booking():
         
         book_hash = data['book_hash']
         
-        # ── MANDATORY PREBOOK STEP (ETG v3 Certification Requirement) ──
-        # The h- hash from /search/hp/ MUST go through /hotel/prebook/ before /booking/form.
-        # Prebook validates availability, checks price changes, and returns a confirmed hash.
-        print(f"🔄 Calling /hotel/prebook/ for hash: {book_hash[:50]}...")
-        
-        prebook_result = etg_service.prebook(
-            book_hash=book_hash,
-            price_increase_percent=5
-        )
-        
-        if not prebook_result.get('success'):
-            prebook_error = prebook_result.get('error', 'Prebook failed')
-            print(f"❌ Prebook failed: {prebook_error}")
-            return jsonify({
-                'success': False,
-                'error': 'This room is no longer available at the selected price. Please search again.',
-                'error_code': 'PREBOOK_FAILED',
-                'details': str(prebook_error)
-            }), 400
-        
-        # Extract prebook data — ETG may return a NEW hash or confirm the existing one
-        prebook_data = prebook_result.get('data', {})
-        if isinstance(prebook_data, dict) and 'data' in prebook_data:
-            prebook_data = prebook_data['data']
-        
-        # Check for price changes
-        price_changed = prebook_data.get('price_changed', False)
-        if price_changed:
-            print(f"⚠️ Price changed during prebook for {book_hash[:30]}...")
-            # Extract new price for logging and returning to frontend
-            payment_options = prebook_data.get('payment_options', {})
-            payment_types = payment_options.get('payment_types', [])
-            new_total = 0
-            if payment_types:
-                new_total = float(payment_types[0].get('amount', 0))
-                print(f"   New price from prebook: {new_total}")
-                
-            # Mikhail Requirement: If price changes during prebook, we MUST notify the frontend
-            # before completing the booking so the user can see the new price and re-confirm.
-            # Extract the new confirmed hash to pass back
-            confirmed_hash = None
-            if 'hotels' in prebook_data and prebook_data['hotels'] and 'rates' in prebook_data['hotels'][0] and prebook_data['hotels'][0]['rates']:
-                confirmed_hash = prebook_data['hotels'][0]['rates'][0].get('book_hash')
-            if not confirmed_hash:
-                confirmed_hash = prebook_data.get('book_hash') or prebook_data.get('hash') or book_hash
-                
-            return jsonify({
-                'success': False,
-                'error': 'The price of this room has changed. Please review the new price before continuing.',
-                'error_code': 'PRICE_CHANGED',
-                'new_price': new_total,
-                'confirmed_hash': confirmed_hash
-            }), 400
-        
-        # Use the prebook-confirmed hash (may be the same or a refreshed one)
-        # Extract from deeply nested ETG v3 structure if present: hotels[0].rates[0].book_hash
-        confirmed_hash = None
-        if 'hotels' in prebook_data and prebook_data['hotels'] and 'rates' in prebook_data['hotels'][0] and prebook_data['hotels'][0]['rates']:
-            confirmed_hash = prebook_data['hotels'][0]['rates'][0].get('book_hash')
-        
-        # Fallbacks
-        if not confirmed_hash:
-            confirmed_hash = prebook_data.get('book_hash') or prebook_data.get('hash') or book_hash
-            
-        print(f"✅ Prebook successful. Using confirmed hash: {confirmed_hash[:50]}...")
+        # Prebook is now handled in the frontend (hotel-details.js selectRate).
+        # The hash arriving here is already prebook-validated.
+        confirmed_hash = book_hash
+        print(f"✅ Using prebook-validated hash: {confirmed_hash[:50]}...")
         
         # Generate unique partner order ID
         partner_order_id = etg_service.generate_partner_order_id()
@@ -2896,15 +2839,12 @@ def create_booking():
         # Get user IP
         user_ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
         
-        # Create booking in ETG using the PREBOOK-VALIDATED hash
-        # Support for 4th update: pass 'rooms' if available, fallback to 'guests'
+        # Initialize booking in ETG using the PREBOOK-VALIDATED hash
+        # No guest details yet - just lock the inventory
         etg_result = etg_service.create_booking(
             book_hash=confirmed_hash,
             partner_order_id=partner_order_id,
-            guests=data.get('guests'),
-            rooms=data.get('rooms'),
-            user_ip=user_ip,
-            user_comment=data.get('special_requests')
+            user_ip=user_ip
         )
         
         if not etg_result.get('success'):
@@ -2947,10 +2887,10 @@ def create_booking():
             'check_in': data.get('checkin'),
             'check_out': data.get('checkout'),
             'rooms': len(data.get('rooms')) if isinstance(data.get('rooms'), list) else 1,
-            'guests': data.get('guests') or (data.get('rooms', [{}])[0].get('guests', []) if data.get('rooms') else []),
-            'customer_email': data.get('email'),
-            'customer_phone': data.get('phone'),
-            'special_requests': data.get('special_requests'),
+            'guests': [], # Will be updated in /book/finish
+            'customer_email': '',
+            'customer_phone': '',
+            'special_requests': '',
             'total_amount': float(etg_payment_amount) if etg_payment_amount else data.get('total_amount', 0),
             'currency': etg_payment_currency or data.get('currency', 'USD'),
             'status': 'created',
@@ -3005,6 +2945,9 @@ def finish_booking():
         
         if 'partner_order_id' not in data:
             return jsonify({'success': False, 'error': 'Missing partner_order_id'}), 400
+            
+        if 'guests' not in data and 'rooms' not in data:
+            return jsonify({'success': False, 'error': 'Missing field: guests or rooms'}), 400
         
         partner_order_id = data['partner_order_id']
         
@@ -3019,28 +2962,59 @@ def finish_booking():
             return jsonify({'success': False, 'error': f"Booking record not found: {db_booking.get('error', 'Unknown database error')}"}), 404
         
         # Mikhail Requirement (Update 6): Update to "processing" IMMEDIATELY before starting finalization
-        # This ensures the frontend sees "In Progress" even if the API call is slow.
+        # Extract rooms array (if multi-room) or fallback to guests
+        rooms_to_save = data.get('rooms', [])
+        guests_to_save = data.get('guests', [])
+        
+        # If frontend sent rooms, save it to db_booking
+        
         supabase_service.update_booking_by_partner_order_id(
             partner_order_id,
-            {'status': 'processing'}
+            {
+                'status': 'processing',
+                'guests': guests_to_save if guests_to_save else rooms_to_save,
+                'customer_email': data.get('email', ''),
+                'customer_phone': data.get('phone', ''),
+                'special_requests': data.get('special_requests', '')
+            }
         )
         
-        # Finalize with ETG
-        # Bug #4 Fix: DB stores 'rooms' as integer count, but ETG needs guest array.
-        # Use the 'guests' JSONB column which has the actual guest details.
-        # Pass guests as the guest list; do NOT pass the integer rooms value to ETG.
-        guests_for_etg = booking_info.get('guests', [])
+        # Update our local booking_info dict so it has the guests for ETG submission
+        booking_info['guests'] = guests_to_save if guests_to_save else rooms_to_save
+        
+        # Bug #4 Fix: Extract guests or rooms. Use rooms for multi-room bookings.
+        stored_guests = booking_info.get('guests', [])
+        guests_for_etg = []
+        rooms_for_etg = []
+        
+        if stored_guests and isinstance(stored_guests, list):
+            if len(stored_guests) > 0 and 'guests' in stored_guests[0]:
+                # It's a rooms array format: [{"guests": [...]}]
+                rooms_for_etg = stored_guests
+            else:
+                # It's a legacy flat guests list
+                guests_for_etg = stored_guests
         
         # Sanitize guest names: ETG prohibits digits and non-word symbols other than '-,.
         import re
         allowed_chars_pattern = re.compile(r"[^\w\s'\-,\.]") # Matches anything NOT allowed
-        for guest in guests_for_etg:
+        
+        def sanitize_guest(guest):
             if 'first_name' in guest and guest['first_name']:
                 guest['first_name'] = allowed_chars_pattern.sub('', str(guest['first_name'])).strip()
                 guest['first_name'] = ''.join([i for i in guest['first_name'] if not i.isdigit()])
             if 'last_name' in guest and guest['last_name']:
                 guest['last_name'] = allowed_chars_pattern.sub('', str(guest['last_name'])).strip()
                 guest['last_name'] = ''.join([i for i in guest['last_name'] if not i.isdigit()])
+            return guest
+
+        if rooms_for_etg:
+            for r in rooms_for_etg:
+                for g in r.get('guests', []):
+                    sanitize_guest(g)
+        else:
+            for g in guests_for_etg:
+                sanitize_guest(g)
         
         # Sanitize phone: ETG requires minimum 5 characters
         phone = booking_info.get('customer_phone') or booking_info.get('phone', '0000000000')
@@ -3059,8 +3033,8 @@ def finish_booking():
             partner_order_id=partner_order_id,
             email='info@coasttocoastjourneys.com',  # Send ETG voucher to C2C, not customer
             phone=phone,
-            guests=guests_for_etg,
-            rooms=None,  # Do NOT pass integer; let etg_service use guests fallback
+            guests=guests_for_etg if not rooms_for_etg else None,
+            rooms=rooms_for_etg if rooms_for_etg else None,
             amount=etg_amount,
             currency=etg_currency,
             user_comment=booking_info.get('special_requests')

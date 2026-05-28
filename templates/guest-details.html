@@ -727,6 +727,30 @@
             bookingData.email = email.value.trim();
             bookingData.phone = phone.value.trim();
             bookingData.guestName = firstName.value.trim() + ' ' + lastName.value.trim();
+            
+            // Build rooms array for ETG backend
+            const searchRooms = bookingData.search_params?.rooms || [{ adults: bookingData.search_params?.adults || 2, children: 0, childAges: [] }];
+            
+            const rooms = searchRooms.map(r => {
+                const roomGuests = [];
+                for (let i = 0; i < (r.adults || 1); i++) {
+                    roomGuests.push({
+                        first_name: firstName.value.trim(),
+                        last_name: lastName.value.trim()
+                    });
+                }
+                for (let i = 0; i < (r.children || 0); i++) {
+                    roomGuests.push({
+                        first_name: "Child",
+                        last_name: lastName.value.trim(),
+                        age: r.childAges && r.childAges[i] ? r.childAges[i] : 8,
+                        is_child: true
+                    });
+                }
+                return { guests: roomGuests };
+            });
+
+            bookingData.rooms = rooms;
 
             sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
 
