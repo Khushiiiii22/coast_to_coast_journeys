@@ -1564,7 +1564,8 @@ function showRoomDetails(rateIndex) {
                         ${policies.map(p => {
             const isFree = p.type === 'free' || p.penalty_amount === '0' || p.penalty_amount === 0;
             const startStr = p.start_formatted || 'Now';
-            const penaltyStr = isFree ? '<span style="color:#059669">No charge</span>' : `<span style="color:#dc2626">${p.penalty_amount}</span>`;
+            const currencyStr = p.currency || '';
+            const penaltyStr = isFree ? '<span style="color:#059669">No charge</span>' : `<span style="color:#dc2626">${currencyStr} ${p.penalty_amount}</span>`;
             return `<tr>
                                 <td style="padding:8px;border-bottom:1px solid #f3f4f6;">${isFree ? 'Until ' + (p.end_formatted || deadline) : 'From ' + startStr}</td>
                                 <td style="padding:8px;border-bottom:1px solid #f3f4f6;text-align:right;">${penaltyStr}</td>

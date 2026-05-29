@@ -19,7 +19,11 @@ def format_cancellation_policies(rate):
     if not payment_options:
         return cancellation_info
         
-    penalties = payment_options.get('cancellation_penalties', {})
+    payment_types = payment_options.get('payment_types', [])
+    penalties = {}
+    if payment_types and isinstance(payment_types, list) and len(payment_types) > 0:
+        penalties = payment_types[0].get('cancellation_penalties', {})
+        
     if not penalties:
         return cancellation_info
         

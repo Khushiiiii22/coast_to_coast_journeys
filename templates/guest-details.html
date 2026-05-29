@@ -743,7 +743,7 @@
                     roomGuests.push({
                         first_name: "Child",
                         last_name: lastName.value.trim(),
-                        age: r.childAges && r.childAges[i] ? r.childAges[i] : 8,
+                        age: r.childAges && r.childAges[i] !== undefined ? r.childAges[i] : 8,
                         is_child: true
                     });
                 }

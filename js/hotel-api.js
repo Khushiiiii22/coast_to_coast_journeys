@@ -663,7 +663,8 @@ const HotelUtils = {
     getCancellationStatus(hotel) {
         if (!hotel || !hotel.rates || hotel.rates.length === 0) return { isRefundable: false };
         const rate = hotel.rates[0];
-        const policies = rate?.payment_options?.cancellation_penalties?.policies || [];
+        const paymentTypes = rate?.payment_options?.payment_types || [];
+        const policies = paymentTypes[0]?.cancellation_penalties?.policies || [];
         if (policies.length === 0) return { isRefundable: false };
         // Check if there is a policy that is free cancellation (amount_charge === '0.00' or 0)
         const hasFreeCancel = policies.some(p => parseFloat(p.amount_charge || '1') === 0);
