@@ -153,7 +153,8 @@ const HotelAPI = {
                 adults: params.adults || 2,
                 children_ages: params.children_ages || [],
                 rooms: params.rooms || [],
-                currency: params.currency || 'USD'
+                currency: params.currency || 'USD',
+                residency: params.residency || 'gb'
             })
         });
     },
@@ -205,7 +206,8 @@ const HotelAPI = {
                 adults: params.adults || 2,
                 children_ages: params.children_ages || [],
                 rooms: params.rooms || [],
-                currency: params.currency || 'USD'
+                currency: params.currency || 'USD',
+                residency: params.residency || 'gb'
             })
         });
     },

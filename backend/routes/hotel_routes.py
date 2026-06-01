@@ -1428,7 +1428,8 @@ def get_hotel_details():
             checkin=data['checkin'],
             checkout=data['checkout'],
             guests=guests,
-            currency=api_currency
+            currency=api_currency,
+            residency=data.get('residency', 'gb')
         )
         
         # Inject cancellation policies
@@ -2165,7 +2166,8 @@ def get_enriched_hotel_details():
             checkin=data['checkin'],
             checkout=data['checkout'],
             guests=guests,
-            currency=api_currency
+            currency=api_currency,
+            residency=data.get('residency', 'gb')
         )
         
         if not rates_result.get('success'):
