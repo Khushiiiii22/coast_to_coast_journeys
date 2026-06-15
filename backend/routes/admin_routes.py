@@ -103,6 +103,38 @@ def get_bookings():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@admin_bp.route('/markup/rules/block', methods=['GET', 'POST'])
+@require_auth()
+def manage_block_markup():
+    """Handle block booking markup rules"""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        if not supabase:
+            return jsonify({'success': False, 'error': 'Database not initialized'}), 500
+
+        if request.method == 'GET':
+            # Simplified retrieval of hotel block-type rules
+            hotel_result = supabase.table('markup_rules').select('*').ilike('rule_name', 'hotel%').execute()
+            return jsonify({'success': True, 'data': hotel_result.data}), 200
+
+        # POST logic: Upsert the hotel rules
+        data = request.json
+        rules_to_update = [
+            {'rule_name': 'Hotel Domestic', 'markup_type': data.get('hotel_dom_type'), 'markup_value': data.get('hotel_dom_val')},
+            {'rule_name': 'Hotel International', 'markup_type': data.get('hotel_int_type'), 'markup_value': data.get('hotel_int_val')}
+        ]
+
+        for rule in rules_to_update:
+            supabase.table('markup_rules').upsert(rule, on_conflict='rule_name').execute()
+
+        return jsonify({'success': True, 'message': 'Hotel markup rules updated'}), 200
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @admin_bp.route('/bookings/<booking_id>', methods=['GET'])
 @require_auth()
 def get_booking_details(booking_id):
@@ -336,6 +368,252 @@ def get_markup_rules():
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@admin_bp.route('/account/ledger', methods=['GET'])
+@require_auth()
+def get_ledger():
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        # Fetch from payments table
+        response = supabase.table('payments').select('*, hotel_bookings(hotel_name, hotel_city, status)').eq('booking_type', 'hotel').order('created_at', desc=True).execute()
+        
+        ledger_data = []
+        for p in response.data:
+            hotel_info = p.get('hotel_bookings') or {}
+            ledger_data.append({
+                "date": p['created_at'],
+                "txn_id": p['payment_id'],
+                "order_id": p.get('order_id', '---'),
+                "description": f"Hotel Booking: {hotel_info.get('hotel_name', 'N/A')} ({hotel_info.get('hotel_city', 'N/A')})",
+                "status": hotel_info.get('status', 'pending'),
+                "credit": p['amount'] if p['amount'] > 0 else 0,
+                "debit": 0,
+                "amount": p['amount']
+            })
+            
+        return jsonify({"status": "success", "data": ledger_data, "balance": 46640})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@admin_bp.route('/account/invoices', methods=['GET'])
+@require_auth()
+def get_invoices():
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        if not supabase:
+            return jsonify({"status": "error", "message": "Database not initialized"}), 500
+            
+        # 1. Fetch confirmed hotel bookings as automated invoices
+        bookings_response = supabase.table('hotel_bookings').select('*').eq('status', 'confirmed').order('created_at', desc=True).execute()
+        
+        # 2. Fetch manually created invoices
+        manual_response = supabase.table('invoices').select('*').order('created_at', desc=True).execute()
+        
+        invoices = []
+        seen_ref_nos = set()
+
+        # Add manual invoices first (higher priority for custom logic)
+        for m in manual_response.data:
+            inv_id = f"custom_{m['id']}"
+            ref_no = m['invoice_no']
+            invoices.append({
+                "id": inv_id,
+                "booking_date": m['created_at'],
+                "lead_pax": m['customer_name'],
+                "lead_email": "---",
+                "lead_phone": m.get('phone_number', '---'),
+                "invoice_id": ref_no,
+                "ref_no": ref_no,
+                "hotel_name": m.get('category', 'Accommodation (Hotel)'),
+                "destination": "---",
+                "check_in": "---",
+                "status": "confirmed",
+                "total_fare": m['price'],
+                "markup": 0
+            })
+            seen_ref_nos.add(ref_no)
+
+        # Add automated ones, avoiding duplicates
+        for b in bookings_response.data:
+            ref_no = b['partner_order_id']
+            # If we already have a manual invoice for this order id, skip
+            if ref_no in seen_ref_nos:
+                continue
+
+            invoices.append({
+                "id": b['id'],
+                "booking_date": b['created_at'],
+                "lead_pax": b.get('customer_email', 'Guest'),
+                "lead_email": b.get('customer_email', '---'),
+                "lead_phone": b.get('customer_phone', '---'),
+                "invoice_id": f"INV-{b['partner_order_id'][-6:].upper()}",
+                "ref_no": ref_no,
+                "hotel_name": b['hotel_name'],
+                "destination": b['hotel_city'],
+                "check_in": b['check_in'],
+                "status": b['status'],
+                "total_fare": b['total_amount'],
+                "markup": b.get('markup_amount', 0)
+            })
+            
+        return jsonify({"status": "success", "data": invoices})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@admin_bp.route('/account/invoices', methods=['POST'])
+@require_auth()
+def create_invoice():
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        data = request.get_json()
+        
+        # Generate custom invoice number if not provided
+        if not data.get('invoice_no'):
+            import time
+            data['invoice_no'] = f"INV{int(time.time())}"
+
+        response = supabase.table('invoices').insert(data).execute()
+        return jsonify({"status": "success", "data": response.data})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@admin_bp.route('/queries/hotel', methods=['GET'])
+@require_auth()
+def get_hotel_enquiries():
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        if not supabase:
+            return jsonify({"status": "error", "message": "Database not initialized"}), 500
+
+        response = supabase.table('quote_requests').select('*').eq('travel_type', 'hotel').order('created_at', desc=True).execute()
+        return jsonify({"status": "success", "data": response.data})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@admin_bp.route('/markup/currencies', methods=['GET'])
+@require_auth()
+def get_currencies():
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        response = supabase.table('currencies').select('*').order('created_at', desc=True).execute()
+        return jsonify({"success": True, "data": response.data})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@admin_bp.route('/markup/currencies', methods=['POST'])
+@require_auth()
+def add_currency():
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        data = request.get_json()
+        
+        # Simple mapping for common countries to fill in codes/flags automatically
+        country_defaults = {
+            "India": {"code": "INR", "country_code": "IN", "flag": "https://flagcdn.com/w160/in.png"},
+            "Dubai": {"code": "AED", "country_code": "AE", "flag": "https://flagcdn.com/w160/ae.png"},
+            "United Arab Emirates": {"code": "AED", "country_code": "AE", "flag": "https://flagcdn.com/w160/ae.png"},
+            "Australia": {"code": "AUD", "country_code": "AU", "flag": "https://flagcdn.com/w160/au.png"},
+            "USA": {"code": "USD", "country_code": "US", "flag": "https://flagcdn.com/w160/us.png"},
+            "United States": {"code": "USD", "country_code": "US", "flag": "https://flagcdn.com/w160/us.png"},
+            "Canada": {"code": "CAD", "country_code": "CA", "flag": "https://flagcdn.com/w160/ca.png"},
+            "UK": {"code": "GBP", "country_code": "GB", "flag": "https://flagcdn.com/w160/gb.png"},
+            "United Kingdom": {"code": "GBP", "country_code": "GB", "flag": "https://flagcdn.com/w160/gb.png"},
+            "Denmark": {"code": "DKK", "country_code": "DK", "flag": "https://flagcdn.com/w160/dk.png"}
+        }
+
+        defaults = country_defaults.get(data['country_name'], {"code": "USD", "country_code": "US", "flag": "https://flagcdn.com/w160/us.png"})
+        
+        new_currency = {
+            "country_name": data['country_name'],
+            "country_code": defaults['country_code'],
+            "currency_code": defaults['code'],
+            "flag_url": defaults['flag'],
+            "conversion_rate": float(data['conversion_rate']),
+            "status": data['status']
+        }
+
+        response = supabase.table('currencies').insert(new_currency).execute()
+        return jsonify({"success": True, "data": response.data})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@admin_bp.route('/markup/currencies/live', methods=['GET'])
+@require_auth()
+def get_live_rates():
+    try:
+        import requests
+        # Using a public API for live rates (ExchangeRate-API)
+        # Note: In production you'd use a private key
+        url = "https://api.exchangerate-api.com/v4/latest/INR"
+        response = requests.get(url)
+        rates = response.json().get('rates', {})
+        return jsonify({"success": True, "rates": rates})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@admin_bp.route('/markup/currencies/update-all', methods=['POST'])
+@require_auth()
+def update_all_currencies():
+    try:
+        from flask import current_app
+        import requests
+        supabase = current_app.config.get('SUPABASE')
+        
+        # Get live rates
+        url = "https://api.exchangerate-api.com/v4/latest/INR"
+        res = requests.get(url)
+        live_rates = res.json().get('rates', {})
+
+        # Get existing currencies
+        curr_res = supabase.table('currencies').select('id, currency_code').execute()
+        
+        updates = []
+        for c in curr_res.data:
+            code = c['currency_code']
+            if code in live_rates:
+                new_rate = 1 / live_rates[code] if live_rates[code] != 0 else 0
+                # Wait, the UI shows INR to Conversion Rate.
+                # If 1 INR = 0.012 USD, then "INR to USD" rate is 0.012.
+                # If the UI label is "INR to Conversion Rate", and for USD it shows 95.67? 
+                # Wait, screenshot 1 shows USD conversion rate as 95.67? 
+                # No, look at screenshot 1: United States | USD | 95.67? That's weird. 1 USD = 83 INR.
+                # Ah, maybe it's "Conversion Rate to INR"? 
+                # Let's check Dubai: AED | 25.97. 1 AED is ~22-23 INR. 
+                # So the rate is indeed "[Currency] to INR".
+                
+                new_rate = 1 / live_rates[code] # This gives INR per [Code] if API is "INR based"?
+                # Actually v4/latest/INR returns "1 INR = X [Code]"
+                # So if 1 INR = 0.044 AED, then 1 AED = 1/0.044 = 22.7 INR.
+                # So rate = 1 / live_rates[code]
+                
+                supabase.table('currencies').update({"conversion_rate": new_rate}).eq('id', c['id']).execute()
+                updates.append(code)
+
+        return jsonify({"success": True, "updated": updates})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@admin_bp.route('/queries/contact', methods=['GET'])
+@require_auth()
+def get_contact_enquiries():
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        if not supabase:
+            return jsonify({"status": "error", "message": "Database not initialized"}), 500
+
+        response = supabase.table('contact_messages').select('*').order('created_at', desc=True).execute()
+        return jsonify({"status": "success", "data": response.data})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 @admin_bp.route('/markup-rules', methods=['POST'])

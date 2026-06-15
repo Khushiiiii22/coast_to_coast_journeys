@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Coupons | C2C Journeys Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="../../admin/css/admin.css">
+    <link rel="icon" href="data:,">
+
+    <style>
+        .coupons-banner {
+            background: #000;
+            color: #4df3c5;
+            text-align: center;
+            padding: 1.25rem;
+            font-size: 1.4rem;
+            font-weight: 800;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+        }
+
+        .no-record {
+            color: #ef4444;
+            font-size: 2rem;
+            font-weight: 800;
+            margin-top: 3rem;
+        }
+
+        .coupons-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1rem;
+        }
+
+        .btn-cyan {
+            background: #26c6da;
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Manage Coupons</h1>
+                </div>
+                <div class="header-right">
+                    <div style="font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-right: 1.5rem;">
+                        COAST TO COAST JOURNEYS
+                    </div>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <div class="coupons-banner">AUTO COUPONS</div>
+                
+                <div class="coupons-toolbar">
+                    <button class="btn-cyan">Add Coupon</button>
+                </div>
+
+                <div id="couponsList" style="text-align: center;">
+                    <div class="no-record">No Record Found</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../admin/js/admin.js"></script>
+    <script>
+        // Logic to fetch coupons if any
+    </script>
+</body>
+
+</html>

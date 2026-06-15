@@ -5,11 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | C2C Journeys</title>
+    <meta name="description" content="Coast to Coast Journeys Admin Dashboard - Hotel Booking Management">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
     <!-- Font Awesome -->
@@ -21,112 +22,562 @@
     <!-- Admin Styles -->
     <link rel="stylesheet" href="../../admin/css/admin.css">
     <link rel="icon" href="data:,">
+
+    <style>
+        /* ═══════════════════════════════════════
+           Dashboard-Specific Styles
+           ═══════════════════════════════════════ */
+
+        /* Hero Earnings Banner */
+        .earnings-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0e64a6 100%);
+            border-radius: 16px;
+            padding: 2rem 2.5rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .earnings-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .earnings-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: 10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #f97316;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero-amount {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .hero-period-select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-period-select option {
+            background: #1e293b;
+            color: white;
+        }
+
+        .hero-stats-row {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .hero-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .hero-stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .hero-stat-divider {
+            width: 1px;
+            background: rgba(255, 255, 255, 0.15);
+            align-self: stretch;
+        }
+
+        /* KPI Cards Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .kpi-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .kpi-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .kpi-card.blue::after { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+        .kpi-card.green::after { background: linear-gradient(90deg, #10b981, #34d399); }
+        .kpi-card.orange::after { background: linear-gradient(90deg, #f97316, #fb923c); }
+        .kpi-card.purple::after { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+        .kpi-card.cyan::after { background: linear-gradient(90deg, #06b6d4, #22d3ee); }
+        .kpi-card.red::after { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+        .kpi-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .kpi-icon.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .kpi-icon.green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .kpi-icon.orange { background: rgba(249, 115, 22, 0.1); color: #f97316; }
+        .kpi-icon.purple { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+        .kpi-icon.cyan { background: rgba(6, 182, 212, 0.1); color: #06b6d4; }
+        .kpi-icon.red { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+        .kpi-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .kpi-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            border: 1px solid #f1f5f9;
+            overflow: hidden;
+        }
+
+        .chart-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chart-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-title i {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .chart-body {
+            padding: 1.5rem;
+        }
+
+        /* Destinations & Status Grid */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Top Destinations List */
+        .destination-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .destination-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f8fafc;
+        }
+
+        .destination-item:last-child {
+            border-bottom: none;
+        }
+
+        .destination-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .destination-rank {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .destination-rank.top {
+            background: linear-gradient(135deg, #f97316, #fb923c);
+            color: white;
+        }
+
+        .destination-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #1e293b;
+        }
+
+        .destination-stats {
+            text-align: right;
+        }
+
+        .destination-bookings {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .destination-revenue {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        /* Status Pipeline */
+        .status-pipeline {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .pipeline-item {
+            text-align: center;
+            padding: 1rem 0.5rem;
+            border-radius: 10px;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+        }
+
+        .pipeline-item:hover {
+            transform: scale(1.03);
+        }
+
+        .pipeline-count {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1;
+        }
+
+        .pipeline-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 0.35rem;
+        }
+
+        .pipeline-item.confirmed .pipeline-count { color: #10b981; }
+        .pipeline-item.confirmed .pipeline-label { color: #10b981; }
+        .pipeline-item.confirmed { border: 1px solid rgba(16, 185, 129, 0.15); }
+
+        .pipeline-item.created .pipeline-count { color: #3b82f6; }
+        .pipeline-item.created .pipeline-label { color: #3b82f6; }
+        .pipeline-item.created { border: 1px solid rgba(59, 130, 246, 0.15); }
+
+        .pipeline-item.failed .pipeline-count { color: #ef4444; }
+        .pipeline-item.failed .pipeline-label { color: #ef4444; }
+        .pipeline-item.failed { border: 1px solid rgba(239, 68, 68, 0.15); }
+
+        .pipeline-item.unknown .pipeline-count { color: #f59e0b; }
+        .pipeline-item.unknown .pipeline-label { color: #f59e0b; }
+        .pipeline-item.unknown { border: 1px solid rgba(245, 158, 11, 0.15); }
+
+        /* Recent Bookings Table */
+        .bookings-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            border: 1px solid #f1f5f9;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .bookings-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bookings-title {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #10b981;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: livePulse 2s infinite;
+        }
+
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            50% { opacity: 0.8; box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+        }
+
+        .booking-row {
+            display: grid;
+            grid-template-columns: minmax(110px, 1fr) 2fr 1.5fr 1fr 1fr 1fr 0.7fr;
+            padding: 0.85rem 1.5rem;
+            align-items: center;
+            border-bottom: 1px solid #f8fafc;
+            transition: background 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .booking-row:hover {
+            background: #fafbfd;
+        }
+
+        .booking-row.header {
+            background: #f8fafc;
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .booking-id {
+            font-weight: 600;
+            color: #0e64a6;
+            font-size: 0.8rem;
+        }
+
+        .hotel-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hotel-name {
+            font-weight: 500;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        .hotel-location {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .guest-name {
+            color: #475569;
+            font-weight: 500;
+        }
+
+        .booking-dates {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .booking-amount {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .booking-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .booking-status.confirmed {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .booking-status.created {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .booking-status.failed {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .booking-status.unknown {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .booking-action-btn {
+            background: none;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 4px 8px;
+            cursor: pointer;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+
+        .booking-action-btn:hover {
+            background: #0e64a6;
+            color: white;
+            border-color: #0e64a6;
+        }
+
+        /* Loading Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 6px;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 1024px) {
+            .charts-grid { grid-template-columns: 1fr; }
+            .insights-grid { grid-template-columns: 1fr; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .hero-amount { font-size: 2.25rem; }
+            .booking-row { font-size: 0.8rem; }
+        }
+
+        @media (max-width: 768px) {
+            .kpi-grid { grid-template-columns: 1fr; }
+            .hero-stats-row { gap: 1rem; }
+            .booking-row { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+            .booking-row.header { display: none; }
+        }
+    </style>
 </head>
 
 <body>
     <div class="admin-wrapper">
-        <!-- Sidebar -->
-        <aside class="admin-sidebar" id="adminSidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">C</div>
-                <span class="sidebar-brand">CTC Admin</span>
-            </div>
-
-            <nav class="sidebar-nav">
-                <!-- Main Navigation -->
-                <div class="nav-section">
-                    <span class="nav-section-title">Main</span>
-                    <a href="dashboard.html" class="nav-item active">
-                        <i class="fas fa-home"></i>
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="bookings.html" class="nav-item">
-                        <i class="fas fa-calendar-check"></i>
-                        <span>Hotel Bookings</span>
-                        <span class="nav-badge">12</span>
-                    </a>
-                    <a href="flights.html" class="nav-item">
-                        <i class="fas fa-plane"></i>
-                        <span>Flight Bookings</span>
-                    </a>
-                </div>
-
-                <!-- Finance -->
-                <div class="nav-section">
-                    <span class="nav-section-title">Finance</span>
-                    <a href="payments.html" class="nav-item">
-                        <i class="fas fa-credit-card"></i>
-                        <span>Payments</span>
-                    </a>
-                    <a href="invoices.html" class="nav-item">
-                        <i class="fas fa-file-invoice"></i>
-                        <span>Invoices</span>
-                    </a>
-                    <a href="refunds.html" class="nav-item">
-                        <i class="fas fa-undo"></i>
-                        <span>Refunds</span>
-                    </a>
-                </div>
-
-                <!-- Operations -->
-                <div class="nav-section">
-                    <span class="nav-section-title">Operations</span>
-                    <a href="markup.html" class="nav-item">
-                        <i class="fas fa-percentage"></i>
-                        <span>Markup Tool</span>
-                    </a>
-                    <a href="suppliers.html" class="nav-item">
-                        <i class="fas fa-handshake"></i>
-                        <span>Suppliers</span>
-                    </a>
-                    <a href="customers.html" class="nav-item">
-                        <i class="fas fa-users"></i>
-                        <span>Customers</span>
-                    </a>
-                </div>
-
-                <!-- Reports -->
-                <div class="nav-section">
-                    <span class="nav-section-title">Analytics</span>
-                    <a href="reports.html" class="nav-item">
-                        <i class="fas fa-chart-bar"></i>
-                        <span>Reports</span>
-                    </a>
-                </div>
-
-                <!-- Settings -->
-                <div class="nav-section">
-                    <span class="nav-section-title">System</span>
-                    <a href="users.html" class="nav-item">
-                        <i class="fas fa-user-shield"></i>
-                        <span>Admin Users</span>
-                    </a>
-                    <a href="settings.html" class="nav-item">
-                        <i class="fas fa-cog"></i>
-                        <span>Settings</span>
-                    </a>
-                    <a href="activity-logs.html" class="nav-item">
-                        <i class="fas fa-history"></i>
-                        <span>Activity Logs</span>
-                    </a>
-                    <a href="#" class="nav-item" id="sidebarLogoutBtn" onclick="logout(); return false;"
-                        style="color: var(--danger);">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
-                    </a>
-                </div>
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="admin-profile">
-                    <div class="admin-avatar">SA</div>
-                    <div class="admin-info">
-                        <div class="admin-name">Super Admin</div>
-                        <div class="admin-role">Administrator</div>
-                    </div>
-                </div>
-            </div>
-        </aside>
+        <!-- Sidebar (injected by admin.js) -->
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
 
         <!-- Main Content -->
         <main class="admin-main">
@@ -142,16 +593,16 @@
                 <div class="header-right">
                     <div class="header-search">
                         <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Search bookings, customers...">
+                        <input type="text" placeholder="Search bookings, customers..." id="globalSearch">
                     </div>
 
                     <div class="header-actions">
+                        <button class="header-btn" id="refreshDashboard" title="Refresh Data">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
                         <button class="header-btn">
                             <i class="fas fa-bell"></i>
                             <span class="notification-badge"></span>
-                        </button>
-                        <button class="header-btn">
-                            <i class="fas fa-envelope"></i>
                         </button>
                         <button class="header-btn" onclick="logout()">
                             <i class="fas fa-sign-out-alt"></i>
@@ -162,122 +613,199 @@
 
             <!-- Content -->
             <div class="admin-content">
-                <!-- Stats Cards -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon blue">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-label">Total Bookings</div>
-                            <div class="stat-value" id="totalBookings">0</div>
-                            <div class="stat-change positive">
-                                <i class="fas fa-arrow-up"></i>
-                                <span>12% from last month</span>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="stat-card">
-                        <div class="stat-icon green">
-                            <i class="fas fa-rupee-sign"></i>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-label">Total Revenue</div>
-                            <div class="stat-value" id="totalRevenue">₹0</div>
-                            <div class="stat-change positive">
-                                <i class="fas fa-arrow-up"></i>
-                                <span>8% from last month</span>
+                <!-- ═══ Hero Earnings Banner ═══ -->
+                <div class="earnings-hero" id="earningsHero">
+                    <div class="hero-content">
+                        <div class="hero-top">
+                            <div>
+                                <div class="hero-label">Hotel Revenue</div>
+                                <div class="hero-amount" id="heroAmount">$0</div>
+                                <div class="hero-subtitle">All Time · Confirmed Hotel Bookings</div>
                             </div>
+                            <select class="hero-period-select" id="heroPeriod">
+                                <option value="all">All Time</option>
+                                <option value="month">This Month</option>
+                                <option value="week">This Week</option>
+                            </select>
                         </div>
-                    </div>
 
-                    <div class="stat-card">
-                        <div class="stat-icon orange">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-label">New Customers</div>
-                            <div class="stat-value" id="newCustomers">0</div>
-                            <div class="stat-change positive">
-                                <i class="fas fa-arrow-up"></i>
-                                <span>5% from last month</span>
+                        <div class="hero-stats-row">
+                            <div class="hero-stat">
+                                <div class="hero-stat-value" id="heroTotalBookings">0</div>
+                                <div class="hero-stat-label">Total Bookings</div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon red">
-                            <i class="fas fa-times-circle"></i>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-label">Cancellations</div>
-                            <div class="stat-value" id="cancellations">0</div>
-                            <div class="stat-change negative">
-                                <i class="fas fa-arrow-down"></i>
-                                <span>3% from last month</span>
+                            <div class="hero-stat-divider"></div>
+                            <div class="hero-stat">
+                                <div class="hero-stat-value" id="heroConfirmed">0</div>
+                                <div class="hero-stat-label">Confirmed</div>
+                            </div>
+                            <div class="hero-stat-divider"></div>
+                            <div class="hero-stat">
+                                <div class="hero-stat-value" id="heroAvgValue">$0</div>
+                                <div class="hero-stat-label">Avg. Value</div>
+                            </div>
+                            <div class="hero-stat-divider"></div>
+                            <div class="hero-stat">
+                                <div class="hero-stat-value" id="heroRoomNights">0</div>
+                                <div class="hero-stat-label">Room Nights</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Charts Row -->
-                <div class="stats-grid" style="grid-template-columns: 2fr 1fr;">
-                    <!-- Revenue Chart -->
-                    <div class="admin-card">
-                        <div class="card-header">
-                            <h3 class="card-title">Revenue Overview</h3>
-                            <div class="card-actions">
-                                <button class="btn btn-secondary btn-sm">
-                                    <i class="fas fa-download"></i> Export
-                                </button>
+                <!-- ═══ KPI Cards ═══ -->
+                <div class="kpi-grid">
+                    <div class="kpi-card blue">
+                        <div class="kpi-icon blue"><i class="fas fa-hotel"></i></div>
+                        <div class="kpi-value" id="kpiTotalBookings">0</div>
+                        <div class="kpi-label">Total Bookings</div>
+                    </div>
+                    <div class="kpi-card green">
+                        <div class="kpi-icon green"><i class="fas fa-check-circle"></i></div>
+                        <div class="kpi-value" id="kpiConfirmedRevenue">$0</div>
+                        <div class="kpi-label">Confirmed Revenue</div>
+                    </div>
+                    <div class="kpi-card orange">
+                        <div class="kpi-icon orange"><i class="fas fa-chart-line"></i></div>
+                        <div class="kpi-value" id="kpiAvgBookingValue">$0</div>
+                        <div class="kpi-label">Avg. Booking Value</div>
+                    </div>
+                    <div class="kpi-card purple">
+                        <div class="kpi-icon purple"><i class="fas fa-moon"></i></div>
+                        <div class="kpi-value" id="kpiAvgNights">0</div>
+                        <div class="kpi-label">Avg. Stay (Nights)</div>
+                    </div>
+                    <div class="kpi-card cyan">
+                        <div class="kpi-icon cyan"><i class="fas fa-bed"></i></div>
+                        <div class="kpi-value" id="kpiRoomNights">0</div>
+                        <div class="kpi-label">Total Room Nights</div>
+                    </div>
+                    <div class="kpi-card red">
+                        <div class="kpi-icon red"><i class="fas fa-exclamation-circle"></i></div>
+                        <div class="kpi-value" id="kpiCancellations">0</div>
+                        <div class="kpi-label">Cancellations</div>
+                    </div>
+                </div>
+
+                <!-- ═══ Booking Status Pipeline ═══ -->
+                <div class="chart-card" style="margin-bottom: 1.5rem;">
+                    <div class="chart-header">
+                        <div class="chart-title"><i class="fas fa-stream"></i> Booking Pipeline</div>
+                    </div>
+                    <div class="chart-body">
+                        <div class="status-pipeline" id="statusPipeline">
+                            <div class="pipeline-item confirmed">
+                                <div class="pipeline-count" id="pipeConfirmed">0</div>
+                                <div class="pipeline-label">Confirmed</div>
+                            </div>
+                            <div class="pipeline-item created">
+                                <div class="pipeline-count" id="pipeCreated">0</div>
+                                <div class="pipeline-label">Created</div>
+                            </div>
+                            <div class="pipeline-item unknown">
+                                <div class="pipeline-count" id="pipeUnknown">0</div>
+                                <div class="pipeline-label">Unknown</div>
+                            </div>
+                            <div class="pipeline-item failed">
+                                <div class="pipeline-count" id="pipeFailed">0</div>
+                                <div class="pipeline-label">Failed</div>
                             </div>
                         </div>
-                        <div style="padding: 1.5rem;">
+                    </div>
+                </div>
+
+                <!-- ═══ Charts Row ═══ -->
+                <div class="charts-grid">
+                    <!-- Revenue Trend -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div class="chart-title"><i class="fas fa-chart-area"></i> Revenue Trend</div>
+                            <button class="btn btn-secondary btn-sm" onclick="exportRevenueData()">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                        <div class="chart-body">
                             <canvas id="revenueChart" height="100"></canvas>
                         </div>
                     </div>
 
-                    <!-- Booking Status Chart -->
-                    <div class="admin-card">
-                        <div class="card-header">
-                            <h3 class="card-title">Booking Status</h3>
+                    <!-- Booking Status Doughnut -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div class="chart-title"><i class="fas fa-chart-pie"></i> Booking Status</div>
                         </div>
-                        <div style="padding: 1.5rem;">
+                        <div class="chart-body">
                             <canvas id="statusChart"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <!-- Recent Bookings -->
-                <div class="admin-card" style="margin-top: 1.5rem;">
-                    <div class="card-header">
-                        <h3 class="card-title">Recent Bookings</h3>
-                        <div class="card-actions">
+                <!-- ═══ Destinations & Insights ═══ -->
+                <div class="insights-grid">
+                    <!-- Top Destinations -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div class="chart-title"><i class="fas fa-map-marker-alt"></i> Top Hotels / Destinations</div>
+                        </div>
+                        <div class="chart-body" style="padding: 1rem 1.5rem;">
+                            <ul class="destination-list" id="destinationList">
+                                <li class="destination-item">
+                                    <span style="color: #94a3b8;">Loading destinations...</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Top Destinations Bar Chart -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div class="chart-title"><i class="fas fa-chart-bar"></i> Booking Distribution</div>
+                        </div>
+                        <div class="chart-body">
+                            <canvas id="destinationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ Recent Bookings Table ═══ -->
+                <div class="bookings-card" id="recentBookingsCard">
+                    <div class="bookings-header">
+                        <div class="bookings-title">
+                            <i class="fas fa-clock" style="color: #64748b;"></i>
+                            Recent Hotel Bookings
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="live-indicator">
+                                <span class="live-dot"></span> Live
+                            </div>
                             <a href="bookings.html" class="btn btn-primary btn-sm">
                                 View All <i class="fas fa-arrow-right"></i>
                             </a>
                         </div>
                     </div>
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Booking ID</th>
-                                <th>Customer</th>
-                                <th>Hotel</th>
-                                <th>Check-in</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recentBookings">
-                            <tr>
-                                <td colspan="7" style="text-align: center; padding: 2rem;">Loading bookings...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+
+                    <!-- Table Header -->
+                    <div class="booking-row header">
+                        <div>Booking ID</div>
+                        <div>Hotel</div>
+                        <div>Guest</div>
+                        <div>Dates</div>
+                        <div>Amount</div>
+                        <div>Status</div>
+                        <div>Action</div>
+                    </div>
+
+                    <!-- Table Body -->
+                    <div id="recentBookingsBody">
+                        <div class="booking-row">
+                            <div colspan="7" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #94a3b8;">
+                                <i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem;"></i> Loading bookings...
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
             </div>
         </main>
     </div>
@@ -285,189 +813,397 @@
     <!-- Admin JavaScript -->
     <script src="../../admin/js/admin.js"></script>
     <script>
-        // Initialize Dashboard
+        // ═══════════════════════════════════════
+        // Dashboard Controller
+        // ═══════════════════════════════════════
+
+        let dashboardData = null;
+        let revenueChartInstance = null;
+        let statusChartInstance = null;
+        let destinationChartInstance = null;
+
         document.addEventListener('DOMContentLoaded', function () {
             loadDashboardData();
+
+            // Refresh button
+            document.getElementById('refreshDashboard')?.addEventListener('click', () => {
+                loadDashboardData();
+                showNotification('Dashboard refreshed!', 'success');
+            });
         });
 
         async function loadDashboardData() {
             try {
-                // Fetch hotel dashboard stats and flight stats in parallel
-                const [hotelRes, flightRes] = await Promise.allSettled([
-                    apiRequest('/dashboard'),
-                    apiRequest('/flight-bookings/stats')
-                ]);
+                const result = await apiRequest('/dashboard');
 
-                const hotelData = (hotelRes.status === 'fulfilled' && hotelRes.value.success) ? hotelRes.value.data : {};
-                const flightData = (flightRes.status === 'fulfilled' && flightRes.value.success) ? flightRes.value.data : {};
+                if (!result.success) {
+                    throw new Error(result.error || 'Failed to load dashboard');
+                }
 
-                // Combine stats
-                const combined = {
-                    total_bookings: (hotelData.total_bookings || 0) + (flightData.total || 0),
-                    confirmed_bookings: (hotelData.confirmed_bookings || 0) + (flightData.confirmed || 0),
-                    total_revenue: (hotelData.total_revenue || 0) + (flightData.revenue || 0),
-                    pending_cancellations: (hotelData.pending_cancellations || 0) + (flightData.cancelled || 0),
-                    recent_bookings: hotelData.recent_bookings || [],
-                    new_customers: hotelData.new_customers || 0
-                };
-
-                updateStats(combined);
-                updateCharts(combined);
-                renderRecentBookings(combined.recent_bookings);
+                dashboardData = result.data;
+                renderHero(dashboardData);
+                renderKPIs(dashboardData);
+                renderPipeline(dashboardData);
+                renderCharts(dashboardData);
+                renderDestinations(dashboardData);
+                renderRecentBookings(dashboardData.recent_bookings);
             } catch (error) {
                 console.error('Error loading dashboard:', error);
                 showNotification('Failed to load dashboard data: ' + error.message, 'error');
             }
         }
 
-        function updateStats(data) {
-            // Animate stats with real values
-            animateValue('totalBookings', 0, data.total_bookings || 0, 1000);
-            animateValue('totalRevenue', 0, data.total_revenue || 0, 1000, '₹');
-            animateValue('newCustomers', 0, data.new_customers || 0, 1000); // Note: new_customers wasn't in the API response in service preview, might need adjustment
-            animateValue('cancellations', 0, data.pending_cancellations || 0, 1000);
+        // ═══ Hero Banner ═══
+        function renderHero(data) {
+            // Use USD for display since most bookings are in USD
+            document.getElementById('heroAmount').textContent = formatUSD(data.total_revenue || 0);
+            document.getElementById('heroTotalBookings').textContent = data.total_bookings || 0;
+            document.getElementById('heroConfirmed').textContent = data.confirmed_bookings || 0;
+            document.getElementById('heroAvgValue').textContent = formatUSD(data.avg_booking_value || 0);
+            document.getElementById('heroRoomNights').textContent = data.total_room_nights || 0;
+
+            // Animate the hero amount
+            animateCounter('heroAmount', 0, data.total_revenue || 0, 1500, '$');
         }
 
-        function renderRecentBookings(bookings) {
-            const tbody = document.getElementById('recentBookings');
+        // ═══ KPI Cards ═══
+        function renderKPIs(data) {
+            animateCounter('kpiTotalBookings', 0, data.total_bookings || 0, 1000);
+            animateCounter('kpiConfirmedRevenue', 0, data.total_revenue || 0, 1200, '$');
+            animateCounter('kpiAvgBookingValue', 0, data.avg_booking_value || 0, 1000, '$');
+            document.getElementById('kpiAvgNights').textContent = data.avg_nights || 0;
+            animateCounter('kpiRoomNights', 0, data.total_room_nights || 0, 1000);
+            animateCounter('kpiCancellations', 0, data.pending_cancellations || 0, 800);
+        }
 
-            if (!bookings || bookings.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">No bookings found.</td></tr>';
+        // ═══ Status Pipeline ═══
+        function renderPipeline(data) {
+            const breakdown = data.status_breakdown || {};
+            document.getElementById('pipeConfirmed').textContent = breakdown.confirmed || 0;
+            document.getElementById('pipeCreated').textContent = breakdown.created || 0;
+            document.getElementById('pipeUnknown').textContent = breakdown.unknown || 0;
+            document.getElementById('pipeFailed').textContent = breakdown.failed || 0;
+        }
+
+        // ═══ Charts ═══
+        function renderCharts(data) {
+            if (typeof Chart === 'undefined') {
+                console.warn('Chart.js not loaded');
                 return;
             }
 
-            tbody.innerHTML = bookings.map(booking => `
-                <tr>
-                    <td><strong>#${booking.id.substring(0, 8).toUpperCase()}</strong></td>
-                    <td>${booking.guest_name || 'Guest'}</td>
-                    <td>${booking.hotel_name || 'Flight/Hotel'}</td>
-                    <td>${formatDate(booking.check_in || booking.created_at)}</td>
-                    <td><strong>${formatCurrency(booking.total_amount)}</strong></td>
-                    <td><span class="status-badge ${getStatusClass(booking.status)}">${capitalize(booking.status)}</span></td>
-                    <td>
-                        <button class="btn btn-secondary btn-icon" title="View" onclick="window.location.href='bookings.html?id=${booking.id}'">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
+            // Destroy existing charts if they exist
+            if (revenueChartInstance) revenueChartInstance.destroy();
+            if (statusChartInstance) statusChartInstance.destroy();
 
-        function getStatusClass(status) {
-            const map = {
-                'confirmed': 'confirmed',
-                'pending': 'pending',
-                'cancelled': 'cancelled',
-                'processing': 'processing',
-                'completed': 'confirmed'
+            // Revenue Trend Chart
+            const monthlyData = data.monthly_revenue || [];
+            const months = monthlyData.map(m => {
+                const [y, mo] = m.month.split('-');
+                return new Date(y, mo - 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+            });
+            const revenues = monthlyData.map(m => m.revenue);
+            const bookingCounts = monthlyData.map(m => m.bookings);
+
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            revenueChartInstance = new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: 'Revenue ($)',
+                            data: revenues,
+                            borderColor: '#0e64a6',
+                            backgroundColor: 'rgba(14, 100, 166, 0.08)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 2.5,
+                            pointBackgroundColor: '#0e64a6',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: 'Bookings',
+                            data: bookingCounts,
+                            borderColor: '#f97316',
+                            backgroundColor: 'rgba(249, 115, 22, 0.05)',
+                            fill: false,
+                            tension: 0.4,
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointBackgroundColor: '#f97316',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: { intersect: false, mode: 'index' },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { usePointStyle: true, padding: 20, font: { family: 'Inter', size: 12 } }
+                        },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleFont: { family: 'Inter', weight: '600' },
+                            bodyFont: { family: 'Inter' },
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function (ctx) {
+                                    if (ctx.datasetIndex === 0) return `Revenue: $${ctx.parsed.y.toLocaleString()}`;
+                                    return `Bookings: ${ctx.parsed.y}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.04)' },
+                            ticks: {
+                                callback: v => '$' + v.toLocaleString(),
+                                font: { family: 'Inter', size: 11 }
+                            }
+                        },
+                        y1: {
+                            position: 'right',
+                            beginAtZero: true,
+                            grid: { display: false },
+                            ticks: { font: { family: 'Inter', size: 11 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { family: 'Inter', size: 11 } }
+                        }
+                    }
+                }
+            });
+
+            // Status Doughnut Chart
+            const breakdown = data.status_breakdown || {};
+            const statusLabels = Object.keys(breakdown).map(s => s.charAt(0).toUpperCase() + s.slice(1));
+            const statusValues = Object.values(breakdown);
+            const statusColors = {
+                confirmed: '#10b981',
+                created: '#3b82f6',
+                unknown: '#f59e0b',
+                failed: '#ef4444',
+                pending: '#8b5cf6',
+                cancelled: '#6b7280'
             };
-            return map[status?.toLowerCase()] || 'pending';
+            const colors = Object.keys(breakdown).map(s => statusColors[s] || '#94a3b8');
+
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            statusChartInstance = new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: statusValues,
+                        backgroundColor: colors,
+                        borderWidth: 0,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '72%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 16,
+                                font: { family: 'Inter', size: 12 }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            padding: 12,
+                            cornerRadius: 8,
+                            titleFont: { family: 'Inter', weight: '600' },
+                            bodyFont: { family: 'Inter' }
+                        }
+                    }
+                }
+            });
         }
 
-        function capitalize(str) {
-            return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+        // ═══ Top Destinations ═══
+        function renderDestinations(data) {
+            const destinations = data.top_destinations || [];
+            const listEl = document.getElementById('destinationList');
+
+            if (!destinations.length) {
+                listEl.innerHTML = '<li class="destination-item"><span style="color: #94a3b8;">No destination data yet.</span></li>';
+                return;
+            }
+
+            listEl.innerHTML = destinations.slice(0, 6).map((d, i) => `
+                <li class="destination-item">
+                    <div class="destination-info">
+                        <span class="destination-rank ${i < 3 ? 'top' : ''}">${i + 1}</span>
+                        <span class="destination-name">${truncate(d.name, 30)}</span>
+                    </div>
+                    <div class="destination-stats">
+                        <div class="destination-bookings">${d.bookings} booking${d.bookings !== 1 ? 's' : ''}</div>
+                        <div class="destination-revenue">$${d.revenue.toLocaleString()}</div>
+                    </div>
+                </li>
+            `).join('');
+
+            // Destination Bar Chart
+            if (typeof Chart !== 'undefined') {
+                if (destinationChartInstance) destinationChartInstance.destroy();
+
+                const ctx = document.getElementById('destinationChart').getContext('2d');
+                const topDest = destinations.slice(0, 5);
+
+                destinationChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: topDest.map(d => truncate(d.name, 15)),
+                        datasets: [{
+                            label: 'Bookings',
+                            data: topDest.map(d => d.bookings),
+                            backgroundColor: ['#0e64a6', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'],
+                            borderRadius: 6,
+                            borderSkipped: false,
+                            barPercentage: 0.6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        indexAxis: 'y',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#1e293b',
+                                padding: 12,
+                                cornerRadius: 8,
+                                titleFont: { family: 'Inter' },
+                                bodyFont: { family: 'Inter' }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(0,0,0,0.04)' },
+                                ticks: { stepSize: 1, font: { family: 'Inter', size: 11 } }
+                            },
+                            y: {
+                                grid: { display: false },
+                                ticks: { font: { family: 'Inter', size: 11 } }
+                            }
+                        }
+                    }
+                });
+            }
         }
 
-        function animateValue(id, start, end, duration, prefix = '', format = false) {
-            const element = document.getElementById(id);
-            if (!element) return;
+        // ═══ Recent Bookings ═══
+        function renderRecentBookings(bookings) {
+            const container = document.getElementById('recentBookingsBody');
+
+            if (!bookings || bookings.length === 0) {
+                container.innerHTML = `
+                    <div class="booking-row">
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #94a3b8;">
+                            <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                            No hotel bookings found yet.
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = bookings.map(b => {
+                const bookingId = (b.partner_order_id || b.id || '').substring(0, 16);
+                const hotelName = b.hotel_name || 'Hotel';
+                const location = b.hotel_city || b.hotel_country || '';
+                const guestName = b.guest_name || 'Guest';
+                const dates = `${formatShortDate(b.check_in)} → ${formatShortDate(b.check_out)}`;
+                const amount = `$${parseFloat(b.total_amount || 0).toLocaleString()}`;
+                const status = b.status || 'unknown';
+                const statusClass = status.toLowerCase();
+
+                return `
+                    <div class="booking-row">
+                        <div class="booking-id" title="${b.partner_order_id || b.id}">${bookingId}</div>
+                        <div class="hotel-info">
+                            <span class="hotel-name" title="${hotelName}">${truncate(hotelName, 28)}</span>
+                            ${location ? `<span class="hotel-location"><i class="fas fa-map-pin" style="margin-right: 3px;"></i>${location}</span>` : ''}
+                        </div>
+                        <div class="guest-name">${guestName}</div>
+                        <div class="booking-dates">${dates}</div>
+                        <div class="booking-amount">${amount}</div>
+                        <div><span class="booking-status ${statusClass}">${status}</span></div>
+                        <div>
+                            <button class="booking-action-btn" title="View Details" onclick="window.location.href='bookings.html?id=${b.id}'">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ═══ Utilities ═══
+        function formatUSD(amount) {
+            return '$' + Number(amount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
+        function formatShortDate(dateStr) {
+            if (!dateStr) return '—';
+            const d = new Date(dateStr + 'T00:00:00');
+            return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+        }
+
+        function truncate(str, len) {
+            if (!str) return '';
+            return str.length > len ? str.substring(0, len) + '…' : str;
+        }
+
+        function animateCounter(id, start, end, duration, prefix = '') {
+            const el = document.getElementById(id);
+            if (!el) return;
 
             const range = end - start;
             const startTime = performance.now();
 
-            function update(currentTime) {
-                const elapsed = currentTime - startTime;
+            function update(now) {
+                const elapsed = now - startTime;
                 const progress = Math.min(elapsed / duration, 1);
+                const easedProgress = 1 - Math.pow(1 - progress, 4);
+                const current = Math.floor(start + range * easedProgress);
 
-                let value = Math.floor(start + (range * easeOutQuart(progress)));
-
-                if (format) { // Simple formatting for revenue
-                    value = prefix + value.toLocaleString('en-IN');
+                if (prefix === '$') {
+                    el.textContent = '$' + current.toLocaleString('en-US');
                 } else {
-                    value = prefix + value.toLocaleString();
+                    el.textContent = prefix + current.toLocaleString();
                 }
 
-                element.textContent = value;
-
-                if (progress < 1) {
-                    requestAnimationFrame(update);
-                }
+                if (progress < 1) requestAnimationFrame(update);
             }
 
             requestAnimationFrame(update);
         }
 
-        function easeOutQuart(x) {
-            return 1 - Math.pow(1 - x, 4);
-        }
-
-        function updateCharts(data) {
-            // Check if Chart.js is loaded
-            if (typeof Chart === 'undefined') {
-                console.warn('Chart.js not loaded. Skipping chart rendering.');
-                const containers = ['revenueChart', 'statusChart'];
-                containers.forEach(id => {
-                    const canvas = document.getElementById(id);
-                    if (canvas && canvas.parentElement) {
-                        canvas.parentElement.innerHTML = `
-                            <div class="chart-error">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                <p>Failed to load charts. Please check your internet connection.</p>
-                            </div>
-                        `;
-                    }
-                });
+        function exportRevenueData() {
+            if (!dashboardData?.monthly_revenue?.length) {
+                showNotification('No revenue data to export', 'warning');
                 return;
             }
-
-            // Revenue Chart
-            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-            new Chart(revenueCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                    datasets: [{
-                        label: 'Revenue (₹)',
-                        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // Placeholder
-                        borderColor: '#0e64a6',
-                        backgroundColor: 'rgba(14, 100, 166, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-
-            // Status Chart
-            const confirmedCount = data.confirmed_bookings || 0;
-            const pendingCancellationCount = data.pending_cancellations || 0;
-            const totalCount = data.total_bookings || 0;
-            const otherCount = Math.max(0, totalCount - confirmedCount - pendingCancellationCount);
-
-            const statusCtx = document.getElementById('statusChart').getContext('2d');
-            new Chart(statusCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Confirmed', 'Cancellation Req', 'Other'],
-                    datasets: [{
-                        data: [confirmedCount, pendingCancellationCount, otherCount],
-                        backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { position: 'bottom' } },
-                    cutout: '70%'
-                }
-            });
+            exportToCSV(dashboardData.monthly_revenue, 'hotel_revenue_report');
+            showNotification('Revenue data exported successfully!', 'success');
         }
     </script>
 </body>

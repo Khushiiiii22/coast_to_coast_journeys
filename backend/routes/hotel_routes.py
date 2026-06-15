@@ -17,7 +17,25 @@ hotel_bp = Blueprint('hotels', __name__, url_prefix='/api/hotels')
 # ==========================================
 # CONSTANTS
 # ==========================================
-COMMISSION_RATE = 0.15  # 15% Markup
+def get_active_markup_rule(is_domestic=True):
+    """Fetch active markup rule (type and value) from Supabase"""
+    try:
+        from services.supabase_service import supabase_service
+        # Fetch hotel rules - using 'dom' and 'int' to match frontend names
+        rule_name = 'Hotel Domestic' if is_domestic else 'Hotel International'
+        result = supabase_service.client.table('markup_rules').select('*').eq('rule_name', rule_name).execute()
+        
+        if result.data and len(result.data) > 0:
+            rule = result.data[0]
+            return {
+                'type': rule.get('markup_type', 'percentage'),
+                'value': float(rule.get('markup_value', 15))
+            }
+    except Exception as e:
+        print(f"⚠️ Error fetching markup: {e}")
+    return {'type': 'percentage', 'value': 15.0} # Fallback
+
+
 
 # ==========================================
 # DEBUG ENDPOINT (Temporary) - v3.0 Brevo
@@ -588,6 +606,12 @@ def search_by_destination():
                     except:
                         nights = 1
 
+                    # Dynamic Markup Fetching
+                    indian_cities = ['goa', 'delhi', 'mumbai', 'bangalore', 'bengaluru', 'chennai', 'kolkata', 'jaipur', 'udaipur', 'agra', 'hyderabad', 'pune', 'kerala', 'kochi', 'manali', 'shimla', 'rishikesh', 'varanasi', 'amritsar', 'darjeeling', 'ooty']
+                    is_domestic = any(city in target_destination.lower() for city in indian_cities) or 'india' in target_destination.lower()
+                    active_rule = get_active_markup_rule(is_domestic=is_domestic)
+                    print(f"💰 Applying {active_rule['value']} ({active_rule['type']}) markup")
+
                     # Enrich hotels with static data from cache (if available)
                     for h in etg_hotels:
                         hid = h.get('hotel_id') or h.get('id')
@@ -598,8 +622,11 @@ def search_by_destination():
                         hotels_data=etg_hotels, 
                         target_currency=user_currency,
                         conversion_rates=CONVERSION_RATES,
-                        nights=nights
+                        nights=nights,
+                        markup_rule=active_rule
                     )
+
+
                     
                     return jsonify({
                         'success': True,
@@ -777,13 +804,15 @@ def process_etg_image_url(raw_url):
     return f"{CDN_BASE}{IMG_SIZE}/{clean_path}"
 
 
-def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=None, MEAL_TYPE_DISPLAY=None, room_groups=None, nights=1):
+def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=None, MEAL_TYPE_DISPLAY=None, room_groups=None, nights=1, markup_rule=None):
     """
     Transform ETG search results into flattened hotel cards.
     Handles price calculation (Commission + Exclusive Taxes).
     
     room_groups: optional dict of static room data keyed by rg_ext.rg
     """
+    if not markup_rule:
+        markup_rule = {'type': 'percentage', 'value': 15.0}
     if not MEAL_TYPE_DISPLAY:
         MEAL_TYPE_DISPLAY = {
             'all-inclusive': 'All Inclusive',
@@ -873,9 +902,14 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
             elif conversion_rates and f"{rate_currency}_TO_{target_currency}" in conversion_rates:
                 converted_prepaid = api_prepaid_amount * conversion_rates[f"{rate_currency}_TO_{target_currency}"]
 
-            # Display total: what the user sees (Prepaid + Property Fees converted)
-            # Final display price inclusive of everything
-            display_total = (converted_prepaid * (1 + COMMISSION_RATE)) + (api_non_included_tax * conversion_rates.get(f"{rate_currency}_TO_{target_currency}", 1) if target_currency != rate_currency else api_non_included_tax)
+            # display total: what the user sees (Prepaid + Property Fees converted)
+            # Apply dynamic markup
+            if markup_rule['type'] == 'percentage':
+                prepay_to_charge = converted_prepaid * (1 + (markup_rule['value'] / 100))
+            else:
+                prepay_to_charge = converted_prepaid + markup_rule['value']
+
+            display_total = prepay_to_charge + (api_non_included_tax * conversion_rates.get(f"{rate_currency}_TO_{target_currency}", 1) if target_currency != rate_currency else api_non_included_tax)
             display_nightly = display_total / (nights if nights > 0 else 1)
             
             if lowest_price == 0 or display_nightly < lowest_price:
@@ -889,7 +923,8 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
                 no_child_meal = meal_data.get('no_child_meal', False)
                 best_rate_fees = property_fees
                 # The actual amount to charge the guest (excluding what they pay at property)
-                prepay_to_charge = converted_prepaid * (1 + COMMISSION_RATE)
+                # prepay_to_charge is already calculated above
+
         # Use Static Data for Name/Image/Address if available
         # Fallback to search result data, then to safe defaults
         static_info = hotel.get('static_data', {}) # Assuming static data is passed in or fetched
@@ -989,7 +1024,7 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
             },
             'static_data': static_info,
             'discount': 15,
-            'rates': transform_rates(rates, target_currency, conversion_rates, MEAL_TYPE_DISPLAY, room_groups, nights, hotel_images=all_images)
+            'rates': transform_rates(rates, target_currency, conversion_rates, MEAL_TYPE_DISPLAY, room_groups, nights, hotel_images=all_images, markup_rule=markup_rule)
         }
         
         transformed.append(transformed_hotel)
@@ -997,8 +1032,10 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
     return transformed
 
 
-def transform_rates(rates, target_currency, conversion_rates, meal_display_map, room_groups=None, nights=1, hotel_images=None):
+def transform_rates(rates, target_currency, conversion_rates, meal_display_map, room_groups=None, nights=1, hotel_images=None, markup_rule=None):
     """Transform rate data with proper meal_data, cancellation info, and optional room enrichment"""
+    if not markup_rule:
+        markup_rule = {'type': 'percentage', 'value': 15.0}
     transformed_rates = []
     
     for rate in rates[:20]:  # Increased limit to 20 rates to show more variety
@@ -1056,7 +1093,10 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map, 
                 converted_prepaid = api_prepaid_amount * conversion_rates[key]
         
         # Apply commission only to what WE collect (Prepaid)
-        prepay_to_charge = converted_prepaid * (1 + COMMISSION_RATE)
+        if markup_rule['type'] == 'percentage':
+            prepay_to_charge = converted_prepaid * (1 + (markup_rule['value'] / 100))
+        else:
+            prepay_to_charge = converted_prepaid + markup_rule['value']
         
         # Property fees converted for display
         display_property_fees = api_non_included_tax * (conversion_rates.get(f"{rate_currency}_TO_{target_currency}", 1) if target_currency != rate_currency else 1)
@@ -1074,14 +1114,17 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map, 
         rate['property_payable_fees'] = property_fees
         rate['currency'] = target_currency
         rate['meal_display'] = meal_display_map.get(rate.get('meal', 'nomeal'), rate.get('meal', 'Room Only').title())
-
+        
+        # Markup transparency for tax calc
         tax_info = parse_taxes(
             tax_data, 
             target_currency, 
             rate_currency, 
             conversion_rates
         )
-        tax_info['total_all_taxes'] = round(api_included_tax * (1 + COMMISSION_RATE) + api_non_included_tax, 2)
+        
+        full_tax_markup = (1 + (markup_rule['value'] / 100)) if markup_rule['type'] == 'percentage' else 1
+        tax_info['total_all_taxes'] = round(api_included_tax * full_tax_markup + api_non_included_tax, 2)
 
         # Get meal_data (preferred)
         meal_data = rate.get('meal_data', {})

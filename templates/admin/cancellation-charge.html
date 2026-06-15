@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cancellation Charge | C2C Journeys Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="../../admin/css/admin.css">
+    <link rel="icon" href="data:,">
+
+    <style>
+        .cancel-banner {
+            background: #000;
+            color: #4df3c5;
+            text-align: center;
+            padding: 1rem;
+            font-size: 1.25rem;
+            font-weight: 800;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2.5rem;
+        }
+
+        .cancel-container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .service-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .service-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1.25rem;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 0.5rem;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .ss-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .submit-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .btn-submit {
+            background: #f4511e;
+            color: white;
+            border: none;
+            padding: 0.8rem 2.5rem;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Manage Cancellation Charge</h1>
+                </div>
+                <div class="header-right">
+                    <div style="font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-right: 1.5rem;">
+                        COAST TO COAST JOURNEYS
+                    </div>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <div class="cancel-banner">HOTEL CANCELLATION CHARGES</div>
+
+                <div class="cancel-container">
+                    <form>
+                        <!-- Hotel -->
+                        <div class="service-section">
+                            <div class="service-header"><i class="fas fa-hotel"></i> Hotel Cancellation Management</div>
+                            <div class="input-row">
+                                <div class="input-group">
+                                    <label class="input-label">Domestic (Flat/%)</label>
+                                    <input type="text" class="ss-input" value="100">
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label">International (Flat/%)</label>
+                                    <input type="text" class="ss-input" value="200">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="submit-container">
+                            <button type="submit" class="btn-submit">Submit Markup</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../admin/js/admin.js"></script>
+</body>
+
+</html>

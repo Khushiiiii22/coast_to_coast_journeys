@@ -2,6 +2,199 @@
  * C2C Journeys - Admin Panel JavaScript
  */
 
+/* ========================================
+   Account & Statement Logic
+======================================== */
+async function loadLedger() {
+    const tableBody = document.getElementById('statementBody');
+    if (!tableBody) return;
+
+    try {
+        const result = await apiRequest('/account/ledger');
+
+        if (result.status === 'success') {
+            const data = result.data;
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="9" class="empty-row" style="text-align: center; padding: 2rem;">No Transactions Found</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = data.map(item => `
+                <tr>
+                    <td>${new Date(item.date).toLocaleDateString()} ${new Date(item.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+                    <td>
+                        <div class="txn-id-box">Txn. Id: ${item.txn_id}</div>
+                        <div>Ref Id: <a href="#" class="booking-id-link">${item.order_id}</a></div>
+                        <span class="pg-badge">PAYMENT</span>
+                    </td>
+                    <td>
+                        <div class="description-box">
+                            <b>${item.description}</b><br>
+                            Status: <b style="text-transform: uppercase;">${item.status}</b><br>
+                            <span class="remark-pill">automated entry</span>
+                        </div>
+                    </td>
+                    <td style="text-align: center;"><i class="fas fa-bed fa-lg"></i></td>
+                    <td class="na-text">---</td>
+                    <td class="val-credit">${item.credit > 0 ? '₹' + item.credit.toLocaleString() : ''}</td>
+                    <td class="val-debit">${item.debit > 0 ? '₹' + item.debit.toLocaleString() : ''}</td>
+                    <td>₹ ${item.amount.toLocaleString()}</td>
+                    <td>₹ ${item.amount.toLocaleString()}</td>
+                </tr>
+            `).join('');
+
+            // Update balance if element exists
+            const balanceEl = document.querySelector('.balance-amount');
+            if (balanceEl && result.balance) {
+                balanceEl.textContent = `₹ ${result.balance.toLocaleString()}`;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading ledger:', error);
+    }
+}
+
+async function loadInvoices() {
+    const tableBody = document.getElementById('invoiceBody');
+    if (!tableBody) return;
+
+    try {
+        const result = await apiRequest('/account/invoices');
+
+        if (result.status === 'success') {
+            const data = result.data;
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="12" class="empty-row" style="text-align: center; padding: 2rem; color: #64748b;">No Invoices Found</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = data.map(item => `
+                <tr>
+                    <td>${item.lead_pax.split('@')[0].toUpperCase()}</td>
+                    <td>${item.lead_email}</td>
+                    <td>${item.lead_phone}</td>
+                    <td><a href="#" class="pnr-link">${item.ref_no}</a></td>
+                    <td>${item.hotel_name}</td>
+                    <td>${item.destination}</td>
+                    <td>${item.check_in}</td>
+                    <td><span class="status-confirm">${item.status}</span></td>
+                    <td>${item.markup}</td>
+                    <td>0</td>
+                    <td>₹${item.total_fare.toLocaleString()}</td>
+                    <td><button class="btn-pdf"><i class="fas fa-file-pdf"></i></button></td>
+                </tr>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading invoices:', error);
+    }
+}
+
+async function loadHotelEnquiries() {
+    const tableBody = document.getElementById('hotelEnquiryBody');
+    if (!tableBody) return;
+
+    try {
+        const result = await apiRequest('/queries/hotel');
+
+        if (result.status === 'success') {
+            const data = result.data;
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="9" class="empty-row" style="text-align: center; padding: 2rem;">No Enquiries Found</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = data.map((item, idx) => `
+                <tr>
+                    <td>${idx + 1}.</td>
+                    <td><span class="col-link">${item.name}</span></td>
+                    <td>
+                        <div class="col-email">${item.email}</div>
+                        <div>${item.phone || '---'}</div>
+                    </td>
+                    <td><b>${item.destination || 'N/A'}</b></td>
+                    <td>${item.travel_date ? new Date(item.travel_date).toLocaleDateString() : '---'}</td>
+                    <td>---</td>
+                    <td><span class="badge-rooms">${item.travelers || '---'}</span></td>
+                    <td style="max-width: 250px;">${item.special_requirements || '---'}</td>
+                    <td>${new Date(item.created_at).toLocaleDateString()}</td>
+                </tr>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading hotel enquiries:', error);
+    }
+}
+
+async function loadContactEnquiries() {
+    const tableBody = document.getElementById('contactEnquiryBody');
+    if (!tableBody) return;
+
+    try {
+        const result = await apiRequest('/queries/contact');
+
+        if (result.status === 'success') {
+            const data = result.data;
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="empty-row" style="text-align: center; padding: 2rem;">No Messages Found</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = data.map((item, idx) => `
+                <tr>
+                    <td>${idx + 1}.</td>
+                    <td><span class="col-link">${item.name}</span></td>
+                    <td><span class="col-email">${item.email}</span></td>
+                    <td>${item.phone || '---'}</td>
+                    <td class="col-message">${item.message}</td>
+                    <td>1</td>
+                    <td>${new Date(item.created_at).toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading contact enquiries:', error);
+    }
+}
+
+async function loadInvoicesList() {
+    const tableBody = document.getElementById('manualInvoiceBody');
+    if (!tableBody) return;
+
+    try {
+        const result = await apiRequest('/account/invoices');
+
+        if (result.status === 'success') {
+            const data = result.data;
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="empty-row" style="text-align: center; padding: 2rem;">No Invoices Found</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = data.map((item, idx) => `
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 1rem;">${idx + 1}</td>
+                    <td style="padding: 1rem;">${item.invoice_id}</td>
+                    <td style="padding: 1rem;">${item.lead_pax}</td>
+                    <td style="padding: 1rem;">₹ ${parseFloat(item.total_fare).toLocaleString()}</td>
+                    <td style="padding: 1rem;"><i class="fas fa-file-download" style="color: #ef4444; cursor: pointer; font-size: 1.2rem;"></i></td>
+                </tr>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading invoices list:', error);
+    }
+}
+
+// Trigger loading on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadLedger();
+    loadInvoices();
+    loadHotelEnquiries();
+    loadContactEnquiries();
+    loadInvoicesList();
+});
+
 // ========================================
 // Sidebar Toggle
 // ========================================
@@ -51,34 +244,79 @@ function initSidebar() {
         {
             section: 'Main', items: [
                 { name: 'Dashboard', icon: 'fa-home', href: 'dashboard.html' },
-                { name: 'Hotel Bookings', icon: 'fa-calendar-check', href: 'bookings.html' },
-                { name: 'Flight Bookings', icon: 'fa-plane', href: 'flights.html' }
-            ]
-        },
-        {
-            section: 'Finance', items: [
-                { name: 'Payments', icon: 'fa-credit-card', href: 'payments.html' },
-                { name: 'Invoices', icon: 'fa-file-invoice', href: 'invoices.html' },
-                { name: 'Refunds', icon: 'fa-undo', href: 'refunds.html' }
+                { 
+                    name: 'All Bookings', 
+                    icon: 'fa-briefcase', 
+                    href: '#',
+                    hasSub: true,
+                    isOpen: localStorage.getItem('bookings_submenu_open') === 'true',
+                    subItems: [
+                        { name: 'Hotel', icon: 'fa-bed', href: 'bookings.html' },
+                        { name: 'Incomplete Booking', icon: 'fa-exclamation-triangle', href: 'bookings.html?status=created' }
+                    ]
+                }
             ]
         },
         {
             section: 'Operations', items: [
-                { name: 'Markup Tool', icon: 'fa-percentage', href: 'markup.html' },
-                { name: 'Suppliers', icon: 'fa-handshake', href: 'suppliers.html' },
-                { name: 'Customers', icon: 'fa-users', href: 'customers.html' }
-            ]
-        },
-        {
-            section: 'Analytics', items: [
-                { name: 'Reports', icon: 'fa-chart-bar', href: 'reports.html' }
+                { 
+                    name: 'Manage Markup', 
+                    icon: 'fa-percentage', 
+                    href: '#',
+                    hasSub: true,
+                    isOpen: localStorage.getItem('markup_submenu_open') === 'true',
+                    subItems: [
+                        { name: 'Currency Setting', icon: 'fa-money-bill-wave', href: 'markup.html' },
+                        { name: 'Block Booking Markup', icon: 'fa-ban', href: 'block-markup.html' },
+                        { name: 'Manage Coupons', icon: 'fa-tags', href: 'coupons.html' },
+                        { name: 'B2B Markup', icon: 'fa-user-tie', href: 'b2b-markup.html' },
+                        { name: 'Convenience Charge', icon: 'fa-hand-holding-usd', href: 'convenience-charge.html' },
+                        { name: 'Cancellation Charge', icon: 'fa-times-circle', href: 'cancellation-charge.html' }
+                    ]
+                },
+                { 
+                    name: 'MY Account', 
+                    icon: 'fa-user-circle', 
+                    href: '#',
+                    hasSub: true,
+                    isOpen: localStorage.getItem('account_submenu_open') === 'true',
+                    subItems: [
+                        { name: 'Statement', icon: 'fa-file-invoice-dollar', href: 'statement.html' },
+                        { name: 'My Invoices', icon: 'fa-file-invoice', href: 'invoices.html' },
+                        { name: 'Credit Notes', icon: 'fa-clipboard-list', href: 'credit-notes.html' },
+                        { name: 'Debit Notes', icon: 'fa-clipboard-list', href: 'debit-notes.html' },
+                        { name: 'Refunds', icon: 'fa-undo', href: 'refunds.html' }
+                    ]
+                },
+                { 
+                    name: 'Queries', 
+                    icon: 'fa-question-circle', 
+                    href: '#',
+                    hasSub: true,
+                    isOpen: localStorage.getItem('queries_submenu_open') === 'true',
+                    subItems: [
+                        { name: 'Hotel Enquiry', icon: 'fa-bed', href: 'hotel-enquiry.html' },
+                        { name: 'Contact-Us Enquiry', icon: 'fa-envelope', href: 'contact-enquiry.html' }
+                    ]
+                },
+                { 
+                    name: 'Utility', 
+                    icon: 'fa-tools', 
+                    href: '#',
+                    hasSub: true,
+                    isOpen: localStorage.getItem('utility_submenu_open') === 'true',
+                    subItems: [
+                        { name: 'Meeting Slots', icon: 'fa-calendar-alt', href: 'meeting-slots.html' },
+                        { name: 'Generate Invoice', icon: 'fa-file-invoice', href: 'generate-invoice.html' }
+                    ]
+                },
+                { name: 'Customers', icon: 'fa-users', href: 'customers.html' },
+                { name: 'Activity Logs', icon: 'fa-history', href: 'activity-logs.html' }
             ]
         },
         {
             section: 'System', items: [
-                { name: 'Admin Users', icon: 'fa-user-shield', href: 'users.html' },
                 { name: 'Settings', icon: 'fa-cog', href: 'settings.html' },
-                { name: 'Activity Logs', icon: 'fa-history', href: 'activity-logs.html' },
                 { name: 'Logout', icon: 'fa-sign-out-alt', href: '#', onclick: 'logout(); return false;', style: 'color: #ef4444;' }
             ]
         }
@@ -96,15 +334,45 @@ function initSidebar() {
         html += `
             <div class="nav-section">
                 <span class="nav-section-title">${section.section}</span>
-                ${section.items.map(item => `
-                    <a href="${item.href}" 
-                       class="nav-item ${currentPath === item.href ? 'active' : ''}" 
-                       ${item.onclick ? `onclick="${item.onclick}"` : ''}
-                       ${item.style ? `style="${item.style}"` : ''}>
-                        <i class="fas ${item.icon}"></i>
-                        <span>${item.name}</span>
-                    </a>
-                `).join('')}
+                ${section.items.map(item => {
+                    const isActive = currentPath === item.href || (item.subItems && item.subItems.some(sub => currentPath === sub.href));
+                    
+                    if (item.hasSub) {
+                        let storageKey = 'bookings_submenu_open';
+                        if (item.name === 'Manage Markup') storageKey = 'markup_submenu_open';
+                        if (item.name === 'MY Account') storageKey = 'account_submenu_open';
+                        if (item.name === 'Queries') storageKey = 'queries_submenu_open';
+                        if (item.name === 'Utility') storageKey = 'utility_submenu_open';
+                        
+                        return `
+                            <div class="nav-item-dropdown ${item.isOpen ? 'open' : ''}">
+                                <a href="#" class="nav-item ${isActive ? 'active' : ''}" onclick="toggleSubMenu(event, '${storageKey}')">
+                                    <i class="fas ${item.icon}"></i>
+                                    <span>${item.name}</span>
+                                    <i class="fas fa-chevron-down dropdown-arrow"></i>
+                                </a>
+                                <div class="nav-sub-items">
+                                    ${item.subItems.map(sub => `
+                                        <a href="${sub.href}" class="nav-sub-item ${currentPath === sub.href ? 'active' : ''}">
+                                            <i class="fas ${sub.icon}"></i>
+                                            <span>${sub.name}</span>
+                                        </a>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    return `
+                        <a href="${item.href}" 
+                           class="nav-item ${currentPath === item.href ? 'active' : ''}" 
+                           ${item.onclick ? `onclick="${item.onclick}"` : ''}
+                           ${item.style ? `style="${item.style}"` : ''}>
+                            <i class="fas ${item.icon}"></i>
+                            <span>${item.name}</span>
+                        </a>
+                    `;
+                }).join('')}
             </div>
         `;
     });
@@ -139,6 +407,13 @@ function initSidebar() {
             activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     }, 100);
+}
+
+function toggleSubMenu(event, storageKey) {
+    event.preventDefault();
+    const dropdown = event.currentTarget.closest('.nav-item-dropdown');
+    const isOpen = dropdown.classList.toggle('open');
+    localStorage.setItem(storageKey, isOpen);
 }
 
 function restoreSidebarScroll() {
@@ -227,6 +502,14 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
 
     try {
         const response = await fetch(`${API_BASE}${endpoint}`, options);
+        
+        if (response.status === 401) {
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_user');
+            window.location.href = 'login.html';
+            return;
+        }
+
         const result = await response.json();
 
         if (!response.ok) {
@@ -236,7 +519,9 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
         return result;
     } catch (error) {
         console.error('API Error:', error);
-        showNotification(error.message, 'error');
+        if (error.message !== 'Unexpected token < in JSON at position 0') {
+            showNotification(error.message, 'error');
+        }
         throw error;
     }
 }

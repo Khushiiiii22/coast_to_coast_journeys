@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B2B Markup Setting | C2C Journeys Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="../../admin/css/admin.css">
+    <link rel="icon" href="data:,">
+
+    <style>
+        .markup-section-banner {
+            background: #000;
+            color: #4df3c5;
+            text-align: center;
+            padding: 1rem;
+            font-size: 1.25rem;
+            font-weight: 800;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 2rem 0 1rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .markup-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border: 1px solid #4db6ac;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #fff;
+            margin-bottom: 2rem;
+        }
+
+        .markup-col {
+            border-right: 1px solid #e0f2f1;
+        }
+
+        .markup-col:last-child {
+            border-right: none;
+        }
+
+        .col-header {
+            padding: 0.75rem 1rem;
+            font-weight: 700;
+            color: #1e293b;
+            border-bottom: 1px solid #e0f2f1;
+            font-size: 0.9rem;
+        }
+
+        .col-body {
+            padding: 1.25rem 1rem;
+            min-height: 80px;
+        }
+
+        .btn-group-sm {
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .bg-cyan { background: #26c6da; }
+        .bg-red { background: #e53935; }
+        .bg-purple { background: #8e24aa; }
+        .bg-teal { background: #009688; }
+
+        .price-tag {
+            border: 1px solid #e2e8f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .dot-red { width: 6px; height: 6px; background: red; border-radius: 50%; }
+    </style>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">B2B Markup Management</h1>
+                </div>
+                <div class="header-right">
+                    <div style="font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-right: 1.5rem;">
+                        COAST TO COAST JOURNEYS
+                    </div>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <!-- Hotel -->
+                <div class="markup-section-banner">
+                    <i class="fas fa-hotel"></i> HOTEL MARKUP SETTING
+                </div>
+                <div class="markup-grid">
+                    <div class="markup-col">
+                        <div class="col-header">Domestic Markup</div>
+                        <div class="col-body">
+                            <button class="btn-group-sm bg-cyan"><i class="fas fa-list"></i> Markup Group (1)</button>
+                        </div>
+                    </div>
+                    <div class="markup-col">
+                        <div class="col-header">International Markup</div>
+                        <div class="col-body">
+                            <button class="btn-group-sm bg-cyan"><i class="fas fa-list"></i> Markup Group (0)</button>
+                        </div>
+                    </div>
+                    <div class="markup-col">
+                        <div class="col-header">Special Offers</div>
+                        <div class="col-body">
+                            <button class="btn-group-sm bg-purple"><i class="fas fa-list"></i> Commission Group (0)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../admin/js/admin.js"></script>
+</body>
+
+</html>

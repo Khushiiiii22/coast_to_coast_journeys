@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Statement | C2C Journeys Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="../../admin/css/admin.css">
+    <link rel="icon" href="data:,">
+
+    <style>
+        .statement-banner {
+            background: #000;
+            color: #4df3c5;
+            text-align: center;
+            padding: 1rem;
+            font-size: 1.4rem;
+            font-weight: 800;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+        }
+
+        .balance-card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .balance-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .balance-amount {
+            color: #10b981; /* Mint green */
+            margin-left: 0.5rem;
+        }
+
+        /* Filter Row matching screenshot */
+        .statement-filters {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #1e293b;
+        }
+
+        /* Search bar matching screenshot */
+        .search-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+
+        .search-group {
+            flex: 1;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .btn-reset {
+            background: #e53935;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-apply {
+            background: #4db6ac;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-export {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Table Styling */
+        .statement-table-container {
+            background: #fff;
+            border: 1px solid #e0f2f1;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .ss-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .ss-table th {
+            background: #f8fafc;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #64748b;
+            border-bottom: 2px solid #e0f2f1;
+            white-space: nowrap;
+        }
+
+        .ss-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+            color: #1e293b;
+        }
+
+        .txn-id-box { font-weight: 700; margin-bottom: 4px; }
+        .booking-id-link { color: #3b82f6; text-decoration: none; font-weight: 700; }
+        .pg-badge { 
+            background: #3b82f6; 
+            color: white; 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            font-size: 0.7rem; 
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        .description-box { line-height: 1.4; }
+        .remark-pill {
+            background: #fef3c7;
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            color: #92400e;
+            font-weight: 600;
+        }
+
+        .val-credit { color: #10b981; font-weight: 700; }
+        .val-debit { color: #ef4444; font-weight: 700; }
+    </style>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">My Statement</h1>
+                </div>
+                <div class="header-right">
+                    <div style="font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-right: 1.5rem;">
+                        COAST TO COAST JOURNEYS
+                    </div>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <div class="statement-banner">MY STATEMENT</div>
+
+                <div class="balance-card">
+                    <span class="balance-text">Balance: <span class="balance-amount">₹ 46,640</span></span>
+                </div>
+
+                <div class="statement-filters">
+                    <div class="filter-group">
+                        <label>From date</label>
+                        <input type="date" class="filter-input">
+                    </div>
+                    <div class="filter-group">
+                        <label>To date</label>
+                        <input type="date" class="filter-input">
+                    </div>
+                    <div class="filter-group">
+                        <label>Service</label>
+                        <select class="filter-input">
+                            <option>All services</option>
+                            <option selected>Hotel</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Credit / Debit</label>
+                        <select class="filter-input">
+                            <option>All (credit and debit)</option>
+                            <option>Credit Only</option>
+                            <option>Debit Only</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Rows per page</label>
+                        <select class="filter-input">
+                            <option>20 rows</option>
+                            <option>50 rows</option>
+                            <option>100 rows</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="search-row">
+                    <div class="search-group">
+                        <input type="text" class="search-input" placeholder="Transaction ID, booking ID or remark">
+                    </div>
+                    <button class="btn-reset"><i class="fas fa-sync-alt"></i> Reset</button>
+                    <button class="btn-apply"><i class="fas fa-search"></i> Apply</button>
+                    <button class="btn-export"><i class="fas fa-file-excel"></i> Export Excel</button>
+                </div>
+
+                <div class="statement-table-container">
+                    <table class="ss-table">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Transaction Id / Booking Id</th>
+                                <th>Description</th>
+                                <th>Service</th>
+                                <th>Payment / Device Info</th>
+                                <th>Credit</th>
+                                <th>Debit</th>
+                                <th>Previous Amount</th>
+                                <th>Remaining Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="statementBody">
+                            <!-- Transactions will be loaded here via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../admin/js/admin.js"></script>
+</body>
+
+</html>
