@@ -52,8 +52,9 @@ def get_dashboard():
     try:
         from flask import current_app
         admin_service = current_app.config.get('ADMIN_SERVICE')
+        period = request.args.get('period', 'all')
         
-        result = admin_service.get_dashboard_stats()
+        result = admin_service.get_dashboard_stats(period=period)
         return jsonify(result), 200 if result['success'] else 500
         
     except Exception as e:
@@ -73,6 +74,7 @@ def get_bookings():
         
         # Get query params
         status = request.args.get('status')
+        customer_id = request.args.get('customer_id')
         limit = int(request.args.get('limit', 50))
         offset = int(request.args.get('offset', 0))
         
@@ -89,6 +91,9 @@ def get_bookings():
         
         if status:
             query = query.eq('status', status)
+        
+        if customer_id:
+            query = query.eq('customer_id', customer_id)
         
         query = query.order('created_at', desc=True).limit(limit).offset(offset)
         
@@ -1166,6 +1171,119 @@ def get_detailed_stats():
                 }
             }
         }), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/notifications', methods=['GET'])
+@require_auth()
+def get_notifications():
+    """
+    Get admin notifications (aggregated from recent bookings, enquiries, etc.)
+    GET /api/admin/notifications?limit=20
+    """
+    try:
+        from flask import current_app
+        from datetime import datetime, timedelta
+        supabase = current_app.config.get('SUPABASE')
+
+        if not supabase:
+            return jsonify({'success': True, 'data': [], 'unread_count': 0}), 200
+
+        notifications = []
+        now = datetime.utcnow()
+        seven_days_ago = (now - timedelta(days=7)).isoformat()
+
+        # 1. Recent hotel bookings (last 7 days)
+        try:
+            bookings = supabase.table('hotel_bookings').select(
+                'id, partner_order_id, hotel_name, status, total_amount, currency, customer_email, created_at'
+            ).gte('created_at', seven_days_ago).order('created_at', desc=True).limit(10).execute()
+
+            for b in bookings.data:
+                status = b.get('status', 'unknown')
+                icon = 'fa-check-circle'
+                ntype = 'success'
+                if status == 'failed':
+                    icon = 'fa-times-circle'
+                    ntype = 'error'
+                elif status == 'created':
+                    icon = 'fa-clock'
+                    ntype = 'warning'
+                elif status == 'unknown':
+                    icon = 'fa-question-circle'
+                    ntype = 'warning'
+
+                amount = f"{b.get('currency', 'USD')} {float(b.get('total_amount', 0)):,.0f}"
+                notifications.append({
+                    'id': f"booking_{b['id'][:8]}",
+                    'type': ntype,
+                    'icon': icon,
+                    'category': 'booking',
+                    'title': f"Hotel Booking {status.capitalize()}",
+                    'message': f"{b.get('hotel_name', 'Hotel')} — {amount}",
+                    'link': f"booking-details.html?id={b['id']}",
+                    'time': b['created_at'],
+                    'read': False
+                })
+        except Exception as e:
+            print(f"Notification: bookings fetch error: {e}")
+
+        # 2. Recent contact enquiries (last 7 days)
+        try:
+            contacts = supabase.table('contact_messages').select(
+                'id, name, email, message, created_at'
+            ).gte('created_at', seven_days_ago).order('created_at', desc=True).limit(5).execute()
+
+            for c in contacts.data:
+                notifications.append({
+                    'id': f"contact_{c['id']}",
+                    'type': 'info',
+                    'icon': 'fa-envelope',
+                    'category': 'enquiry',
+                    'title': 'New Contact Enquiry',
+                    'message': f"From {c.get('name', 'Unknown')} — {(c.get('message', '')[:60] + '...') if len(c.get('message', '')) > 60 else c.get('message', '')}",
+                    'link': 'contact-enquiry.html',
+                    'time': c['created_at'],
+                    'read': False
+                })
+        except Exception as e:
+            print(f"Notification: contacts fetch error: {e}")
+
+        # 3. Recent hotel enquiries (last 7 days)
+        try:
+            enquiries = supabase.table('quote_requests').select(
+                'id, name, destination, travel_date, created_at'
+            ).eq('travel_type', 'hotel').gte('created_at', seven_days_ago).order('created_at', desc=True).limit(5).execute()
+
+            for q in enquiries.data:
+                notifications.append({
+                    'id': f"enquiry_{q['id']}",
+                    'type': 'info',
+                    'icon': 'fa-bed',
+                    'category': 'enquiry',
+                    'title': 'New Hotel Enquiry',
+                    'message': f"From {q.get('name', 'Unknown')} for {q.get('destination', 'N/A')}",
+                    'link': 'hotel-enquiry.html',
+                    'time': q['created_at'],
+                    'read': False
+                })
+        except Exception as e:
+            print(f"Notification: enquiries fetch error: {e}")
+
+        # Sort all notifications by time (newest first)
+        notifications.sort(key=lambda x: x.get('time', ''), reverse=True)
+
+        # Check read status from localStorage on client side — mark unread count
+        limit = int(request.args.get('limit', 20))
+        notifications = notifications[:limit]
+
+        return jsonify({
+            'success': True,
+            'data': notifications,
+            'unread_count': len(notifications)
+        }), 200
+
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 

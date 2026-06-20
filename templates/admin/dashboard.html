@@ -826,15 +826,32 @@
             loadDashboardData();
 
             // Refresh button
-            document.getElementById('refreshDashboard')?.addEventListener('click', () => {
-                loadDashboardData();
-                showNotification('Dashboard refreshed!', 'success');
-            });
+            const refreshBtn = document.getElementById('refreshDashboard');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', async () => {
+                    const icon = refreshBtn.querySelector('i');
+                    icon.classList.add('fa-spin');
+                    await loadDashboardData();
+                    icon.classList.remove('fa-spin');
+                    showNotification('Dashboard refreshed!', 'success');
+                });
+            }
+
+            // Period selector
+            const periodSelect = document.getElementById('heroPeriod');
+            if (periodSelect) {
+                periodSelect.addEventListener('change', async (e) => {
+                    const periodName = e.target.options[e.target.selectedIndex].text;
+                    document.querySelector('.hero-subtitle').textContent = `${periodName} · Confirmed Hotel Bookings`;
+                    await loadDashboardData();
+                });
+            }
         });
 
         async function loadDashboardData() {
             try {
-                const result = await apiRequest('/dashboard');
+                const period = document.getElementById('heroPeriod')?.value || 'all';
+                const result = await apiRequest(`/dashboard?period=${period}`);
 
                 if (!result.success) {
                     throw new Error(result.error || 'Failed to load dashboard');

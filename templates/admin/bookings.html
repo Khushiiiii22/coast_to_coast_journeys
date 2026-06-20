@@ -291,6 +291,7 @@
 
             const urlParams = new URLSearchParams(window.location.search);
             const statusFilter = urlParams.get('status');
+            const customerId = urlParams.get('customer_id');
 
             try {
                 const params = new URLSearchParams({
@@ -298,6 +299,7 @@
                 });
 
                 if (statusFilter) params.append('status', statusFilter);
+                if (customerId) params.append('customer_id', customerId);
                 if (search) params.append('search', search);
                 if (fromDate) params.append('from_date', fromDate);
                 if (toDate) params.append('to_date', toDate);

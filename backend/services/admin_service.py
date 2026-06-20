@@ -148,7 +148,7 @@ class AdminService:
         except Exception as e:
             return {'success': False, 'error': str(e)}
 
-    def get_dashboard_stats(self):
+    def get_dashboard_stats(self, period='all'):
         """Get comprehensive hotel-focused dashboard statistics"""
         try:
             if not self.supabase:
@@ -167,7 +167,17 @@ class AdminService:
             # Fetch all hotel bookings at once for efficient processing
             all_bookings = []
             try:
-                res = self.supabase.table('hotel_bookings').select('*').order('created_at', desc=True).execute()
+                query = self.supabase.table('hotel_bookings').select('*')
+                
+                # Apply date filter based on period
+                if period == 'month':
+                    start_date = (datetime.datetime.utcnow().replace(day=1)).isoformat()
+                    query = query.gte('created_at', start_date)
+                elif period == 'week':
+                    start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=7)).isoformat()
+                    query = query.gte('created_at', start_date)
+
+                res = query.order('created_at', desc=True).execute()
                 all_bookings = res.data or []
             except Exception:
                 pass

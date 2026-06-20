@@ -252,7 +252,8 @@ function initSidebar() {
                     isOpen: localStorage.getItem('bookings_submenu_open') === 'true',
                     subItems: [
                         { name: 'Hotel', icon: 'fa-bed', href: 'bookings.html' },
-                        { name: 'Incomplete Booking', icon: 'fa-exclamation-triangle', href: 'bookings.html?status=created' }
+                        { name: 'Flight', icon: 'fa-plane', href: 'flights.html' },
+                        { name: 'Incomplete', icon: 'fa-exclamation-triangle', href: 'bookings.html?status=created' }
                     ]
                 }
             ]
@@ -266,25 +267,18 @@ function initSidebar() {
                     hasSub: true,
                     isOpen: localStorage.getItem('markup_submenu_open') === 'true',
                     subItems: [
-                        { name: 'Currency Setting', icon: 'fa-money-bill-wave', href: 'markup.html' },
-                        { name: 'Block Booking Markup', icon: 'fa-ban', href: 'block-markup.html' },
-                        { name: 'Manage Coupons', icon: 'fa-tags', href: 'coupons.html' },
-                        { name: 'B2B Markup', icon: 'fa-user-tie', href: 'b2b-markup.html' },
-                        { name: 'Convenience Charge', icon: 'fa-hand-holding-usd', href: 'convenience-charge.html' },
-                        { name: 'Cancellation Charge', icon: 'fa-times-circle', href: 'cancellation-charge.html' }
+                        { name: 'Currency Setting', icon: 'fa-money-bill-wave', href: 'markup.html' }
                     ]
                 },
                 { 
-                    name: 'MY Account', 
-                    icon: 'fa-user-circle', 
+                    name: 'Finance', 
+                    icon: 'fa-file-invoice-dollar', 
                     href: '#',
                     hasSub: true,
                     isOpen: localStorage.getItem('account_submenu_open') === 'true',
                     subItems: [
-                        { name: 'Statement', icon: 'fa-file-invoice-dollar', href: 'statement.html' },
-                        { name: 'My Invoices', icon: 'fa-file-invoice', href: 'invoices.html' },
-                        { name: 'Credit Notes', icon: 'fa-clipboard-list', href: 'credit-notes.html' },
-                        { name: 'Debit Notes', icon: 'fa-clipboard-list', href: 'debit-notes.html' },
+                        { name: 'Payments', icon: 'fa-credit-card', href: 'payments.html' },
+                        { name: 'Invoices', icon: 'fa-file-invoice', href: 'invoices.html' },
                         { name: 'Refunds', icon: 'fa-undo', href: 'refunds.html' }
                     ]
                 },
@@ -299,23 +293,14 @@ function initSidebar() {
                         { name: 'Contact-Us Enquiry', icon: 'fa-envelope', href: 'contact-enquiry.html' }
                     ]
                 },
-                { 
-                    name: 'Utility', 
-                    icon: 'fa-tools', 
-                    href: '#',
-                    hasSub: true,
-                    isOpen: localStorage.getItem('utility_submenu_open') === 'true',
-                    subItems: [
-                        { name: 'Meeting Slots', icon: 'fa-calendar-alt', href: 'meeting-slots.html' },
-                        { name: 'Generate Invoice', icon: 'fa-file-invoice', href: 'generate-invoice.html' }
-                    ]
-                },
+                { name: 'Suppliers', icon: 'fa-handshake', href: 'suppliers.html' },
                 { name: 'Customers', icon: 'fa-users', href: 'customers.html' },
                 { name: 'Activity Logs', icon: 'fa-history', href: 'activity-logs.html' }
             ]
         },
         {
             section: 'System', items: [
+                { name: 'Admin Users', icon: 'fa-user-shield', href: 'users.html' },
                 { name: 'Settings', icon: 'fa-cog', href: 'settings.html' },
                 { name: 'Logout', icon: 'fa-sign-out-alt', href: '#', onclick: 'logout(); return false;', style: 'color: #ef4444;' }
             ]
@@ -427,38 +412,251 @@ function restoreSidebarScroll() {
 }
 
 // ========================================
-// Notifications
+// Notifications System
 // ========================================
+let notificationsData = [];
+let notificationDropdownOpen = false;
+
+// Initialize notification bell on all admin pages
+document.addEventListener('DOMContentLoaded', function() {
+    initNotificationBell();
+});
+
+function initNotificationBell() {
+    // Find the bell button (look for the fa-bell icon)
+    const bellIcon = document.querySelector('.header-btn .fa-bell');
+    if (!bellIcon) return;
+
+    const bellBtn = bellIcon.closest('.header-btn');
+    if (!bellBtn) return;
+
+    // Wrap the bell button in a notification-wrapper for positioning
+    const wrapper = document.createElement('div');
+    wrapper.className = 'notification-wrapper';
+    bellBtn.parentNode.insertBefore(wrapper, bellBtn);
+    wrapper.appendChild(bellBtn);
+
+    // Update the badge to show count
+    let badge = bellBtn.querySelector('.notification-badge');
+    if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'notification-badge hidden';
+        bellBtn.appendChild(badge);
+    }
+    badge.className = 'notification-badge hidden';
+    badge.textContent = '';
+
+    // Create dropdown panel
+    const dropdown = document.createElement('div');
+    dropdown.className = 'notification-dropdown';
+    dropdown.id = 'notificationDropdown';
+    dropdown.innerHTML = `
+        <div class="notif-header">
+            <div class="notif-header-title">
+                Notifications <span class="count-badge" id="notifCountBadge">0</span>
+            </div>
+            <button class="notif-mark-read" onclick="markAllNotificationsRead(event)">
+                <i class="fas fa-check-double"></i> Mark all read
+            </button>
+        </div>
+        <div class="notif-list" id="notifList">
+            <div class="notif-empty">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading...</p>
+            </div>
+        </div>
+        <div class="notif-footer">
+            <a href="activity-logs.html">View All Activity <i class="fas fa-arrow-right"></i></a>
+        </div>
+    `;
+    wrapper.appendChild(dropdown);
+
+    // Bell click handler
+    bellBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleNotificationDropdown();
+    });
+
+    // Close on outside click
+    document.addEventListener('click', function(e) {
+        if (notificationDropdownOpen && !wrapper.contains(e.target)) {
+            closeNotificationDropdown();
+        }
+    });
+
+    // Load notifications
+    loadNotifications();
+}
+
+function toggleNotificationDropdown() {
+    const dropdown = document.getElementById('notificationDropdown');
+    if (!dropdown) return;
+
+    if (notificationDropdownOpen) {
+        closeNotificationDropdown();
+    } else {
+        dropdown.classList.add('open');
+        notificationDropdownOpen = true;
+        loadNotifications();
+    }
+}
+
+function closeNotificationDropdown() {
+    const dropdown = document.getElementById('notificationDropdown');
+    if (dropdown) {
+        dropdown.classList.remove('open');
+        notificationDropdownOpen = false;
+    }
+}
+
+async function loadNotifications() {
+    const list = document.getElementById('notifList');
+    if (!list) return;
+
+    try {
+        const result = await apiRequest('/notifications?limit=20');
+
+        if (!result || !result.success) {
+            renderNotifEmpty(list, 'Failed to load notifications');
+            return;
+        }
+
+        notificationsData = result.data || [];
+        renderNotifications(notificationsData);
+        updateNotificationBadge(notificationsData);
+
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+        renderNotifEmpty(list, 'Could not load notifications');
+    }
+}
+
+function renderNotifications(notifications) {
+    const list = document.getElementById('notifList');
+    if (!list) return;
+
+    const readIds = getReadNotificationIds();
+
+    if (!notifications || notifications.length === 0) {
+        renderNotifEmpty(list, 'No new notifications');
+        return;
+    }
+
+    const countBadge = document.getElementById('notifCountBadge');
+    const unreadCount = notifications.filter(n => !readIds.includes(n.id)).length;
+    if (countBadge) countBadge.textContent = unreadCount;
+
+    list.innerHTML = notifications.map(n => {
+        const isRead = readIds.includes(n.id);
+        const timeAgo = getTimeAgo(n.time);
+
+        return `
+            <a href="${n.link}" class="notif-item ${isRead ? '' : 'unread'}" data-notif-id="${n.id}">
+                <div class="notif-icon ${n.type}">
+                    <i class="fas ${n.icon}"></i>
+                </div>
+                <div class="notif-content">
+                    <div class="notif-title">${n.title}</div>
+                    <div class="notif-message">${n.message}</div>
+                    <div class="notif-time">
+                        <i class="fas fa-clock"></i> ${timeAgo}
+                    </div>
+                </div>
+            </a>
+        `;
+    }).join('');
+}
+
+function renderNotifEmpty(container, message) {
+    container.innerHTML = `
+        <div class="notif-empty">
+            <i class="fas fa-bell-slash"></i>
+            <p>${message}</p>
+            <span>You're all caught up!</span>
+        </div>
+    `;
+}
+
+function updateNotificationBadge(notifications) {
+    const badge = document.querySelector('.notification-badge');
+    if (!badge) return;
+
+    const readIds = getReadNotificationIds();
+    const unreadCount = notifications.filter(n => !readIds.includes(n.id)).length;
+
+    if (unreadCount > 0) {
+        badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
+    }
+}
+
+function markAllNotificationsRead(event) {
+    if (event) event.stopPropagation();
+
+    const allIds = notificationsData.map(n => n.id);
+    localStorage.setItem('admin_read_notifications', JSON.stringify(allIds));
+
+    // Re-render
+    renderNotifications(notificationsData);
+    updateNotificationBadge(notificationsData);
+
+    showNotification('All notifications marked as read', 'success');
+}
+
+function getReadNotificationIds() {
+    try {
+        return JSON.parse(localStorage.getItem('admin_read_notifications') || '[]');
+    } catch {
+        return [];
+    }
+}
+
+function getTimeAgo(dateString) {
+    if (!dateString) return 'Unknown';
+
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+}
+
+// ========================================
+// Toast Notifications
+// ========================================
+let toastStack = 0;
+
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `admin-notification ${type}`;
     notification.innerHTML = `
         <i class="fas ${getNotificationIcon(type)}"></i>
         <span>${message}</span>
-        <button onclick="this.parentElement.remove()">&times;</button>
+        <button onclick="this.parentElement.remove(); toastStack--;">&times;</button>
     `;
 
-    notification.style.cssText = `
-        position: fixed;
-        top: 80px;
-        right: 20px;
-        background: ${getNotificationColor(type)};
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        z-index: 9999;
-        animation: slideIn 0.3s ease;
-    `;
+    // Stack multiple toasts
+    const topOffset = 80 + (toastStack * 70);
+    notification.style.top = `${topOffset}px`;
+    toastStack++;
 
     document.body.appendChild(notification);
 
     setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => notification.remove(), 300);
+        notification.style.animation = 'slideOut 0.3s ease forwards';
+        setTimeout(() => {
+            notification.remove();
+            toastStack--;
+        }, 300);
     }, 5000);
 }
 
@@ -472,15 +670,6 @@ function getNotificationIcon(type) {
     return icons[type] || icons.info;
 }
 
-function getNotificationColor(type) {
-    const colors = {
-        success: '#10b981',
-        error: '#ef4444',
-        warning: '#f59e0b',
-        info: '#0e64a6'
-    };
-    return colors[type] || colors.info;
-}
 
 // ========================================
 // API Helpers
@@ -686,18 +875,4 @@ function exportToCSV(data, filename) {
 document.addEventListener('DOMContentLoaded', function () {
     // Check auth on page load
     checkAuth();
-
-    // Add animation keyframes
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-    `;
-    document.head.appendChild(style);
 });
