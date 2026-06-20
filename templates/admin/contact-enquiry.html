@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Refunds | C2C Journeys Admin</title>
+    <title>Contact-Us Enquiry | C2C Journeys Admin</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +20,20 @@
     <link rel="icon" href="data:,">
 
     <style>
-        .refund-toolbar {
+        .enquiry-banner {
+            background: #000;
+            color: #4df3c5;
+            text-align: center;
+            padding: 1rem;
+            font-size: 1.4rem;
+            font-weight: 800;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+        }
+
+        .enquiry-toolbar {
             display: flex;
             justify-content: flex-end;
             gap: 1rem;
@@ -29,6 +42,7 @@
             background: #fff;
             padding: 1rem;
             border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         .filter-input-sm {
@@ -39,22 +53,22 @@
             width: 150px;
         }
 
-        .search-input-group {
-            display: flex;
-            align-items: center;
+        .search-group {
             border: 1px solid #e2e8f0;
             border-radius: 4px;
+            display: flex;
+            align-items: center;
             padding: 0 0.5rem;
         }
 
-        .search-input-group input {
+        .search-group input {
             border: none;
             padding: 0.6rem;
             outline: none;
-            width: 180px;
+            width: 250px;
         }
 
-        .btn-icon-mint {
+        .btn-mint-icon {
             background: #4db6ac;
             color: white;
             border: none;
@@ -74,45 +88,23 @@
             cursor: pointer;
         }
 
-        /* Tabs */
-        .refund-tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .refund-tab {
-            padding: 0.8rem 1.5rem;
-            background: #64748b;
-            color: white;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            cursor: pointer;
-            border: none;
-        }
-
-        .refund-tab.active {
-            background: #f4511e;
-        }
-
         /* Table */
-        .refund-table-container {
+        .table-container {
             background: #fff;
             border: 1px solid #e0f2f1;
             border-radius: 8px;
             overflow-x: auto;
         }
 
-        .inv-table {
+        .enquiry-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
         }
 
-        .inv-table th {
+        .enquiry-table th {
             background: #ffffff;
-            padding: 1rem;
+            padding: 0.75rem 0.5rem;
             text-align: left;
             font-weight: 700;
             color: #1e293b;
@@ -120,13 +112,27 @@
             white-space: nowrap;
         }
 
-        .empty-row {
-            text-align: center;
-            padding: 3rem !important;
-            font-weight: 800;
-            color: #ef4444; /* Red "No Booking Found" */
-            font-size: 1.5rem;
-            background: #fff5f5;
+        .enquiry-table td {
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+            color: #475569;
+        }
+
+        .col-message {
+            max-width: 400px;
+            line-height: 1.5;
+        }
+
+        .col-link {
+            color: #1e293b;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .col-email {
+            color: #1e293b;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -141,7 +147,7 @@
                     <button class="sidebar-toggle" id="sidebarToggle">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h1 class="page-title">Refunds</h1>
+                    <h1 class="page-title">Contact-Us Enquiry</h1>
                 </div>
                 <div class="header-right">
                     <div style="font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-right: 1.5rem;">
@@ -151,43 +157,35 @@
             </header>
 
             <div class="admin-content">
+                <div class="enquiry-banner">CONTACT-US ENQUIRY</div>
+
                 <!-- Toolbar -->
-                <div class="refund-toolbar">
+                <div class="enquiry-toolbar">
                     <input type="text" class="filter-input-sm" placeholder="From Date" onfocus="(this.type='date')">
                     <input type="text" class="filter-input-sm" placeholder="To Date" onfocus="(this.type='date')">
-                    <div class="search-input-group">
+                    <div class="search-group">
                         <input type="text" placeholder="Enter Keyword">
                     </div>
-                    <button class="btn-icon-mint"><i class="fas fa-search"></i></button>
+                    <button class="btn-mint-icon"><i class="fas fa-search"></i></button>
                     <button class="btn-export-mint">Export</button>
                 </div>
 
-                <!-- Tabs -->
-                <div class="refund-tabs">
-                    <button class="refund-tab active">Online Hotels</button>
-                    <button class="refund-tab">Offline Hotels</button>
-                    <button class="refund-tab">FD Hotels</button>
-                </div>
-
                 <!-- Table -->
-                <div class="refund-table-container">
-                    <table class="inv-table">
+                <div class="table-container">
+                    <table class="enquiry-table">
                         <thead>
                             <tr>
-                                <th>Booking Date</th>
-                                <th>Hotel / Destination</th>
-                                <th>Check-In Date</th>
-                                <th>Passenger</th>
-                                <th>Agent Details</th>
-                                <th>Ref No</th>
-                                <th>Statement</th>
-                                <th>Action</th>
+                                <th>S.No.</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone No.</th>
+                                <th>Message</th>
+                                <th>Count</th>
+                                <th>Enquiry Date</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="8" class="empty-row">No Booking Found</td>
-                            </tr>
+                        <tbody id="contactEnquiryBody">
+                            <!-- Real data will load here -->
                         </tbody>
                     </table>
                 </div>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Details | C2C Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="../../admin/css/admin.css">
+    <link rel="icon" href="data:,">
+
+    <style>
+        .details-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .details-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            border: 1px solid #f1f5f9;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .details-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            background: #f8fafc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .details-header h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .details-body {
+            padding: 1.5rem;
+        }
+
+        .info-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f8fafc;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        .info-value {
+            color: #1e293b;
+            font-size: 0.9rem;
+        }
+
+        .status-pill {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .json-viewer {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            max-height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .hotel-stars {
+            color: #f59e0b;
+        }
+
+        @media (max-width: 1024px) {
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <a href="bookings.html" class="header-btn" style="margin-right: 1rem;">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <h1 class="page-title">Reservation Details</h1>
+                </div>
+
+                <div class="header-right">
+                    <button class="btn btn-primary" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <div id="loadingState" style="text-align: center; padding: 4rem;">
+                    <i class="fas fa-spinner fa-spin fa-3x" style="color: #0e64a6;"></i>
+                    <p style="margin-top: 1rem; color: #64748b;">Loading all booking details...</p>
+                </div>
+
+                <div id="contentState" style="display: none;">
+                    <div class="details-grid">
+                        <!-- Left Column: Primary Info -->
+                        <div class="left-col">
+                            <!-- Basic Info -->
+                            <div class="details-card">
+                                <div class="details-header">
+                                    <h3><i class="fas fa-info-circle"></i> Booking Overview</h3>
+                                    <span id="bookingStatus" class="status-pill">PENDING</span>
+                                </div>
+                                <div class="details-body">
+                                    <div class="info-row">
+                                        <div class="info-label">Partner Order ID</div>
+                                        <div class="info-value" id="partnerOrderId">—</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">ETG Order ID (CN)</div>
+                                        <div class="info-value" id="etgOrderId">—</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Created At</div>
+                                        <div class="info-value" id="createdAt">—</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Source</div>
+                                        <div class="info-value" id="bookingSource">—</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Hotel Info -->
+                            <div class="details-card">
+                                <div class="details-header">
+                                    <h3><i class="fas fa-hotel"></i> Hotel Details</h3>
+                                </div>
+                                <div class="details-body">
+                                    <div class="info-row">
+                                        <div class="info-label">Hotel Name</div>
+                                        <div class="info-value"><strong id="hotelName">—</strong></div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Star Rating</div>
+                                        <div class="info-value" id="hotelStars">—</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Location</div>
+                                        <div class="info-value" id="hotelLocation">—</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Stay Period</div>
+                                        <div class="info-value" id="stayPeriod">—</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Room Type</div>
+                                        <div class="info-value" id="roomType">—</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Meal Plan</div>
+                                        <div class="info-value" id="mealPlan">—</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Guest Info -->
+                            <div class="details-card">
+                                <div class="details-header">
+                                    <h3><i class="fas fa-users"></i> Guest Information</h3>
+                                </div>
+                                <div class="details-body">
+                                    <div class="info-row">
+                                        <div class="info-label">Primary Customer</div>
+                                        <div class="info-value" id="customerEmail">—</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Guests Breakdown</div>
+                                        <div class="info-value" id="guestsBreakdown">—</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Raw API Response -->
+                            <div class="details-card">
+                                <div class="details-header">
+                                    <h3><i class="fas fa-code"></i> Raw API Trace (booking_response)</h3>
+                                </div>
+                                <div class="details-body">
+                                    <pre class="json-viewer" id="rawResponse">{}</pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Financials & Logs -->
+                        <div class="right-col">
+                            <!-- Financials -->
+                            <div class="details-card">
+                                <div class="details-header">
+                                    <h3><i class="fas fa-file-invoice-dollar"></i> Financials</h3>
+                                </div>
+                                <div class="details-body">
+                                    <div class="info-row">
+                                        <div class="info-label">Total Amount</div>
+                                        <div class="info-value"><strong id="totalAmount">—</strong></div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Base Price</div>
+                                        <div class="info-value" id="basePrice">—</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Markup / Margin</div>
+                                        <div class="info-value" id="markupAmount" style="color: #10b981;">—</div>
+                                    </div>
+                                    <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 1rem 0;">
+                                    <div class="info-row">
+                                        <div class="info-label">Payment Status</div>
+                                        <div class="info-value" id="paymentStatus">—</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Gateway ID</div>
+                                        <div class="info-value" id="paymentId">—</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cancellation (if any) -->
+                            <div class="details-card" id="cancellationCard" style="display: none; border: 1px solid #fee2e2;">
+                                <div class="details-header" style="background: #fff5f5;">
+                                    <h3 style="color: #991b1b;"><i class="fas fa-undo"></i> Cancellation Info</h3>
+                                </div>
+                                <div class="details-body">
+                                    <div class="info-row">
+                                        <div class="info-label">Reason</div>
+                                        <div class="info-value" id="cancelReason">—</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Refund Status</div>
+                                        <div class="info-value" id="refundStatus">—</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Refund Amt</div>
+                                        <div class="info-value" id="refundAmount">—</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="details-card">
+                                <div class="details-header">
+                                    <h3>Management Actions</h3>
+                                </div>
+                                <div class="details-body" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                    <button class="btn btn-secondary" onclick="alert('Download Voucher logic here')">
+                                        <i class="fas fa-file-pdf"></i> Generate Voucher
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="alert('Send Email logic here')">
+                                        <i class="fas fa-envelope"></i> Re-send Confirmation Email
+                                    </button>
+                                    <button class="btn btn-danger" onclick="alert('Cancellation Request logic here')">
+                                        <i class="fas fa-times-circle"></i> Submit Cancellation
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Admin JS -->
+    <script src="../../admin/js/admin.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookingId = urlParams.get('id');
+
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!bookingId) {
+                showNotification('No booking ID provided', 'error');
+                setTimeout(() => window.location.href = 'bookings.html', 2000);
+                return;
+            }
+
+            loadBookingDetails();
+
+            document.getElementById('refreshBtn').addEventListener('click', loadBookingDetails);
+        });
+
+        async function loadBookingDetails() {
+            try {
+                document.getElementById('loadingState').style.display = 'block';
+                document.getElementById('contentState').style.display = 'none';
+
+                const res = await apiRequest(`/bookings/${bookingId}`);
+
+                if (res.success) {
+                    const data = res.data;
+                    renderDetails(data);
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('contentState').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Failed to fetch details', 'error');
+            }
+        }
+
+        function renderDetails(data) {
+            const b = data.booking;
+            const p = data.payment;
+            const c = data.cancellation;
+
+            // Overview
+            document.getElementById('partnerOrderId').textContent = b.partner_order_id || '—';
+            document.getElementById('etgOrderId').textContent = b.etg_order_id || b.booking_id || '—';
+            document.getElementById('createdAt').textContent = formatDateTime(b.created_at);
+            document.getElementById('bookingSource').textContent = (b.booking_source || 'Website').toUpperCase();
+            
+            const statusEl = document.getElementById('bookingStatus');
+            statusEl.textContent = (b.status || 'unknown').toUpperCase();
+            statusEl.className = `status-pill st-${(b.status || 'unknown').toLowerCase()}`;
+
+            // Hotel
+            document.getElementById('hotelName').textContent = b.hotel_name || 'N/A';
+            const stars = parseInt(b.hotel_star_rating || 0);
+            document.getElementById('hotelStars').innerHTML = '<span class="hotel-stars">' + '★'.repeat(stars) + '☆'.repeat(5-stars) + '</span>';
+            document.getElementById('hotelLocation').textContent = `${b.hotel_address || ''}, ${b.hotel_city || ''}, ${b.hotel_country || ''}`;
+            document.getElementById('stayPeriod').textContent = `${formatDate(b.check_in)} to ${formatDate(b.check_out)} (${calculateNights(b.check_in, b.check_out)} Nights)`;
+            document.getElementById('roomType').textContent = b.room_type || '—';
+            document.getElementById('mealPlan').textContent = b.meal_plan || '—';
+
+            // Guests
+            document.getElementById('customerEmail').textContent = b.customer_email || '—';
+            
+            let guestHtml = '';
+            if (b.guests && Array.isArray(b.guests)) {
+                b.guests.forEach((room, idx) => {
+                    guestHtml += `<div><strong>Room ${idx+1}:</strong><br>`;
+                    if (room.guests) {
+                        room.guests.forEach(g => {
+                            guestHtml += `• ${g.first_name} ${g.last_name} ${g.is_child ? `(Child, Age: ${g.age})` : '(Adult)'}<br>`;
+                        });
+                    }
+                    guestHtml += `</div><br>`;
+                });
+            }
+            document.getElementById('guestsBreakdown').innerHTML = guestHtml || 'None listed';
+
+            // Financials
+            const curr = b.currency || 'USD';
+            document.getElementById('totalAmount').textContent = formatCurrency(b.total_amount || 0, curr);
+            document.getElementById('basePrice').textContent = formatCurrency(b.base_price || 0, curr);
+            document.getElementById('markupAmount').textContent = '+' + formatCurrency(b.markup_amount || 0, curr);
+            
+            document.getElementById('paymentStatus').textContent = (b.payment_status || 'Pending').toUpperCase();
+            document.getElementById('paymentId').textContent = b.payment_id || '—';
+
+            // Cancellation
+            if (c) {
+                document.getElementById('cancellationCard').style.display = 'block';
+                document.getElementById('cancelReason').textContent = c.reason || 'Not provided';
+                document.getElementById('refundStatus').textContent = (c.refund_status || 'Pending').toUpperCase();
+                document.getElementById('refundAmount').textContent = formatCurrency(c.refund_amount || 0, curr);
+            }
+
+            // Raw
+            document.getElementById('rawResponse').textContent = JSON.stringify(b.booking_response || {}, null, 2);
+        }
+
+        function calculateNights(inDate, outDate) {
+            if (!inDate || !outDate) return 0;
+            const ci = new Date(inDate);
+            const co = new Date(outDate);
+            return Math.ceil((co - ci) / (1000 * 60 * 60 * 24));
+        }
+    </script>
+</body>
+
+</html>
