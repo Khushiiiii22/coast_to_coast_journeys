@@ -43,21 +43,31 @@ class AdminService:
         except jwt.InvalidTokenError:
             return {'success': False, 'error': 'Invalid token'}
     
-    def login(self, email, password, ip_address=None):
-        """Authenticate admin user"""
+    def login(self, email, password, mfa_code=None, ip_address=None):
+        """Authenticate admin user with MFA"""
         try:
+            import pyotp
             # Hardcoded admin credentials for demo
             ADMIN_CREDENTIALS = {
                 'admin@coasttocoast.com': {
                     'password': 'admin123',
                     'full_name': 'Super Admin',
-                    'role': 'super_admin'
+                    'role': 'super_admin',
+                    'mfa_secret': 'JBSWY3DPEHPK3PXP' # Dummy secret for testing
                 }
             }
             
             # Check hardcoded credentials
             if email in ADMIN_CREDENTIALS:
                 if password == ADMIN_CREDENTIALS[email]['password']:
+                    # MFA Check
+                    if not mfa_code:
+                        return {'success': False, 'mfa_required': True}
+                        
+                    totp = pyotp.TOTP(ADMIN_CREDENTIALS[email]['mfa_secret'])
+                    if not totp.verify(mfa_code):
+                        return {'success': False, 'error': 'Invalid Authenticator code'}
+                        
                     # Use hardcoded user data (don't require database)
                     user_id = 'admin-001'
                     full_name = ADMIN_CREDENTIALS[email]['full_name']

@@ -21,6 +21,7 @@ def login():
         data = request.get_json()
         email = data.get('email')
         password = data.get('password')
+        mfa_code = data.get('mfa_code')
         
         if not email or not password:
             return jsonify({'success': False, 'error': 'Email and password required'}), 400
@@ -29,7 +30,7 @@ def login():
         admin_service = current_app.config.get('ADMIN_SERVICE')
         
         ip_address = request.remote_addr
-        result = admin_service.login(email, password, ip_address)
+        result = admin_service.login(email, password, mfa_code, ip_address)
         
         if result['success']:
             return jsonify(result), 200
