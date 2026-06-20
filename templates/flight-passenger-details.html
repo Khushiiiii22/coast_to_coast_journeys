@@ -529,8 +529,7 @@
             <a href="index.html" class="sidebar-link"><i class="fas fa-home"></i> Home</a>
             <a href="flight-booking.html" class="sidebar-link active"><i class="fas fa-plane"></i> Book Flights</a>
             <a href="hotel-booking.html" class="sidebar-link"><i class="fas fa-hotel"></i> Book Hotels</a>
-            <a href="visa.html" class="sidebar-link"><i class="fas fa-passport"></i> Visa Services</a>
-            <div class="sidebar-divider"></div>
+                        <div class="sidebar-divider"></div>
             <a href="mailto:sales@c2cjourneys.com" class="sidebar-link"><i class="fas fa-envelope"></i> Email Us</a>
             <a href="tel:+919934547108" class="sidebar-link"><i class="fas fa-phone"></i> Call Us</a>
         </nav>
@@ -560,8 +559,7 @@
                     <ul class="nav-menu" id="navMenu">
                         <li><a href="flight-booking.html" class="nav-link active">Flights</a></li>
                         <li><a href="hotel-booking.html" class="nav-link">Hotels</a></li>
-                        <li><a href="visa.html" class="nav-link">Visa</a></li>
-                        <li><a href="#contact" class="nav-link">Contact</a></li>
+                                                <li><a href="#contact" class="nav-link">Contact</a></li>
                     </ul>
                 </nav>
                 <div class="header-actions">
@@ -578,242 +576,27 @@
         </div>
     </header>
 
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-nav">
+    <!-- Page Hero -->
+    <section class="page-hero flight-hero" style="min-height: 60vh; display: flex; align-items: center; justify-content: center; text-align: center; background: linear-gradient(rgba(14, 100, 166, 0.8), rgba(26, 54, 93, 0.9)), url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;">
         <div class="container">
-            <a href="index.html">Home</a>
-            <i class="fas fa-chevron-right separator"></i>
-            <a href="flight-booking.html">Flights</a>
-            <i class="fas fa-chevron-right separator"></i>
-            <span class="current">Passenger Details</span>
+            <h1 style="font-size: 3.5rem; margin-bottom: 20px;"><i class="fas fa-plane-departure"></i> Flights Coming Soon</h1>
+            <p style="font-size: 1.2rem; max-width: 800px; margin: 0 auto; line-height: 1.6;">We are currently finalizing our airline partnerships to bring you the best flight deals globally. Stay tuned!</p>
+            <a href="hotel-booking.html" class="btn btn-primary" style="margin-top: 30px; display: inline-block; padding: 15px 30px; font-size: 1.1rem; border-radius: 30px; background: white; color: #0e64a6; font-weight: 600; text-decoration: none;">Book Hotels Instead</a>
         </div>
-    </nav>
+    </section>
 
-    <!-- ======================= MAIN PAGE ======================= -->
-    <div class="pax-page">
-
-        <!-- Top Flight Summary Card -->
-        <div class="top-flight-card">
-            <div>
-                <div class="top-flight-route" id="topRoute">Loading...</div>
-                <div class="top-flight-meta" style="margin-top:8px;">
-                    <span class="top-flight-meta-item"><i class="fas fa-plane" style="color:#0e64a6;"></i> <span id="topAirline">--</span></span>
-                    <span class="top-flight-meta-item"><i class="far fa-clock" style="color:#0e64a6;"></i> <span id="topTimes">--</span></span>
-                    <span class="top-flight-meta-item"><i class="fas fa-dot-circle" style="color:#22c55e;"></i> <span id="topStops">--</span></span>
-                    <span class="top-flight-meta-item"><i class="far fa-calendar-alt" style="color:#0e64a6;"></i> <span id="topDate">--</span></span>
+    <!-- Main Content -->
+    <main style="padding: 60px 0; text-align: center;">
+        <div class="container">
+            <div style="max-width: 600px; margin: 0 auto; padding: 40px; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                <div style="width: 80px; height: 80px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #0e64a6; font-size: 2rem;">
+                    <i class="fas fa-tools"></i>
                 </div>
+                <h3 style="color: #1e293b; font-size: 1.5rem; margin-bottom: 15px;">Under Construction</h3>
+                <p style="color: #64748b; line-height: 1.6;">Our flight booking engine is currently under development. We are integrating with top global airlines to provide you with a seamless booking experience. Please check back later.</p>
             </div>
-            <span class="non-refund-badge" id="refundBadge">Non Refundable</span>
         </div>
-
-        <!-- Two-Column Layout -->
-        <div class="checkout-layout">
-
-            <!-- ===== LEFT: ACCORDION STEPS ===== -->
-            <div class="steps-column">
-
-                <!-- ─────── STEP 1: CONTACT INFORMATION ─────── -->
-                <div class="step-card active" id="stepCard1">
-                    <div class="step-header">
-                        <div class="step-num active" id="stepNum1">1</div>
-                        <div class="step-title" id="stepTitle1">Contact Information</div>
-                    </div>
-
-                    <!-- Done summary (hidden until completed) -->
-                    <div id="step1DoneSummary" style="display:none; padding: 0 20px 14px; margin-top:-6px;">
-                        <div class="step-done-summary">
-                            <span><i class="fas fa-envelope"></i> <span id="s1Email">--</span></span>
-                            <span><i class="fas fa-phone"></i> <span id="s1Phone">--</span></span>
-                        </div>
-                    </div>
-
-                    <div class="step-body open" id="stepBody1">
-                        <div class="form-group">
-                            <label>Mobile Number <span class="req">*</span></label>
-                            <div class="phone-row">
-                                <select class="f-select country-code-select" id="countryCode">
-                                    <option value="+91">🇮🇳 +91</option>
-                                    <option value="+1">🇺🇸 +1</option>
-                                    <option value="+44">🇬🇧 +44</option>
-                                    <option value="+971">🇦🇪 +971</option>
-                                    <option value="+65">🇸🇬 +65</option>
-                                    <option value="+61">🇦🇺 +61</option>
-                                    <option value="+49">🇩🇪 +49</option>
-                                    <option value="+33">🇫🇷 +33</option>
-                                </select>
-                                <input type="tel" id="contactPhone" class="f-input" placeholder="Contact Phone*">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Email Address <span class="req">*</span></label>
-                            <input type="email" id="contactEmail" class="f-input" placeholder="Email Address*">
-                        </div>
-                        <div class="form-group" style="display:flex;align-items:center;gap:8px;margin-bottom:18px;">
-                            <input type="checkbox" id="gstCheck" style="width:15px;height:15px;accent-color:#0e64a6;">
-                            <label for="gstCheck" style="font-size:0.82rem;color:#718096;margin:0;cursor:pointer;">
-                                Use GST for this booking <span style="color:#a0aec0;">(OPTIONAL)</span>
-                            </label>
-                        </div>
-                        <button class="continue-btn" onclick="completeStep1()">Continue</button>
-                    </div>
-                </div>
-
-                <!-- ─────── STEP 2: TRAVELLER DETAILS ─────── -->
-                <div class="step-card" id="stepCard2">
-                    <div class="step-header">
-                        <div class="step-num pending" id="stepNum2">2</div>
-                        <div class="step-title pending" id="stepTitle2">Travellers Details</div>
-                    </div>
-
-                    <!-- Done summary -->
-                    <div id="step2DoneSummary" style="display:none; padding: 0 20px 14px; margin-top:-6px;">
-                        <div class="step-done-summary" id="s2PassengerSummary"></div>
-                    </div>
-
-                    <div class="step-body" id="stepBody2">
-                        <div class="pax-warning">
-                            <i class="fas fa-exclamation-circle"></i>
-                            <span><strong>IMPORTANT:</strong> Each passenger's full name must be entered as it appears on their passport or government issued photo ID.</span>
-                        </div>
-
-                        <!-- Passengers injected dynamically here -->
-                        <div id="passengersContainer"></div>
-
-                        <button class="continue-btn" onclick="completeStep2()">Continue</button>
-                    </div>
-                </div>
-
-                <!-- ─────── STEP 3: PAYMENT DETAILS ─────── -->
-                <div class="step-card" id="stepCard3">
-                    <div class="step-header">
-                        <div class="step-num pending" id="stepNum3">3</div>
-                        <div class="step-title pending" id="stepTitle3">Payment Details</div>
-                    </div>
-
-                    <div class="step-body" id="stepBody3">
-                        <div class="payment-method-section">
-                            <h4>Payment Method</h4>
-                            <small style="display:block;margin-bottom:14px;">Select your preferred payment method</small>
-
-                            <!-- UPI (Highlighted) -->
-                            <div class="upi-card" onclick="selectPayment('upi')">
-                                <div class="upi-header">
-                                    <div class="upi-title">
-                                        <div class="upi-icon"><i class="fas fa-mobile-alt"></i></div>
-                                        <div>
-                                            <div class="upi-label">UPI Payment <span class="rec-badge">Recommended</span></div>
-                                            <div class="upi-sub">Instant payment with PhonePe, Google Pay, Paytm &amp; more</div>
-                                        </div>
-                                    </div>
-                                    <i class="fas fa-check-circle" style="color:#22c55e;font-size:1.1rem;"></i>
-                                </div>
-                                <div class="upi-apps">
-                                    <span class="upi-app-chip">PhonePe</span>
-                                    <span class="upi-app-chip">GPay</span>
-                                    <span class="upi-app-chip">Paytm</span>
-                                    <span class="upi-app-chip">BHIM</span>
-                                    <span class="upi-app-chip">Amazon Pay</span>
-                                </div>
-                                <div class="upi-perks">
-                                    <span class="upi-perk"><i class="fas fa-bolt"></i> Instant confirmation</span>
-                                    <span class="upi-perk"><i class="fas fa-shield-alt"></i> Bank-level security</span>
-                                    <span class="upi-perk"><i class="fas fa-star"></i> High Success Rate</span>
-                                </div>
-                            </div>
-
-                            <div class="other-methods-label">Other Payment Methods</div>
-
-                            <!-- Other Methods -->
-                            <div class="pay-method-row" onclick="selectPayment('debit')" id="pm-debit">
-                                <div class="pay-method-icon"><i class="fas fa-credit-card"></i></div>
-                                <div class="pay-method-info">
-                                    <div class="pay-method-name">Debit Card</div>
-                                    <div class="pay-method-desc">Pay using your debit card</div>
-                                </div>
-                                <i class="fas fa-chevron-right" style="color:#cbd5e0;font-size:0.8rem;"></i>
-                            </div>
-                            <div class="pay-method-row" onclick="selectPayment('wallet')" id="pm-wallet">
-                                <div class="pay-method-icon"><i class="fas fa-wallet"></i></div>
-                                <div class="pay-method-info">
-                                    <div class="pay-method-name">Wallet</div>
-                                    <div class="pay-method-desc">Pay using digital wallets</div>
-                                </div>
-                                <i class="fas fa-chevron-right" style="color:#cbd5e0;font-size:0.8rem;"></i>
-                            </div>
-                            <div class="pay-method-row" onclick="selectPayment('netbanking')" id="pm-netbanking">
-                                <div class="pay-method-icon"><i class="fas fa-university"></i></div>
-                                <div class="pay-method-info">
-                                    <div class="pay-method-name">Net Banking</div>
-                                    <div class="pay-method-desc">Pay using internet banking</div>
-                                </div>
-                                <i class="fas fa-chevron-right" style="color:#cbd5e0;font-size:0.8rem;"></i>
-                            </div>
-                            <div class="pay-method-row" onclick="selectPayment('emi')" id="pm-emi">
-                                <div class="pay-method-icon"><i class="fas fa-history"></i></div>
-                                <div class="pay-method-info">
-                                    <div class="pay-method-name">EMI</div>
-                                    <div class="pay-method-desc">Pay in easy monthly instalments</div>
-                                </div>
-                                <i class="fas fa-chevron-right" style="color:#cbd5e0;font-size:0.8rem;"></i>
-                            </div>
-                            <div class="pay-method-row" onclick="selectPayment('credit')" id="pm-credit">
-                                <div class="pay-method-icon"><i class="fas fa-credit-card" style="color:#718096;"></i></div>
-                                <div class="pay-method-info">
-                                    <div class="pay-method-name">Credit Card</div>
-                                    <div class="pay-method-warning"><i class="fas fa-exclamation-triangle"></i> Occasional payment failures due to bank gateway issues</div>
-                                </div>
-                                <i class="fas fa-chevron-right" style="color:#cbd5e0;font-size:0.8rem;"></i>
-                            </div>
-                        </div>
-
-                        <p class="pay-disclaimer">By selecting Pay Now, you agree that you have accepted the above-mentioned policies and have gone through our <a href="terms.html">Terms &amp; Conditions</a>, <a href="privacy-policy.html">User Agreement</a> and <a href="privacy-policy.html">Privacy Policy</a>.</p>
-
-                        <button class="pay-now-btn" onclick="proceedToPayment()">
-                            <i class="fas fa-lock" style="margin-right:8px;"></i> Pay Now
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-            <!-- END LEFT COLUMN -->
-
-            <!-- ===== RIGHT: FARE SUMMARY ===== -->
-            <div class="fare-sidebar">
-
-                <div class="fare-card">
-                    <div class="fare-card-header">Fare Summary</div>
-                    <div class="fare-rows">
-                        <div class="fare-row">
-                            <span>Base Fare</span>
-                            <span id="farirBase">--</span>
-                        </div>
-                        <div class="fare-row">
-                            <span>Fee &amp; Surcharge</span>
-                            <span id="fareSurcharge">--</span>
-                        </div>
-                    </div>
-                    <div class="fare-total-bar">
-                        <span class="fare-total-label">Amount payable:</span>
-                        <span class="fare-total-amount" id="fareTotal">--</span>
-                    </div>
-                </div>
-
-                <div class="promo-card">
-                    <div class="promo-card-title">
-                        <i class="fas fa-tag"></i> Enter Promo Code
-                    </div>
-                    <div class="promo-row">
-                        <input type="text" class="promo-input f-input" placeholder="Enter Coupon Code">
-                        <button class="promo-apply-btn">Apply</button>
-                    </div>
-                </div>
-
-            </div>
-            <!-- END RIGHT COLUMN -->
-
-        </div>
-    </div>
-    <!-- END MAIN PAGE -->
+    </main>
 
     <!-- Footer -->
     <footer class="footer" style="margin-top: 50px; background: #0f172a; color: white; padding: 40px 0 20px;">

@@ -6,9 +6,9 @@
     <meta name="google-site-verification" content="jEj4It2Lz90JQev9i0BlUWInu5-M1-fESfnX7UHa_FI" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="C2C Journeys - Your trusted travel partner. Book cheap flights, hotels, and visa services. Best prices guaranteed with 24/7 support.">
-    <meta name="keywords" content="flights, hotels, visa, travel booking, cheap flights, hotel booking, travel agency">
-    <title>C2C Journeys | Book Flights, Hotels & Visa Services</title>
+        content="C2C Journeys - Your trusted travel partner. Book cheap flights, hotels. Best prices guaranteed with 24/7 support.">
+    <meta name="keywords" content="flights, hotels, travel booking, cheap flights, hotel booking, travel agency">
+    <title>C2C Journeys | Book Flights & Hotels</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/jpeg" href="../assets/images/c2c-logo.png">
@@ -379,10 +379,7 @@
             <a href="hotel-booking.html" class="sidebar-link">
                 <i class="fas fa-hotel"></i> Book Hotels
             </a>
-            <a href="visa.html" class="sidebar-link">
-                <i class="fas fa-passport"></i> Visa Services
-            </a>
-            <div class="sidebar-divider"></div>
+                        <div class="sidebar-divider"></div>
             <a href="#contact" class="sidebar-link" id="sidebarSupport">
                 <i class="fas fa-headset"></i> 24/7 Support
             </a>
@@ -508,10 +505,9 @@
 
                 <nav>
                     <ul class="nav-menu" id="navMenu">
-                        <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
                         <li><a href="hotel-booking.html" class="nav-link">Hotels</a></li>
-                        <li><a href="visa.html" class="nav-link">Visa</a></li>
-                        <li><a href="#contact" class="nav-link">Contact</a></li>
+                        <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
+                                                <li><a href="#contact" class="nav-link">Contact</a></li>
                     </ul>
                 </nav>
 
@@ -553,135 +549,33 @@
                     Experience Seamless Travel Booking
                 </div>
                 <h1 class="hero-title">Your Journey Begins Here</h1>
-                <p class="hero-subtitle">Book flights, hotels, and visa services at the best prices. Trusted by
+                <p class="hero-subtitle">Book flights, hotels at the best prices. Trusted by
                     thousands of travelers worldwide.</p>
             </div>
 
             <!-- Search Box -->
             <div class="search-box animate-fade-in-up">
                 <div class="search-tabs">
-                    <button class="search-tab active" data-tab="flights">
-                        <i class="fas fa-plane"></i> Flights
-                    </button>
-                    <button class="search-tab" data-tab="hotels">
+                    <button class="search-tab active" data-tab="hotels">
                         <i class="fas fa-hotel"></i> Hotels
                     </button>
-                    <button class="search-tab" data-tab="visa">
-                        <i class="fas fa-passport"></i> Visa
+                    <button class="search-tab" data-tab="flights">
+                        <i class="fas fa-plane"></i> Flights
                     </button>
-                </div>
+                                    </div>
 
-                <!-- Flight Search Form -->
-                <div id="flights-form" class="search-content">
-                    <div class="trip-type">
-                        <label class="trip-option">
-                            <input type="radio" name="tripType" value="oneway" checked>
-                            <span class="radio-custom"></span>
-                            One Way
-                        </label>
-                        <label class="trip-option">
-                            <input type="radio" name="tripType" value="roundtrip">
-                            <span class="radio-custom"></span>
-                            Round Trip
-                        </label>
+                                <!-- Flight Search Form -->
+                <div id="flights-form" class="search-content hidden" style="text-align: center; padding: 60px 20px;">
+                    <div style="width: 80px; height: 80px; background: #eff6ff; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                        <i class="fas fa-plane-departure" style="font-size: 2.5rem; color: #0e64a6;"></i>
                     </div>
-
-                    <form class="search-form-improved" id="flightSearchForm">
-                        <div class="search-row">
-                            <div class="form-field-improved">
-                                <label><i class="fas fa-plane-departure"></i> From</label>
-                                <input type="text" id="fromCity" placeholder="City or Airport" required>
-                            </div>
-                            <div class="swap-cities-btn" id="swapCitiesBtn">
-                                <i class="fas fa-exchange-alt"></i>
-                            </div>
-                            <div class="form-field-improved">
-                                <label><i class="fas fa-plane-arrival"></i> To</label>
-                                <input type="text" id="toCity" placeholder="City or Airport" required>
-                            </div>
-                        </div>
-                        <div class="search-row">
-                            <div class="form-field-improved date-field">
-                                <label><i class="fas fa-calendar-alt"></i> Departure</label>
-                                <input type="date" id="departDate" required>
-                                <span class="date-display" id="departDateDisplay">Select Date</span>
-                            </div>
-                            <div class="form-field-improved date-field" id="returnDateWrapper">
-                                <label><i class="fas fa-calendar-alt"></i> Return</label>
-                                <input type="date" id="returnDate">
-                                <span class="date-display" id="returnDateDisplay">Select Date</span>
-                            </div>
-                            <div class="form-field-improved travelers-field">
-                                <label><i class="fas fa-users"></i> Travelers & Class</label>
-                                <div class="travelers-dropdown" id="travelersDropdown">
-                                    <span class="travelers-display" id="travelersDisplay">1 Adult, Economy</span>
-                                    <i class="fas fa-chevron-down"></i>
-                                </div>
-                                <div class="travelers-popup" id="travelersPopup">
-                                    <div class="traveler-row">
-                                        <div class="traveler-info">
-                                            <span class="traveler-type">Adults</span>
-                                            <span class="traveler-age">11+ Years</span>
-                                        </div>
-                                        <div class="traveler-counter">
-                                            <button type="button" class="counter-btn minus"
-                                                data-type="adults">-</button>
-                                            <span id="adultsCount">1</span>
-                                            <button type="button" class="counter-btn plus" data-type="adults">+</button>
-                                        </div>
-                                    </div>
-                                    <div class="traveler-row">
-                                        <div class="traveler-info">
-                                            <span class="traveler-type">Children</span>
-                                            <span class="traveler-age">2 - 11 Years</span>
-                                        </div>
-                                        <div class="traveler-counter">
-                                            <button type="button" class="counter-btn minus"
-                                                data-type="children">-</button>
-                                            <span id="childrenCount">0</span>
-                                            <button type="button" class="counter-btn plus"
-                                                data-type="children">+</button>
-                                        </div>
-                                    </div>
-                                    <div class="traveler-row">
-                                        <div class="traveler-info">
-                                            <span class="traveler-type">Infants</span>
-                                            <span class="traveler-age">&lt; 2 Years</span>
-                                        </div>
-                                        <div class="traveler-counter">
-                                            <button type="button" class="counter-btn minus"
-                                                data-type="infants">-</button>
-                                            <span id="infantsCount">0</span>
-                                            <button type="button" class="counter-btn plus"
-                                                data-type="infants">+</button>
-                                        </div>
-                                    </div>
-                                    <div class="class-selector">
-                                        <label>Travel Class</label>
-                                        <div class="class-options">
-                                            <button type="button" class="class-btn active"
-                                                data-value="economy">Economy</button>
-                                            <button type="button" class="class-btn" data-value="premium">Premium
-                                                Economy</button>
-                                            <button type="button" class="class-btn"
-                                                data-value="business">Business</button>
-                                            <button type="button" class="class-btn" data-value="first">First</button>
-                                        </div>
-                                        <input type="hidden" id="cabinClass" value="economy">
-                                    </div>
-                                    <button type="button" class="travelers-done" id="travelersDone">Done</button>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn-search-main">
-                            <i class="fas fa-search"></i>
-                            Search Flights
-                        </button>
-                    </form>
+                    <h3 style="font-size: 1.8rem; color: #1e293b; margin-bottom: 15px; font-weight: 700;">Flights Coming Soon!</h3>
+                    <p style="color: #64748b; font-size: 1.05rem; max-width: 500px; margin: 0 auto; line-height: 1.6;">We're working hard behind the scenes to bring you the best flight deals. Our flight booking engine will be launching very soon.</p>
+                    <button class="search-tab" data-tab="hotels" style="margin-top: 25px; background: #0e64a6; color: white; padding: 12px 24px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;" onclick="document.querySelector('[data-tab=\'hotels\']').click()">Book Hotels Instead</button>
                 </div>
 
                 <!-- Hotel Search Form -->
-                <div id="hotels-form" class="search-content hidden">
+                <div id="hotels-form" class="search-content">
                     <form class="search-form-improved" id="hotelSearchForm">
                         <div class="search-row">
                             <div class="form-field-improved" style="flex: 2; position: relative;">
@@ -811,26 +705,7 @@
                     </form>
                 </div>
 
-                <!-- Visa Search Form -->
-                <div id="visa-form" class="search-content hidden">
-                    <form class="search-form-improved" id="visaSearchForm">
-                        <div class="search-row">
-                            <div class="form-field-improved" style="flex: 1;">
-                                <label><i class="fas fa-passport"></i> I am a Citizen of</label>
-                                <input type="text" id="visaCitizenship" placeholder="e.g. India" value="India">
-                            </div>
-                            <div class="form-field-improved" style="flex: 1;">
-                                <label><i class="fas fa-map-marker-alt"></i> I want to go to</label>
-                                <input type="text" id="visaDestination" placeholder="Country name..." required>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn-search-main">
-                            <i class="fas fa-search"></i>
-                            Check Visa Requirements
-                        </button>
-                    </form>
                 </div>
-            </div>
         </div>
     </section>
 
@@ -1189,7 +1064,7 @@
                             <i class="fas fa-quote-left"></i>
                         </div>
                         <p class="testimonial-text">
-                            "Smooth visa processing and flight booking combo. Saved me so much time and effort."
+                            "Smooth flight and hotel booking combo. Saved me so much time and effort."
                         </p>
                         <div class="rating-container">
                             <div class="stars">
@@ -1384,8 +1259,7 @@
                     <ul>
                         <li><a href="flight-booking.html">Flight Booking</a></li>
                         <li><a href="hotel-booking.html">Hotel Booking</a></li>
-                        <li><a href="visa.html">Visa Services</a></li>
-                    </ul>
+                                            </ul>
                 </div>
             </div>
 
@@ -1577,8 +1451,8 @@
         }
 
         // Initialize autocomplete on From and To fields
-        setupFlightAutocomplete(document.getElementById('fromCity'));
-        setupFlightAutocomplete(document.getElementById('toCity'));
+        if(document.getElementById('fromCity')) setupFlightAutocomplete(document.getElementById('fromCity'));
+        if(document.getElementById('toCity')) setupFlightAutocomplete(document.getElementById('toCity'));
 
         // ========== Sidebar Menu ==========
         const sidebar = document.getElementById('sidebar');
@@ -1719,7 +1593,7 @@
         const returnDateDisplay = document.getElementById('returnDateDisplay');
         const returnDateWrapper = document.getElementById('returnDateWrapper');
 
-        departDate.addEventListener('change', function () {
+        if(departDate) departDate.addEventListener('change', function () {
             departDateDisplay.textContent = formatDate(this.value);
             if (returnDate) {
                 returnDate.min = this.value;
@@ -1730,7 +1604,7 @@
             }
         });
 
-        returnDate.addEventListener('change', function () {
+        if(returnDate) returnDate.addEventListener('change', function () {
             returnDateDisplay.textContent = formatDate(this.value);
         });
 
@@ -1738,13 +1612,13 @@
         document.querySelectorAll('input[name="tripType"]').forEach(radio => {
             radio.addEventListener('change', function () {
                 if (this.value === 'roundtrip') {
-                    returnDateWrapper.style.display = 'flex';
-                    returnDate.required = true;
+                    if (returnDateWrapper) returnDateWrapper.style.display = 'flex';
+                    if (returnDate) returnDate.required = true;
                 } else {
-                    returnDateWrapper.style.display = 'none';
-                    returnDate.required = false;
-                    returnDate.value = '';
-                    if(returnDateDisplay) returnDateDisplay.textContent = 'Select Date';
+                    if (returnDateWrapper) returnDateWrapper.style.display = 'none';
+                    if (returnDate) returnDate.required = false;
+                    if (returnDate) returnDate.value = '';
+                    if (returnDateDisplay) returnDateDisplay.textContent = 'Select Date';
                 }
             });
         });
@@ -1781,16 +1655,16 @@
         const travelersDisplay = document.getElementById('travelersDisplay');
         const travelersDone = document.getElementById('travelersDone');
 
-        travelersDropdown.addEventListener('click', function () {
+        if(travelersDropdown) travelersDropdown.addEventListener('click', function () {
             travelersPopup.classList.toggle('active');
         });
 
-        travelersDone.addEventListener('click', function () {
+        if(travelersDone) travelersDone.addEventListener('click', function () {
             travelersPopup.classList.remove('active');
         });
 
         document.addEventListener('click', function (e) {
-            if (!travelersDropdown.contains(e.target) && !travelersPopup.contains(e.target)) {
+            if (travelersDropdown && travelersPopup && !travelersDropdown.contains(e.target) && !travelersPopup.contains(e.target)) {
                 travelersPopup.classList.remove('active');
             }
         });
@@ -1993,7 +1867,7 @@
         renderRooms();
 
         // ========== Swap Cities ==========
-        document.getElementById('swapCitiesBtn').addEventListener('click', function () {
+        if(document.getElementById('swapCitiesBtn')) document.getElementById('swapCitiesBtn').addEventListener('click', function () {
             const fromCity = document.getElementById('fromCity');
             const toCity = document.getElementById('toCity');
             const temp = fromCity.value;
@@ -2004,7 +1878,7 @@
         });
 
         // ========== Form Submissions ==========
-        document.getElementById('flightSearchForm').addEventListener('submit', function (e) {
+        if(document.getElementById('flightSearchForm')) document.getElementById('flightSearchForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
             const from = extractAirportCode(document.getElementById('fromCity').value);
@@ -2106,13 +1980,7 @@
         });
 
 
-        document.getElementById('visaSearchForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const destination = document.getElementById('visaDestination').value;
-            const citizenship = document.getElementById('visaCitizenship').value;
-            // Redirect to visa page with params
-            window.location.href = `visa.html?destination=${encodeURIComponent(destination)}&citizenship=${encodeURIComponent(citizenship)}`;
-        });
+        
 
         // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
