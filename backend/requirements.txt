@@ -38,3 +38,4 @@ sendgrid>=6.9.0
 # Flight API
 duffel-api>=0.6.0
 pyotp==2.9.0
+pyotp>=2.9.0
