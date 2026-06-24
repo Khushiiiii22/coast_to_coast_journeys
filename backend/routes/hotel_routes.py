@@ -777,6 +777,44 @@ def process_etg_image_url(raw_url):
     return f"{CDN_BASE}{IMG_SIZE}/{clean_path}"
 
 
+def fetch_markup_rules():
+    """Fetch active block markup rules for hotels."""
+    markup_config = {
+        'domestic': {'type': 'percentage', 'value': 15},
+        'international': {'type': 'percentage', 'value': 15}
+    }
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        if supabase:
+            res = supabase.table('markup_rules').select('*').in_('rule_name', ['Hotel Domestic', 'Hotel International']).execute()
+            for rule in res.data:
+                if rule['rule_name'] == 'Hotel Domestic':
+                    markup_config['domestic'] = {'type': rule.get('markup_type', 'percentage'), 'value': float(rule.get('markup_value', 15))}
+                elif rule['rule_name'] == 'Hotel International':
+                    markup_config['international'] = {'type': rule.get('markup_type', 'percentage'), 'value': float(rule.get('markup_value', 15))}
+    except Exception as e:
+        print(f"Error fetching markup rules: {e}")
+    return markup_config
+
+def calculate_markup_amount(prepaid_amount, currency, target_currency, conversion_rates, markup_rule):
+    """
+    Calculate the markup amount in the specified target currency.
+    """
+    if markup_rule.get('type') == 'percentage':
+        return prepaid_amount * (markup_rule.get('value', 0) / 100)
+    else:
+        # Flat amount is in INR
+        flat_inr = markup_rule.get('value', 0)
+        if target_currency == 'INR':
+            return flat_inr
+        else:
+            inr_to_target = conversion_rates.get(f'INR_TO_{target_currency}') if conversion_rates else None
+            if not inr_to_target:
+                inr_to_target = 0.0116 if target_currency == 'USD' else 0.011
+            return flat_inr * inr_to_target
+
+
 def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=None, MEAL_TYPE_DISPLAY=None, room_groups=None, nights=1):
     """
     Transform ETG search results into flattened hotel cards.
@@ -815,9 +853,7 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
     
     transformed = []
     
-    # 1. Total (Net + Tax) from API.
-    # 2. Split into API_Net and API_Tax.
-    # 3. Apply commission to both: Display_Net = API_Net * 1.15, Display_Tax = API_Tax * 1.15.
+    markup_config = fetch_markup_rules()
     
     for idx, hotel in enumerate(hotels_data):
         hotel_id = hotel.get('hotel_id') or hotel.get('id')
@@ -873,9 +909,18 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
             elif conversion_rates and f"{rate_currency}_TO_{target_currency}" in conversion_rates:
                 converted_prepaid = api_prepaid_amount * conversion_rates[f"{rate_currency}_TO_{target_currency}"]
 
+            # Extract country to determine domestic vs international
+            static_info = hotel.get('static_data', {})
+            country = static_info.get('country') or hotel.get('country') or 'India'
+            is_domestic = (country.lower() == 'india')
+            markup_rule = markup_config['domestic'] if is_domestic else markup_config['international']
+            
+            # Apply markup to converted_prepaid
+            markup_amount = calculate_markup_amount(converted_prepaid, rate_currency, target_currency, conversion_rates, markup_rule)
+            converted_prepaid_with_markup = converted_prepaid + markup_amount
+
             # Display total: what the user sees (Prepaid + Property Fees converted)
-            # Final display price inclusive of everything
-            display_total = (converted_prepaid * (1 + COMMISSION_RATE)) + (api_non_included_tax * conversion_rates.get(f"{rate_currency}_TO_{target_currency}", 1) if target_currency != rate_currency else api_non_included_tax)
+            display_total = converted_prepaid_with_markup + (api_non_included_tax * conversion_rates.get(f"{rate_currency}_TO_{target_currency}", 1) if target_currency != rate_currency else api_non_included_tax)
             display_nightly = display_total / (nights if nights > 0 else 1)
             
             if lowest_price == 0 or display_nightly < lowest_price:
@@ -889,7 +934,7 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
                 no_child_meal = meal_data.get('no_child_meal', False)
                 best_rate_fees = property_fees
                 # The actual amount to charge the guest (excluding what they pay at property)
-                prepay_to_charge = converted_prepaid * (1 + COMMISSION_RATE)
+                prepay_to_charge = converted_prepaid_with_markup
         # Use Static Data for Name/Image/Address if available
         # Fallback to search result data, then to safe defaults
         static_info = hotel.get('static_data', {}) # Assuming static data is passed in or fetched
@@ -989,7 +1034,7 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
             },
             'static_data': static_info,
             'discount': 15,
-            'rates': transform_rates(rates, target_currency, conversion_rates, MEAL_TYPE_DISPLAY, room_groups, nights, hotel_images=all_images)
+            'rates': transform_rates(rates, target_currency, conversion_rates, MEAL_TYPE_DISPLAY, room_groups, nights, hotel_images=all_images, markup_rule=markup_rule)
         }
         
         transformed.append(transformed_hotel)
@@ -997,14 +1042,14 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
     return transformed
 
 
-def transform_rates(rates, target_currency, conversion_rates, meal_display_map, room_groups=None, nights=1, hotel_images=None):
+def transform_rates(rates, target_currency, conversion_rates, meal_display_map, room_groups=None, nights=1, hotel_images=None, markup_rule=None):
     """Transform rate data with proper meal_data, cancellation info, and optional room enrichment"""
     transformed_rates = []
     
     for rate in rates[:20]:  # Increased limit to 20 rates to show more variety
         # Enrich with room static data if provided
         if room_groups:
-            rate = enrich_rate_with_room_data(rate, room_groups, hotel_images=hotel_images)
+            rate = enrich_rate_with_room_data(rate, room_groups, hotel_images=hotel_images, markup_rule=markup_rule, target_currency=target_currency, conversion_rates=conversion_rates)
         payment_options = rate.get('payment_options', {})
         payment_types = payment_options.get('payment_types', [{}])
         rate_currency = payment_options.get('currency_code', 'USD')
@@ -1056,7 +1101,13 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map, 
                 converted_prepaid = api_prepaid_amount * conversion_rates[key]
         
         # Apply commission only to what WE collect (Prepaid)
-        prepay_to_charge = converted_prepaid * (1 + COMMISSION_RATE)
+        markup_amount = 0
+        if markup_rule:
+            markup_amount = calculate_markup_amount(converted_prepaid, rate_currency, target_currency, conversion_rates, markup_rule)
+        else:
+            markup_amount = converted_prepaid * COMMISSION_RATE
+            
+        prepay_to_charge = converted_prepaid + markup_amount
         
         # Property fees converted for display
         display_property_fees = api_non_included_tax * (conversion_rates.get(f"{rate_currency}_TO_{target_currency}", 1) if target_currency != rate_currency else 1)
@@ -1080,7 +1131,8 @@ def transform_rates(rates, target_currency, conversion_rates, meal_display_map, 
             rate_currency, 
             conversion_rates
         )
-        tax_info['total_all_taxes'] = round(api_included_tax * (1 + COMMISSION_RATE) + api_non_included_tax, 2)
+        effective_commission_rate = markup_amount / converted_prepaid if converted_prepaid > 0 else 0
+        tax_info['total_all_taxes'] = round(api_included_tax * (1 + effective_commission_rate) + api_non_included_tax, 2)
 
         # Get meal_data (preferred)
         meal_data = rate.get('meal_data', {})
@@ -2514,7 +2566,7 @@ def make_rg_signature(rg_ext):
     return ",".join(parts)
 
 
-def enrich_rate_with_room_data(rate: dict, room_groups: dict, hotel_images: list = None) -> dict:
+def enrich_rate_with_room_data(rate: dict, room_groups: dict, hotel_images: list = None, markup_rule: dict = None, target_currency: str = 'USD', conversion_rates: dict = None) -> dict:
     """
     Enrich a rate with room static data.
 
@@ -2535,6 +2587,7 @@ def enrich_rate_with_room_data(rate: dict, room_groups: dict, hotel_images: list
     # Non-included property fees must be passed through AT COST for transparency.
     try:
         api_total = float(rate.get('payment_options', {}).get('payment_types', [{}])[0].get('amount', 0))
+        rate_currency = rate.get('payment_options', {}).get('currency_code', 'USD')
         
         # Identify non-included taxes
         api_non_included_tax = 0
@@ -2546,9 +2599,42 @@ def enrich_rate_with_room_data(rate: dict, room_groups: dict, hotel_images: list
         # Base for markup
         api_prepaid_base = api_total - api_non_included_tax
         
-        # Apply 15% Markup to prepaid portion only
-        markup_factor = 1 + (COMMISSION_PERCENT / 100)
-        sales_prepaid = api_prepaid_base * markup_factor
+        # Apply markup to prepaid portion only
+        if markup_rule:
+            # enrich_rate_with_room_data calculates price in target_currency so we need to convert api_prepaid_base if necessary.
+            # Actually wait, `api_prepaid_base` is in `rate_currency`. 
+            # We calculate markup in target_currency, so we must convert the markup back to rate_currency to add to sales_prepaid, 
+            # OR we just use the `calculate_markup_amount` on target_currency equivalent, and convert back.
+            # Simpler: convert api_prepaid_base to target_currency, get markup_amount, convert markup_amount back to rate_currency.
+            
+            # 1. Convert api_prepaid_base to target_currency
+            in_target = api_prepaid_base
+            if target_currency == 'INR' and rate_currency == 'USD' and conversion_rates:
+                in_target = api_prepaid_base * conversion_rates.get('USD_TO_INR', 86.5)
+            elif target_currency == 'INR' and rate_currency == 'EUR' and conversion_rates:
+                in_target = api_prepaid_base * conversion_rates.get('EUR_TO_INR', 92.0)
+            elif target_currency != rate_currency and conversion_rates:
+                key = f"{rate_currency}_TO_{target_currency}"
+                if key in conversion_rates:
+                    in_target = api_prepaid_base * conversion_rates[key]
+                    
+            markup_amount_target = calculate_markup_amount(in_target, rate_currency, target_currency, conversion_rates, markup_rule)
+            
+            # 2. Convert markup_amount_target back to rate_currency
+            markup_amount_rate_curr = markup_amount_target
+            if target_currency == 'INR' and rate_currency == 'USD' and conversion_rates:
+                markup_amount_rate_curr = markup_amount_target / conversion_rates.get('USD_TO_INR', 86.5)
+            elif target_currency == 'INR' and rate_currency == 'EUR' and conversion_rates:
+                markup_amount_rate_curr = markup_amount_target / conversion_rates.get('EUR_TO_INR', 92.0)
+            elif target_currency != rate_currency and conversion_rates:
+                key = f"{rate_currency}_TO_{target_currency}"
+                if key in conversion_rates:
+                    markup_amount_rate_curr = markup_amount_target / conversion_rates[key]
+            
+            sales_prepaid = api_prepaid_base + markup_amount_rate_curr
+        else:
+            markup_factor = 1 + (COMMISSION_PERCENT / 100)
+            sales_prepaid = api_prepaid_base * markup_factor
         
         # Mikhail Requirement (Update 5): 
         # The 'price' shown on site must ONLY be the amount paid to us (prepaid).

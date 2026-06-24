@@ -1513,8 +1513,17 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-client.js"></script>
     <script>
-        // Initialize auth state for header UI
-        document.addEventListener('DOMContentLoaded', function () {
+        // Wait for DOM
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Check auth state
+            const currentUser = await SupabaseDB.getCurrentUser();
+            if (!currentUser) {
+                // Not logged in -> Redirect to auth
+                window.location.href = `auth.html?redirect=${encodeURIComponent(window.location.href)}`;
+                return;
+            }
+
+            // Initialize auth state for header UI
             if (typeof SupabaseDB !== 'undefined' && SupabaseDB.initAuthUI) {
                 SupabaseDB.initAuthUI();
             }

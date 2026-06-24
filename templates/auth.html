@@ -390,10 +390,14 @@
                         <span>Or Sign in with</span>
                     </div>
 
-                    <button type="button" class="google-btn" onclick="socialLogin('google')">
-                        <img src="https://www.google.com/favicon.ico" alt="Google" width="20">
-                        Sign in with Google
-                    </button>
+                    <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
+                        <button type="button" class="google-btn" onclick="socialLogin('google')" style="flex: 1;">
+                            <img src="https://www.google.com/favicon.ico" alt="Google" width="20"> Google
+                        </button>
+                        <button type="button" class="google-btn" onclick="requestLoginOtp()" style="flex: 1;">
+                            <i class="fas fa-envelope"></i> Email OTP
+                        </button>
+                    </div>
 
                     <div class="switch-auth">
                         New here? <a href="#" onclick="showSection('signup')">Sign up (it's easy)</a>
@@ -455,6 +459,34 @@
                     </div>
                 </form>
             </div>
+
+            <!-- OTP Verification Form -->
+            <div id="otpSection" class="form-section">
+                <div class="auth-header">
+                    <h2>VERIFY EMAIL</h2>
+                </div>
+
+                <form id="otpForm" style="margin-top: 2rem;">
+                    <p class="small-text" style="margin-bottom: 1.5rem;">We've sent a 6-digit code to your email. Please enter it below to verify your account.</p>
+                    <div class="error-message" id="otpError"></div>
+                    <div class="success-message" id="otpSuccess"></div>
+
+                    <div class="input-group">
+                        <div style="position: relative;">
+                            <i class="fas fa-key input-icon"></i>
+                            <input type="text" id="otpCode" class="input-field" placeholder="6-digit code" required maxlength="6" pattern="\d{6}">
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="otpEmail">
+                    
+                    <button type="submit" class="submit-btn" id="otpBtn">VERIFY & PROCEED</button>
+
+                    <div class="switch-auth">
+                        Didn't receive it? <a href="#" onclick="showSection('signup')">Go back</a>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -468,6 +500,8 @@
             document.getElementById('loginError').style.display = 'none';
             document.getElementById('signupError').style.display = 'none';
             document.getElementById('signupSuccess').style.display = 'none';
+            document.getElementById('otpError').style.display = 'none';
+            document.getElementById('otpSuccess').style.display = 'none';
         }
 
         // Show error helper
@@ -535,12 +569,21 @@
                     }
                 }
 
-                // Try to login via Supabase first (covers customers)
+                // Try to login via Supabase first
                 let result = await SupabaseDB.signIn(email, password);
 
-                // If Supabase login fails, check if we need to try simulated admin login or handle error
                 if (!result.success) {
                     showError('loginError', result.error || 'Invalid email or password');
+                    btn.disabled = false;
+                    btn.textContent = 'SIGN IN';
+                    return;
+                }
+
+                // If login succeeds but requires OTP verification (in some Supabase configs)
+                if (result.data.user && !result.data.session) {
+                    document.getElementById('otpEmail').value = email;
+                    document.getElementById('otpCode').dataset.type = 'magiclink'; // use magiclink type for login OTPs
+                    showSection('otp');
                     btn.disabled = false;
                     btn.textContent = 'SIGN IN';
                     return;
@@ -605,15 +648,17 @@
                     return;
                 }
 
-                // Check session
+                // Check session. If no session, it means email confirmation is required.
                 if (result.data.user && !result.data.session) {
-                    successEl.textContent = 'Account created! Please check your email to verify.';
-                    successEl.style.display = 'block';
-                    this.reset();
+                    // Transition to OTP
+                    document.getElementById('otpEmail').value = email;
+                    showSection('otp');
+                    
+                    // Reset signup button for later
                     btn.disabled = false;
                     btn.textContent = 'CREATE ACCOUNT';
                 } else {
-                    // Auto login
+                    // Auto login if confirmation disabled
                     successEl.textContent = 'Account created successfully! Redirecting...';
                     successEl.style.display = 'block';
                     setTimeout(() => {
@@ -630,6 +675,88 @@
                 btn.textContent = 'CREATE ACCOUNT';
             }
         });
+
+        // OTP Verification Handler
+        document.getElementById('otpForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const email = document.getElementById('otpEmail').value;
+            const token = document.getElementById('otpCode').value;
+            const btn = document.getElementById('otpBtn');
+            const errorEl = document.getElementById('otpError');
+            const successEl = document.getElementById('otpSuccess');
+
+            errorEl.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = 'VERIFYING...';
+
+            // Get type from dataset, default to signup
+            const type = document.getElementById('otpCode').dataset.type || 'signup';
+
+            try {
+                const result = await SupabaseDB.verifyEmailOtp(email, token, type);
+
+                if (!result.success) {
+                    showError('otpError', result.error || 'Invalid OTP code');
+                    btn.disabled = false;
+                    btn.textContent = 'VERIFY & PROCEED';
+                    return;
+                }
+
+                successEl.textContent = 'Email verified successfully! Redirecting...';
+                successEl.style.display = 'block';
+                
+                setTimeout(() => {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const redirect = urlParams.get('redirect');
+                    window.location.href = redirect ? decodeURIComponent(redirect) : 'index.html';
+                }, 1500);
+
+            } catch (err) {
+                console.error(err);
+                showError('otpError', 'An unexpected error occurred.');
+                btn.disabled = false;
+                btn.textContent = 'VERIFY & PROCEED';
+            }
+        });
+
+        // Request Login OTP
+        async function requestLoginOtp() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const errorEl = document.getElementById('loginError');
+            
+            if (!email) {
+                showError('loginError', 'Please enter your email first to use OTP login');
+                return;
+            }
+
+            errorEl.style.display = 'none';
+            const btn = document.querySelector('.google-btn:last-child');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Sending...';
+            btn.disabled = true;
+
+            try {
+                const result = await SupabaseDB.sendLoginOtp(email);
+                
+                if (!result.success) {
+                    showError('loginError', result.error || 'Failed to send OTP');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+
+                // Transition to OTP
+                document.getElementById('otpEmail').value = email;
+                document.getElementById('otpCode').dataset.type = 'magiclink';
+                showSection('otp');
+
+            } catch (err) {
+                showError('loginError', 'An error occurred.');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
 
         // Social Login
         async function socialLogin(provider) {

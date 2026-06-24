@@ -183,7 +183,7 @@
                         <input type="text" placeholder="Enter Keyword">
                     </div>
                     <button class="btn-icon-mint"><i class="fas fa-search"></i></button>
-                    <button class="btn-export-mint">Export</button>
+                    <button class="btn-export-mint" onclick="exportInvoices()">Export</button>
                 </div>
 
                 <!-- Tabs -->
@@ -222,6 +222,19 @@
     </div>
 
     <script src="../../admin/js/admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadInvoices();
+        });
+
+        function exportInvoices() {
+            if (!window.allInvoices || window.allInvoices.length === 0) {
+                showNotification('No invoices to export', 'warning');
+                return;
+            }
+            exportToCSV(window.allInvoices, 'invoices_report');
+        }
+    </script>
 </body>
 
 </html>

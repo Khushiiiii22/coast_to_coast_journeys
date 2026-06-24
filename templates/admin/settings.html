@@ -927,6 +927,9 @@
             } catch (e) {
                 window.location.href = 'login.html';
             }
+            
+            // Load persistent settings
+            loadSettings();
         });
 
         // Scroll to section
@@ -944,9 +947,41 @@
                 });
             }
         }
+        
+        function loadSettings() {
+            const saved = localStorage.getItem('admin_system_settings');
+            if (saved) {
+                try {
+                    const settings = JSON.parse(saved);
+                    document.querySelectorAll('.settings-input, .settings-textarea').forEach((el, index) => {
+                        const key = 'input_' + index;
+                        if (settings[key] !== undefined) {
+                            el.value = settings[key];
+                        }
+                    });
+                    document.querySelectorAll('.toggle-switch input').forEach((el, index) => {
+                        const key = 'toggle_' + index;
+                        if (settings[key] !== undefined) {
+                            el.checked = settings[key];
+                        }
+                    });
+                } catch(e) {
+                    console.error('Error loading settings', e);
+                }
+            }
+        }
 
         // Save all settings
         function saveAllSettings() {
+            const settings = {};
+            document.querySelectorAll('.settings-input, .settings-textarea').forEach((el, index) => {
+                settings['input_' + index] = el.value;
+            });
+            document.querySelectorAll('.toggle-switch input').forEach((el, index) => {
+                settings['toggle_' + index] = el.checked;
+            });
+            localStorage.setItem('admin_system_settings', JSON.stringify(settings));
+            
             // Log activity
             const activityLog = JSON.parse(localStorage.getItem('admin_activity_log') || '[]');
             activityLog.push({
@@ -987,7 +1022,9 @@
         function resetSystem() {
             if (confirm('⚠️ WARNING: This will reset ALL settings to default. This action cannot be undone. Are you absolutely sure?')) {
                 if (confirm('Please confirm one more time. Type "RESET" to proceed.')) {
+                    localStorage.removeItem('admin_system_settings');
                     showNotification('System reset initiated...', 'warning');
+                    setTimeout(() => window.location.reload(), 1500);
                 }
             }
         }

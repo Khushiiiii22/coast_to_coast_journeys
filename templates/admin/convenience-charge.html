@@ -124,34 +124,91 @@
                 <div class="conv-body">
                     <div class="error-msg">Record not found!</div>
 
-                    <div class="add-form-card">
+                    <form id="convenienceForm" class="add-form-card">
                         <div class="form-header">Add/Edit Convenience Charge</div>
                         <div class="form-body">
                             <label class="form-label">Convenience Charge</label>
-                            <input type="text" class="form-input">
+                            <input type="number" id="charge_val" class="form-input" value="0" required>
 
                             <label class="form-label">Convenience Charge Type</label>
-                            <select class="form-input">
-                                <option>Select</option>
-                                <option>Flat</option>
-                                <option>Percentage</option>
+                            <select id="charge_type" class="form-input">
+                                <option value="flat">Flat</option>
+                                <option value="percentage">Percentage</option>
+                            </select>
+
+                            <label class="form-label">Service</label>
+                            <select id="service_type" class="form-input">
+                                <option value="Hotel">Hotel</option>
                             </select>
 
                             <label class="form-label">Category</label>
-                            <input type="text" class="form-input" value="Hotel">
+                            <select id="category_type" class="form-input">
+                                <option value="Domestic">Domestic</option>
+                                <option value="International">International</option>
+                            </select>
 
-                            <label class="form-label">Category</label>
-                            <input type="text" class="form-input" value="Domestic">
-
-                            <button class="btn-submit">Submit</button>
+                            <button type="submit" class="btn-submit">Submit</button>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </main>
     </div>
 
     <script src="../../admin/js/admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('admin_token');
+            if (!token) return window.location.href = 'login.html';
+
+            // Load Existing Setup
+            try {
+                const res = await fetch('/api/admin/markup/rules/convenience', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const response = await res.json();
+                if (response.success && response.data) {
+                    const domesticRule = response.data.find(r => r.target_value === 'Domestic');
+                    if (domesticRule) {
+                        document.getElementById('charge_val').value = domesticRule.markup_value;
+                        document.getElementById('charge_type').value = domesticRule.markup_type || 'flat';
+                        document.getElementById('category_type').value = 'Domestic';
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to fetch rules', err);
+            }
+
+            // Handle Submit
+            document.getElementById('convenienceForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const payload = {
+                    charge_val: parseFloat(document.getElementById('charge_val').value) || 0,
+                    charge_type: document.getElementById('charge_type').value,
+                    category: document.getElementById('category_type').value
+                };
+
+                try {
+                    const res = await fetch('/api/admin/markup/rules/convenience', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    const response = await res.json();
+                    if (response.success) {
+                        alert('Convenience Charge successfully updated!');
+                    } else {
+                        alert('Failed to update: ' + response.error);
+                    }
+                } catch (err) {
+                    alert('An error occurred while saving.');
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

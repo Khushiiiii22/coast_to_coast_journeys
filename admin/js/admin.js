@@ -63,6 +63,7 @@ async function loadInvoices() {
 
         if (result.status === 'success') {
             const data = result.data;
+            window.allInvoices = data;
             if (data.length === 0) {
                 tableBody.innerHTML = '<tr><td colspan="12" class="empty-row" style="text-align: center; padding: 2rem; color: #64748b;">No Invoices Found</td></tr>';
                 return;
@@ -81,7 +82,7 @@ async function loadInvoices() {
                     <td>${item.markup}</td>
                     <td>0</td>
                     <td>₹${item.total_fare.toLocaleString()}</td>
-                    <td><button class="btn-pdf"><i class="fas fa-file-pdf"></i></button></td>
+                    <td><button class="btn-pdf" onclick="downloadInvoice('${item.invoice_id}')"><i class="fas fa-file-pdf"></i></button></td>
                 </tr>
             `).join('');
         }
@@ -177,7 +178,7 @@ async function loadInvoicesList() {
                     <td style="padding: 1rem;">${item.invoice_id}</td>
                     <td style="padding: 1rem;">${item.lead_pax}</td>
                     <td style="padding: 1rem;">₹ ${parseFloat(item.total_fare).toLocaleString()}</td>
-                    <td style="padding: 1rem;"><i class="fas fa-file-download" style="color: #ef4444; cursor: pointer; font-size: 1.2rem;"></i></td>
+                    <td style="padding: 1rem;"><i class="fas fa-file-download" style="color: #ef4444; cursor: pointer; font-size: 1.2rem;" onclick="downloadInvoice('${item.invoice_id}')"></i></td>
                 </tr>
             `).join('');
         }
@@ -267,7 +268,10 @@ function initSidebar() {
                     hasSub: true,
                     isOpen: localStorage.getItem('markup_submenu_open') === 'true',
                     subItems: [
-                        { name: 'Currency Setting', icon: 'fa-money-bill-wave', href: 'markup.html' }
+                        { name: 'Currency Setting', icon: 'fa-money-bill-wave', href: 'markup.html' },
+                        { name: 'Block Booking Markup', icon: 'fa-file-invoice', href: 'block-markup.html' },
+                        { name: 'Convenience Charge', icon: 'fa-credit-card', href: 'convenience-charge.html' },
+                        { name: 'Cancellation Charge', icon: 'fa-times-circle', href: 'cancellation-charge.html' }
                     ]
                 },
                 { 
@@ -301,7 +305,16 @@ function initSidebar() {
         {
             section: 'System', items: [
                 { name: 'Admin Users', icon: 'fa-user-shield', href: 'users.html' },
-                { name: 'Settings', icon: 'fa-cog', href: 'settings.html' },
+                { 
+                    name: 'Website Setting', 
+                    icon: 'fa-cog', 
+                    href: '#',
+                    hasSub: true,
+                    isOpen: localStorage.getItem('website_setting_submenu_open') === 'true',
+                    subItems: [
+                        { name: 'General Setting', icon: 'fa-sliders-h', href: 'general-settings.html' }
+                    ]
+                },
                 { name: 'Logout', icon: 'fa-sign-out-alt', href: '#', onclick: 'logout(); return false;', style: 'color: #ef4444;' }
             ]
         }
@@ -325,7 +338,8 @@ function initSidebar() {
                     if (item.hasSub) {
                         let storageKey = 'bookings_submenu_open';
                         if (item.name === 'Manage Markup') storageKey = 'markup_submenu_open';
-                        if (item.name === 'MY Account') storageKey = 'account_submenu_open';
+                        if (item.name === 'Finance') storageKey = 'account_submenu_open';
+                        if (item.name === 'Website Setting') storageKey = 'website_setting_submenu_open';
                         if (item.name === 'Queries') storageKey = 'queries_submenu_open';
                         if (item.name === 'Utility') storageKey = 'utility_submenu_open';
                         
@@ -799,6 +813,118 @@ function initTableSearch(inputId, tableId) {
             row.style.display = text.includes(filter) ? '' : 'none';
         });
     });
+}
+
+// ========================================
+// Invoice Download
+// ========================================
+function downloadInvoice(invoiceId) {
+    if (!invoiceId) {
+        showNotification('Invalid Invoice ID', 'error');
+        return;
+    }
+    
+    showNotification('Generating invoice PDF...', 'info');
+    
+    // Simulate generation delay
+    setTimeout(() => {
+        // Open a simple printable window
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            showNotification('Popup blocked! Please allow popups for this site.', 'error');
+            return;
+        }
+        
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Invoice - ${invoiceId}</title>
+                <style>
+                    body { font-family: 'Inter', Arial, sans-serif; padding: 40px; color: #1e293b; max-width: 800px; margin: 0 auto; }
+                    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; }
+                    .logo { font-size: 24px; font-weight: 800; color: #0e64a6; margin-bottom: 10px; }
+                    .invoice-title { font-size: 32px; font-weight: 800; color: #4db6ac; text-transform: uppercase; margin: 0; }
+                    .info-grid { display: flex; justify-content: space-between; margin-bottom: 40px; }
+                    .info-box { background: #f8fafc; padding: 20px; border-radius: 8px; flex: 1; margin: 0 10px; }
+                    .info-box:first-child { margin-left: 0; }
+                    .info-box:last-child { margin-right: 0; }
+                    h3 { margin-top: 0; color: #64748b; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+                    th, td { padding: 15px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+                    th { background: #f1f5f9; font-weight: 600; color: #475569; }
+                    .total-row td { font-weight: 700; font-size: 18px; border-bottom: none; border-top: 2px solid #cbd5e1; }
+                    .footer { text-align: center; color: #94a3b8; font-size: 14px; margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+                    .print-btn { display: block; width: 200px; margin: 40px auto; padding: 12px 24px; background: #0e64a6; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; }
+                    @media print {
+                        .print-btn { display: none; }
+                        body { padding: 0; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div>
+                        <div class="logo">COAST TO COAST JOURNEYS</div>
+                        <div>123, Travel Plaza, Connaught Place</div>
+                        <div>New Delhi - 110001, India</div>
+                        <div>info@ctcjourneys.com</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <h1 class="invoice-title">INVOICE</h1>
+                        <div><strong>Invoice #:</strong> ${invoiceId}</div>
+                        <div><strong>Date:</strong> ${new Date().toLocaleDateString('en-IN')}</div>
+                    </div>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-box">
+                        <h3>Bill To</h3>
+                        <div><strong>Customer</strong></div>
+                        <div>Standard booking details</div>
+                        <div>Phone: N/A</div>
+                    </div>
+                    <div class="info-box">
+                        <h3>Payment Details</h3>
+                        <div><strong>Status:</strong> Paid</div>
+                        <div><strong>Method:</strong> Online</div>
+                    </div>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Rate</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Travel Services Booking</td>
+                            <td>1</td>
+                            <td>Refer to Dashboard</td>
+                            <td>As per Booking</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="3" style="text-align: right;">Total Amount:</td>
+                            <td>Valid upon generation</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <button class="print-btn" onclick="window.print()">Print Invoice</button>
+                
+                <div class="footer">
+                    Thank you for choosing Coast To Coast Journeys!
+                </div>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        
+        showNotification('Invoice ready for download/print', 'success');
+    }, 800);
 }
 
 // ========================================

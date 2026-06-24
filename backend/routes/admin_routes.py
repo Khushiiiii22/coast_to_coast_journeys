@@ -122,14 +122,14 @@ def manage_block_markup():
 
         if request.method == 'GET':
             # Simplified retrieval of hotel block-type rules
-            hotel_result = supabase.table('markup_rules').select('*').ilike('rule_name', 'hotel%').execute()
-            return jsonify({'success': True, 'data': hotel_result.data}), 200
+            result = supabase.table('markup_rules').select('*').in_('rule_name', ['Hotel Domestic', 'Hotel International']).execute()
+            return jsonify({'success': True, 'data': result.data}), 200
 
-        # POST logic: Upsert the hotel rules
+        # POST logic: Upsert the rules
         data = request.json
         rules_to_update = [
-            {'rule_name': 'Hotel Domestic', 'markup_type': data.get('hotel_dom_type'), 'markup_value': data.get('hotel_dom_val')},
-            {'rule_name': 'Hotel International', 'markup_type': data.get('hotel_int_type'), 'markup_value': data.get('hotel_int_val')}
+            {'rule_name': 'Hotel Domestic', 'rule_type': 'block', 'apply_to': 'hotel', 'markup_type': data.get('hotel_dom_type', 'flat'), 'markup_value': data.get('hotel_dom_val', 0)},
+            {'rule_name': 'Hotel International', 'rule_type': 'block', 'apply_to': 'hotel', 'markup_type': data.get('hotel_int_type', 'flat'), 'markup_value': data.get('hotel_int_val', 0)}
         ]
 
         for rule in rules_to_update:
@@ -140,6 +140,82 @@ def manage_block_markup():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@admin_bp.route('/api/admin/markup/rules/convenience', methods=['GET', 'POST'])
+def manage_convenience_charge():
+    from flask import current_app
+    supabase = current_app.config.get('SUPABASE')
+    if not supabase:
+        return jsonify({'success': False, 'error': 'Database not initialized'}), 500
+
+    if request.method == 'GET':
+        result = supabase.table('markup_rules').select('*').eq('rule_type', 'convenience').execute()
+        return jsonify({'success': True, 'data': result.data}), 200
+
+    data = request.json
+    rules_to_update = [
+        {'rule_name': f"Convenience Charge {data.get('category', 'Domestic')}", 'rule_type': 'convenience', 'apply_to': 'hotel', 'target_value': data.get('category', 'Domestic'), 'markup_type': data.get('charge_type', 'flat'), 'markup_value': data.get('charge_val', 0)}
+    ]
+
+    for rule in rules_to_update:
+        existing = supabase.table('markup_rules').select('id').eq('rule_name', rule['rule_name']).eq('rule_type', 'convenience').execute()
+        if existing.data and len(existing.data) > 0:
+            supabase.table('markup_rules').update(rule).eq('id', existing.data[0]['id']).execute()
+        else:
+            supabase.table('markup_rules').insert(rule).execute()
+
+    return jsonify({'success': True, 'message': 'Convenience charge updated successfully'}), 200
+
+@admin_bp.route('/api/admin/markup/rules/cancellation', methods=['GET', 'POST'])
+def manage_cancellation_charge():
+    from flask import current_app
+    supabase = current_app.config.get('SUPABASE')
+    if not supabase:
+        return jsonify({'success': False, 'error': 'Database not initialized'}), 500
+
+    if request.method == 'GET':
+        result = supabase.table('markup_rules').select('*').eq('rule_type', 'cancellation').execute()
+        return jsonify({'success': True, 'data': result.data}), 200
+
+    data = request.json
+    rules_to_update = [
+        {'rule_name': 'Hotel Cancellation Domestic', 'rule_type': 'cancellation', 'apply_to': 'hotel', 'target_value': 'Domestic', 'markup_type': data.get('hotel_dom_type', 'flat'), 'markup_value': data.get('hotel_dom_val', 0)},
+        {'rule_name': 'Hotel Cancellation International', 'rule_type': 'cancellation', 'apply_to': 'hotel', 'target_value': 'International', 'markup_type': data.get('hotel_int_type', 'flat'), 'markup_value': data.get('hotel_int_val', 0)}
+    ]
+
+    for rule in rules_to_update:
+        existing = supabase.table('markup_rules').select('id').eq('rule_name', rule['rule_name']).eq('rule_type', 'cancellation').execute()
+        if existing.data and len(existing.data) > 0:
+            supabase.table('markup_rules').update(rule).eq('id', existing.data[0]['id']).execute()
+        else:
+            supabase.table('markup_rules').insert(rule).execute()
+
+    return jsonify({'success': True, 'message': 'Cancellation charge updated successfully'}), 200
+
+@admin_bp.route('/api/admin/system/general', methods=['GET', 'POST'])
+def manage_general_settings():
+    from flask import current_app
+    supabase = current_app.config.get('SUPABASE')
+    if not supabase:
+        return jsonify({'success': False, 'error': 'Database not initialized'}), 500
+
+    if request.method == 'GET':
+        result = supabase.table('system_settings').select('*').eq('category', 'general').execute()
+        return jsonify({'success': True, 'data': result.data}), 200
+
+    data = request.json
+    for key, value in data.items():
+        existing = supabase.table('system_settings').select('id').eq('setting_key', key).execute()
+        if existing.data and len(existing.data) > 0:
+            supabase.table('system_settings').update({'setting_value': str(value)}).eq('id', existing.data[0]['id']).execute()
+        else:
+            supabase.table('system_settings').insert({
+                'setting_key': key,
+                'setting_value': str(value),
+                'category': 'general',
+                'setting_type': 'string'
+            }).execute()
+
+    return jsonify({'success': True, 'message': 'Settings updated successfully'}), 200
 
 @admin_bp.route('/bookings/<booking_id>', methods=['GET'])
 @require_auth()
@@ -1133,6 +1209,32 @@ def get_suppliers():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
+@admin_bp.route('/suppliers', methods=['POST'])
+@require_auth(required_role=['super_admin', 'operations'])
+def create_supplier():
+    try:
+        data = request.get_json()
+        if not data.get('name'):
+            return jsonify({'success': False, 'error': 'Supplier name required'}), 400
+            
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        supplier_record = {
+            'name': data.get('name'),
+            'service_type': data.get('service_type', 'hotel'),
+            'api_endpoint': data.get('api_endpoint'),
+            'api_status': 'active',
+            'balance': 0,
+            'currency': 'USD'
+        }
+        
+        result = supabase.table('suppliers').insert(supplier_record).execute()
+        return jsonify({'success': True, 'data': result.data[0] if result.data else None}), 201
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @admin_bp.route('/stats', methods=['GET'])
 @require_auth()

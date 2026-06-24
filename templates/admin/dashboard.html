@@ -600,10 +600,18 @@
                         <button class="header-btn" id="refreshDashboard" title="Refresh Data">
                             <i class="fas fa-sync-alt"></i>
                         </button>
-                        <button class="header-btn">
-                            <i class="fas fa-bell"></i>
-                            <span class="notification-badge"></span>
-                        </button>
+                        <div class="notification-wrapper" style="position: relative;">
+                            <button class="header-btn" id="notificationBell" onclick="toggleNotifications()">
+                                <i class="fas fa-bell"></i>
+                                <span class="notification-badge" id="notifBadge" style="display: none; position: absolute; top: 0; right: 0; background: #ef4444; color: white; border-radius: 50%; padding: 2px 5px; font-size: 0.6rem;">0</span>
+                            </button>
+                            <div class="notification-dropdown" id="notifDropdown" style="display: none; position: absolute; top: 100%; right: 0; width: 320px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; border: 1px solid #e2e8f0; max-height: 400px; overflow-y: auto;">
+                                <div style="padding: 1rem; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: #1e293b;">Notifications</div>
+                                <div id="notifList">
+                                    <div style="padding: 1rem; text-align: center; color: #64748b; font-size: 0.85rem;">Loading...</div>
+                                </div>
+                            </div>
+                        </div>
                         <button class="header-btn" onclick="logout()">
                             <i class="fas fa-sign-out-alt"></i>
                         </button>
@@ -846,7 +854,57 @@
                     await loadDashboardData();
                 });
             }
+
+            // Load Notifications
+            loadNotifications();
         });
+
+        // Toggle Notifications Dropdown
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notifDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Click outside to close
+        document.addEventListener('click', (e) => {
+            const wrapper = document.querySelector('.notification-wrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                document.getElementById('notifDropdown').style.display = 'none';
+            }
+        });
+
+        async function loadNotifications() {
+            try {
+                const result = await apiRequest('/notifications');
+                if (result.success && result.data) {
+                    const notifList = document.getElementById('notifList');
+                    const badge = document.getElementById('notifBadge');
+                    
+                    if (result.data.length === 0) {
+                        notifList.innerHTML = '<div style="padding: 1rem; text-align: center; color: #64748b; font-size: 0.85rem;">No recent notifications</div>';
+                        badge.style.display = 'none';
+                        return;
+                    }
+
+                    badge.textContent = result.data.length;
+                    badge.style.display = 'block';
+
+                    notifList.innerHTML = result.data.map(n => `
+                        <div style="padding: 1rem; border-bottom: 1px solid #f1f5f9; display: flex; gap: 1rem; align-items: flex-start;">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: ${n.type === 'success' ? '#dcfce7' : n.type === 'error' ? '#fee2e2' : '#fef3c7'}; color: ${n.type === 'success' ? '#16a34a' : n.type === 'error' ? '#dc2626' : '#d97706'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fas ${n.icon}"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85rem; font-weight: 600; color: #1e293b;">${n.title}</div>
+                                <div style="font-size: 0.8rem; color: #64748b; margin-top: 0.25rem;">${n.message}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load notifications:', error);
+            }
+        }
 
         async function loadDashboardData() {
             try {

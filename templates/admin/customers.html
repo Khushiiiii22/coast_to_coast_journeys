@@ -178,7 +178,7 @@
                 </div>
 
                 <div class="header-right">
-                    <button class="btn btn-secondary">
+                    <button class="btn btn-secondary" onclick="exportCustomers()">
                         <i class="fas fa-download"></i> Export CSV
                     </button>
                     <button class="btn btn-primary" onclick="openModal('addCustomerModal')">
@@ -354,6 +354,7 @@
         let currentPage = 0;
         const PAGE_SIZE = 10;
         let totalCustomers = 0;
+        let allCustomers = [];
 
         document.addEventListener('DOMContentLoaded', function () {
             loadCustomers();
@@ -399,6 +400,7 @@
 
                 if (res.success) {
                     const customers = res.data;
+                    allCustomers = customers;
                     totalCustomers = res.count || 0;
 
                     if (customers.length === 0) {
@@ -509,6 +511,14 @@
 
         function viewCustomerBookings(id) {
             window.location.href = `bookings.html?customer_id=${id}`;
+        }
+
+        function exportCustomers() {
+            if (allCustomers.length === 0) {
+                showNotification('No data to export', 'warning');
+                return;
+            }
+            exportToCSV(allCustomers, 'customers_report');
         }
     </script>
 </body>

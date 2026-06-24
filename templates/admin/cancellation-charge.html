@@ -124,18 +124,20 @@
                 <div class="cancel-banner">HOTEL CANCELLATION CHARGES</div>
 
                 <div class="cancel-container">
-                    <form>
+                    <form id="cancellationForm">
                         <!-- Hotel -->
                         <div class="service-section">
                             <div class="service-header"><i class="fas fa-hotel"></i> Hotel Cancellation Management</div>
                             <div class="input-row">
                                 <div class="input-group">
                                     <label class="input-label">Domestic (Flat/%)</label>
-                                    <input type="text" class="ss-input" value="100">
+                                    <input type="number" id="hotel_dom_val" class="ss-input" value="100">
+                                    <input type="hidden" id="hotel_dom_type" value="flat">
                                 </div>
                                 <div class="input-group">
                                     <label class="input-label">International (Flat/%)</label>
-                                    <input type="text" class="ss-input" value="200">
+                                    <input type="number" id="hotel_int_val" class="ss-input" value="200">
+                                    <input type="hidden" id="hotel_int_type" value="flat">
                                 </div>
                             </div>
                         </div>
@@ -150,6 +152,61 @@
     </div>
 
     <script src="../../admin/js/admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('admin_token');
+            if (!token) return window.location.href = 'login.html';
+
+            // Load Existing Setup
+            try {
+                const res = await fetch('/api/admin/markup/rules/cancellation', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const response = await res.json();
+                if (response.success && response.data) {
+                    response.data.forEach(rule => {
+                        if (rule.target_value === 'Domestic') {
+                            document.getElementById('hotel_dom_val').value = rule.markup_value;
+                        } else if (rule.target_value === 'International') {
+                            document.getElementById('hotel_int_val').value = rule.markup_value;
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error('Failed to fetch rules', err);
+            }
+
+            // Handle Submit
+            document.getElementById('cancellationForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const payload = {
+                    hotel_dom_val: parseFloat(document.getElementById('hotel_dom_val').value) || 0,
+                    hotel_dom_type: 'flat',
+                    hotel_int_val: parseFloat(document.getElementById('hotel_int_val').value) || 0,
+                    hotel_int_type: 'flat'
+                };
+
+                try {
+                    const res = await fetch('/api/admin/markup/rules/cancellation', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    const response = await res.json();
+                    if (response.success) {
+                        alert('Cancellation Charge successfully updated!');
+                    } else {
+                        alert('Failed to update: ' + response.error);
+                    }
+                } catch (err) {
+                    alert('An error occurred while saving.');
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

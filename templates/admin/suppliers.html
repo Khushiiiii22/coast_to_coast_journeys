@@ -54,11 +54,11 @@
                 <form id="addSupplierForm">
                     <div class="form-group">
                         <label class="form-label">Supplier Name</label>
-                        <input type="text" class="form-control" placeholder="e.g., TBO Holidays" required>
+                        <input type="text" name="name" class="form-control" placeholder="e.g., TBO Holidays" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Service Type</label>
-                        <select class="form-control">
+                        <select name="service_type" class="form-control">
                             <option value="hotel">Hotels</option>
                             <option value="flight">Flights</option>
                             <option value="both">Both</option>
@@ -66,13 +66,13 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">API Endpoint</label>
-                        <input type="url" class="form-control" placeholder="https://api.example.com">
+                        <input type="url" name="api_endpoint" class="form-control" placeholder="https://api.example.com">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('addSupplierModal')">Cancel</button>
-                <button class="btn btn-primary">Save Supplier</button>
+                <button class="btn btn-primary" onclick="saveSupplier()">Save Supplier</button>
             </div>
         </div>
     </div>
@@ -209,6 +209,28 @@
                 showNotification('Supplier status updated', 'success');
                 loadSuppliers();
             }, 1000);
+        }
+
+        async function saveSupplier() {
+            const form = document.getElementById('addSupplierForm');
+            if (!validateForm('addSupplierForm')) return;
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const res = await apiRequest('/suppliers', 'POST', data);
+                if (res.success) {
+                    showNotification('Supplier added successfully', 'success');
+                    closeModal('addSupplierModal');
+                    form.reset();
+                    loadSuppliers();
+                } else {
+                    showNotification(res.error || 'Failed to add supplier', 'error');
+                }
+            } catch (error) {
+                showNotification(error.message || 'Error saving supplier', 'error');
+            }
         }
     </script>
 </body>

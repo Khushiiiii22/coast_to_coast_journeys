@@ -525,6 +525,8 @@
             initSearch();
         });
 
+        let allLogs = [];
+
         // Load activity logs from backend API
         async function loadActivityLogs() {
             const activityList = document.getElementById('activityList');
@@ -534,6 +536,7 @@
                 if (!res.success) throw new Error('Failed to load logs');
                 
                 const activityLog = res.data || [];
+                allLogs = activityLog;
 
             // Update stats
             const todayStart = new Date();
@@ -741,31 +744,18 @@
 
         // Export logs
         function exportLogs() {
-            const activityLog = JSON.parse(localStorage.getItem('admin_activity_log') || '[]');
-
-            if (activityLog.length === 0) {
+            if (allLogs.length === 0) {
                 showNotification('No logs to export', 'warning');
                 return;
             }
 
-            const csv = [
-                ['Timestamp', 'User', 'Action', 'Details'].join(','),
-                ...activityLog.map(log => [
-                    log.timestamp,
-                    log.user || 'Unknown',
-                    log.action,
-                    `"${log.details || ''}"`
-                ].join(','))
-            ].join('\n');
-
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `activity_logs_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
-
+            exportToCSV(allLogs.map(log => ({
+                'Timestamp': formatDateTime(log.created_at),
+                'User': log.admin_users?.full_name || log.admin_users?.email || 'Unknown',
+                'Action': log.action,
+                'Details': log.details || ''
+            })), 'activity_logs_report');
+            
             showNotification('Logs exported successfully', 'success');
         }
 
