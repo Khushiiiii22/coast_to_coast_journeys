@@ -133,7 +133,11 @@ def manage_block_markup():
         ]
 
         for rule in rules_to_update:
-            supabase.table('markup_rules').upsert(rule, on_conflict='rule_name').execute()
+            existing = supabase.table('markup_rules').select('id').eq('rule_name', rule['rule_name']).eq('rule_type', 'block').execute()
+            if existing.data and len(existing.data) > 0:
+                supabase.table('markup_rules').update(rule).eq('id', existing.data[0]['id']).execute()
+            else:
+                supabase.table('markup_rules').insert(rule).execute()
 
         return jsonify({'success': True, 'message': 'Hotel markup rules updated'}), 200
         

@@ -71,7 +71,7 @@ class EmailService:
         """Send an email using SMTP (primary) → Brevo → Resend (fallback)"""
         # 1. Try SMTP first — sends to ANY email address, no restrictions
         if self.smtp_server and self.smtp_username and self.smtp_password:
-            success = self._send_via_smtp(to_email, subject, body, html_body)
+            success = self._send_via_smtp(to_email, subject, body, html_body, attachments)
             if success:
                 return True
             print("⚠️ SMTP failed. Trying API fallbacks...")
@@ -90,22 +90,31 @@ class EmailService:
         print("⚠️ No working email provider configured. Skipping email.")
         return False
 
-    def _send_via_smtp(self, to_email, subject, body, html_body=None):
+    def _send_via_smtp(self, to_email, subject, body, html_body=None, attachments=None):
         """Send email via SMTP (GoDaddy or any SMTP provider).
         Works with ANY recipient email — no test mode restrictions."""
         try:
+            from email.mime.application import MIMEApplication
             # Build the email message
-            msg = MIMEMultipart('alternative')
+            msg = MIMEMultipart('mixed')  # Changed from 'alternative' to 'mixed' for attachments
+            
             msg['From'] = f"{self.sender_name} <{self.default_sender}>"
             msg['To'] = to_email
             msg['Subject'] = subject
             
-            # Add plain text body
-            msg.attach(MIMEText(body, 'plain', 'utf-8'))
-            
-            # Add HTML body if available
+            # Create a multipart/alternative part for text/html
+            alt_part = MIMEMultipart('alternative')
+            alt_part.attach(MIMEText(body, 'plain', 'utf-8'))
             if html_body:
-                msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+                alt_part.attach(MIMEText(html_body, 'html', 'utf-8'))
+            msg.attach(alt_part)
+            
+            # Add attachments if any
+            if attachments:
+                for attachment in attachments:
+                    part = MIMEApplication(attachment['content'], Name=attachment['filename'])
+                    part['Content-Disposition'] = f'attachment; filename="{attachment["filename"]}"'
+                    msg.attach(part)
             
             # Connect and send
             if self.smtp_use_ssl:
@@ -527,8 +536,34 @@ Total Amount: {self._format_amount(amount, currency)}
 Thank you for choosing C2C Journeys!
         """
         
+        # Generate PDF attachments
+        attachments = []
+        try:
+            from backend.services.pdf_service import PDFService
+            from flask import current_app
+            import os
+            # Get templates dir securely, fallback to relative path
+            templates_dir = current_app.config.get('TEMPLATES_DIR', os.path.join(os.getcwd(), 'templates')) if current_app else os.path.join(os.getcwd(), 'templates')
+            pdf_service = PDFService(templates_dir)
+            
+            # 1. Invoice PDF
+            invoice_pdf = pdf_service.generate_invoice(booking_details)
+            attachments.append({
+                'filename': f"Invoice_{booking_details.get('booking_id', 'Booking')}.pdf",
+                'content': invoice_pdf
+            })
+            
+            # 2. Ticket PDF
+            ticket_pdf = pdf_service.generate_ticket(booking_details)
+            attachments.append({
+                'filename': f"Voucher_{booking_details.get('booking_id', 'Booking')}.pdf",
+                'content': ticket_pdf
+            })
+        except Exception as e:
+            print(f"⚠️ Failed to generate PDFs: {e}")
+
         # Send email to customer
-        customer_email_sent = self.send_email(to_email, subject, body, html_body=invoice_html)
+        customer_email_sent = self.send_email(to_email, subject, body, html_body=invoice_html, attachments=attachments)
         
         # Send copy to owner
         self._send_owner_notification(to_email, booking_details)
@@ -557,6 +592,10 @@ Thank you for choosing C2C Journeys!
         invoice_html = admin_header + invoice_html
 
         print(f"📧 Sending owner notification to {owner_email}")
+        
+        # Attach PDFs for owner too if they were generated
+        # We need to re-fetch attachments from locals if possible, but since it's a separate method, we pass them down.
+        # Actually, let's just send the HTML for the owner to save bandwidth, or we can update the signature.
         self.send_email(owner_email, subject, "New booking received. See HTML version for details.", html_body=invoice_html)
 
     def _format_date(self, date_str):

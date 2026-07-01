@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; line-height: 1.5; font-size: 13px; margin: 0; padding: 20px; }
+    .ticket-box { border: 2px solid #cbd5e1; border-radius: 8px; padding: 30px; position: relative; }
+    .header { width: 100%; border-bottom: 2px dashed #cbd5e1; padding-bottom: 20px; margin-bottom: 20px; text-align: center; }
+    .title { font-size: 22px; font-weight: bold; color: #0f172a; text-transform: uppercase; letter-spacing: 2px; }
+    .subtitle { color: #64748b; font-size: 14px; margin-top: 5px; }
+    .details { width: 100%; margin-top: 20px; }
+    .details td { padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+    .label { color: #64748b; width: 30%; font-size: 12px; text-transform: uppercase; font-weight: bold; }
+    .val { font-weight: bold; color: #0f172a; font-size: 15px; }
+    .footer { margin-top: 30px; text-align: center; color: #64748b; font-size: 11px; }
+</style>
+</head>
+<body>
+    <div class="ticket-box">
+        <div class="header">
+            <div class="title">HOTEL BOOKING VOUCHER</div>
+            <div class="subtitle">Coast to Coast Journeys</div>
+        </div>
+        
+        <table class="details">
+            <tr><td class="label">Booking ID</td><td class="val">{{booking_id}}</td></tr>
+            <tr><td class="label">Primary Guest</td><td class="val">{{guest_name}}</td></tr>
+            <tr><td class="label">Hotel Name</td><td class="val">{{hotel_name}}</td></tr>
+            <tr><td class="label">Location</td><td class="val">{{city}}</td></tr>
+            <tr><td class="label">Check-in Date</td><td class="val">{{checkin}}</td></tr>
+            <tr><td class="label">Check-out Date</td><td class="val">{{checkout}}</td></tr>
+            <tr><td class="label">Payment Status</td><td class="val" style="color: #16a34a;">CONFIRMED</td></tr>
+        </table>
+
+        <div class="footer">
+            Please present this voucher along with a valid photo ID upon arrival at the hotel.<br>
+            Thank you for booking with C2C Journeys!
+        </div>
+    </div>
+</body>
+</html>
