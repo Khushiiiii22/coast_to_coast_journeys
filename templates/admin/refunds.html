@@ -196,6 +196,56 @@
     </div>
 
     <script src="../../admin/js/admin.js"></script>
+    <script>
+        let allRefunds = [];
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            const token = localStorage.getItem('admin_token');
+            if (!token) { window.location.href = 'login.html'; return; }
+            await loadRefunds();
+        });
+
+        async function loadRefunds() {
+            const tbody = document.querySelector('.inv-table tbody');
+            try {
+                const res = await apiRequest('/refunds?limit=100');
+                if (!res.success) throw new Error(res.error);
+
+                allRefunds = res.data || [];
+
+                if (allRefunds.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="empty-row">No Refunds Found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = allRefunds.map(r => {
+                    const bookingDate = r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN') : '—';
+                    const checkIn = r.check_in ? new Date(r.check_in).toLocaleDateString('en-IN') : '—';
+                    const amount = parseFloat(r.total_price) || 0;
+
+                    return `
+                        <tr>
+                            <td>${bookingDate}</td>
+                            <td>${r.hotel_name || '—'}</td>
+                            <td>${checkIn}</td>
+                            <td>${r.guest_name || '—'}</td>
+                            <td>${r.guest_email || '—'}</td>
+                            <td>${r.booking_id || '—'}</td>
+                            <td>₹${amount.toLocaleString('en-IN')}</td>
+                            <td>
+                                <button class="btn-icon-mint" onclick="window.location.href='booking-details.html?id=${r.booking_id}'" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error('Failed to load refunds:', err);
+                if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="empty-row" style="color:#ef4444;">Failed to load refunds</td></tr>';
+            }
+        }
+    </script>
 </body>
 
 </html>

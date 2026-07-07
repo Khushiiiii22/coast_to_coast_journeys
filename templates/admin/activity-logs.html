@@ -500,22 +500,8 @@
     <script>
         // Check authentication and load logs
         document.addEventListener('DOMContentLoaded', function () {
-            const session = localStorage.getItem('admin_session');
-            if (!session) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            try {
-                const sessionData = JSON.parse(session);
-                if (new Date(sessionData.expiresAt) <= new Date()) {
-                    localStorage.removeItem('admin_token');
-                    localStorage.removeItem('admin_user');
-                    localStorage.removeItem('admin_session');
-                    window.location.href = 'login.html';
-                    return;
-                }
-            } catch (e) {
+            const token = localStorage.getItem('admin_token');
+            if (!token) {
                 window.location.href = 'login.html';
                 return;
             }

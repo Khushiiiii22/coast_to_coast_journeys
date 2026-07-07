@@ -161,10 +161,7 @@
 
             // Load Existing Setup
             try {
-                const res = await fetch('/api/admin/markup/rules/convenience', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const response = await res.json();
+                const response = await apiRequest('/markup/rules/convenience');
                 if (response.success && response.data) {
                     const domesticRule = response.data.find(r => r.target_value === 'Domestic');
                     if (domesticRule) {
@@ -187,22 +184,14 @@
                 };
 
                 try {
-                    const res = await fetch('/api/admin/markup/rules/convenience', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify(payload)
-                    });
-                    const response = await res.json();
+                    const response = await apiRequest('/markup/rules/convenience', 'POST', payload);
                     if (response.success) {
-                        alert('Convenience Charge successfully updated!');
+                        showNotification('Convenience Charge successfully updated!', 'success');
                     } else {
-                        alert('Failed to update: ' + response.error);
+                        showNotification('Failed to update: ' + response.error, 'error');
                     }
                 } catch (err) {
-                    alert('An error occurred while saving.');
+                    showNotification('An error occurred while saving.', 'error');
                 }
             });
         });

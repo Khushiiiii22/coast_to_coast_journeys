@@ -144,7 +144,8 @@ def manage_block_markup():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@admin_bp.route('/api/admin/markup/rules/convenience', methods=['GET', 'POST'])
+@admin_bp.route('/markup/rules/convenience', methods=['GET', 'POST'])
+@require_auth()
 def manage_convenience_charge():
     from flask import current_app
     supabase = current_app.config.get('SUPABASE')
@@ -169,7 +170,8 @@ def manage_convenience_charge():
 
     return jsonify({'success': True, 'message': 'Convenience charge updated successfully'}), 200
 
-@admin_bp.route('/api/admin/markup/rules/cancellation', methods=['GET', 'POST'])
+@admin_bp.route('/markup/rules/cancellation', methods=['GET', 'POST'])
+@require_auth()
 def manage_cancellation_charge():
     from flask import current_app
     supabase = current_app.config.get('SUPABASE')
@@ -195,7 +197,8 @@ def manage_cancellation_charge():
 
     return jsonify({'success': True, 'message': 'Cancellation charge updated successfully'}), 200
 
-@admin_bp.route('/api/admin/system/general', methods=['GET', 'POST'])
+@admin_bp.route('/system/general', methods=['GET', 'POST'])
+@require_auth()
 def manage_general_settings():
     from flask import current_app
     supabase = current_app.config.get('SUPABASE')
@@ -815,7 +818,7 @@ def get_activity_logs():
         
         limit = int(request.args.get('limit', 100))
         
-        result = supabase.table('admin_activity_logs').select('*, admin_users(email, full_name)').order('created_at', desc=True).limit(limit).execute()
+        result = supabase.table('activity_logs').select('*, admin_users(email, full_name)').order('created_at', desc=True).limit(limit).execute()
         
         return jsonify({
             'success': True,
@@ -1185,17 +1188,66 @@ def create_admin_user():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@admin_bp.route('/finance', methods=['GET'])
+@admin_bp.route('/payments', methods=['GET'])
 @require_auth()
-def get_finance():
-    """Get finance data (invoices/refunds)"""
+def get_payments():
+    """Get payment transactions from bookings"""
     try:
-        finance_type = request.args.get('type', 'invoices')
         from flask import current_app
-        admin_service = current_app.config.get('ADMIN_SERVICE')
+        supabase = current_app.config.get('SUPABASE')
         
-        data = admin_service.get_finance_data(type=finance_type)
-        return jsonify({'success': True, 'data': data}), 200
+        status = request.args.get('status', '')
+        limit = int(request.args.get('limit', 50))
+        page = int(request.args.get('page', 1))
+        offset = (page - 1) * limit
+        
+        query = supabase.table('bookings').select(
+            'id, booking_id, guest_name, guest_email, hotel_name, check_in, check_out, '
+            'total_price, payment_status, payment_method, payment_id, booking_status, created_at',
+            count='exact'
+        ).order('created_at', desc=True)
+        
+        if status:
+            query = query.eq('payment_status', status)
+        
+        result = query.range(offset, offset + limit - 1).execute()
+        
+        return jsonify({
+            'success': True,
+            'data': result.data,
+            'total': result.count or 0,
+            'page': page,
+            'limit': limit
+        }), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/refunds', methods=['GET'])
+@require_auth()
+def get_refunds():
+    """Get refund records from bookings"""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        limit = int(request.args.get('limit', 50))
+        page = int(request.args.get('page', 1))
+        offset = (page - 1) * limit
+        
+        result = supabase.table('bookings').select(
+            'id, booking_id, guest_name, guest_email, hotel_name, check_in, check_out, '
+            'total_price, payment_status, payment_method, payment_id, booking_status, created_at',
+            count='exact'
+        ).in_('booking_status', ['cancelled', 'refunded']).order('created_at', desc=True).range(offset, offset + limit - 1).execute()
+        
+        return jsonify({
+            'success': True,
+            'data': result.data,
+            'total': result.count or 0,
+            'page': page,
+            'limit': limit
+        }), 200
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 

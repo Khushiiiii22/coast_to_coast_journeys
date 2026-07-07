@@ -275,10 +275,7 @@
 
             // Load Existing Setup
             try {
-                const res = await fetch('/api/admin/system/general', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const response = await res.json();
+                const response = await apiRequest('/system/general');
                 if (response.success && response.data) {
                     response.data.forEach(setting => {
                         const el = document.getElementById(setting.setting_key);
@@ -300,22 +297,14 @@
                 });
 
                 try {
-                    const res = await fetch('/api/admin/system/general', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify(payload)
-                    });
-                    const response = await res.json();
+                    const response = await apiRequest('/system/general', 'POST', payload);
                     if (response.success) {
-                        alert('General settings successfully updated!');
+                        showNotification('General settings successfully updated!', 'success');
                     } else {
-                        alert('Failed to update: ' + response.error);
+                        showNotification('Failed to update: ' + response.error, 'error');
                     }
                 } catch (err) {
-                    alert('An error occurred while saving.');
+                    showNotification('An error occurred while saving.', 'error');
                 }
             });
         });

@@ -159,10 +159,7 @@
 
             // Load Existing Setup
             try {
-                const res = await fetch('/api/admin/markup/rules/cancellation', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const response = await res.json();
+                const response = await apiRequest('/markup/rules/cancellation');
                 if (response.success && response.data) {
                     response.data.forEach(rule => {
                         if (rule.target_value === 'Domestic') {
@@ -187,22 +184,14 @@
                 };
 
                 try {
-                    const res = await fetch('/api/admin/markup/rules/cancellation', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify(payload)
-                    });
-                    const response = await res.json();
+                    const response = await apiRequest('/markup/rules/cancellation', 'POST', payload);
                     if (response.success) {
-                        alert('Cancellation Charge successfully updated!');
+                        showNotification('Cancellation Charge successfully updated!', 'success');
                     } else {
-                        alert('Failed to update: ' + response.error);
+                        showNotification('Failed to update: ' + response.error, 'error');
                     }
                 } catch (err) {
-                    alert('An error occurred while saving.');
+                    showNotification('An error occurred while saving.', 'error');
                 }
             });
         });

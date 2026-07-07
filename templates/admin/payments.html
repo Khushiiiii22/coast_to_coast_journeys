@@ -470,13 +470,128 @@
     <!-- Admin JavaScript -->
     <script src="../../admin/js/admin.js"></script>
     <script>
+        let allPayments = [];
+        let currentPage = 1;
+        const pageSize = 50;
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            const token = localStorage.getItem('admin_token');
+            if (!token) { window.location.href = 'login.html'; return; }
+            await loadPayments();
+        });
+
+        async function loadPayments() {
+            try {
+                const res = await apiRequest(`/payments?limit=${pageSize}&page=${currentPage}`);
+                if (!res.success) throw new Error(res.error);
+
+                allPayments = res.data || [];
+                const total = res.total || 0;
+
+                // Update stats
+                const captured = allPayments.filter(p => p.payment_status === 'captured' || p.payment_status === 'paid');
+                const failed = allPayments.filter(p => p.payment_status === 'failed');
+                const totalRevenue = captured.reduce((sum, p) => sum + (parseFloat(p.total_price) || 0), 0);
+
+                const statValues = document.querySelectorAll('.quick-stat-value');
+                if (statValues[0]) statValues[0].textContent = '₹' + totalRevenue.toLocaleString('en-IN');
+                if (statValues[1]) statValues[1].textContent = total;
+
+                renderTable(allPayments);
+                updatePagination(total);
+            } catch (err) {
+                console.error('Failed to load payments:', err);
+                showNotification('Failed to load payments', 'error');
+            }
+        }
+
+        function renderTable(data) {
+            const tbody = document.querySelector('.admin-table tbody');
+            if (!tbody) return;
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:3rem; color:#94a3b8;">No payment transactions found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(p => {
+                const date = new Date(p.created_at);
+                const dateStr = date.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
+                const timeStr = date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                const amount = parseFloat(p.total_price) || 0;
+                const statusClass = (p.payment_status === 'captured' || p.payment_status === 'paid') ? 'confirmed' : (p.payment_status === 'failed' ? 'cancelled' : 'processing');
+                const statusLabel = p.payment_status ? p.payment_status.charAt(0).toUpperCase() + p.payment_status.slice(1) : 'Pending';
+                const method = p.payment_method || 'N/A';
+
+                return `
+                    <tr>
+                        <td><span class="transaction-id">${p.payment_id || p.booking_id || '—'}</span></td>
+                        <td>${dateStr}<br><span class="text-muted text-sm">${timeStr}</span></td>
+                        <td>
+                            <div class="customer-info">
+                                <span class="customer-name">${p.guest_name || 'N/A'}</span>
+                                <span class="customer-email">${p.guest_email || ''}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="booking-info">
+                                <span class="booking-ref">${p.booking_id || '—'}</span>
+                                <span class="booking-type">Hotel Booking</span>
+                            </div>
+                        </td>
+                        <td class="amount-cell ${statusClass === 'confirmed' ? 'amount-in' : ''}">₹${amount.toLocaleString('en-IN')}</td>
+                        <td>
+                            <div class="payment-method">
+                                <i class="fas fa-credit-card text-primary"></i>
+                                <span>${method}</span>
+                            </div>
+                        </td>
+                        <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="btn btn-secondary btn-icon" title="View Details" onclick="window.location.href='booking-details.html?id=${p.booking_id}'">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updatePagination(total) {
+            const info = document.querySelector('.pagination-info');
+            const btns = document.querySelector('.pagination-buttons');
+            if (info) {
+                const start = (currentPage - 1) * pageSize + 1;
+                const end = Math.min(currentPage * pageSize, total);
+                info.textContent = total > 0 ? `Showing ${start}-${end} of ${total} transactions` : 'No transactions';
+            }
+            if (btns) {
+                const totalPages = Math.ceil(total / pageSize) || 1;
+                let html = `<button class="page-btn" ${currentPage <= 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})"><i class="fas fa-chevron-left"></i></button>`;
+                for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+                    html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+                }
+                html += `<button class="page-btn" ${currentPage >= totalPages ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})"><i class="fas fa-chevron-right"></i></button>`;
+                btns.innerHTML = html;
+            }
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            loadPayments();
+        }
+
         function exportMockPayments() {
-            const mockData = [
-                { 'Transaction ID': 'pay_K8s9d7f6g5h4', 'Date': 'Jan 21, 2026', 'Customer': 'Rahul Sharma', 'Amount': '45500', 'Status': 'Captured' },
-                { 'Transaction ID': 'pay_J7h6g5f4d3s2', 'Date': 'Jan 20, 2026', 'Customer': 'Priya Patel', 'Amount': '12800', 'Status': 'Captured' },
-                { 'Transaction ID': 'pay_L9k8j7h6g5f4', 'Date': 'Jan 19, 2026', 'Customer': 'Amit Kumar', 'Amount': '78000', 'Status': 'Failed' }
-            ];
-            exportToCSV(mockData, 'payments_report');
+            const csvData = allPayments.map(p => ({
+                'Transaction ID': p.payment_id || p.booking_id,
+                'Date': new Date(p.created_at).toLocaleDateString(),
+                'Customer': p.guest_name,
+                'Amount': p.total_price,
+                'Status': p.payment_status
+            }));
+            exportToCSV(csvData, 'payments_report');
             showNotification('Payments exported successfully', 'success');
         }
     </script>
