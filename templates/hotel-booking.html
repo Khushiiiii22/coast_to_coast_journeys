@@ -1515,13 +1515,8 @@
     <script>
         // Wait for DOM
         document.addEventListener('DOMContentLoaded', async function () {
-            // Check auth state
+            // Check auth state for header UI only (no forced redirect)
             const currentUser = await SupabaseDB.getCurrentUser();
-            if (!currentUser) {
-                // Not logged in -> Redirect to auth
-                window.location.href = `auth.html?redirect=${encodeURIComponent(window.location.href)}`;
-                return;
-            }
 
             // Initialize auth state for header UI
             if (typeof SupabaseDB !== 'undefined' && SupabaseDB.initAuthUI) {

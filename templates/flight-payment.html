@@ -765,7 +765,15 @@
         }
 
         // Format card number with spaces
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', async function () {
+            if (typeof SupabaseDB !== 'undefined') {
+                const currentUser = await SupabaseDB.getCurrentUser();
+                if (!currentUser) {
+                    window.location.href = `auth.html?redirect=${encodeURIComponent(window.location.href)}`;
+                    return;
+                }
+            }
+
             const cardInput = document.getElementById('cardNumber');
             if (cardInput) {
                 cardInput.addEventListener('input', function (e) {

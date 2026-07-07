@@ -871,7 +871,16 @@
         // ============================================================
         // INIT
         // ============================================================
-        document.addEventListener('DOMContentLoaded', loadFlightDetails);
+        document.addEventListener('DOMContentLoaded', async function () {
+            if (typeof SupabaseDB !== 'undefined') {
+                const currentUser = await SupabaseDB.getCurrentUser();
+                if (!currentUser) {
+                    window.location.href = `auth.html?redirect=${encodeURIComponent(window.location.href)}`;
+                    return;
+                }
+            }
+            loadFlightDetails();
+        });
     </script>
 </body>
 </html>

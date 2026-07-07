@@ -1524,7 +1524,16 @@
         });
 
         // Load booking details on page load
-        document.addEventListener('DOMContentLoaded', loadBookingDetails);
+        document.addEventListener('DOMContentLoaded', async function () {
+            if (typeof SupabaseDB !== 'undefined') {
+                const currentUser = await SupabaseDB.getCurrentUser();
+                if (!currentUser) {
+                    window.location.href = `auth.html?redirect=${encodeURIComponent(window.location.href)}`;
+                    return;
+                }
+            }
+            loadBookingDetails();
+        });
     </script>
 </body>
 
