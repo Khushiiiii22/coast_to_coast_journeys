@@ -270,6 +270,7 @@ function initSidebar() {
                     subItems: [
                         { name: 'Currency Setting', icon: 'fa-money-bill-wave', href: 'markup.html' },
                         { name: 'Block Booking Markup', icon: 'fa-file-invoice', href: 'block-markup.html' },
+                        { name: 'B2C Markup', icon: 'fa-money-bill-alt', href: 'b2c-markup.html' },
                         { name: 'Convenience Charge', icon: 'fa-credit-card', href: 'convenience-charge.html' },
                         { name: 'Cancellation Charge', icon: 'fa-times-circle', href: 'cancellation-charge.html' }
                     ]

@@ -122,7 +122,7 @@ def manage_block_markup():
 
         if request.method == 'GET':
             # Simplified retrieval of hotel block-type rules
-            result = supabase.table('markup_rules').select('*').in_('rule_name', ['Hotel Domestic', 'Hotel International']).execute()
+            result = supabase.table('markup_rules').select('*').in_('rule_name', ['Hotel Domestic', 'Hotel International']).eq('rule_type', 'block').execute()
             return jsonify({'success': True, 'data': result.data}), 200
 
         # POST logic: Upsert the rules
@@ -139,7 +139,40 @@ def manage_block_markup():
             else:
                 supabase.table('markup_rules').insert(rule).execute()
 
-        return jsonify({'success': True, 'message': 'Hotel markup rules updated'}), 200
+        return jsonify({'success': True, 'message': 'Hotel block markup rules updated'}), 200
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@admin_bp.route('/markup/rules/b2c', methods=['GET', 'POST'])
+@require_auth()
+def manage_b2c_markup():
+    """Handle B2C markup rules"""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        if not supabase:
+            return jsonify({'success': False, 'error': 'Database not initialized'}), 500
+
+        if request.method == 'GET':
+            result = supabase.table('markup_rules').select('*').in_('rule_name', ['Hotel Domestic', 'Hotel International']).eq('rule_type', 'b2c').execute()
+            return jsonify({'success': True, 'data': result.data}), 200
+
+        data = request.json
+        rules_to_update = [
+            {'rule_name': 'Hotel Domestic', 'rule_type': 'b2c', 'apply_to': 'hotel', 'markup_type': data.get('hotel_dom_type', 'flat'), 'markup_value': data.get('hotel_dom_val', 0)},
+            {'rule_name': 'Hotel International', 'rule_type': 'b2c', 'apply_to': 'hotel', 'markup_type': data.get('hotel_int_type', 'flat'), 'markup_value': data.get('hotel_int_val', 0)}
+        ]
+
+        for rule in rules_to_update:
+            existing = supabase.table('markup_rules').select('id').eq('rule_name', rule['rule_name']).eq('rule_type', 'b2c').execute()
+            if existing.data and len(existing.data) > 0:
+                supabase.table('markup_rules').update(rule).eq('id', existing.data[0]['id']).execute()
+            else:
+                supabase.table('markup_rules').insert(rule).execute()
+
+        return jsonify({'success': True, 'message': 'Hotel B2C markup rules updated'}), 200
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500

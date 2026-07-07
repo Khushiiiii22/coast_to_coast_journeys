@@ -598,7 +598,8 @@ def search_by_destination():
                         hotels_data=etg_hotels, 
                         target_currency=user_currency,
                         conversion_rates=CONVERSION_RATES,
-                        nights=nights
+                        nights=nights,
+                        use_block_markup=str(data.get('is_block_booking', '')).lower() == 'true'
                     )
                     
                     return jsonify({
@@ -692,7 +693,8 @@ def search_by_destination():
                             hotels_data=etg_hotels, 
                             target_currency=target_currency,
                             conversion_rates=CONVERSION_RATES,
-                            nights=nights
+                            nights=nights,
+                            use_block_markup=str(data.get('is_block_booking', '')).lower() == 'true'
                         )
                         return jsonify({
                             'success': True,
@@ -777,8 +779,8 @@ def process_etg_image_url(raw_url):
     return f"{CDN_BASE}{IMG_SIZE}/{clean_path}"
 
 
-def fetch_markup_rules():
-    """Fetch active block markup rules for hotels."""
+def fetch_markup_rules(rule_type='b2c'):
+    """Fetch active markup rules for hotels based on rule_type (b2c or block)."""
     markup_config = {
         'domestic': {'type': 'percentage', 'value': 15},
         'international': {'type': 'percentage', 'value': 15}
@@ -787,7 +789,7 @@ def fetch_markup_rules():
         from flask import current_app
         supabase = current_app.config.get('SUPABASE')
         if supabase:
-            res = supabase.table('markup_rules').select('*').in_('rule_name', ['Hotel Domestic', 'Hotel International']).execute()
+            res = supabase.table('markup_rules').select('*').in_('rule_name', ['Hotel Domestic', 'Hotel International']).eq('rule_type', rule_type).execute()
             for rule in res.data:
                 if rule['rule_name'] == 'Hotel Domestic':
                     markup_config['domestic'] = {'type': rule.get('markup_type', 'percentage'), 'value': float(rule.get('markup_value', 15))}
@@ -815,7 +817,7 @@ def calculate_markup_amount(prepaid_amount, currency, target_currency, conversio
             return flat_inr * inr_to_target
 
 
-def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=None, MEAL_TYPE_DISPLAY=None, room_groups=None, nights=1):
+def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=None, MEAL_TYPE_DISPLAY=None, room_groups=None, nights=1, use_block_markup=False):
     """
     Transform ETG search results into flattened hotel cards.
     Handles price calculation (Commission + Exclusive Taxes).
@@ -853,7 +855,7 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
     
     transformed = []
     
-    markup_config = fetch_markup_rules()
+    markup_config = fetch_markup_rules(rule_type='block' if use_block_markup else 'b2c')
     
     for idx, hotel in enumerate(hotels_data):
         hotel_id = hotel.get('hotel_id') or hotel.get('id')
@@ -2398,7 +2400,8 @@ def get_enriched_hotel_details():
             conversion_rates=CONVERSION_RATES, 
             MEAL_TYPE_DISPLAY=MEAL_TYPE_DISPLAY,
             room_groups=room_groups,
-            nights=nights
+            nights=nights,
+            use_block_markup=str(data.get('is_block_booking', '')).lower() == 'true'
         )
         
         return jsonify({
