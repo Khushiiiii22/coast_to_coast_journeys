@@ -229,7 +229,10 @@
                     // Populate based on rule_name or similar mapping
                     // (Simplified for now - matching fields to form names)
                     data.forEach(rule => {
-                        const base = rule.rule_name.toLowerCase().replace(' ', '_');
+                        let base = rule.rule_name.toLowerCase().replace(' ', '_');
+                        if (base === 'hotel_domestic') base = 'hotel_dom';
+                        if (base === 'hotel_international') base = 'hotel_int';
+
                         const typeSelect = document.querySelector(`select[name="${base}_type"]`);
                         const valInput = document.querySelector(`input[name="${base}_val"]`);
                         
