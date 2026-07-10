@@ -685,10 +685,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Total Price
         let total = 0;
-        let currency = 'INR';
+        let currency = 'USD';
         if (selectedOutbound) {
             total += selectedOutbound.price;
-            currency = selectedOutbound.currency || 'INR';
+            currency = selectedOutbound.currency || 'USD';
         }
         if (selectedInbound) {
             total += selectedInbound.price;

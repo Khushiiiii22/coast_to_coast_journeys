@@ -92,7 +92,7 @@ async function fetchHotelDetails() {
                 checkout: searchParams?.checkout || getDefaultCheckout(),
                 adults: searchParams?.adults || 2,
                 children_ages: searchParams?.children_ages || [],
-                currency: searchParams?.currency || localStorage.getItem('ctc_currency') || 'INR'
+                currency: searchParams?.currency || localStorage.getItem('ctc_currency') || 'USD'
             });
 
             if (enrichedResult.success && enrichedResult.data?.hotels?.length > 0) {

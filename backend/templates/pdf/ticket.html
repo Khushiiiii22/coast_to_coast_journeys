@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Booking Voucher</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #333;
+            line-height: 1.5;
+            background: #f9fafb;
+            padding: 20px;
+        }
+        .voucher-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 2px solid #0e64a6;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        .header {
+            width: 100%;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header table {
+            width: 100%;
+        }
+        .company-info h1 {
+            color: #0e64a6;
+            margin: 0 0 5px 0;
+            font-size: 28px;
+        }
+        .voucher-title h2 {
+            margin: 0;
+            font-size: 24px;
+            color: #333;
+            text-align: right;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #28a745;
+            color: white;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .details-grid {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .details-grid td {
+            padding: 15px;
+            border: 1px solid #eee;
+        }
+        .label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .value {
+            font-size: 16px;
+            color: #111827;
+            font-weight: bold;
+        }
+        .hotel-info {
+            background: #f0f7ff;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+        }
+        .hotel-info h3 {
+            margin: 0 0 10px 0;
+            color: #0e64a6;
+            font-size: 20px;
+        }
+        .instructions {
+            padding: 20px;
+            background: #fff8e1;
+            border-left: 4px solid #f59e0b;
+            border-radius: 4px;
+        }
+        .instructions h4 {
+            margin: 0 0 10px 0;
+            color: #b45309;
+        }
+        .instructions p {
+            margin: 0;
+            font-size: 14px;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <div class="voucher-card">
+        <div class="header">
+            <table>
+                <tr>
+                    <td class="company-info">
+                        <h1>C2C Journeys</h1>
+                        <p style="margin:0; color:#666;">Booking Confirmation Voucher</p>
+                    </td>
+                    <td class="voucher-title">
+                        <h2>HOTEL VOUCHER</h2>
+                        <div style="margin-top: 10px;"><span class="status-badge">CONFIRMED</span></div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="hotel-info">
+            <h3>{{hotel_name}}</h3>
+            <p style="margin: 5px 0 0 0; color: #4b5563;">{{destination}}</p>
+        </div>
+
+        <table class="details-grid">
+            <tr>
+                <td width="50%">
+                    <span class="label">Primary Guest</span>
+                    <span class="value">{{guest_name}}</span>
+                </td>
+                <td width="50%">
+                    <span class="label">Booking ID</span>
+                    <span class="value">{{booking_id}}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">Check-In</span>
+                    <span class="value">{{checkin}}</span>
+                </td>
+                <td>
+                    <span class="label">Check-Out</span>
+                    <span class="value">{{checkout}}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">Rooms & Guests</span>
+                    <span class="value">1 Room (Adults: {{adults}})</span>
+                </td>
+                <td>
+                    <span class="label">Payment Status</span>
+                    <span class="value" style="color: #28a745;">Fully Paid ({{currency}} {{amount}})</span>
+                </td>
+            </tr>
+        </table>
+
+        <div class="instructions">
+            <h4>Important Instructions</h4>
+            <p>Please present this voucher along with a valid photo ID at the time of check-in.</p>
+            <p style="margin-top: 10px;">For any assistance, please contact C2C Journeys at info@coasttocoastjourneys.com</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -16,7 +16,7 @@ class PDFService:
             <p><strong>Booking ID:</strong> {booking_data.get('booking_id', 'N/A')}</p>
             <p><strong>Guest Name:</strong> {booking_data.get('guest_name', 'Valued Customer')}</p>
             <p><strong>Hotel:</strong> {booking_data.get('hotel_name', 'N/A')}</p>
-            <p><strong>Amount Paid:</strong> INR {booking_data.get('amount', 0)}</p>
+            <p><strong>Amount Paid:</strong> {booking_data.get('currency', 'USD')} {booking_data.get('amount', 0)}</p>
         </body>
         </html>
         """
@@ -30,6 +30,13 @@ class PDFService:
                 html_content = html_content.replace('{{guest_name}}', str(booking_data.get('guest_name', '')))
                 html_content = html_content.replace('{{hotel_name}}', str(booking_data.get('hotel_name', '')))
                 html_content = html_content.replace('{{amount}}', str(booking_data.get('amount', '')))
+                html_content = html_content.replace('{{currency}}', str(booking_data.get('currency', 'USD')))
+                html_content = html_content.replace('{{date}}', str(booking_data.get('date', '')))
+                html_content = html_content.replace('{{destination}}', str(booking_data.get('destination', '')))
+                html_content = html_content.replace('{{guest_email}}', str(booking_data.get('guest_email', '')))
+                html_content = html_content.replace('{{guest_phone}}', str(booking_data.get('guest_phone', '')))
+                html_content = html_content.replace('{{checkin}}', str(booking_data.get('checkin', '')))
+                html_content = html_content.replace('{{checkout}}', str(booking_data.get('checkout', '')))
 
         pdf_bytes = HTML(string=html_content).write_pdf()
         return pdf_bytes
@@ -60,6 +67,10 @@ class PDFService:
                 html_content = html_content.replace('{{hotel_name}}', str(booking_data.get('hotel_name', '')))
                 html_content = html_content.replace('{{checkin}}', str(booking_data.get('checkin', '')))
                 html_content = html_content.replace('{{checkout}}', str(booking_data.get('checkout', '')))
+                html_content = html_content.replace('{{currency}}', str(booking_data.get('currency', 'USD')))
+                html_content = html_content.replace('{{amount}}', str(booking_data.get('amount', '')))
+                html_content = html_content.replace('{{adults}}', str(booking_data.get('adults', '2')))
+                html_content = html_content.replace('{{destination}}', str(booking_data.get('destination', '')))
 
         pdf_bytes = HTML(string=html_content).write_pdf()
         return pdf_bytes

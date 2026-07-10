@@ -2346,7 +2346,7 @@ h6 {
 .search-row {
     display: flex;
     gap: 16px;
-    align-items: flex-end;
+    align-items: stretch;
 }
 
 .form-field-improved {
@@ -2373,7 +2373,9 @@ h6 {
     font-size: 0.85rem;
 }
 
-.form-field-improved input[type="text"] {
+.form-field-improved input[type="text"],
+.form-field-improved input[type="date"],
+.form-field-improved select {
     padding: 14px 16px;
     border: 2px solid var(--gray-200);
     border-radius: var(--radius);
@@ -2382,6 +2384,7 @@ h6 {
     transition: var(--transition);
     height: 52px;
     box-sizing: border-box;
+    margin-top: auto;
 }
 
 .form-field-improved input[type="text"]:focus {
@@ -2643,6 +2646,7 @@ h6 {
     transition: var(--transition);
     height: 52px;
     box-sizing: border-box;
+    margin-top: auto;
 }
 
 .travelers-dropdown:hover {

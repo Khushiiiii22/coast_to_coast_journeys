@@ -536,7 +536,7 @@ async function handleHotelSearch(e) {
         rooms: rooms,  // Now passes an array of objects
         adults: adults,
         children_ages: childrenAges,
-        currency: DOM.currencySelect ? DOM.currencySelect.value : 'INR'
+        currency: DOM.currencySelect ? DOM.currencySelect.value : 'USD'
     };
 
     // Validate
@@ -850,6 +850,9 @@ function initCurrency() {
         const savedCurrency = localStorage.getItem('ctc_currency');
         if (savedCurrency) {
             DOM.currencySelect.value = savedCurrency;
+        } else {
+            DOM.currencySelect.value = 'USD';
+            localStorage.setItem('ctc_currency', 'USD');
         }
 
         // Save on change

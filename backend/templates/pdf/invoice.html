@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #333;
+            line-height: 1.5;
+        }
+        .header {
+            width: 100%;
+            border-bottom: 2px solid #0e64a6;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header table {
+            width: 100%;
+        }
+        .company-info h1 {
+            color: #0e64a6;
+            margin: 0 0 5px 0;
+            font-size: 28px;
+        }
+        .company-info p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .invoice-title h2 {
+            margin: 0;
+            font-size: 24px;
+            color: #333;
+            text-align: right;
+        }
+        .invoice-details {
+            width: 100%;
+            margin-bottom: 40px;
+        }
+        .invoice-details td {
+            vertical-align: top;
+        }
+        .bill-to h3 {
+            margin: 0 0 10px 0;
+            color: #0e64a6;
+            font-size: 16px;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .info-table th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #ddd;
+            color: #333;
+        }
+        .info-table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        .total-section {
+            width: 100%;
+            margin-top: 30px;
+        }
+        .total-row {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0e64a6;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            background: #28a745;
+            color: white;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <table>
+            <tr>
+                <td class="company-info">
+                    <h1>C2C Journeys</h1>
+                    <p>Coast to Coast Journeys</p>
+                    <p>info@coasttocoastjourneys.com</p>
+                    <p>www.coasttocoastjourneys.com</p>
+                </td>
+                <td class="invoice-title">
+                    <h2>INVOICE</h2>
+                    <p><strong>Date:</strong> {{date}}</p>
+                    <p><strong>Invoice #:</strong> {{booking_id}}</p>
+                    <div style="margin-top: 10px;"><span class="status-badge">PAID</span></div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="invoice-details">
+        <tr>
+            <td class="bill-to">
+                <h3>Billed To:</h3>
+                <p><strong>{{guest_name}}</strong></p>
+                <p>Email: {{guest_email}}</p>
+                <p>Phone: {{guest_phone}}</p>
+            </td>
+        </tr>
+    </table>
+
+    <table class="info-table">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Dates</th>
+                <th>Qty</th>
+                <th style="text-align: right;">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <strong>Hotel Booking: {{hotel_name}}</strong><br>
+                    <small>Destination: {{destination}}</small>
+                </td>
+                <td>{{checkin}} to {{checkout}}</td>
+                <td>1</td>
+                <td style="text-align: right;">{{currency}} {{amount}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="total-section">
+        <tr>
+            <td style="text-align: right; width: 70%;"><strong>Subtotal:</strong></td>
+            <td style="text-align: right;">{{currency}} {{amount}}</td>
+        </tr>
+        <tr class="total-row">
+            <td style="text-align: right;"><strong>Total Paid:</strong></td>
+            <td style="text-align: right;">{{currency}} {{amount}}</td>
+        </tr>
+    </table>
+
+    <div class="footer">
+        <p>Thank you for choosing C2C Journeys!</p>
+        <p>If you have any questions about this invoice, please contact us at info@coasttocoastjourneys.com</p>
+    </div>
+</body>
+</html>

@@ -419,7 +419,7 @@ const HotelUtils = {
      * Get user's selected currency
      */
     getSelectedCurrency() {
-        return localStorage.getItem('ctc_currency') || 'INR';
+        return localStorage.getItem('ctc_currency') || 'USD';
     },
 
     /**
