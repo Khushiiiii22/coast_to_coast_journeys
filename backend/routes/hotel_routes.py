@@ -552,7 +552,7 @@ def search_by_destination():
                 
                 print(f"❌ RateHawk search error: {error_msg}")
                 # If it's a critical validation error (like dates), return early
-                if any(kw in str(error_msg).lower() for kw in ['checkin', 'checkout', 'date', 'invalid_params']):
+                if any(kw in str(error_msg).lower() for kw in ['checkin', 'checkout', 'date']):
                     return jsonify({
                         'success': False, 
                         'error': f"Search failed: {error_msg}. Please check your dates and try again."
@@ -668,7 +668,7 @@ def search_by_destination():
                             error_msg = debug['validation_error']
                     
                     print(f"❌ RateHawk suggest-search error: {error_msg}")
-                    if any(kw in str(error_msg).lower() for kw in ['checkin', 'checkout', 'date', 'invalid_params']):
+                    if any(kw in str(error_msg).lower() for kw in ['checkin', 'checkout', 'date']):
                         return jsonify({
                             'success': False, 
                             'error': f"Search failed: {error_msg}. Please check your dates and try again."
@@ -779,8 +779,83 @@ def process_etg_image_url(raw_url):
     return f"{CDN_BASE}{IMG_SIZE}/{clean_path}"
 
 
-def fetch_markup_rules(rule_type='b2c'):
-    """Fetch active markup rules for hotels based on rule_type (b2c or block)."""
+def is_markup_enabled():
+    """Check if the global markup system is enabled via system_settings."""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        if not supabase:
+            return True  # default to enabled if DB unavailable
+        res = supabase.table('system_settings').select('setting_value').eq('setting_key', 'markup_enabled').limit(1).execute()
+        if res.data:
+            return res.data[0].get('setting_value', 'true').lower() == 'true'
+        return True
+    except Exception:
+        return True
+
+
+def fetch_all_b2c_markup_rules():
+    """
+    Fetch ALL active b2c_hotel_markup rows in one query (for batch processing).
+    Returns { 'global': rule_dict_or_None, 'by_hotel_id': { hotel_id: rule_dict } }
+    """
+    result = {'global': None, 'by_hotel_id': {}}
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        if not supabase:
+            return result
+        res = supabase.table('b2c_hotel_markup').select('*').eq('is_active', True).execute()
+        for row in (res.data or []):
+            if row.get('is_all_hotels'):
+                result['global'] = {
+                    'type': row.get('markup_type', 'flat'),
+                    'value': float(row.get('markup_value', 0))
+                }
+            elif row.get('hotel_id'):
+                result['by_hotel_id'][str(row['hotel_id'])] = {
+                    'type': row.get('markup_type', 'flat'),
+                    'value': float(row.get('markup_value', 0))
+                }
+    except Exception as e:
+        print(f"Error fetching b2c markup rules: {e}")
+    return result
+
+
+def get_markup_for_hotel(hotel_id, b2c_rules, fallback_config=None):
+    """
+    Get the markup rule for a specific hotel.
+    Priority: hotel-specific > global > fallback (legacy) > no markup
+    """
+    # Priority 1: Specific hotel
+    if hotel_id and str(hotel_id) in b2c_rules.get('by_hotel_id', {}):
+        rule = b2c_rules['by_hotel_id'][str(hotel_id)]
+        return rule
+
+    # Priority 2: Global (ALL HOTELS)
+    if b2c_rules.get('global'):
+        return b2c_rules['global']
+
+    # Priority 3: Legacy fallback
+    if fallback_config:
+        return fallback_config
+
+    # No markup — return original price
+    return {'type': 'flat', 'value': 0}
+
+
+def fetch_markup_rules(rule_type='b2c', hotel_id=None):
+    """
+    Fetch active markup rules for hotels.
+    
+    Priority order for B2C:
+      1. Specific hotel match in b2c_hotel_markup (by hotel_id)
+      2. ALL HOTELS default in b2c_hotel_markup
+      3. Legacy markup_rules table fallback
+    
+    For block markup, uses the legacy markup_rules table only.
+    Returns { 'domestic': { 'type': ..., 'value': ... }, 'international': { ... } }
+    """
     markup_config = {
         'domestic': {'type': 'percentage', 'value': 15},
         'international': {'type': 'percentage', 'value': 15}
@@ -788,13 +863,47 @@ def fetch_markup_rules(rule_type='b2c'):
     try:
         from flask import current_app
         supabase = current_app.config.get('SUPABASE')
-        if supabase:
-            res = supabase.table('markup_rules').select('*').in_('rule_name', ['Hotel Domestic', 'Hotel International']).eq('rule_type', rule_type).execute()
-            for rule in res.data:
-                if rule['rule_name'] == 'Hotel Domestic':
-                    markup_config['domestic'] = {'type': rule.get('markup_type', 'percentage'), 'value': float(rule.get('markup_value', 15))}
-                elif rule['rule_name'] == 'Hotel International':
-                    markup_config['international'] = {'type': rule.get('markup_type', 'percentage'), 'value': float(rule.get('markup_value', 15))}
+        if not supabase:
+            return markup_config
+
+        # Check global toggle for B2C
+        if rule_type == 'b2c' and not is_markup_enabled():
+            return {
+                'domestic': {'type': 'flat', 'value': 0},
+                'international': {'type': 'flat', 'value': 0}
+            }
+
+        if rule_type == 'b2c':
+            # ── New table: b2c_hotel_markup ──
+            specific_rule = None
+            # Step 1: Try specific hotel match
+            if hotel_id:
+                res = supabase.table('b2c_hotel_markup').select('*').eq('hotel_id', str(hotel_id)).eq('is_active', True).limit(1).execute()
+                if res.data:
+                    specific_rule = res.data[0]
+
+            # Step 2: Fall back to ALL HOTELS default
+            if not specific_rule:
+                res = supabase.table('b2c_hotel_markup').select('*').eq('is_all_hotels', True).eq('is_active', True).limit(1).execute()
+                if res.data:
+                    specific_rule = res.data[0]
+
+            if specific_rule:
+                rule_data = {
+                    'type': specific_rule.get('markup_type', 'flat'),
+                    'value': float(specific_rule.get('markup_value', 0))
+                }
+                markup_config['domestic'] = rule_data
+                markup_config['international'] = rule_data
+                return markup_config
+
+        # ── Legacy fallback: markup_rules table ──
+        res = supabase.table('markup_rules').select('*').in_('rule_name', ['Hotel Domestic', 'Hotel International']).eq('rule_type', rule_type).execute()
+        for rule in res.data:
+            if rule['rule_name'] == 'Hotel Domestic':
+                markup_config['domestic'] = {'type': rule.get('markup_type', 'percentage'), 'value': float(rule.get('markup_value', 15))}
+            elif rule['rule_name'] == 'Hotel International':
+                markup_config['international'] = {'type': rule.get('markup_type', 'percentage'), 'value': float(rule.get('markup_value', 15))}
     except Exception as e:
         print(f"Error fetching markup rules: {e}")
     return markup_config
@@ -815,6 +924,8 @@ def calculate_markup_amount(prepaid_amount, currency, target_currency, conversio
             if not inr_to_target:
                 inr_to_target = 0.0116 if target_currency == 'USD' else 0.011
             return flat_inr * inr_to_target
+
+
 
 
 def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=None, MEAL_TYPE_DISPLAY=None, room_groups=None, nights=1, use_block_markup=False):
@@ -855,7 +966,20 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
     
     transformed = []
     
-    markup_config = fetch_markup_rules(rule_type='block' if use_block_markup else 'b2c')
+    # For B2C: batch-fetch all active markup rules in ONE query for per-hotel overrides
+    # For block: use the legacy single-config approach
+    if use_block_markup:
+        markup_config = fetch_markup_rules(rule_type='block')
+        b2c_rules = None
+    else:
+        # Check global toggle first
+        markup_enabled = is_markup_enabled()
+        if not markup_enabled:
+            b2c_rules = None
+            markup_config = {'domestic': {'type': 'flat', 'value': 0}, 'international': {'type': 'flat', 'value': 0}}
+        else:
+            b2c_rules = fetch_all_b2c_markup_rules()
+            markup_config = None  # will use per-hotel lookup instead
     
     for idx, hotel in enumerate(hotels_data):
         hotel_id = hotel.get('hotel_id') or hotel.get('id')
@@ -911,11 +1035,19 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
             elif conversion_rates and f"{rate_currency}_TO_{target_currency}" in conversion_rates:
                 converted_prepaid = api_prepaid_amount * conversion_rates[f"{rate_currency}_TO_{target_currency}"]
 
-            # Extract country to determine domestic vs international
+            # Determine the markup rule for THIS specific hotel
             static_info = hotel.get('static_data', {})
             country = static_info.get('country') or hotel.get('country') or 'India'
             is_domestic = (country.lower() == 'india')
-            markup_rule = markup_config['domestic'] if is_domestic else markup_config['international']
+            
+            if b2c_rules:
+                # Per-hotel priority lookup (hotel-specific > global > no markup)
+                markup_rule = get_markup_for_hotel(hotel_id, b2c_rules)
+            elif markup_config:
+                # Legacy / block markup path
+                markup_rule = markup_config['domestic'] if is_domestic else markup_config['international']
+            else:
+                markup_rule = {'type': 'flat', 'value': 0}
             
             # Apply markup to converted_prepaid
             markup_amount = calculate_markup_amount(converted_prepaid, rate_currency, target_currency, conversion_rates, markup_rule)

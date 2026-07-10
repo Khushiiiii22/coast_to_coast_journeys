@@ -5,268 +5,615 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>B2C Markup | C2C Journeys Admin</title>
-
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-
-    <!-- Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../admin/libs/all.min.css">
-
-    <!-- Admin Styles -->
     <link rel="stylesheet" href="../../admin/css/admin.css">
     <link rel="icon" href="data:,">
-
     <style>
-        /* ═══════════════════════════════════════
-           Matching Screenshot UI
-           ═══════════════════════════════════════ */
-        
-        .b2c-markup-banner {
-            background: #000;
-            color: #4df3c5;
-            text-align: center;
-            padding: 1.25rem;
-            font-size: 1.4rem;
-            font-weight: 800;
-            border-radius: 4px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 2.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-        }
+        /* ═══ Banner ═══ */
+        .b2c-banner { background:#000; color:#4df3c5; text-align:center; padding:1.1rem; font-size:1.25rem; font-weight:800; border-radius:4px; text-transform:uppercase; letter-spacing:1px; margin-bottom:1.5rem; display:flex; align-items:center; justify-content:center; gap:12px; }
 
-        .b2c-markup-table-container {
-            border: 2px solid #b2dfdb;
-            border-radius: 4px;
-            overflow: hidden;
-            background: #fff;
-        }
+        /* ═══ Toggle Card ═══ */
+        .toggle-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:20px 24px; margin-bottom:1.5rem; display:flex; align-items:center; justify-content:space-between; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+        .toggle-info h3 { font-size:1rem; font-weight:700; color:#1e293b; margin-bottom:2px; }
+        .toggle-info p { font-size:.85rem; color:#64748b; }
+        .toggle-switch { position:relative; width:52px; height:28px; cursor:pointer; }
+        .toggle-switch input { opacity:0; width:0; height:0; }
+        .toggle-slider { position:absolute; inset:0; background:#cbd5e1; border-radius:28px; transition:.3s; }
+        .toggle-slider::before { content:''; position:absolute; width:22px; height:22px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
+        .toggle-switch input:checked + .toggle-slider { background:#10b981; }
+        .toggle-switch input:checked + .toggle-slider::before { transform:translateX(24px); }
 
-        .b2c-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+        /* ═══ Preview Card ═══ */
+        .preview-card { background:linear-gradient(135deg,#f8fafc,#f1f5f9); border:1px solid #e2e8f0; border-radius:12px; padding:24px; margin-bottom:1.5rem; }
+        .preview-card h3 { font-size:1rem; font-weight:700; color:#1e293b; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+        .preview-row { display:grid; grid-template-columns:1fr 120px 1fr 120px; gap:12px; align-items:end; margin-bottom:16px; }
+        .preview-field label { display:block; font-size:.82rem; font-weight:600; color:#475569; margin-bottom:4px; }
+        .preview-field input, .preview-field select { width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:.95rem; }
+        .btn-preview { background:#3b82f6; color:#fff; border:none; padding:10px 20px; border-radius:6px; font-weight:600; cursor:pointer; width:100%; margin-top:20px; }
+        .btn-preview:hover { background:#2563eb; }
+        .preview-result { display:none; margin-top:20px; }
+        .preview-result.active { display:block; }
+        .preview-flow { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; }
+        .preview-step { text-align:center; padding:14px 20px; border-radius:10px; min-width:130px; }
+        .preview-step .step-label { font-size:.75rem; font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+        .preview-step .step-value { font-size:1.3rem; font-weight:800; }
+        .ps-original { background:#f1f5f9; }
+        .ps-original .step-label { color:#64748b; }
+        .ps-original .step-value { color:#1e293b; }
+        .ps-markup { background:#fef3c7; }
+        .ps-markup .step-label { color:#92400e; }
+        .ps-markup .step-value { color:#b45309; }
+        .ps-final { background:#d1fae5; }
+        .ps-final .step-label { color:#065f46; }
+        .ps-final .step-value { color:#047857; }
+        .ps-profit { background:#dbeafe; }
+        .ps-profit .step-label { color:#1e40af; }
+        .ps-profit .step-value { color:#1d4ed8; }
+        .preview-arrow { color:#94a3b8; font-size:1.2rem; }
 
-        .b2c-table th {
-            background: #ffffff;
-            padding: 1.25rem;
-            text-align: left;
-            font-weight: 700;
-            font-size: 0.95rem;
-            color: #1e293b;
-            border: 1px solid #e0f2f1;
-        }
+        /* ═══ Toolbar ═══ */
+        .b2c-toolbar { display:flex; justify-content:flex-end; gap:10px; margin-bottom:1rem; }
+        .btn-add-hotel { background:#f97316; color:#fff; border:none; padding:.6rem 1.4rem; border-radius:4px; font-weight:700; font-size:.9rem; cursor:pointer; }
+        .btn-add-hotel:hover { background:#ea580c; }
 
-        .b2c-table td {
-            padding: 1.25rem;
-            border: 1px solid #e0f2f1;
-            font-size: 0.95rem;
-            color: #475569;
-            vertical-align: middle;
-        }
+        /* ═══ Table ═══ */
+        .b2c-table-wrap { border:2px solid #b2dfdb; border-radius:4px; overflow:hidden; background:#fff; }
+        .b2c-table { width:100%; border-collapse:collapse; }
+        .b2c-table th { background:#fff; padding:1rem 1.25rem; text-align:left; font-weight:700; font-size:.95rem; color:#1e293b; border:1px solid #e0f2f1; }
+        .b2c-table td { padding:1rem 1.25rem; border:1px solid #e0f2f1; font-size:.95rem; color:#475569; vertical-align:middle; }
+        .b2c-table tr:hover { background:#f8fafc; }
 
-        /* Input Styles matching screenshot */
-        .ss-select {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
-            background-color: #fff;
-            color: #1e293b;
-            font-size: 0.95rem;
-        }
+        /* ═══ Badges ═══ */
+        .badge { display:inline-block; padding:4px 12px; border-radius:4px; font-size:.8rem; font-weight:700; letter-spacing:.3px; }
+        .badge-green { background:#10b981; color:#fff; }
+        .badge-grey { background:#94a3b8; color:#fff; }
+        .badge-markup { background:#fff; border:1px solid #d1d5db; color:#1e293b; font-weight:600; padding:4px 10px; font-size:.85rem; }
 
-        .ss-input {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
-            background-color: #fff;
-            color: #1e293b;
-            font-size: 0.95rem;
-            text-align: left;
-        }
+        /* ═══ Action Buttons ═══ */
+        .btn-add-markup { background:#ea580c; color:#fff; border:none; padding:5px 14px; border-radius:4px; font-weight:600; font-size:.82rem; cursor:pointer; }
+        .btn-add-markup:hover { background:#c2410c; }
+        .btn-icon { width:32px; height:32px; border:none; border-radius:4px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:.85rem; transition:transform .15s; }
+        .btn-icon:hover { transform:scale(1.1); }
+        .btn-edit { background:#f59e0b; color:#fff; }
+        .btn-delete { background:#ef4444; color:#fff; }
+        .actions-cell { display:flex; align-items:center; gap:8px; }
 
-        .save-container {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 1.5rem;
-        }
+        /* ═══ Modals ═══ */
+        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center; }
+        .modal-overlay.active { display:flex; }
+        .modal-box { background:#fff; border-radius:8px; box-shadow:0 20px 60px rgba(0,0,0,.25); width:95%; max-width:520px; animation:modalSlideUp .25s ease-out; }
+        @keyframes modalSlideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+        .modal-header { display:flex; justify-content:space-between; align-items:center; padding:20px 24px 0; }
+        .modal-header h3 { font-size:1.25rem; font-weight:700; color:#1e293b; }
+        .modal-close { width:32px; height:32px; border:none; background:#f1f5f9; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:.9rem; }
+        .modal-close:hover { background:#e2e8f0; color:#1e293b; }
+        .modal-body { padding:20px 24px 24px; }
+        .form-group { margin-bottom:16px; }
+        .form-group label { display:block; font-size:.9rem; font-weight:600; color:#1e293b; margin-bottom:6px; }
+        .form-group input, .form-group select { width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:.95rem; color:#1e293b; background:#fff; }
+        .form-group input:focus, .form-group select:focus { outline:none; border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.12); }
+        .checkbox-group { display:flex; align-items:center; gap:8px; margin-top:4px; }
+        .checkbox-group input[type="checkbox"] { width:18px; height:18px; cursor:pointer; }
+        .checkbox-group label { font-size:.9rem; font-weight:500; color:#475569; margin-bottom:0; cursor:pointer; }
+        .btn-save-modal { background:#f97316; color:#fff; border:none; padding:10px 28px; border-radius:6px; font-weight:700; font-size:.95rem; cursor:pointer; display:flex; align-items:center; gap:8px; margin-left:auto; }
+        .btn-save-modal:hover { background:#ea580c; }
+        .btn-save-markup { background:#10b981; color:#fff; border:none; padding:10px 28px; border-radius:6px; font-weight:700; font-size:.95rem; cursor:pointer; display:flex; align-items:center; gap:8px; margin:0 auto; width:100%; justify-content:center; }
+        .btn-save-markup:hover { background:#059669; }
+        .markup-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .markup-modal-title { font-size:1.1rem; font-weight:700; color:#1e293b; line-height:1.35; }
+        .empty-state { text-align:center; padding:3rem 1rem; color:#94a3b8; }
+        .empty-state i { font-size:2.5rem; margin-bottom:1rem; display:block; }
 
-        .ss-save-btn {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 0.75rem 2.5rem;
-            border-radius: 4px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .ss-save-btn:hover {
-            background: #2563eb;
-        }
-
-        .na-text {
-            color: #94a3b8;
-            font-size: 0.9rem;
+        @media (max-width:768px) {
+            .preview-row { grid-template-columns:1fr; }
+            .preview-flow { flex-direction:column; }
+            .preview-arrow { transform:rotate(90deg); }
         }
     </style>
 </head>
 
 <body>
     <div class="admin-wrapper">
-        <!-- Sidebar -->
         <aside class="admin-sidebar" id="adminSidebar"></aside>
-
-        <!-- Main Content -->
         <main class="admin-main">
             <header class="admin-header">
                 <div class="header-left">
-                    <button class="sidebar-toggle" id="sidebarToggle">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <div>
-                        <h1 class="page-title">Manage B2C Markup</h1>
-                    </div>
+                    <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+                    <div><h1 class="page-title">B2C Markup</h1></div>
                 </div>
-
                 <div class="header-right">
-                    <div style="font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-right: 1.5rem;">
-                        COAST TO COAST JOURNEYS
-                    </div>
+                    <div style="font-size:.9rem;font-weight:600;color:#1e293b;margin-right:1.5rem">COAST TO COAST JOURNEYS</div>
                 </div>
             </header>
 
             <div class="admin-content">
                 <!-- Banner -->
-                <div class="b2c-markup-banner">
-                    <i class="fas fa-briefcase"></i>
-                    MANAGE B2C MARKUP (B2C ONLY)
+                <div class="b2c-banner">
+                    COAST TO COAST JOURNEYS–B2C — <i class="fas fa-hotel"></i> HOTEL MARKUP
                 </div>
 
-                <!-- Table -->
-                <form id="markupForm">
-                    <div class="b2c-markup-table-container">
-                        <table class="b2c-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 50px;">#</th>
-                                    <th>Service</th>
-                                    <th style="width: 250px;">Type</th>
-                                    <th>Charges</th>
-                                    <th style="width: 200px;">Charges by API</th>
-                                </tr>
-                            </thead>
-                            <tbody id="markupBody">
-                                <!-- Row 1 -->
-                                <tr>
-                                    <td>1.</td>
-                                    <td>Hotel Domestic</td>
-                                    <td>
-                                        <select name="hotel_dom_type" class="ss-select">
-                                            <option value="flat">Flat</option>
-                                            <option value="percentage">Percentage</option>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <input type="number" name="hotel_dom_val" class="ss-input" value="0">
-                                    </td>
-                                    <td class="na-text">N/A</td>
-                                </tr>
-                                <!-- Row 2 -->
-                                <tr>
-                                    <td>2.</td>
-                                    <td>Hotel International</td>
-                                    <td>
-                                        <select name="hotel_int_type" class="ss-select">
-                                            <option value="flat" selected>Flat</option>
-                                            <option value="percentage">Percentage</option>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <input type="number" name="hotel_int_val" class="ss-input" value="0">
-                                    </td>
-                                    <td class="na-text">N/A</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <!-- ═══ Enable/Disable Toggle ═══ -->
+                <div class="toggle-card">
+                    <div class="toggle-info">
+                        <h3><i class="fas fa-toggle-on" style="color:#10b981;margin-right:6px"></i> Markup System</h3>
+                        <p id="toggleStatusText">Loading...</p>
                     </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="markupToggle" onchange="toggleMarkup()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
 
-                    <div class="save-container">
-                        <button type="submit" class="ss-save-btn">Save</button>
+                <!-- ═══ Preview Section ═══ -->
+                <div class="preview-card">
+                    <h3><i class="fas fa-eye" style="color:#3b82f6"></i> Preview Final Price</h3>
+                    <div class="preview-row">
+                        <div class="preview-field">
+                            <label>Original Price (₹)</label>
+                            <input type="number" id="previewPrice" value="5000" min="0">
+                        </div>
+                        <div class="preview-field">
+                            <label>Markup Type</label>
+                            <select id="previewType">
+                                <option value="flat">Flat (₹)</option>
+                                <option value="percentage">Percentage (%)</option>
+                            </select>
+                        </div>
+                        <div class="preview-field">
+                            <label>Markup Value</label>
+                            <input type="number" id="previewValue" value="250" min="0" step="0.01">
+                        </div>
+                        <div class="preview-field">
+                            <label>&nbsp;</label>
+                            <button class="btn-preview" onclick="runPreview()"><i class="fas fa-calculator"></i> Preview</button>
+                        </div>
                     </div>
-                </form>
+                    <div class="preview-result" id="previewResult">
+                        <div class="preview-flow">
+                            <div class="preview-step ps-original">
+                                <div class="step-label">Original Price</div>
+                                <div class="step-value" id="pvOriginal">₹5,000</div>
+                            </div>
+                            <div class="preview-arrow"><i class="fas fa-arrow-right"></i></div>
+                            <div class="preview-step ps-markup">
+                                <div class="step-label">Markup</div>
+                                <div class="step-value" id="pvMarkup">+₹250</div>
+                            </div>
+                            <div class="preview-arrow"><i class="fas fa-arrow-right"></i></div>
+                            <div class="preview-step ps-final">
+                                <div class="step-label">Customer Pays</div>
+                                <div class="step-value" id="pvFinal">₹5,250</div>
+                            </div>
+                            <div class="preview-arrow"><i class="fas fa-arrow-right"></i></div>
+                            <div class="preview-step ps-profit">
+                                <div class="step-label">Profit</div>
+                                <div class="step-value" id="pvProfit">₹250</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ Toolbar ═══ -->
+                <div class="b2c-toolbar">
+                    <button class="btn-add-hotel" onclick="openAddHotelModal()"><i class="fas fa-plus"></i> Add Hotel</button>
+                </div>
+
+                <!-- ═══ Table ═══ -->
+                <div class="b2c-table-wrap">
+                    <table class="b2c-table">
+                        <thead>
+                            <tr>
+                                <th style="width:50px">Sr.</th>
+                                <th>Group</th>
+                                <th>Hotel Name</th>
+                                <th>Markup Value</th>
+                                <th>Status</th>
+                                <th style="width:220px">Edit</th>
+                            </tr>
+                        </thead>
+                        <tbody id="markupTableBody">
+                            <tr><td colspan="6" class="empty-state"><i class="fas fa-spinner fa-spin"></i>Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </main>
     </div>
 
-    <!-- Admin JS -->
+    <!-- ═══ Add Hotel Modal ═══ -->
+    <div class="modal-overlay" id="addHotelModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Add Hotel & Markup</h3>
+                <button class="modal-close" onclick="closeModal('addHotelModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 12px; background: #f0fdf4; padding: 10px; border-radius: 6px; border: 1px solid #bbf7d0;">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="addHotelAll" onchange="toggleAddHotelName()">
+                        <label for="addHotelAll" style="font-weight: 700; color: #166534;">Apply to ALL HOTELS</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Hotel Name</label>
+                    <input type="text" id="addHotelName" placeholder="Enter specific hotel name">
+                </div>
+                <div class="markup-row" style="margin-bottom: 16px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Markup Type<span style="color:#ef4444">*</span></label>
+                        <select id="addMarkupType">
+                            <option value="flat">Flat</option>
+                            <option value="percentage">Percentage (%)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Markup Value<span style="color:#ef4444">*</span></label>
+                        <input type="number" id="addMarkupValue" placeholder="0" min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="addHotelStatus">
+                        <option value="active">Active</option>
+                        <option value="inactive">In-Active</option>
+                    </select>
+                </div>
+                <button class="btn-save-markup" onclick="saveNewHotel()" style="margin-top: 10px;">Save <i class="fas fa-save"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Edit Hotel Modal ═══ -->
+    <div class="modal-overlay" id="editHotelModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Edit Hotel & Markup</h3>
+                <button class="modal-close" onclick="closeModal('editHotelModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editHotelId">
+                <div class="form-group" style="margin-bottom: 12px; background: #f0fdf4; padding: 10px; border-radius: 6px; border: 1px solid #bbf7d0;">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="editHotelAll" onchange="toggleEditHotelName()">
+                        <label for="editHotelAll" style="font-weight: 700; color: #166534;">Apply to ALL HOTELS</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Hotel Name</label>
+                    <input type="text" id="editHotelName" placeholder="Enter specific hotel name">
+                </div>
+                <div class="markup-row" style="margin-bottom: 16px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Markup Type<span style="color:#ef4444">*</span></label>
+                        <select id="editMarkupType">
+                            <option value="flat">Flat</option>
+                            <option value="percentage">Percentage (%)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Markup Value<span style="color:#ef4444">*</span></label>
+                        <input type="number" id="editMarkupValue" placeholder="0" min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="editHotelStatus">
+                        <option value="active">Active</option>
+                        <option value="inactive">In-Active</option>
+                    </select>
+                </div>
+                <button class="btn-save-markup" onclick="updateHotel()" style="margin-top: 10px;">Save <i class="fas fa-save"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Add Markup Modal ═══ -->
+    <div class="modal-overlay" id="addMarkupModal">
+        <div class="modal-box" style="max-width: 480px; border-radius: 8px;">
+            <div class="modal-header" style="align-items: flex-start; padding: 24px 24px 16px; border-bottom: 1px solid #e2e8f0; margin-bottom: 20px;">
+                <div class="markup-modal-title" id="markupModalTitle" style="font-size: 1.45rem; font-weight: 700; color: #0f172a; line-height: 1.3; padding-right: 20px;">
+                    Add Markup
+                </div>
+                <button class="modal-close" onclick="closeModal('addMarkupModal')" style="background: transparent; color: #64748b; font-size: 1.1rem; margin-top: -4px;"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 0 24px 30px;">
+                <input type="hidden" id="markupHotelId">
+                <div class="markup-row" style="margin-bottom: 24px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="color: #475569; font-size: 0.85rem;">Markup Type<span style="color:#ef4444">*</span></label>
+                        <select id="markupType" style="border: 1px solid #cbd5e1; padding: 10px 12px; font-size: 0.95rem;">
+                            <option value="flat">Flat</option>
+                            <option value="percentage">Percentage (%)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="color: #475569; font-size: 0.85rem;">Value<span style="color:#ef4444">*</span></label>
+                        <input type="number" id="markupValue" placeholder="" min="0" step="0.01" style="border: 1px solid #cbd5e1; padding: 10px 12px; font-size: 0.95rem;">
+                    </div>
+                </div>
+                <button onclick="saveMarkup()" style="background: #2563eb; color: #fff; border: none; padding: 10px 24px; border-radius: 6px; font-weight: 600; font-size: 0.95rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; width: auto; min-width: 140px; justify-content: center; transition: background 0.2s;">
+                    Save <i class="fas fa-lock" style="font-size: 0.85rem;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="../../admin/js/admin.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            loadMarkupRules();
+        let hotelMarkups = [];
 
-            document.getElementById('markupForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                await saveMarkupRules();
-            });
+        document.addEventListener('DOMContentLoaded', function () {
+            loadToggleState();
+            loadHotelMarkups();
         });
 
-        async function loadMarkupRules() {
+        // ═══════════════════════════════════════
+        //  TOGGLE
+        // ═══════════════════════════════════════
+        async function loadToggleState() {
             try {
-                // This would fetch existing rules from the DB
-                const res = await apiRequest('/markup/rules/b2c');
-                if (res.success && res.data) {
-                    const data = res.data;
-                    // Populate based on rule_name or similar mapping
-                    // (Simplified for now - matching fields to form names)
-                    data.forEach(rule => {
-                        let base = rule.rule_name.toLowerCase().replace(' ', '_');
-                        if (base === 'hotel_domestic') base = 'hotel_dom';
-                        if (base === 'hotel_international') base = 'hotel_int';
-
-                        const typeSelect = document.querySelector(`select[name="${base}_type"]`);
-                        const valInput = document.querySelector(`input[name="${base}_val"]`);
-                        
-                        if (typeSelect) typeSelect.value = rule.markup_type;
-                        if (valInput) valInput.value = rule.markup_value;
-                    });
-                }
-            } catch (error) {
-                console.error('Load Error:', error);
-            }
-        }
-
-        async function saveMarkupRules() {
-            const saveBtn = document.querySelector('.ss-save-btn');
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-
-            const form = document.getElementById('markupForm');
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
-
-            try {
-                const res = await apiRequest('/markup/rules/b2c', 'POST', data);
+                const res = await apiRequest('/markup/b2c/toggle');
                 if (res.success) {
-                    showNotification('Markup rules updated successfully!', 'success');
+                    document.getElementById('markupToggle').checked = res.enabled;
+                    updateToggleText(res.enabled);
                 }
-            } catch (error) {
-                showNotification('Failed to save rules', 'error');
-            } finally {
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = 'Save';
+            } catch (e) { console.error('Toggle load error', e); }
+        }
+
+        async function toggleMarkup() {
+            const enabled = document.getElementById('markupToggle').checked;
+            try {
+                const res = await apiRequest('/markup/b2c/toggle', 'POST', { enabled });
+                if (res.success) {
+                    updateToggleText(res.enabled);
+                    showNotification(res.message, 'success');
+                }
+            } catch (e) {
+                showNotification('Failed to toggle markup', 'error');
             }
         }
+
+        function updateToggleText(enabled) {
+            document.getElementById('toggleStatusText').textContent = enabled
+                ? 'Markup is ENABLED — prices shown to customers include your markup.'
+                : 'Markup is DISABLED — customers see original RateHawk prices.';
+        }
+
+        // ═══════════════════════════════════════
+        //  PREVIEW
+        // ═══════════════════════════════════════
+        async function runPreview() {
+            const price = parseFloat(document.getElementById('previewPrice').value) || 5000;
+            const type = document.getElementById('previewType').value;
+            const value = parseFloat(document.getElementById('previewValue').value) || 0;
+
+            try {
+                const res = await apiRequest('/markup/b2c/preview', 'POST', {
+                    original_price: price, markup_type: type, markup_value: value
+                });
+                if (res.success) {
+                    document.getElementById('pvOriginal').textContent = '₹' + formatNum(res.original_price);
+                    document.getElementById('pvMarkup').textContent = '+₹' + formatNum(res.markup_amount);
+                    document.getElementById('pvFinal').textContent = '₹' + formatNum(res.final_price);
+                    document.getElementById('pvProfit').textContent = '₹' + formatNum(res.profit);
+                    document.getElementById('previewResult').classList.add('active');
+                }
+            } catch (e) {
+                showNotification('Preview failed', 'error');
+            }
+        }
+
+        // ═══════════════════════════════════════
+        //  LOAD DATA
+        // ═══════════════════════════════════════
+        async function loadHotelMarkups() {
+            try {
+                const res = await apiRequest('/markup/b2c/hotels');
+                if (res.success && res.data) {
+                    hotelMarkups = res.data;
+                    renderTable();
+                } else { showEmptyState('Failed to load data'); }
+            } catch (e) {
+                console.error('Load error:', e);
+                showEmptyState('Error loading hotel markups');
+            }
+        }
+
+        function showEmptyState(msg) {
+            document.getElementById('markupTableBody').innerHTML =
+                `<tr><td colspan="6" class="empty-state"><i class="fas fa-inbox"></i>${msg || 'No hotel markups found. Click "Add Hotel" to get started.'}</td></tr>`;
+        }
+
+        // ═══════════════════════════════════════
+        //  RENDER TABLE
+        // ═══════════════════════════════════════
+        function renderTable() {
+            const tbody = document.getElementById('markupTableBody');
+            if (!hotelMarkups.length) { showEmptyState(); return; }
+
+            tbody.innerHTML = hotelMarkups.map((h, i) => {
+                const isAll = h.is_all_hotels;
+                const hotelBadge = isAll
+                    ? `<span class="badge badge-green">ALL HOTELS</span>`
+                    : `<span style="font-weight:600;color:#1e293b">${esc(h.hotel_name)}</span>`;
+
+                const mv = parseFloat(h.markup_value || 0);
+                const markupLabel = h.markup_type === 'percentage' ? `${mv} %` : `${mv} F`;
+                const statusBadge = h.is_active
+                    ? `<span class="badge badge-green">Active</span>`
+                    : `<span class="badge badge-grey">In-Active</span>`;
+
+                return `<tr>
+                    <td>${i + 1}.</td>
+                    <td style="font-weight:600">${esc(h.group_name)}</td>
+                    <td>${hotelBadge}</td>
+                    <td><span class="badge-markup">${markupLabel}</span></td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <div class="actions-cell">
+                            <button class="btn-add-markup" onclick="openAddMarkupModal('${h.id}','${escA(h.group_name)}','${isAll ? 'ALL' : escA(h.hotel_name)}')">+ Add Markup</button>
+                            <button class="btn-icon btn-edit" title="Edit Hotel" onclick="openEditHotelModal('${h.id}')"><i class="fas fa-pencil-alt"></i></button>
+                            <button class="btn-icon btn-delete" title="Delete" onclick="deleteHotel('${h.id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        // ═══════════════════════════════════════
+        //  ADD HOTEL
+        // ═══════════════════════════════════════
+        function toggleAddHotelName() {
+            const isAll = document.getElementById('addHotelAll').checked;
+            const nameInput = document.getElementById('addHotelName');
+            if (isAll) {
+                nameInput.value = '';
+                nameInput.disabled = true;
+                nameInput.style.backgroundColor = '#f1f5f9';
+            } else {
+                nameInput.disabled = false;
+                nameInput.style.backgroundColor = '#fff';
+            }
+        }
+
+        function openAddHotelModal() {
+            document.getElementById('addHotelName').value = '';
+            document.getElementById('addHotelStatus').value = 'active';
+            document.getElementById('addHotelAll').checked = false;
+            document.getElementById('addMarkupType').value = 'flat';
+            document.getElementById('addMarkupValue').value = '';
+            toggleAddHotelName();
+            openModal('addHotelModal');
+        }
+
+        async function saveNewHotel() {
+            const isAll = document.getElementById('addHotelAll').checked;
+            const name = document.getElementById('addHotelName').value.trim();
+            const status = document.getElementById('addHotelStatus').value;
+            const type = document.getElementById('addMarkupType').value;
+            const value = document.getElementById('addMarkupValue').value;
+
+            if (!isAll && !name) { showNotification('Please enter a hotel name or check "Apply to ALL HOTELS".', 'warning'); return; }
+            if (!value && value !== '0') { showNotification('Please enter a markup value.', 'warning'); return; }
+
+            try {
+                const res = await apiRequest('/markup/b2c/hotels', 'POST', {
+                    hotel_name: isAll ? 'ALL HOTELS' : name,
+                    is_all_hotels: isAll, 
+                    status: status,
+                    markup_type: type,
+                    markup_value: parseFloat(value)
+                });
+                if (res.success) { showNotification('Hotel added!', 'success'); closeModal('addHotelModal'); loadHotelMarkups(); }
+                else { showNotification(res.error || 'Failed', 'error'); }
+            } catch (e) { showNotification('Error: ' + e.message, 'error'); }
+        }
+
+        // ═══════════════════════════════════════
+        //  EDIT HOTEL
+        // ═══════════════════════════════════════
+        function toggleEditHotelName() {
+            const isAll = document.getElementById('editHotelAll').checked;
+            const nameInput = document.getElementById('editHotelName');
+            if (isAll) {
+                nameInput.value = '';
+                nameInput.disabled = true;
+                nameInput.style.backgroundColor = '#f1f5f9';
+            } else {
+                nameInput.disabled = false;
+                nameInput.style.backgroundColor = '#fff';
+            }
+        }
+
+        function openEditHotelModal(id) {
+            const h = hotelMarkups.find(x => x.id === id);
+            if (!h) return;
+            document.getElementById('editHotelId').value = id;
+            document.getElementById('editHotelName').value = h.hotel_name === 'ALL HOTELS' ? '' : h.hotel_name;
+            document.getElementById('editHotelStatus').value = h.is_active ? 'active' : 'inactive';
+            document.getElementById('editHotelAll').checked = h.is_all_hotels;
+            document.getElementById('editMarkupType').value = h.markup_type || 'flat';
+            document.getElementById('editMarkupValue').value = h.markup_value !== null ? parseFloat(h.markup_value) : '';
+            toggleEditHotelName();
+            openModal('editHotelModal');
+        }
+
+        async function updateHotel() {
+            const id = document.getElementById('editHotelId').value;
+            const isAll = document.getElementById('editHotelAll').checked;
+            const name = document.getElementById('editHotelName').value.trim();
+            const status = document.getElementById('editHotelStatus').value;
+            const type = document.getElementById('editMarkupType').value;
+            const value = document.getElementById('editMarkupValue').value;
+
+            if (!isAll && !name) { showNotification('Please enter a hotel name or check "Apply to ALL HOTELS".', 'warning'); return; }
+            if (!value && value !== '0') { showNotification('Please enter a markup value.', 'warning'); return; }
+
+            try {
+                const res = await apiRequest(`/markup/b2c/hotels/${id}`, 'PUT', {
+                    hotel_name: isAll ? 'ALL HOTELS' : name, 
+                    is_all_hotels: isAll, 
+                    status: status,
+                    markup_type: type,
+                    markup_value: parseFloat(value)
+                });
+                if (res.success) { showNotification('Updated!', 'success'); closeModal('editHotelModal'); loadHotelMarkups(); }
+                else { showNotification(res.error || 'Failed', 'error'); }
+            } catch (e) { showNotification('Error: ' + e.message, 'error'); }
+        }
+
+        // ═══════════════════════════════════════
+        //  DELETE HOTEL
+        // ═══════════════════════════════════════
+        async function deleteHotel(id) {
+            if (!confirm('Are you sure you want to delete this hotel markup? This will permanently remove the markup rule.')) return;
+            try {
+                const res = await apiRequest(`/markup/b2c/hotels/${id}`, 'DELETE');
+                if (res.success) { showNotification('Markup deleted successfully', 'success'); loadHotelMarkups(); }
+                else { showNotification(res.error || 'Failed to delete', 'error'); }
+            } catch (e) { showNotification('Error: ' + e.message, 'error'); }
+        }
+
+        // ═══════════════════════════════════════
+        //  ADD MARKUP
+        // ═══════════════════════════════════════
+        function openAddMarkupModal(id, groupName, hotelName) {
+            const h = hotelMarkups.find(x => x.id === id);
+            document.getElementById('markupHotelId').value = id;
+            document.getElementById('markupModalTitle').textContent = `Add Markup > ${groupName} > ${hotelName}`;
+            document.getElementById('markupType').value = h ? h.markup_type : 'flat';
+            document.getElementById('markupValue').value = h ? parseFloat(h.markup_value) : '';
+            openModal('addMarkupModal');
+        }
+
+        async function saveMarkup() {
+            const id = document.getElementById('markupHotelId').value;
+            const type = document.getElementById('markupType').value;
+            const value = document.getElementById('markupValue').value;
+            if (!value && value !== '0') { showNotification('Please enter a markup value.', 'warning'); return; }
+
+            try {
+                const res = await apiRequest(`/markup/b2c/hotels/${id}/markup`, 'POST', {
+                    markup_type: type, markup_value: parseFloat(value)
+                });
+                if (res.success) { showNotification('Markup saved!', 'success'); closeModal('addMarkupModal'); loadHotelMarkups(); }
+                else { showNotification(res.error || 'Failed', 'error'); }
+            } catch (e) { showNotification('Error: ' + e.message, 'error'); }
+        }
+
+        // ═══════════════════════════════════════
+        //  HELPERS
+        // ═══════════════════════════════════════
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        document.addEventListener('click', e => { if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('active'); });
+
+        function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+        function escA(s) { return (s||'').replace(/'/g,"\\'").replace(/"/g,'\\"'); }
+        function formatNum(n) { return Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
     </script>
 </body>
-
 </html>

@@ -710,7 +710,7 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
         if (response.status === 401) {
             localStorage.removeItem('admin_token');
             localStorage.removeItem('admin_user');
-            window.location.href = 'login.html';
+            window.location.href = '../auth.html';
             return;
         }
 
@@ -743,13 +743,30 @@ function setAuthToken(token) {
 
 function logout() {
     localStorage.removeItem('admin_token');
-    window.location.href = 'login.html';
+    localStorage.removeItem('admin_user');
+    
+    // Clear Supabase session if it exists to ensure full logout
+    try {
+        const keys = Object.keys(localStorage);
+        keys.forEach(key => {
+            if (key.includes('supabase.auth.token')) {
+                localStorage.removeItem(key);
+            }
+        });
+        if (window.SupabaseDB && typeof window.SupabaseDB.signOut === 'function') {
+            window.SupabaseDB.signOut();
+        }
+    } catch (e) {
+        console.error('Error clearing supabase session:', e);
+    }
+
+    window.location.href = '../index.html';
 }
 
 function checkAuth() {
     const token = getAuthToken();
-    if (!token && !window.location.href.includes('login.html')) {
-        window.location.href = 'login.html';
+    if (!token && !window.location.href.includes('auth.html')) {
+        window.location.href = '../auth.html';
     }
 }
 

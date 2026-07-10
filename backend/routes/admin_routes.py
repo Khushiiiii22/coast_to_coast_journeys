@@ -147,7 +147,7 @@ def manage_block_markup():
 @admin_bp.route('/markup/rules/b2c', methods=['GET', 'POST'])
 @require_auth()
 def manage_b2c_markup():
-    """Handle B2C markup rules"""
+    """Legacy B2C markup rules endpoint — kept for backward compatibility."""
     try:
         from flask import current_app
         supabase = current_app.config.get('SUPABASE')
@@ -174,6 +174,201 @@ def manage_b2c_markup():
 
         return jsonify({'success': True, 'message': 'Hotel B2C markup rules updated'}), 200
         
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ═══════════════════════════════════════════════════════════════
+#  B2C Hotel Markup — Group-based CRUD  (new table: b2c_hotel_markup)
+# ═══════════════════════════════════════════════════════════════
+
+@admin_bp.route('/markup/b2c/hotels', methods=['GET'])
+@require_auth()
+def list_b2c_hotel_markups():
+    """List all B2C hotel markup groups."""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        if not supabase:
+            return jsonify({'success': False, 'error': 'Database not initialized'}), 500
+
+        result = supabase.table('b2c_hotel_markup').select('*').order('created_at', desc=False).execute()
+        return jsonify({'success': True, 'data': result.data}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/markup/b2c/hotels', methods=['POST'])
+@require_auth()
+def add_b2c_hotel_markup():
+    """Add a new hotel markup group."""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        if not supabase:
+            return jsonify({'success': False, 'error': 'Database not initialized'}), 500
+
+        data = request.json
+        hotel_name = data.get('hotel_name', '').strip()
+        is_all = data.get('is_all_hotels', False)
+        status = data.get('status', 'active')
+
+        if not hotel_name and not is_all:
+            return jsonify({'success': False, 'error': 'Hotel name is required'}), 400
+
+        row = {
+            'group_name': 'COAST TO COAST JOURNEYS-b2c',
+            'hotel_name': 'ALL HOTELS' if is_all else hotel_name,
+            'hotel_id': data.get('hotel_id'),
+            'is_all_hotels': is_all,
+            'is_active': (status == 'active'),
+            'markup_type': data.get('markup_type', 'flat'),
+            'markup_value': float(data.get('markup_value', 0)),
+        }
+
+        result = supabase.table('b2c_hotel_markup').insert(row).execute()
+        return jsonify({'success': True, 'data': result.data[0] if result.data else {}, 'message': 'Hotel markup group added'}), 201
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/markup/b2c/hotels/<hotel_markup_id>', methods=['PUT'])
+@require_auth()
+def update_b2c_hotel_markup(hotel_markup_id):
+    """Update an existing hotel markup group (edit pencil icon)."""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        if not supabase:
+            return jsonify({'success': False, 'error': 'Database not initialized'}), 500
+
+        data = request.json
+        updates = {}
+        if 'hotel_name' in data:
+            updates['hotel_name'] = data['hotel_name']
+        if 'hotel_id' in data:
+            updates['hotel_id'] = data['hotel_id']
+        if 'status' in data:
+            updates['is_active'] = (data['status'] == 'active')
+        if 'is_all_hotels' in data:
+            updates['is_all_hotels'] = data['is_all_hotels']
+            if data['is_all_hotels']:
+                updates['hotel_name'] = 'ALL HOTELS'
+        if 'markup_type' in data:
+            updates['markup_type'] = data['markup_type']
+        if 'markup_value' in data:
+            updates['markup_value'] = float(data['markup_value'])
+
+        updates['updated_at'] = 'now()'
+        
+        result = supabase.table('b2c_hotel_markup').update(updates).eq('id', hotel_markup_id).execute()
+        return jsonify({'success': True, 'data': result.data[0] if result.data else {}, 'message': 'Hotel markup updated'}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/markup/b2c/hotels/<hotel_markup_id>', methods=['DELETE'])
+@require_auth()
+def delete_b2c_hotel_markup(hotel_markup_id):
+    """Delete a hotel markup group (trash icon)."""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        if not supabase:
+            return jsonify({'success': False, 'error': 'Database not initialized'}), 500
+
+        supabase.table('b2c_hotel_markup').delete().eq('id', hotel_markup_id).execute()
+        return jsonify({'success': True, 'message': 'Hotel markup deleted'}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/markup/b2c/hotels/<hotel_markup_id>/markup', methods=['POST'])
+@require_auth()
+def set_b2c_hotel_markup_value(hotel_markup_id):
+    """Set/update markup value for a hotel group (+ Add Markup button)."""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        if not supabase:
+            return jsonify({'success': False, 'error': 'Database not initialized'}), 500
+
+        data = request.json
+        markup_type = data.get('markup_type', 'flat')
+        markup_value = float(data.get('markup_value', 0))
+
+        result = supabase.table('b2c_hotel_markup').update({
+            'markup_type': markup_type,
+            'markup_value': markup_value,
+            'updated_at': 'now()'
+        }).eq('id', hotel_markup_id).execute()
+
+        return jsonify({'success': True, 'data': result.data[0] if result.data else {}, 'message': 'Markup value updated'}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/markup/b2c/toggle', methods=['GET', 'POST'])
+@require_auth()
+def toggle_b2c_markup():
+    """Get or set the global markup enabled/disabled toggle."""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        if not supabase:
+            return jsonify({'success': False, 'error': 'Database not initialized'}), 500
+
+        if request.method == 'GET':
+            res = supabase.table('system_settings').select('setting_value').eq('setting_key', 'markup_enabled').limit(1).execute()
+            enabled = True
+            if res.data:
+                enabled = res.data[0].get('setting_value', 'true').lower() == 'true'
+            return jsonify({'success': True, 'enabled': enabled}), 200
+
+        data = request.json
+        new_value = 'true' if data.get('enabled', True) else 'false'
+
+        existing = supabase.table('system_settings').select('id').eq('setting_key', 'markup_enabled').limit(1).execute()
+        if existing.data:
+            supabase.table('system_settings').update({'setting_value': new_value}).eq('id', existing.data[0]['id']).execute()
+        else:
+            supabase.table('system_settings').insert({
+                'setting_key': 'markup_enabled',
+                'setting_value': new_value,
+                'setting_type': 'boolean',
+                'category': 'markup',
+                'description': 'Global toggle to enable/disable B2C hotel markup'
+            }).execute()
+
+        return jsonify({'success': True, 'enabled': new_value == 'true', 'message': f'Markup {"enabled" if new_value == "true" else "disabled"}'}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/markup/b2c/preview', methods=['POST'])
+@require_auth()
+def preview_b2c_markup():
+    """Preview what the markup would look like on a sample price."""
+    try:
+        data = request.json
+        original_price = float(data.get('original_price', 5000))
+        markup_type = data.get('markup_type', 'flat')
+        markup_value = float(data.get('markup_value', 0))
+
+        if markup_type == 'percentage':
+            markup_amount = original_price * (markup_value / 100)
+        else:
+            markup_amount = markup_value
+
+        final_price = original_price + markup_amount
+
+        return jsonify({
+            'success': True,
+            'original_price': round(original_price, 2),
+            'markup_amount': round(markup_amount, 2),
+            'final_price': round(final_price, 2),
+            'profit': round(markup_amount, 2)
+        }), 200
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
