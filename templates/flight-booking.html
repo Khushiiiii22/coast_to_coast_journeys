@@ -131,24 +131,150 @@
         </div>
     </header>
 
-        <!-- Page Hero -->
-    <section class="page-hero flight-hero" style="min-height: 60vh; display: flex; align-items: center; justify-content: center; text-align: center; background: linear-gradient(rgba(14, 100, 166, 0.8), rgba(26, 54, 93, 0.9)), url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;">
-        <div class="container">
-            <h1 style="font-size: 3.5rem; margin-bottom: 20px;"><i class="fas fa-plane-departure"></i> Flights Coming Soon</h1>
-            <p style="font-size: 1.2rem; max-width: 800px; margin: 0 auto; line-height: 1.6;">We are currently finalizing our airline partnerships to bring you the best flight deals globally. Stay tuned!</p>
-            <a href="hotel-booking.html" class="btn btn-primary" style="margin-top: 30px; display: inline-block; padding: 15px 30px; font-size: 1.1rem; border-radius: 30px; background: white; color: #0e64a6; font-weight: 600; text-decoration: none;">Book Hotels Instead</a>
+    <!-- Page Hero -->
+    <section class="page-hero flight-hero" style="padding-top: 100px; padding-bottom: 60px; min-height: 50vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: linear-gradient(rgba(14, 100, 166, 0.8), rgba(26, 54, 93, 0.9)), url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;">
+        <div class="container" style="position: relative; z-index: 2; width: 100%;">
+            <h1 class="hero-title" style="font-size: 3rem; margin-bottom: 10px; color: white;">Book Your Next Flight</h1>
+            <p class="hero-subtitle" style="font-size: 1.1rem; color: rgba(255,255,255,0.9); margin-bottom: 30px;">Premium flight experiences at unbeatable prices.</p>
+
+            <!-- Search Box -->
+            <div class="search-box animate-fade-in-up" style="background: white; border-radius: 16px; padding: 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: left; max-width: 1100px; margin: 0 auto;">
+                
+                <form class="search-form-improved" id="flightSearchForm">
+                    
+                    <!-- Trip Options -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                        <div class="trip-types" style="display: flex; gap: 20px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: #1e293b;">
+                                <input type="radio" name="tripType" value="oneway" style="accent-color: #0e64a6; width: 16px; height: 16px;">
+                                One Way
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: #1e293b;">
+                                <input type="radio" name="tripType" value="roundtrip" checked style="accent-color: #0e64a6; width: 16px; height: 16px;">
+                                Round Trip
+                            </label>
+                        </div>
+                        
+                        <div class="travel-class">
+                            <select id="cabinClass" style="padding: 8px 16px; border-radius: 20px; border: 1px solid #e2e8f0; background: #f8fafc; color: #334155; font-weight: 500; cursor: pointer; outline: none;">
+                                <option value="Premium Economy">Premium Economy</option>
+                                <option value="Business Class" selected>Business Class</option>
+                                <option value="First Class">First Class</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="search-row">
+                        <!-- Origin -->
+                        <div class="form-field-improved" style="flex: 2; position: relative;">
+                            <label><i class="fas fa-plane-departure"></i> Flying From</label>
+                            <input type="text" id="fromCity" placeholder="City or Airport Code" autocomplete="off" required>
+                        </div>
+                        
+                        <!-- Swap Icon -->
+                        <button type="button" id="swapCitiesBtn" style="background: white; border: 1px solid #e2e8f0; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #0e64a6; z-index: 10; margin: 0 -20px; align-self: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.3s;">
+                            <i class="fas fa-exchange-alt"></i>
+                        </button>
+                        
+                        <!-- Destination -->
+                        <div class="form-field-improved" style="flex: 2; position: relative;">
+                            <label><i class="fas fa-plane-arrival"></i> Flying To</label>
+                            <input type="text" id="toCity" placeholder="City or Airport Code" autocomplete="off" required>
+                        </div>
+                    </div>
+
+                    <div class="search-row" style="margin-top: 15px;">
+                        <!-- Dates -->
+                        <div class="form-field-improved date-field" style="flex: 1.5;">
+                            <label><i class="fas fa-calendar-alt"></i> Departure</label>
+                            <input type="date" id="departDate" required>
+                        </div>
+                        <div class="form-field-improved date-field" id="returnDateContainer" style="flex: 1.5;">
+                            <label><i class="fas fa-calendar-alt"></i> Return</label>
+                            <input type="date" id="returnDate" required>
+                        </div>
+                        
+                        <!-- Passengers -->
+                        <div class="form-field-improved travelers-field" style="flex: 1.5;">
+                            <label><i class="fas fa-user-friends"></i> Passengers</label>
+                            <div class="travelers-dropdown" id="flightGuestsDropdown">
+                                <span class="travelers-display" id="flightGuestsDisplay">1 Adult</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <!-- Passenger Popup -->
+                            <div class="travelers-popup" id="flightGuestsPopup" style="width: 280px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <div>
+                                        <div style="font-weight: 600; color: #1e293b;">Adults</div>
+                                        <div style="font-size: 0.8rem; color: #64748b;">Aged 12+</div>
+                                    </div>
+                                    <div class="counter-group" style="display: flex; align-items: center; gap: 12px;">
+                                        <button type="button" class="counter-btn" onclick="updateFlightPax('adults', -1)" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">-</button>
+                                        <span id="adultCount" style="font-weight: 600; min-width: 12px; text-align: center;">1</span>
+                                        <button type="button" class="counter-btn" onclick="updateFlightPax('adults', 1)" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">+</button>
+                                    </div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <div>
+                                        <div style="font-weight: 600; color: #1e293b;">Children</div>
+                                        <div style="font-size: 0.8rem; color: #64748b;">Aged 2-11</div>
+                                    </div>
+                                    <div class="counter-group" style="display: flex; align-items: center; gap: 12px;">
+                                        <button type="button" class="counter-btn" onclick="updateFlightPax('children', -1)" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">-</button>
+                                        <span id="childCount" style="font-weight: 600; min-width: 12px; text-align: center;">0</span>
+                                        <button type="button" class="counter-btn" onclick="updateFlightPax('children', 1)" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">+</button>
+                                    </div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                    <div>
+                                        <div style="font-weight: 600; color: #1e293b;">Infants</div>
+                                        <div style="font-size: 0.8rem; color: #64748b;">Under 2</div>
+                                    </div>
+                                    <div class="counter-group" style="display: flex; align-items: center; gap: 12px;">
+                                        <button type="button" class="counter-btn" onclick="updateFlightPax('infants', -1)" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">-</button>
+                                        <span id="infantCount" style="font-weight: 600; min-width: 12px; text-align: center;">0</span>
+                                        <button type="button" class="counter-btn" onclick="updateFlightPax('infants', 1)" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">+</button>
+                                    </div>
+                                </div>
+                                <button type="button" class="travelers-done" id="flightGuestsDone" style="width: 100%; padding: 10px; background: #0e64a6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Done</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Search Button -->
+                        <button type="submit" class="btn-search-improved" style="flex: 1; padding: 0 20px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                            <i class="fas fa-search"></i> Request Quote
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </section>
 
-    <!-- Main Content -->
-    <main style="padding: 60px 0; text-align: center;">
+    <!-- Main Content Info -->
+    <main style="padding: 60px 0; background: #f8fafc;">
         <div class="container">
-            <div style="max-width: 600px; margin: 0 auto; padding: 40px; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
-                <div style="width: 80px; height: 80px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #0e64a6; font-size: 2rem;">
-                    <i class="fas fa-tools"></i>
+            <div class="features-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center;">
+                    <div style="width: 60px; height: 60px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #0e64a6; font-size: 1.5rem;">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 15px; color: #1e293b;">Premium Experience</h3>
+                    <p style="color: #64748b; font-size: 0.95rem; line-height: 1.6;">We specialize in Business, First Class, and Premium Economy bookings to ensure your journey is as comfortable as your destination.</p>
                 </div>
-                <h3 style="color: #1e293b; font-size: 1.5rem; margin-bottom: 15px;">Under Construction</h3>
-                <p style="color: #64748b; line-height: 1.6;">Our flight booking engine is currently under development. We are integrating with top global airlines to provide you with a seamless booking experience. Please check back later.</p>
+                <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center;">
+                    <div style="width: 60px; height: 60px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #0e64a6; font-size: 1.5rem;">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 15px; color: #1e293b;">Unpublished Fares</h3>
+                    <p style="color: #64748b; font-size: 0.95rem; line-height: 1.6;">Our travel executives negotiate directly with airlines to bring you exclusive rates not available on regular booking platforms.</p>
+                </div>
+                <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center;">
+                    <div style="width: 60px; height: 60px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #0e64a6; font-size: 1.5rem;">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 15px; color: #1e293b;">Dedicated Support</h3>
+                    <p style="color: #64748b; font-size: 0.95rem; line-height: 1.6;">From quoting to boarding, our 24/7 dedicated travel concierge handles every aspect of your flight requirements.</p>
+                </div>
             </div>
         </div>
     </main>

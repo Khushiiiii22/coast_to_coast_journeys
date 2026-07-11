@@ -65,25 +65,28 @@ function initFlightSearch() {
 
     function applyTripType(type) {
         if (type === 'roundtrip') {
-            returnDateField.style.display = '';
-            returnDateInput.disabled = false;
-            returnDateInput.required = true;
-            if (searchFormGrid) searchFormGrid.style.gridTemplateColumns = '1fr 1fr 160px 160px 1fr';
+            if (returnDateInput) {
+                returnDateInput.disabled = false;
+                returnDateInput.required = true;
+            }
+            const container = document.getElementById('returnDateContainer');
+            if (container) container.style.display = 'flex'; // Changed to flex since it's a flex container
         } else {
-            returnDateField.style.display = 'none';
-            returnDateInput.disabled = true;
-            returnDateInput.required = false;
-            returnDateInput.value = '';
-            updateDateDisplay('returnDate', 'returnDateDisplay');
-            if (searchFormGrid) searchFormGrid.style.gridTemplateColumns = '1fr 1fr 160px 1fr';
+            if (returnDateInput) {
+                returnDateInput.disabled = true;
+                returnDateInput.required = false;
+                returnDateInput.value = '';
+            }
+            const container = document.getElementById('returnDateContainer');
+            if (container) container.style.display = 'none';
         }
         // Update active class on trip type labels
-        document.querySelectorAll('.trip-type-option').forEach(lbl => {
+        document.querySelectorAll('.trip-types label').forEach(lbl => {
             const radio = lbl.querySelector('input[type="radio"]');
             if (radio && radio.checked) {
-                lbl.classList.add('active');
+                lbl.style.color = '#0e64a6';
             } else {
-                lbl.classList.remove('active');
+                lbl.style.color = '#1e293b';
             }
         });
     }
@@ -115,65 +118,63 @@ function initFlightSearch() {
 
     setupCalendar('returnDateDisplay', 'returnCalendar', 'returnDate', today, null, null);
 
-    // 5. Travelers Popup
-    if (travelersDropdown) {
-        travelersDropdown.addEventListener('click', (e) => {
-            e.stopPropagation();
-            travelersPopup.classList.toggle('active');
-        });
+    // 5. Travelers Popup (New Logic)
+    const flightGuestsDropdown = document.getElementById('flightGuestsDropdown');
+    const flightGuestsPopup = document.getElementById('flightGuestsPopup');
+    const flightGuestsDisplay = document.getElementById('flightGuestsDisplay');
+    const flightGuestsDone = document.getElementById('flightGuestsDone');
+    
+    window.flightPaxData = { adults: 1, children: 0, infants: 0 };
+    
+    window.updateFlightPax = function(type, delta) {
+        if (type === 'adults') {
+            const newCount = window.flightPaxData.adults + delta;
+            if (newCount >= 1 && newCount <= 9) window.flightPaxData.adults = newCount;
+        } else if (type === 'children') {
+            const newCount = window.flightPaxData.children + delta;
+            if (newCount >= 0 && newCount <= 9) window.flightPaxData.children = newCount;
+        } else if (type === 'infants') {
+            const newCount = window.flightPaxData.infants + delta;
+            if (newCount >= 0 && newCount <= window.flightPaxData.adults) window.flightPaxData.infants = newCount;
+        }
+        
+        // Cap infants to adults
+        if (window.flightPaxData.infants > window.flightPaxData.adults) {
+            window.flightPaxData.infants = window.flightPaxData.adults;
+        }
+        
+        // Update DOM
+        if (document.getElementById('adultCount')) document.getElementById('adultCount').textContent = window.flightPaxData.adults;
+        if (document.getElementById('childCount')) document.getElementById('childCount').textContent = window.flightPaxData.children;
+        if (document.getElementById('infantCount')) document.getElementById('infantCount').textContent = window.flightPaxData.infants;
+        
+        updateFlightTravelersDisplay();
+    };
 
-        travelersDone.addEventListener('click', () => travelersPopup.classList.remove('active'));
-
-        document.addEventListener('click', (e) => {
-            if (!travelersDropdown.contains(e.target) && !travelersPopup.contains(e.target)) {
-                travelersPopup.classList.remove('active');
-            }
-        });
-
-        document.querySelectorAll('#travelersPopup .counter-btn').forEach(btn => {
-            btn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                const type = this.dataset.type;
-                const isPlus = this.classList.contains('plus');
-
-                if (isPlus) {
-                    if (type === 'adults' && travelersData.adults < 9) travelersData.adults++;
-                    if (type === 'children' && travelersData.children < 9) travelersData.children++;
-                    if (type === 'infants' && travelersData.infants < travelersData.adults) travelersData.infants++;
-                } else {
-                    if (type === 'adults' && travelersData.adults > 1) travelersData.adults--;
-                    if (type === 'children' && travelersData.children > 0) travelersData.children--;
-                    if (type === 'infants' && travelersData.infants > 0) travelersData.infants--;
-                    if (travelersData.infants > travelersData.adults) travelersData.infants = travelersData.adults;
-                }
-
-                document.getElementById('adultsCount').textContent = travelersData.adults;
-                document.getElementById('childrenCount').textContent = travelersData.children;
-                document.getElementById('infantsCount').textContent = travelersData.infants;
-                updateTravelersDisplay();
-            });
-        });
-
-        document.querySelectorAll('.class-btn').forEach(btn => {
-            btn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                document.getElementById('cabinClass').value = this.dataset.value;
-                updateTravelersDisplay();
-            });
-        });
-    }
-
-    function updateTravelersDisplay() {
-        const total = travelersData.adults + travelersData.children;
-        const infants = travelersData.infants;
-        const cabinClass = document.getElementById('cabinClass').value;
-        const classLabels = { economy: 'Economy', premium: 'Premium', business: 'Business', first: 'First' };
+    function updateFlightTravelersDisplay() {
+        if (!flightGuestsDisplay) return;
+        const total = window.flightPaxData.adults + window.flightPaxData.children;
+        const infants = window.flightPaxData.infants;
         let text = `${total} Traveler${total > 1 ? 's' : ''}`;
         if (infants > 0) text += `, ${infants} Infant${infants > 1 ? 's' : ''}`;
-        text += `, ${classLabels[cabinClass]}`;
-        travelersDisplay.textContent = text;
+        flightGuestsDisplay.textContent = text;
+    }
+
+    if (flightGuestsDropdown) {
+        flightGuestsDropdown.addEventListener('click', (e) => {
+            e.stopPropagation();
+            flightGuestsPopup.classList.toggle('active');
+        });
+
+        if (flightGuestsDone) {
+            flightGuestsDone.addEventListener('click', () => flightGuestsPopup.classList.remove('active'));
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!flightGuestsDropdown.contains(e.target) && !flightGuestsPopup.contains(e.target)) {
+                flightGuestsPopup.classList.remove('active');
+            }
+        });
     }
 
     // 6. Form Submission
@@ -193,9 +194,9 @@ function initFlightSearch() {
                 to: to,
                 date: depart,
                 type: tripType,
-                adults: travelersData.adults,
-                children: travelersData.children,
-                infants: travelersData.infants,
+                adults: window.flightPaxData.adults,
+                children: window.flightPaxData.children,
+                infants: window.flightPaxData.infants,
                 class: cabinClass
             });
 
@@ -203,7 +204,7 @@ function initFlightSearch() {
                 params.append('return', rt);
             }
 
-            window.location.href = `flight-results.html?${params.toString()}`;
+            window.location.href = `flight-quote.html?${params.toString()}`;
         });
     }
 }

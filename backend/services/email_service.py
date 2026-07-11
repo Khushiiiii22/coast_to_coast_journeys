@@ -49,7 +49,7 @@ class EmailService:
         self.resend_api_key = app.config.get('RESEND_API_KEY') or os.getenv('RESEND_API_KEY')
         
         # Verified sender
-        self.default_sender = os.getenv('MAIL_DEFAULT_SENDER', 'info@coasttocoastjourneys.com')
+        self.default_sender = 'info@coasttocoastjourneys.com'
         
         # Log configured providers
         providers = []
@@ -181,7 +181,20 @@ class EmailService:
                     })
                 payload["attachment"] = brevo_attachments
             
-            response = requests.post(self.BREVO_API_URL, json=payload, headers=headers, timeout=10)
+            import socket
+            import requests.packages.urllib3.util.connection as urllib3_cn
+            
+            # Force IPv4 for Brevo because Brevo blocks IPv6 addresses
+            orig_gai_family = urllib3_cn.allowed_gai_family
+            def allowed_gai_family():
+                return socket.AF_INET
+            urllib3_cn.allowed_gai_family = allowed_gai_family
+            
+            try:
+                response = requests.post(self.BREVO_API_URL, json=payload, headers=headers, timeout=10)
+            finally:
+                urllib3_cn.allowed_gai_family = orig_gai_family
+                
             if response.status_code in [200, 201, 202]:
                 print(f"✅ Email sent via Brevo to {to_email}")
                 return True
@@ -193,8 +206,7 @@ class EmailService:
 
     def _get_verified_owner_email(self):
         """Get the verified owner email for admin notifications."""
-        # Explicitly use the corporate email for owner notifications to ensure delivery
-        return os.getenv('MAIL_DEFAULT_SENDER', 'info@coasttocoastjourneys.com')
+        return 'info@coasttocoastjourneys.com'
 
     def _send_via_resend(self, to_email, subject, body, html_body=None, attachments=None):
         """Internal helper for Resend API.
@@ -903,5 +915,177 @@ Thank you for choosing C2C Journeys!
 """
 
 
+    # ═══════════════════════════════════════════════════
+    # FLIGHT ENQUIRY EMAILS
+    # ═══════════════════════════════════════════════════
+
+    def send_flight_enquiry_admin_notification(self, details):
+        """Send a professional HTML email to admin when a new flight enquiry is received"""
+        admin_email = 'info@coasttocoastjourneys.com'
+        
+        subject = "✈️ New Flight Quote Request"
+        
+        passengers = []
+        if details.get('adults', 0) > 0:
+            passengers.append(f"{details['adults']} Adult(s)")
+        if details.get('children', 0) > 0:
+            passengers.append(f"{details['children']} Child(ren)")
+        if details.get('infants', 0) > 0:
+            passengers.append(f"{details['infants']} Infant(s)")
+        passenger_str = ', '.join(passengers) if passengers else '1 Adult'
+
+        return_row = ''
+        if details.get('return_date'):
+            return_row = f"""
+            <tr>
+                <td style="padding: 10px 15px; color: #64748b; font-size: 14px; border-bottom: 1px solid #f1f5f9;">Return Date</td>
+                <td style="padding: 10px 15px; font-weight: 600; color: #1e293b; font-size: 14px; border-bottom: 1px solid #f1f5f9;">{details.get('return_date', 'N/A')}</td>
+            </tr>"""
+        
+        html_body = f"""
+<!DOCTYPE html>
+<html>
+<body style="margin:0; padding:0; font-family: 'Segoe UI', Arial, sans-serif; background:#f1f5f9;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:20px auto; background:white; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+    <tr>
+        <td style="background:linear-gradient(135deg, #0e64a6, #1a365d); padding:30px; text-align:center;">
+            <h1 style="color:white; margin:0; font-size:24px;">✈️ New Flight Quote Request</h1>
+            <p style="color:rgba(255,255,255,0.8); margin:8px 0 0; font-size:14px;">A customer has submitted a flight enquiry</p>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:25px;">
+            <h2 style="color:#0e64a6; font-size:16px; margin:0 0 15px; border-bottom:2px solid #e2e8f0; padding-bottom:8px;">👤 Customer Details</h2>
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+                <tr>
+                    <td style="padding:10px 15px; color:#64748b; font-size:14px; border-bottom:1px solid #f1f5f9;">Name</td>
+                    <td style="padding:10px 15px; font-weight:600; color:#1e293b; font-size:14px; border-bottom:1px solid #f1f5f9;">{details.get('full_name', 'N/A')}</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 15px; color:#64748b; font-size:14px; border-bottom:1px solid #f1f5f9;">Email</td>
+                    <td style="padding:10px 15px; font-weight:600; color:#1e293b; font-size:14px; border-bottom:1px solid #f1f5f9;">{details.get('email', 'N/A')}</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 15px; color:#64748b; font-size:14px; border-bottom:1px solid #f1f5f9;">Phone</td>
+                    <td style="padding:10px 15px; font-weight:600; color:#1e293b; font-size:14px; border-bottom:1px solid #f1f5f9;">{details.get('country_code', '')} {details.get('phone', 'N/A')}</td>
+                </tr>
+            </table>
+            
+            <h2 style="color:#0e64a6; font-size:16px; margin:0 0 15px; border-bottom:2px solid #e2e8f0; padding-bottom:8px;">✈️ Flight Details</h2>
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+                <tr>
+                    <td style="padding:10px 15px; color:#64748b; font-size:14px; border-bottom:1px solid #f1f5f9;">Travel Class</td>
+                    <td style="padding:10px 15px; font-weight:600; color:#1e293b; font-size:14px; border-bottom:1px solid #f1f5f9;">{details.get('travel_class', 'N/A')}</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 15px; color:#64748b; font-size:14px; border-bottom:1px solid #f1f5f9;">Trip Type</td>
+                    <td style="padding:10px 15px; font-weight:600; color:#1e293b; font-size:14px; border-bottom:1px solid #f1f5f9;">{details.get('trip_type', 'N/A')}</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 15px; color:#64748b; font-size:14px; border-bottom:1px solid #f1f5f9;">From</td>
+                    <td style="padding:10px 15px; font-weight:600; color:#1e293b; font-size:14px; border-bottom:1px solid #f1f5f9;">{details.get('from_airport', '')} ({details.get('from_airport_code', '')})</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 15px; color:#64748b; font-size:14px; border-bottom:1px solid #f1f5f9;">To</td>
+                    <td style="padding:10px 15px; font-weight:600; color:#1e293b; font-size:14px; border-bottom:1px solid #f1f5f9;">{details.get('to_airport', '')} ({details.get('to_airport_code', '')})</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 15px; color:#64748b; font-size:14px; border-bottom:1px solid #f1f5f9;">Departure Date</td>
+                    <td style="padding:10px 15px; font-weight:600; color:#1e293b; font-size:14px; border-bottom:1px solid #f1f5f9;">{details.get('departure_date', 'N/A')}</td>
+                </tr>
+                {return_row}
+                <tr>
+                    <td style="padding:10px 15px; color:#64748b; font-size:14px; border-bottom:1px solid #f1f5f9;">Passengers</td>
+                    <td style="padding:10px 15px; font-weight:600; color:#1e293b; font-size:14px; border-bottom:1px solid #f1f5f9;">{passenger_str}</td>
+                </tr>
+            </table>
+            
+            <p style="color:#64748b; font-size:12px; text-align:center; margin-top:20px;">
+                Submitted on {datetime.now().strftime('%d %B %Y at %I:%M %p')}
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td style="background:#0f172a; padding:20px; text-align:center;">
+            <p style="color:#94a3b8; font-size:12px; margin:0;">C2C Journeys — Admin Notification</p>
+        </td>
+    </tr>
+</table>
+</body>
+</html>"""
+
+        text_body = f"New Flight Quote Request from {details.get('full_name', 'N/A')} — {details.get('from_airport_code', '')} to {details.get('to_airport_code', '')}"
+        
+        try:
+            return self.send_email(admin_email, subject, text_body, html_body)
+        except Exception as e:
+            print(f"⚠️ Failed to send admin flight enquiry email: {e}")
+            return False
+
+    def send_flight_enquiry_customer_confirmation(self, to_email, details):
+        """Send confirmation email to customer after flight enquiry submission"""
+        subject = "We have received your Flight Request — C2C Journeys"
+        
+        customer_name = details.get('full_name', 'Valued Customer')
+        
+        html_body = f"""
+<!DOCTYPE html>
+<html>
+<body style="margin:0; padding:0; font-family: 'Segoe UI', Arial, sans-serif; background:#f1f5f9;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:20px auto; background:white; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+    <tr>
+        <td style="background:linear-gradient(135deg, #0e64a6, #1a365d); padding:30px; text-align:center;">
+            <h1 style="color:white; margin:0; font-size:24px;">✈️ C2C Journeys</h1>
+            <p style="color:rgba(255,255,255,0.8); margin:8px 0 0; font-size:14px;">Flight Enquiry Confirmation</p>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:30px;">
+            <p style="font-size:16px; color:#1e293b; margin:0 0 15px;">Dear <strong>{customer_name}</strong>,</p>
+            
+            <p style="font-size:14px; color:#475569; line-height:1.8; margin:0 0 15px;">
+                Thank you for choosing <strong>C2C Journeys</strong>.
+            </p>
+            
+            <p style="font-size:14px; color:#475569; line-height:1.8; margin:0 0 15px;">
+                We have successfully received your flight enquiry for <strong>{details.get('from_airport_code', '')} → {details.get('to_airport_code', '')}</strong> on <strong>{details.get('departure_date', '')}</strong>.
+            </p>
+            
+            <div style="background:#f8fafc; border-radius:10px; padding:20px; margin:20px 0; border-left:4px solid #0e64a6;">
+                <p style="font-size:14px; color:#475569; line-height:1.8; margin:0;">
+                    One of our travel executives will review your request and contact you shortly with the <strong>best available fare</strong>.
+                </p>
+            </div>
+            
+            <p style="font-size:14px; color:#475569; line-height:1.8; margin:0 0 15px;">
+                No further action is required from your side.
+            </p>
+            
+            <p style="font-size:14px; color:#475569; line-height:1.8; margin:20px 0 0;">
+                Thank you for choosing us.<br>
+                <strong>Team C2C Journeys</strong>
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td style="background:#0f172a; padding:20px; text-align:center;">
+            <p style="color:#94a3b8; font-size:12px; margin:0;">© 2026 C2C Journeys. All Rights Reserved.</p>
+            <p style="color:#64748b; font-size:11px; margin:5px 0 0;">coasttocoastjourneys.com</p>
+        </td>
+    </tr>
+</table>
+</body>
+</html>"""
+
+        text_body = f"Dear {customer_name}, Thank you for choosing C2C Journeys. We have received your flight enquiry. Our team will contact you shortly."
+        
+        try:
+            return self.send_email(to_email, subject, text_body, html_body)
+        except Exception as e:
+            print(f"⚠️ Failed to send customer flight enquiry email: {e}")
+            return False
+
+
 # Singleton
 email_service = EmailService()
+

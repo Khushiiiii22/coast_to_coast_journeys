@@ -1057,6 +1057,253 @@ def get_activity_logs():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+# ─── Flight Enquiries Admin Endpoints ─────────────────────────────────────────
+
+@admin_bp.route('/flight-enquiries', methods=['GET'])
+@require_auth()
+def get_flight_enquiries():
+    """
+    Get all flight enquiries with filters
+    GET /api/admin/flight-enquiries?status=New Lead&search=john&travel_class=Business Class&trip_type=Round Trip&from_date=2026-01-01&to_date=2026-12-31&limit=50&offset=0
+    """
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        if not supabase:
+            return jsonify({'success': True, 'data': [], 'count': 0}), 200
+        
+        query = supabase.table('flight_enquiries').select('*')
+        
+        status = request.args.get('status')
+        if status:
+            query = query.eq('status', status)
+        
+        travel_class = request.args.get('travel_class')
+        if travel_class:
+            query = query.eq('travel_class', travel_class)
+        
+        trip_type = request.args.get('trip_type')
+        if trip_type:
+            query = query.eq('trip_type', trip_type)
+        
+        from_date = request.args.get('from_date')
+        if from_date:
+            query = query.gte('created_at', f"{from_date}T00:00:00")
+        
+        to_date = request.args.get('to_date')
+        if to_date:
+            query = query.lte('created_at', f"{to_date}T23:59:59")
+        
+        search = request.args.get('search')
+        if search:
+            query = query.or_(f"full_name.ilike.%{search}%,email.ilike.%{search}%,phone.ilike.%{search}%")
+        
+        limit = int(request.args.get('limit', 50))
+        offset = int(request.args.get('offset', 0))
+        
+        query = query.order('created_at', desc=True).limit(limit).offset(offset)
+        result = query.execute()
+        
+        # Get total count
+        count_query = supabase.table('flight_enquiries').select('id', count='exact')
+        if status:
+            count_query = count_query.eq('status', status)
+        count_result = count_query.execute()
+        
+        return jsonify({
+            'success': True,
+            'data': result.data,
+            'count': count_result.count if hasattr(count_result, 'count') else len(result.data)
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/flight-enquiries/stats', methods=['GET'])
+@require_auth()
+def get_flight_enquiries_stats():
+    """
+    Get flight enquiry statistics
+    GET /api/admin/flight-enquiries/stats
+    """
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        stats = {
+            'total': 0,
+            'today': 0,
+            'new': 0,
+            'contacted': 0,
+            'quotation_sent': 0,
+            'booked': 0,
+            'cancelled': 0
+        }
+        
+        if not supabase:
+            return jsonify({'success': True, 'data': stats}), 200
+        
+        # Total
+        total_result = supabase.table('flight_enquiries').select('id', count='exact').execute()
+        stats['total'] = total_result.count if hasattr(total_result, 'count') else 0
+        
+        # Today
+        from datetime import datetime, timedelta
+        today_str = datetime.utcnow().strftime('%Y-%m-%d')
+        today_result = supabase.table('flight_enquiries').select('id', count='exact').gte('created_at', f"{today_str}T00:00:00").execute()
+        stats['today'] = today_result.count if hasattr(today_result, 'count') else 0
+        
+        # By status
+        for status_key, status_val in [('new', 'New Lead'), ('contacted', 'Contacted'), ('quotation_sent', 'Quotation Sent'), ('booked', 'Booked'), ('cancelled', 'Cancelled')]:
+            s_result = supabase.table('flight_enquiries').select('id', count='exact').eq('status', status_val).execute()
+            stats[status_key] = s_result.count if hasattr(s_result, 'count') else 0
+        
+        return jsonify({'success': True, 'data': stats}), 200
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/flight-enquiries/<enquiry_id>', methods=['GET'])
+@require_auth()
+def get_flight_enquiry(enquiry_id):
+    """Get single flight enquiry"""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        if not supabase:
+            return jsonify({'success': False, 'error': 'Database not available'}), 500
+        
+        result = supabase.table('flight_enquiries').select('*').eq('id', enquiry_id).execute()
+        
+        if not result.data:
+            return jsonify({'success': False, 'error': 'Enquiry not found'}), 404
+        
+        return jsonify({'success': True, 'data': result.data[0]}), 200
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/flight-enquiries/<enquiry_id>/status', methods=['PUT'])
+@require_auth()
+def update_flight_enquiry_status(enquiry_id):
+    """Update flight enquiry status"""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        if not supabase:
+            return jsonify({'success': False, 'error': 'Database not available'}), 500
+        
+        data = request.get_json()
+        new_status = data.get('status')
+        
+        valid_statuses = ['New Lead', 'Contacted', 'Quotation Sent', 'Booked', 'Cancelled']
+        if new_status not in valid_statuses:
+            return jsonify({'success': False, 'error': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'}), 400
+        
+        result = supabase.table('flight_enquiries').update({'status': new_status}).eq('id', enquiry_id).execute()
+        
+        return jsonify({'success': True, 'message': f'Status updated to {new_status}'}), 200
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/flight-enquiries/<enquiry_id>', methods=['DELETE'])
+@require_auth()
+def delete_flight_enquiry(enquiry_id):
+    """Delete flight enquiry"""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        if not supabase:
+            return jsonify({'success': False, 'error': 'Database not available'}), 500
+        
+        supabase.table('flight_enquiries').delete().eq('id', enquiry_id).execute()
+        
+        return jsonify({'success': True, 'message': 'Enquiry deleted successfully'}), 200
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/flight-enquiries/export', methods=['GET'])
+@require_auth()
+def export_flight_enquiries():
+    """
+    Export flight enquiries as CSV
+    GET /api/admin/flight-enquiries/export?format=csv
+    """
+    try:
+        from flask import current_app, Response
+        import csv
+        import io
+        
+        supabase = current_app.config.get('SUPABASE')
+        if not supabase:
+            return jsonify({'success': False, 'error': 'Database not available'}), 500
+        
+        result = supabase.table('flight_enquiries').select('*').order('created_at', desc=True).execute()
+        data = result.data or []
+        
+        export_format = request.args.get('format', 'csv').lower()
+        
+        if export_format == 'csv':
+            output = io.StringIO()
+            writer = csv.writer(output)
+            
+            # Header
+            writer.writerow([
+                'Lead ID', 'Full Name', 'Email', 'Phone', 'Country Code',
+                'Travel Class', 'Trip Type', 'From Airport', 'From Code', 'From City',
+                'To Airport', 'To Code', 'To City', 'Departure Date', 'Return Date',
+                'Adults', 'Children', 'Infants', 'Status', 'Created At'
+            ])
+            
+            for row in data:
+                writer.writerow([
+                    row.get('id', ''),
+                    row.get('full_name', ''),
+                    row.get('email', ''),
+                    row.get('phone', ''),
+                    row.get('country_code', ''),
+                    row.get('travel_class', ''),
+                    row.get('trip_type', ''),
+                    row.get('from_airport', ''),
+                    row.get('from_airport_code', ''),
+                    row.get('from_city', ''),
+                    row.get('to_airport', ''),
+                    row.get('to_airport_code', ''),
+                    row.get('to_city', ''),
+                    row.get('departure_date', ''),
+                    row.get('return_date', ''),
+                    row.get('adults', 0),
+                    row.get('children', 0),
+                    row.get('infants', 0),
+                    row.get('status', ''),
+                    row.get('created_at', '')
+                ])
+            
+            output.seek(0)
+            return Response(
+                output.getvalue(),
+                mimetype='text/csv',
+                headers={'Content-Disposition': 'attachment; filename=flight_enquiries.csv'}
+            )
+        
+        # JSON fallback
+        return jsonify({'success': True, 'data': data}), 200
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 # ─── Flight Bookings Admin Endpoints ─────────────────────────────────────────
 
 @admin_bp.route('/flight-bookings', methods=['GET'])
@@ -1429,9 +1676,8 @@ def get_payments():
         page = int(request.args.get('page', 1))
         offset = (page - 1) * limit
         
-        query = supabase.table('bookings').select(
-            'id, booking_id, guest_name, guest_email, hotel_name, check_in, check_out, '
-            'total_price, payment_status, payment_method, payment_id, booking_status, created_at',
+        query = supabase.table('hotel_bookings').select(
+            '*',
             count='exact'
         ).order('created_at', desc=True)
         
@@ -1463,11 +1709,10 @@ def get_refunds():
         page = int(request.args.get('page', 1))
         offset = (page - 1) * limit
         
-        result = supabase.table('bookings').select(
-            'id, booking_id, guest_name, guest_email, hotel_name, check_in, check_out, '
-            'total_price, payment_status, payment_method, payment_id, booking_status, created_at',
+        result = supabase.table('hotel_bookings').select(
+            '*',
             count='exact'
-        ).in_('booking_status', ['cancelled', 'refunded']).order('created_at', desc=True).range(offset, offset + limit - 1).execute()
+        ).in_('status', ['cancelled', 'refunded']).order('created_at', desc=True).range(offset, offset + limit - 1).execute()
         
         return jsonify({
             'success': True,

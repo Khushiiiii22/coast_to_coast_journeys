@@ -158,6 +158,121 @@ async function loadContactEnquiries() {
     }
 }
 
+async function loadFlightEnquiries() {
+    const tableBody = document.getElementById('flightEnquiryBody');
+    if (!tableBody) return;
+
+    try {
+        // Status filter if present
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get('status');
+        const endpoint = status ? `/flight-enquiries?status=${status}` : '/flight-enquiries';
+        
+        const result = await apiRequest(endpoint);
+
+        if (result.success) {
+            const data = result.data;
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="10" class="empty-row" style="text-align: center; padding: 2rem;">No Flight Enquiries Found</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = data.map((item, idx) => `
+                <tr>
+                    <td>${idx + 1}.</td>
+                    <td>
+                        <span class="col-link">${item.full_name}</span><br>
+                        <span style="font-size: 0.75rem; color: #64748b; text-transform: uppercase;">${item.id.substring(0, 8)}</span>
+                    </td>
+                    <td>
+                        <div class="col-email">${item.email}</div>
+                        <div>${item.country_code} ${item.phone}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 600; color: #0e64a6;">${item.from_airport_code} <i class="fas fa-arrow-right" style="font-size: 0.8rem; margin: 0 4px; color: #94a3b8;"></i> ${item.to_airport_code}</div>
+                        <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">${item.trip_type}</div>
+                    </td>
+                    <td>
+                        <div style="white-space: nowrap;"><span style="color: #64748b; font-size: 0.75rem; text-transform: uppercase;">Dep:</span> <i class="far fa-calendar text-gray-400" style="margin-left: 2px;"></i> ${new Date(item.departure_date).toLocaleDateString()}</div>
+                        ${item.return_date ? `<div style="white-space: nowrap; margin-top: 4px;"><span style="color: #64748b; font-size: 0.75rem; text-transform: uppercase;">Ret:</span> <i class="far fa-calendar-check text-gray-400" style="margin-left: 2px;"></i> ${new Date(item.return_date).toLocaleDateString()}</div>` : ''}
+                    </td>
+                    <td><span class="badge-rooms">${item.travel_class}</span></td>
+                    <td>
+                        <div style="font-size: 0.85rem;">
+                            ${item.adults > 0 ? `${item.adults} Ad` : ''} 
+                            ${item.children > 0 ? `, ${item.children} Ch` : ''} 
+                            ${item.infants > 0 ? `, ${item.infants} In` : ''}
+                        </div>
+                    </td>
+                    <td>
+                        <select class="status-select ${item.status}" onchange="updateFlightEnquiryStatus('${item.id}', this.value)" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0; font-size: 0.8rem; font-weight: 600; outline: none; cursor: pointer;">
+                            <option value="pending" ${item.status === 'pending' ? 'selected' : ''}>Pending</option>
+                            <option value="quoted" ${item.status === 'quoted' ? 'selected' : ''}>Quoted</option>
+                            <option value="converted" ${item.status === 'converted' ? 'selected' : ''}>Converted</option>
+                            <option value="closed" ${item.status === 'closed' ? 'selected' : ''}>Closed</option>
+                        </select>
+                    </td>
+                    <td>${new Date(item.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <button onclick="deleteFlightEnquiry('${item.id}')" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px;"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading flight enquiries:', error);
+    }
+}
+
+async function updateFlightEnquiryStatus(id, newStatus) {
+    if (!confirm(`Are you sure you want to mark this enquiry as ${newStatus}?`)) {
+        loadFlightEnquiries(); // Reset select
+        return;
+    }
+    
+    try {
+        const result = await apiRequest(`/flight-enquiries/${id}/status`, 'PUT', { status: newStatus });
+        if (result.success) {
+            showNotification(`Enquiry status updated to ${newStatus}`, 'success');
+            loadFlightEnquiries();
+        } else {
+            showNotification(result.error || 'Failed to update status', 'error');
+            loadFlightEnquiries(); // Reset select
+        }
+    } catch (error) {
+        showNotification('Error updating status', 'error');
+        loadFlightEnquiries(); // Reset select
+    }
+}
+
+async function deleteFlightEnquiry(id) {
+    if (!confirm('Are you sure you want to delete this enquiry? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const result = await apiRequest(`/flight-enquiries/${id}`, 'DELETE');
+        if (result.success) {
+            showNotification('Enquiry deleted successfully', 'success');
+            loadFlightEnquiries();
+        } else {
+            showNotification(result.error || 'Failed to delete enquiry', 'error');
+        }
+    } catch (error) {
+        showNotification('Error deleting enquiry', 'error');
+    }
+}
+
+async function exportFlightEnquiries() {
+    try {
+        // We'll fetch the export URL instead of JSON data
+        const token = getAuthToken();
+        window.open(`/api/admin/flight-enquiries/export?token=${token}`, '_blank');
+    } catch (error) {
+        showNotification('Error exporting data', 'error');
+    }
+}
+
 async function loadInvoicesList() {
     const tableBody = document.getElementById('manualInvoiceBody');
     if (!tableBody) return;
@@ -194,6 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadHotelEnquiries();
     loadContactEnquiries();
     loadInvoicesList();
+    loadFlightEnquiries();
 });
 
 // ========================================
@@ -295,6 +411,7 @@ function initSidebar() {
                     isOpen: localStorage.getItem('queries_submenu_open') === 'true',
                     subItems: [
                         { name: 'Hotel Enquiry', icon: 'fa-bed', href: 'hotel-enquiry.html' },
+                        { name: 'Flight Enquiry', icon: 'fa-plane-departure', href: 'flight-enquiries.html' },
                         { name: 'Contact-Us Enquiry', icon: 'fa-envelope', href: 'contact-enquiry.html' }
                     ]
                 },

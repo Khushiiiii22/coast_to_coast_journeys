@@ -32,6 +32,7 @@ class FlightService:
         ]
         
         self.airports = {
+            # ─── INDIA ───
             'DEL': {'name': 'Indira Gandhi International Airport', 'city': 'New Delhi', 'country': 'India'},
             'BOM': {'name': 'Chhatrapati Shivaji Maharaj International Airport', 'city': 'Mumbai', 'country': 'India'},
             'BLR': {'name': 'Kempegowda International Airport', 'city': 'Bangalore', 'country': 'India'},
@@ -40,24 +41,155 @@ class FlightService:
             'HYD': {'name': 'Rajiv Gandhi International Airport', 'city': 'Hyderabad', 'country': 'India'},
             'GOI': {'name': 'Goa International Airport', 'city': 'Goa', 'country': 'India'},
             'JAI': {'name': 'Jaipur International Airport', 'city': 'Jaipur', 'country': 'India'},
+            'COK': {'name': 'Cochin International Airport', 'city': 'Kochi', 'country': 'India'},
+            'AMD': {'name': 'Sardar Vallabhbhai Patel International Airport', 'city': 'Ahmedabad', 'country': 'India'},
+            'PNQ': {'name': 'Pune Airport', 'city': 'Pune', 'country': 'India'},
+            'GAU': {'name': 'Lokpriya Gopinath Bordoloi International Airport', 'city': 'Guwahati', 'country': 'India'},
+            'LKO': {'name': 'Chaudhary Charan Singh International Airport', 'city': 'Lucknow', 'country': 'India'},
+            'IXC': {'name': 'Chandigarh Airport', 'city': 'Chandigarh', 'country': 'India'},
+            'SXR': {'name': 'Sheikh ul-Alam International Airport', 'city': 'Srinagar', 'country': 'India'},
+            'TRV': {'name': 'Trivandrum International Airport', 'city': 'Thiruvananthapuram', 'country': 'India'},
+            'PAT': {'name': 'Jay Prakash Narayan International Airport', 'city': 'Patna', 'country': 'India'},
+            'IXB': {'name': 'Bagdogra Airport', 'city': 'Bagdogra', 'country': 'India'},
+            'VNS': {'name': 'Lal Bahadur Shastri International Airport', 'city': 'Varanasi', 'country': 'India'},
+            'IXR': {'name': 'Birsa Munda Airport', 'city': 'Ranchi', 'country': 'India'},
+            'BBI': {'name': 'Biju Patnaik International Airport', 'city': 'Bhubaneswar', 'country': 'India'},
+            'NAG': {'name': 'Dr. Babasaheb Ambedkar International Airport', 'city': 'Nagpur', 'country': 'India'},
+            'IXM': {'name': 'Madurai Airport', 'city': 'Madurai', 'country': 'India'},
+            'IDR': {'name': 'Devi Ahilya Bai Holkar Airport', 'city': 'Indore', 'country': 'India'},
+            'RAJ': {'name': 'Rajkot Airport', 'city': 'Rajkot', 'country': 'India'},
+            'UDR': {'name': 'Maharana Pratap Airport', 'city': 'Udaipur', 'country': 'India'},
+            'VTZ': {'name': 'Visakhapatnam Airport', 'city': 'Visakhapatnam', 'country': 'India'},
+            'IXA': {'name': 'Agartala Airport', 'city': 'Agartala', 'country': 'India'},
+            'RPR': {'name': 'Swami Vivekananda Airport', 'city': 'Raipur', 'country': 'India'},
+            'CJB': {'name': 'Coimbatore International Airport', 'city': 'Coimbatore', 'country': 'India'},
+            'ATQ': {'name': 'Sri Guru Ram Dass Jee International Airport', 'city': 'Amritsar', 'country': 'India'},
+            'IXJ': {'name': 'Jammu Airport', 'city': 'Jammu', 'country': 'India'},
+            'DED': {'name': 'Jolly Grant Airport', 'city': 'Dehradun', 'country': 'India'},
+            'MYQ': {'name': 'Mysore Airport', 'city': 'Mysore', 'country': 'India'},
+            'IXE': {'name': 'Mangalore International Airport', 'city': 'Mangalore', 'country': 'India'},
+            'STV': {'name': 'Surat Airport', 'city': 'Surat', 'country': 'India'},
+            'BDQ': {'name': 'Vadodara Airport', 'city': 'Vadodara', 'country': 'India'},
+            # ─── MIDDLE EAST ───
             'DXB': {'name': 'Dubai International Airport', 'city': 'Dubai', 'country': 'UAE'},
+            'AUH': {'name': 'Abu Dhabi International Airport', 'city': 'Abu Dhabi', 'country': 'UAE'},
+            'SHJ': {'name': 'Sharjah International Airport', 'city': 'Sharjah', 'country': 'UAE'},
+            'DOH': {'name': 'Hamad International Airport', 'city': 'Doha', 'country': 'Qatar'},
+            'BAH': {'name': 'Bahrain International Airport', 'city': 'Bahrain', 'country': 'Bahrain'},
+            'MCT': {'name': 'Muscat International Airport', 'city': 'Muscat', 'country': 'Oman'},
+            'KWI': {'name': 'Kuwait International Airport', 'city': 'Kuwait City', 'country': 'Kuwait'},
+            'RUH': {'name': 'King Khalid International Airport', 'city': 'Riyadh', 'country': 'Saudi Arabia'},
+            'JED': {'name': 'King Abdulaziz International Airport', 'city': 'Jeddah', 'country': 'Saudi Arabia'},
+            'DMM': {'name': 'King Fahd International Airport', 'city': 'Dammam', 'country': 'Saudi Arabia'},
+            'TLV': {'name': 'Ben Gurion Airport', 'city': 'Tel Aviv', 'country': 'Israel'},
+            'AMM': {'name': 'Queen Alia International Airport', 'city': 'Amman', 'country': 'Jordan'},
+            # ─── EUROPE ───
             'LHR': {'name': 'Heathrow Airport', 'city': 'London', 'country': 'UK'},
-            'JFK': {'name': 'John F. Kennedy International Airport', 'city': 'New York', 'country': 'USA'},
-            'SIN': {'name': 'Changi Airport', 'city': 'Singapore', 'country': 'Singapore'},
+            'LGW': {'name': 'Gatwick Airport', 'city': 'London', 'country': 'UK'},
+            'STN': {'name': 'Stansted Airport', 'city': 'London', 'country': 'UK'},
+            'MAN': {'name': 'Manchester Airport', 'city': 'Manchester', 'country': 'UK'},
+            'EDI': {'name': 'Edinburgh Airport', 'city': 'Edinburgh', 'country': 'UK'},
             'CDG': {'name': 'Charles de Gaulle Airport', 'city': 'Paris', 'country': 'France'},
+            'ORY': {'name': 'Paris Orly Airport', 'city': 'Paris', 'country': 'France'},
             'FRA': {'name': 'Frankfurt Airport', 'city': 'Frankfurt', 'country': 'Germany'},
+            'MUC': {'name': 'Munich Airport', 'city': 'Munich', 'country': 'Germany'},
+            'AMS': {'name': 'Amsterdam Schiphol Airport', 'city': 'Amsterdam', 'country': 'Netherlands'},
+            'FCO': {'name': 'Leonardo da Vinci International Airport', 'city': 'Rome', 'country': 'Italy'},
+            'MXP': {'name': 'Milan Malpensa Airport', 'city': 'Milan', 'country': 'Italy'},
+            'BCN': {'name': 'Barcelona El Prat Airport', 'city': 'Barcelona', 'country': 'Spain'},
+            'MAD': {'name': 'Adolfo Suárez Madrid-Barajas Airport', 'city': 'Madrid', 'country': 'Spain'},
+            'ZRH': {'name': 'Zurich Airport', 'city': 'Zurich', 'country': 'Switzerland'},
+            'VIE': {'name': 'Vienna International Airport', 'city': 'Vienna', 'country': 'Austria'},
+            'IST': {'name': 'Istanbul Airport', 'city': 'Istanbul', 'country': 'Turkey'},
+            'ATH': {'name': 'Athens International Airport', 'city': 'Athens', 'country': 'Greece'},
+            'LIS': {'name': 'Lisbon Humberto Delgado Airport', 'city': 'Lisbon', 'country': 'Portugal'},
+            'CPH': {'name': 'Copenhagen Airport', 'city': 'Copenhagen', 'country': 'Denmark'},
+            'OSL': {'name': 'Oslo Gardermoen Airport', 'city': 'Oslo', 'country': 'Norway'},
+            'ARN': {'name': 'Stockholm Arlanda Airport', 'city': 'Stockholm', 'country': 'Sweden'},
+            'HEL': {'name': 'Helsinki Airport', 'city': 'Helsinki', 'country': 'Finland'},
+            'WAW': {'name': 'Warsaw Chopin Airport', 'city': 'Warsaw', 'country': 'Poland'},
+            'PRG': {'name': 'Václav Havel Airport Prague', 'city': 'Prague', 'country': 'Czech Republic'},
+            'BUD': {'name': 'Budapest Ferenc Liszt Airport', 'city': 'Budapest', 'country': 'Hungary'},
+            'DUB': {'name': 'Dublin Airport', 'city': 'Dublin', 'country': 'Ireland'},
+            'BRU': {'name': 'Brussels Airport', 'city': 'Brussels', 'country': 'Belgium'},
+            # ─── AMERICAS ───
+            'JFK': {'name': 'John F. Kennedy International Airport', 'city': 'New York', 'country': 'USA'},
+            'EWR': {'name': 'Newark Liberty International Airport', 'city': 'Newark', 'country': 'USA'},
+            'LAX': {'name': 'Los Angeles International Airport', 'city': 'Los Angeles', 'country': 'USA'},
+            'SFO': {'name': 'San Francisco International Airport', 'city': 'San Francisco', 'country': 'USA'},
+            'ORD': {'name': "O'Hare International Airport", 'city': 'Chicago', 'country': 'USA'},
+            'MIA': {'name': 'Miami International Airport', 'city': 'Miami', 'country': 'USA'},
+            'ATL': {'name': 'Hartsfield-Jackson Atlanta International Airport', 'city': 'Atlanta', 'country': 'USA'},
+            'DFW': {'name': 'Dallas/Fort Worth International Airport', 'city': 'Dallas', 'country': 'USA'},
+            'IAD': {'name': 'Washington Dulles International Airport', 'city': 'Washington DC', 'country': 'USA'},
+            'SEA': {'name': 'Seattle-Tacoma International Airport', 'city': 'Seattle', 'country': 'USA'},
+            'BOS': {'name': 'Boston Logan International Airport', 'city': 'Boston', 'country': 'USA'},
+            'DEN': {'name': 'Denver International Airport', 'city': 'Denver', 'country': 'USA'},
+            'LAS': {'name': 'Harry Reid International Airport', 'city': 'Las Vegas', 'country': 'USA'},
+            'HNL': {'name': 'Daniel K. Inouye International Airport', 'city': 'Honolulu', 'country': 'USA'},
+            'YYZ': {'name': 'Toronto Pearson International Airport', 'city': 'Toronto', 'country': 'Canada'},
+            'YVR': {'name': 'Vancouver International Airport', 'city': 'Vancouver', 'country': 'Canada'},
+            'MEX': {'name': 'Mexico City International Airport', 'city': 'Mexico City', 'country': 'Mexico'},
+            'GRU': {'name': 'São Paulo-Guarulhos International Airport', 'city': 'São Paulo', 'country': 'Brazil'},
+            'EZE': {'name': 'Ministro Pistarini International Airport', 'city': 'Buenos Aires', 'country': 'Argentina'},
+            'SCL': {'name': 'Arturo Merino Benítez International Airport', 'city': 'Santiago', 'country': 'Chile'},
+            'BOG': {'name': 'El Dorado International Airport', 'city': 'Bogota', 'country': 'Colombia'},
+            # ─── ASIA PACIFIC ───
+            'SIN': {'name': 'Changi Airport', 'city': 'Singapore', 'country': 'Singapore'},
             'BKK': {'name': 'Suvarnabhumi Airport', 'city': 'Bangkok', 'country': 'Thailand'},
-            'MLE': {'name': 'Velana International Airport', 'city': 'Male', 'country': 'Maldives'}
+            'HKG': {'name': 'Hong Kong International Airport', 'city': 'Hong Kong', 'country': 'Hong Kong'},
+            'NRT': {'name': 'Narita International Airport', 'city': 'Tokyo', 'country': 'Japan'},
+            'HND': {'name': 'Haneda Airport', 'city': 'Tokyo', 'country': 'Japan'},
+            'KIX': {'name': 'Kansai International Airport', 'city': 'Osaka', 'country': 'Japan'},
+            'ICN': {'name': 'Incheon International Airport', 'city': 'Seoul', 'country': 'South Korea'},
+            'PEK': {'name': 'Beijing Capital International Airport', 'city': 'Beijing', 'country': 'China'},
+            'PVG': {'name': 'Shanghai Pudong International Airport', 'city': 'Shanghai', 'country': 'China'},
+            'KUL': {'name': 'Kuala Lumpur International Airport', 'city': 'Kuala Lumpur', 'country': 'Malaysia'},
+            'CGK': {'name': 'Soekarno-Hatta International Airport', 'city': 'Jakarta', 'country': 'Indonesia'},
+            'DPS': {'name': 'Ngurah Rai International Airport', 'city': 'Bali', 'country': 'Indonesia'},
+            'MNL': {'name': 'Ninoy Aquino International Airport', 'city': 'Manila', 'country': 'Philippines'},
+            'SGN': {'name': 'Tan Son Nhat International Airport', 'city': 'Ho Chi Minh City', 'country': 'Vietnam'},
+            'HAN': {'name': 'Noi Bai International Airport', 'city': 'Hanoi', 'country': 'Vietnam'},
+            'TPE': {'name': 'Taiwan Taoyuan International Airport', 'city': 'Taipei', 'country': 'Taiwan'},
+            'CMB': {'name': 'Bandaranaike International Airport', 'city': 'Colombo', 'country': 'Sri Lanka'},
+            'KTM': {'name': 'Tribhuvan International Airport', 'city': 'Kathmandu', 'country': 'Nepal'},
+            'DAC': {'name': 'Hazrat Shahjalal International Airport', 'city': 'Dhaka', 'country': 'Bangladesh'},
+            'RGN': {'name': 'Yangon International Airport', 'city': 'Yangon', 'country': 'Myanmar'},
+            'PNH': {'name': 'Phnom Penh International Airport', 'city': 'Phnom Penh', 'country': 'Cambodia'},
+            'MLE': {'name': 'Velana International Airport', 'city': 'Male', 'country': 'Maldives'},
+            # ─── OCEANIA ───
+            'SYD': {'name': 'Sydney Kingsford Smith Airport', 'city': 'Sydney', 'country': 'Australia'},
+            'MEL': {'name': 'Melbourne Airport', 'city': 'Melbourne', 'country': 'Australia'},
+            'AKL': {'name': 'Auckland Airport', 'city': 'Auckland', 'country': 'New Zealand'},
+            # ─── AFRICA ───
+            'JNB': {'name': 'O.R. Tambo International Airport', 'city': 'Johannesburg', 'country': 'South Africa'},
+            'CPT': {'name': 'Cape Town International Airport', 'city': 'Cape Town', 'country': 'South Africa'},
+            'NBO': {'name': 'Jomo Kenyatta International Airport', 'city': 'Nairobi', 'country': 'Kenya'},
+            'CAI': {'name': 'Cairo International Airport', 'city': 'Cairo', 'country': 'Egypt'},
+            'ADD': {'name': 'Addis Ababa Bole International Airport', 'city': 'Addis Ababa', 'country': 'Ethiopia'},
+            'LOS': {'name': 'Murtala Muhammed International Airport', 'city': 'Lagos', 'country': 'Nigeria'},
+            'DAR': {'name': 'Julius Nyerere International Airport', 'city': 'Dar es Salaam', 'country': 'Tanzania'},
+            'MRU': {'name': 'Sir Seewoosagur Ramgoolam International Airport', 'city': 'Mauritius', 'country': 'Mauritius'},
+            'SEZ': {'name': 'Seychelles International Airport', 'city': 'Mahé', 'country': 'Seychelles'},
+            # ─── RUSSIA / CIS ───
+            'SVO': {'name': 'Sheremetyevo International Airport', 'city': 'Moscow', 'country': 'Russia'},
+            'LED': {'name': 'Pulkovo Airport', 'city': 'Saint Petersburg', 'country': 'Russia'},
+            'TAS': {'name': 'Islam Karimov Tashkent International Airport', 'city': 'Tashkent', 'country': 'Uzbekistan'},
         }
         
         self.city_to_code = {}
         for code, details in self.airports.items():
             city_lower = details['city'].lower()
             self.city_to_code[city_lower] = code
-            if 'new delhi' in city_lower:
-                self.city_to_code['delhi'] = code
-            if 'bangalore' in city_lower:
-                self.city_to_code['bengaluru'] = code
+        # Common aliases
+        self.city_to_code['delhi'] = 'DEL'
+        self.city_to_code['bengaluru'] = 'BLR'
+        self.city_to_code['bombay'] = 'BOM'
+        self.city_to_code['calcutta'] = 'CCU'
+        self.city_to_code['madras'] = 'MAA'
+        self.city_to_code['cochin'] = 'COK'
+        self.city_to_code['trivandrum'] = 'TRV'
+        self.city_to_code['benares'] = 'VNS'
 
     def _authenticate(self):
         url = f"{self.air_iq_url}/login"

@@ -2,8 +2,146 @@ from flask import Blueprint, request, jsonify
 from services.flight_service import flight_service
 from datetime import datetime
 import json
+import re
 
 flight_bp = Blueprint('flight', __name__, url_prefix='/api/flights')
+
+
+@flight_bp.route('/enquiry', methods=['POST'])
+def submit_flight_enquiry():
+    """
+    Submit a flight enquiry (lead generation).
+    POST /api/flights/enquiry
+    {
+        "full_name": "John Doe",
+        "email": "john@example.com",
+        "phone": "9876543210",
+        "country_code": "+91",
+        "travel_class": "Business Class",
+        "trip_type": "Round Trip",
+        "from_airport": "Kempegowda International Airport",
+        "from_airport_code": "BLR",
+        "from_city": "Bangalore",
+        "to_airport": "Indira Gandhi International Airport",
+        "to_airport_code": "DEL",
+        "to_city": "New Delhi",
+        "departure_date": "2026-07-24",
+        "return_date": "2026-07-28",
+        "adults": 2,
+        "children": 0,
+        "infants": 0
+    }
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+        
+        # ── Validation ──
+        errors = []
+        
+        if not data.get('full_name', '').strip():
+            errors.append('Full name is required')
+        
+        email = data.get('email', '').strip()
+        if not email or not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', email):
+            errors.append('Valid email address is required')
+        
+        phone = data.get('phone', '').strip()
+        if not phone or len(re.sub(r'\D', '', phone)) < 7:
+            errors.append('Valid phone number is required')
+        
+        if not data.get('from_airport_code', '').strip():
+            errors.append('Departure airport is required')
+        
+        if not data.get('to_airport_code', '').strip():
+            errors.append('Arrival airport is required')
+        
+        if not data.get('departure_date', '').strip():
+            errors.append('Departure date is required')
+        
+        # Validate dates
+        try:
+            dep_date = datetime.strptime(data['departure_date'], '%Y-%m-%d')
+        except (ValueError, KeyError):
+            errors.append('Invalid departure date format (YYYY-MM-DD)')
+            dep_date = None
+        
+        if data.get('trip_type', '').lower() == 'round trip' and data.get('return_date'):
+            try:
+                ret_date = datetime.strptime(data['return_date'], '%Y-%m-%d')
+                if dep_date and ret_date <= dep_date:
+                    errors.append('Return date must be after departure date')
+            except ValueError:
+                errors.append('Invalid return date format (YYYY-MM-DD)')
+        
+        total_pax = int(data.get('adults', 0)) + int(data.get('children', 0)) + int(data.get('infants', 0))
+        if total_pax < 1:
+            errors.append('At least 1 passenger is required')
+        
+        if errors:
+            return jsonify({'success': False, 'error': '; '.join(errors)}), 400
+        
+        # ── Build record ──
+        record = {
+            'full_name': data['full_name'].strip(),
+            'email': email,
+            'phone': phone,
+            'country_code': data.get('country_code', '+91').strip(),
+            'travel_class': data.get('travel_class', 'Business Class'),
+            'trip_type': data.get('trip_type', 'One Way'),
+            'from_airport': data.get('from_airport', '').strip(),
+            'from_airport_code': data.get('from_airport_code', '').strip().upper(),
+            'from_city': data.get('from_city', '').strip(),
+            'to_airport': data.get('to_airport', '').strip(),
+            'to_airport_code': data.get('to_airport_code', '').strip().upper(),
+            'to_city': data.get('to_city', '').strip(),
+            'departure_date': data['departure_date'],
+            'return_date': data.get('return_date') or None,
+            'adults': int(data.get('adults', 1)),
+            'children': int(data.get('children', 0)),
+            'infants': int(data.get('infants', 0)),
+            'status': 'New Lead'
+        }
+        
+        # ── Save to Supabase ──
+        saved_id = None
+        try:
+            from services.supabase_service import supabase_service
+            supabase = supabase_service.client
+            if supabase:
+                result = supabase.table('flight_enquiries').insert(record).execute()
+                if result.data and len(result.data) > 0:
+                    saved_id = result.data[0].get('id')
+                print(f"✅ Flight enquiry saved: {record['from_airport_code']} → {record['to_airport_code']} by {record['full_name']}")
+        except Exception as db_err:
+            print(f"⚠️ Flight enquiry DB save error: {db_err}")
+        
+        # ── Send Emails ──
+        try:
+            from flask import current_app
+            from services.email_service import email_service
+            email_service.init_app(current_app)
+            
+            # Admin notification
+            email_service.send_flight_enquiry_admin_notification(record)
+            
+            # Customer confirmation
+            email_service.send_flight_enquiry_customer_confirmation(email, record)
+            
+            print(f"✅ Flight enquiry emails sent for {record['full_name']}")
+        except Exception as email_err:
+            print(f"⚠️ Flight enquiry email error: {email_err}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Your flight enquiry has been submitted successfully.',
+            'enquiry_id': saved_id
+        })
+        
+    except Exception as e:
+        print(f"❌ Flight enquiry error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 def _build_datetime(date_str, time_str=None):

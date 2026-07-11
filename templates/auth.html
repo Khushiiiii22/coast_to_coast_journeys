@@ -378,8 +378,15 @@
                                 required>
                         </div>
                     </div>
+                    
+                    <div class="input-group" id="mfaGroup" style="display: none;">
+                        <div style="position: relative;">
+                            <i class="fas fa-shield-alt input-icon"></i>
+                            <input type="text" id="loginMfaCode" class="input-field" placeholder="6-digit Authenticator Code" maxlength="6" pattern="\d{6}">
+                        </div>
+                    </div>
 
-                    <div class="forgot-link-wrapper">
+                    <div class="forgot-link-wrapper" id="loginOptionsWrapper">
                         <span class="small-text">Enter your credentials</span>
                         <a href="#" class="forgot-link">Forgot Password?</a>
                     </div>
@@ -544,6 +551,7 @@
             e.preventDefault();
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
+            const mfaCode = document.getElementById('loginMfaCode') ? document.getElementById('loginMfaCode').value : '';
             const btn = document.getElementById('loginBtn');
             const errorEl = document.getElementById('loginError');
 
@@ -557,7 +565,7 @@
                     const adminResponse = await fetch('/api/admin/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, password })
+                        body: JSON.stringify({ email, password, mfa_code: mfaCode })
                     });
 
                     const adminData = await adminResponse.json();
@@ -565,6 +573,24 @@
                         localStorage.setItem('admin_token', adminData.data.token);
                         localStorage.setItem('admin_user', JSON.stringify(adminData.data.user));
                         window.location.href = 'admin/dashboard.html';
+                        return;
+                    } else if (adminData.mfa_required) {
+                        // Show MFA input
+                        document.getElementById('mfaGroup').style.display = 'block';
+                        document.getElementById('loginEmail').parentElement.parentElement.style.display = 'none';
+                        document.getElementById('loginPassword').parentElement.parentElement.style.display = 'none';
+                        if (document.getElementById('loginOptionsWrapper')) {
+                            document.getElementById('loginOptionsWrapper').style.display = 'none';
+                        }
+                        
+                        showError('loginError', 'Please enter your Authenticator Code');
+                        btn.disabled = false;
+                        btn.textContent = 'VERIFY CODE';
+                        return;
+                    } else {
+                        showError('loginError', adminData.error || 'Invalid admin credentials');
+                        btn.disabled = false;
+                        btn.textContent = 'SIGN IN';
                         return;
                     }
                 }
