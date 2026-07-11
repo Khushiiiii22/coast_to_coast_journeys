@@ -180,7 +180,7 @@ function generateDemoHotelDetails(hotelId) {
                 meal_info: { display_name: 'Breakfast included', no_child_meal: false },
                 price: Math.floor(Math.random() * 5000) + 8000,
                 original_price: Math.floor(Math.random() * 3000) + 12000,
-                currency: 'INR',
+                currency: 'USD',
                 cancellation: 'free',
                 cancellation_info: {
                     is_free_cancellation: true,
@@ -204,7 +204,7 @@ function generateDemoHotelDetails(hotelId) {
                 meal_info: { display_name: 'Breakfast + Dinner included', no_child_meal: false },
                 price: Math.floor(Math.random() * 8000) + 15000,
                 original_price: Math.floor(Math.random() * 5000) + 20000,
-                currency: 'INR',
+                currency: 'USD',
                 cancellation: 'free',
                 cancellation_info: {
                     is_free_cancellation: true,
@@ -228,7 +228,7 @@ function generateDemoHotelDetails(hotelId) {
                 meal_plan: 'nomeal',
                 meal_info: { display_name: 'Room only (no meals)', no_child_meal: true },
                 price: Math.floor(Math.random() * 3000) + 5000,
-                currency: 'INR',
+                currency: 'USD',
                 cancellation: 'non-refundable',
                 features: ['Queen Bed', 'Garden View', '30 sqm', 'Free WiFi'],
                 room_static: {

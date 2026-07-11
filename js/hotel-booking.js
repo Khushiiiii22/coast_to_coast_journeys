@@ -243,19 +243,17 @@ async function processRealBooking(guests, email, phone, specialRequests) {
         if (prebookResult.price_changed) {
             hideLoadingOverlay();
 
-            // Calculate new total in INR (assuming 86.5 conversion if not provided)
+            // Keep total in USD (assuming ETG API returns USD by default for this account)
             const newTotalUSD = prebookResult.new_total || 0;
-            const conversionRate = 86.5;
-            const newTotalINR = Math.round(newTotalUSD * (1.15) * conversionRate); // Total with commission
 
             // Update the summary UI
-            document.getElementById('totalAmountValue').textContent = `₹${newTotalINR.toLocaleString('en-IN')}`;
-            document.getElementById('btnTotalPrice').textContent = newTotalINR.toLocaleString('en-IN');
+            document.getElementById('totalAmountValue').textContent = `$${newTotalUSD.toLocaleString('en-US')}`;
+            document.getElementById('btnTotalPrice').textContent = newTotalUSD.toLocaleString('en-US');
 
-            showNotification(`The price has changed to ₹${newTotalINR.toLocaleString('en-IN')}. Please click "Confirm Booking" again to proceed.`, 'warning');
+            showNotification(`The price has changed to $${newTotalUSD.toLocaleString('en-US')}. Please click "Confirm Booking" again to proceed.`, 'warning');
 
             // Update global state so next click uses new data
-            bookingData.total_amount = newTotalINR;
+            bookingData.total_amount = newTotalUSD;
 
             // IMPORTANT: We must update the rate object too so the next attempt uses the NEW hash
             rate.book_hash = updatedHash;
@@ -276,7 +274,7 @@ async function processRealBooking(guests, email, phone, specialRequests) {
             checkin: searchParams.checkin,
             checkout: searchParams.checkout,
             total_amount: bookingData.total_amount,
-            currency: 'INR'
+            currency: 'USD'
         };
 
         const createResult = await HotelAPI.createBooking(bookingParams);

@@ -405,7 +405,7 @@
 
                 <!-- Currency Note -->
                 <p id="currencyNote" style="margin: 12px 0 0 0; font-size: 0.8rem; color: #64748b;">Rates are quoted in
-                    INR (₹).</p>
+                    USD ($).</p>
 
                 <!-- Price may increase warning -->
                 <div
@@ -512,7 +512,7 @@
 
             // Format with correct currency symbol using HotelUtils
             const originalCurrency = rate.currency || bookingData.currency || 'USD';
-            const currencySymbol = originalCurrency === 'USD' ? '₹' : (originalCurrency === 'USD' ? '$' : originalCurrency + ' ');
+            const currencySymbol = originalCurrency === 'USD' ? '$' : (originalCurrency === 'INR' ? '₹' : originalCurrency + ' ');
 
             // --- PRICE DETAILS BREAKDOWN ---
             // Resolve taxes first — needed to compute pre-tax base for the rate row

@@ -900,7 +900,7 @@
             const nightsCount = parseInt(rate.nights || calculateNights(searchParams.checkin, searchParams.checkout) || 1);
             const roomsCount = parseInt(searchParams.rooms) || 1;
             const originalCurrency = rate.currency || bookingData.currency || 'USD';
-            const currencySymbol = originalCurrency === 'USD' ? '₹' : (originalCurrency === 'USD' ? '$' : originalCurrency + ' ');
+            const currencySymbol = originalCurrency === 'USD' ? '$' : (originalCurrency === 'INR' ? '₹' : originalCurrency + ' ');
 
             // Identification of Prepaid vs Property-Payable
             const propertyFees = rate.property_payable_fees || [];

@@ -82,13 +82,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Format price in INR
+    // Format price in USD
     function formatPrice(price, currency) {
-        let inrPrice = price;
-        if (currency === 'USD') {
-            inrPrice = Math.round(price * USD_TO_INR);
+        let usdPrice = price;
+        if (currency === 'INR') {
+            usdPrice = Math.round(price / USD_TO_INR);
         }
-        return '₹' + inrPrice.toLocaleString('en-IN');
+        return '$' + usdPrice.toLocaleString('en-US');
     }
 
     function buildFlightDetailsHtml(flight) {
@@ -441,7 +441,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Set price range
         if (allOutboundFlights.length > 0) {
             const prices = allOutboundFlights.map(f => {
-                return f.currency === 'USD' ? Math.round(f.price * USD_TO_INR) : f.price;
+                return f.currency === 'INR' ? Math.round(f.price / USD_TO_INR) : f.price;
             });
             const maxPrice = Math.max(...prices);
             const roundedMax = Math.ceil(maxPrice / 1000) * 1000;
@@ -488,8 +488,8 @@ document.addEventListener('DOMContentLoaded', function () {
         // Filter Outbound
         filteredOutbound = allOutboundFlights.filter(f => {
             const airlineMatch = selectedAirlines.length === 0 || selectedAirlines.includes(f.airline.code);
-            const priceINR = f.currency === 'USD' ? Math.round(f.price * USD_TO_INR) : f.price;
-            const priceMatch = priceINR <= maxPrice;
+            const priceUSD = f.currency === 'INR' ? Math.round(f.price / USD_TO_INR) : f.price;
+            const priceMatch = priceUSD <= maxPrice;
             const stopsMatch = selectedStops.includes(f.stops >= 2 ? 2 : f.stops);
             let timeMatch = true;
             if (activeTimeFilter !== 'all') {
