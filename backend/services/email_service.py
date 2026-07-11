@@ -540,9 +540,6 @@ This is an automated notification from C2C Journeys.
         hotel_name = booking_details.get('hotel_name', 'Hotel')
         subject = f"Booking Confirmed ✅ — {hotel_name} | C2C Journeys"
         
-        # Generate professional HTML email
-        invoice_html = self._generate_invoice_html(booking_details)
-        
         # Plain text fallback
         amount = booking_details.get('amount', 0)
         currency = booking_details.get('currency', 'INR')
@@ -559,7 +556,7 @@ Total Amount: {self._format_amount(amount, currency)}
 Thank you for choosing C2C Journeys!
         """
         
-        # Generate PDF attachments
+        invoice_html = None
         attachments = []
         try:
             from services.pdf_service import PDFService
@@ -569,21 +566,53 @@ Thank you for choosing C2C Journeys!
             templates_dir = current_app.config.get('TEMPLATES_DIR', os.path.join(os.getcwd(), 'templates')) if current_app else os.path.join(os.getcwd(), 'templates')
             pdf_service = PDFService(templates_dir)
             
-            # 1. Invoice PDF
+            # 1. Generate Invoice HTML for the email body itself to make it highly professional
+            template_path = os.path.join(templates_dir, 'pdf', 'invoice.html')
+            if os.path.exists(template_path):
+                with open(template_path, 'r') as f:
+                    invoice_html = f.read()
+                    
+                from datetime import datetime
+                guest_name = str(booking_details.get('customer_name', booking_details.get('guest_name', 'Valued Customer')))
+                guest_email = str(booking_details.get('customer_email', booking_details.get('guest_email', '')))
+                logo_uri = "https://coasttocoastjourneys.com/assets/images/c2c-logo.png" # Assuming remote logo for email clients
+                
+                invoice_html = invoice_html.replace('{{logo_data_uri}}', logo_uri)
+                invoice_html = invoice_html.replace('{{booking_id}}', str(booking_details.get('booking_id', '')))
+                invoice_html = invoice_html.replace('{{guest_name}}', guest_name)
+                invoice_html = invoice_html.replace('{{customer_name}}', guest_name)
+                invoice_html = invoice_html.replace('{{hotel_name}}', str(booking_details.get('hotel_name', '')))
+                invoice_html = invoice_html.replace('{{amount}}', str(booking_details.get('amount', '')))
+                invoice_html = invoice_html.replace('{{currency}}', str(booking_details.get('currency', 'USD')))
+                invoice_html = invoice_html.replace('{{date}}', datetime.now().strftime("%d %b %Y"))
+                invoice_html = invoice_html.replace('{{destination}}', str(booking_details.get('destination', '')))
+                invoice_html = invoice_html.replace('{{city}}', str(booking_details.get('destination', booking_details.get('city', ''))))
+                invoice_html = invoice_html.replace('{{guest_email}}', guest_email)
+                invoice_html = invoice_html.replace('{{customer_email}}', guest_email)
+                invoice_html = invoice_html.replace('{{guest_phone}}', str(booking_details.get('guest_phone', '')))
+                invoice_html = invoice_html.replace('{{checkin}}', str(booking_details.get('checkin', '')))
+                invoice_html = invoice_html.replace('{{check-in}}', str(booking_details.get('checkin', '')))
+                invoice_html = invoice_html.replace('{{checkout}}', str(booking_details.get('checkout', '')))
+                invoice_html = invoice_html.replace('{{check-out}}', str(booking_details.get('checkout', '')))
+            else:
+                invoice_html = self._generate_invoice_html(booking_details) # Fallback to AI gen
+            
+            # 2. Generate PDF attachments
             invoice_pdf = pdf_service.generate_invoice(booking_details)
             attachments.append({
                 'filename': f"Invoice_{booking_details.get('booking_id', 'Booking')}.pdf",
                 'content': invoice_pdf
             })
             
-            # 2. Ticket PDF
             ticket_pdf = pdf_service.generate_ticket(booking_details)
             attachments.append({
                 'filename': f"Voucher_{booking_details.get('booking_id', 'Booking')}.pdf",
                 'content': ticket_pdf
             })
         except Exception as e:
-            print(f"⚠️ Failed to generate PDFs: {e}")
+            print(f"⚠️ Failed to generate PDFs/HTML: {e}")
+            if not invoice_html:
+                invoice_html = self._generate_invoice_html(booking_details)
 
         # Send email to customer
         customer_email_sent = self.send_email(to_email, subject, body, html_body=invoice_html, attachments=attachments)

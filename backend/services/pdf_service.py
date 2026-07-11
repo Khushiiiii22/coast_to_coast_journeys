@@ -42,18 +42,29 @@ class PDFService:
         if os.path.exists(template_path):
             with open(template_path, 'r') as f:
                 html_content = f.read()
+                from datetime import datetime
+                
+                # Support both guest_name and customer_name formats
+                guest_name = str(booking_data.get('customer_name', booking_data.get('guest_name', 'Valued Customer')))
+                guest_email = str(booking_data.get('customer_email', booking_data.get('guest_email', '')))
+                
                 html_content = html_content.replace('{{logo_data_uri}}', logo_uri)
                 html_content = html_content.replace('{{booking_id}}', str(booking_data.get('booking_id', '')))
-                html_content = html_content.replace('{{guest_name}}', str(booking_data.get('guest_name', '')))
+                html_content = html_content.replace('{{guest_name}}', guest_name)
+                html_content = html_content.replace('{{customer_name}}', guest_name)
                 html_content = html_content.replace('{{hotel_name}}', str(booking_data.get('hotel_name', '')))
                 html_content = html_content.replace('{{amount}}', str(booking_data.get('amount', '')))
                 html_content = html_content.replace('{{currency}}', str(booking_data.get('currency', 'USD')))
-                html_content = html_content.replace('{{date}}', str(booking_data.get('date', '')))
+                html_content = html_content.replace('{{date}}', datetime.now().strftime("%d %b %Y"))
                 html_content = html_content.replace('{{destination}}', str(booking_data.get('destination', '')))
-                html_content = html_content.replace('{{guest_email}}', str(booking_data.get('guest_email', '')))
+                html_content = html_content.replace('{{city}}', str(booking_data.get('destination', booking_data.get('city', ''))))
+                html_content = html_content.replace('{{guest_email}}', guest_email)
+                html_content = html_content.replace('{{customer_email}}', guest_email)
                 html_content = html_content.replace('{{guest_phone}}', str(booking_data.get('guest_phone', '')))
                 html_content = html_content.replace('{{checkin}}', str(booking_data.get('checkin', '')))
+                html_content = html_content.replace('{{check-in}}', str(booking_data.get('checkin', '')))
                 html_content = html_content.replace('{{checkout}}', str(booking_data.get('checkout', '')))
+                html_content = html_content.replace('{{check-out}}', str(booking_data.get('checkout', '')))
         else:
             html_content = "<html><body><h1>Invoice not found</h1></body></html>"
 
@@ -89,15 +100,25 @@ class PDFService:
         if os.path.exists(template_path):
             with open(template_path, 'r') as f:
                 html_content = f.read()
+                
+                guest_name = str(booking_data.get('customer_name', booking_data.get('guest_name', 'Valued Customer')))
+                guest_email = str(booking_data.get('customer_email', booking_data.get('guest_email', '')))
+                
                 # Basic replacements
                 html_content = html_content.replace('{{logo_data_uri}}', logo_uri)
                 html_content = html_content.replace('{{booking_id}}', str(booking_data.get('booking_id', '')))
-                html_content = html_content.replace('{{guest_name}}', str(booking_data.get('guest_name', '')))
+                html_content = html_content.replace('{{guest_name}}', guest_name)
+                html_content = html_content.replace('{{customer_name}}', guest_name)
                 html_content = html_content.replace('{{hotel_name}}', str(booking_data.get('hotel_name', '')))
                 html_content = html_content.replace('{{checkin}}', str(booking_data.get('checkin', '')))
+                html_content = html_content.replace('{{check-in}}', str(booking_data.get('checkin', '')))
                 html_content = html_content.replace('{{checkout}}', str(booking_data.get('checkout', '')))
+                html_content = html_content.replace('{{check-out}}', str(booking_data.get('checkout', '')))
                 html_content = html_content.replace('{{currency}}', str(booking_data.get('currency', 'USD')))
                 html_content = html_content.replace('{{amount}}', str(booking_data.get('amount', '')))
+                html_content = html_content.replace('{{city}}', str(booking_data.get('destination', booking_data.get('city', ''))))
+                html_content = html_content.replace('{{guest_email}}', guest_email)
+                html_content = html_content.replace('{{customer_email}}', guest_email)
                 html_content = html_content.replace('{{adults}}', str(booking_data.get('adults', '2')))
                 html_content = html_content.replace('{{destination}}', str(booking_data.get('destination', '')))
         else:
