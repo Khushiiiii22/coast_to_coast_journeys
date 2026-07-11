@@ -2,165 +2,392 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Invoice</title>
+    <title>C2C Journeys - Tax Invoice</title>
     <style>
-        @page {
-            size: A4;
-            margin: 20mm;
-        }
+        @page { size: A4; margin: 0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            color: #333;
-            line-height: 1.5;
+            color: #2d3748;
+            line-height: 1.6;
+            font-size: 12px;
+            background: #fff;
         }
-        .header {
-            width: 100%;
-            border-bottom: 2px solid #0e64a6;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+
+        /* ─── TOP BRAND BAR ─── */
+        .brand-bar {
+            background: linear-gradient(135deg, #0a2540 0%, #1a4f7a 50%, #0e64a6 100%);
+            padding: 25px 40px;
+            color: white;
         }
-        .header table {
-            width: 100%;
-        }
-        .company-info h1 {
-            color: #0e64a6;
-            margin: 0 0 5px 0;
-            font-size: 28px;
-        }
-        .company-info p {
-            margin: 0;
-            color: #666;
-            font-size: 14px;
-        }
-        .invoice-title h2 {
-            margin: 0;
-            font-size: 24px;
-            color: #333;
+        .brand-bar table { width: 100%; border-collapse: collapse; }
+        .brand-logo img { height: 60px; border-radius: 8px; }
+        .brand-name { font-size: 26px; font-weight: 800; letter-spacing: 1.5px; margin-left: 15px; vertical-align: middle; }
+        .brand-tagline { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.7; margin-left: 15px; vertical-align: middle; display: block; margin-top: 2px; }
+        .invoice-badge {
             text-align: right;
+            vertical-align: middle;
         }
-        .invoice-details {
-            width: 100%;
-            margin-bottom: 40px;
+        .invoice-badge h2 {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 4px;
+            margin: 0;
+            color: #fff;
         }
-        .invoice-details td {
-            vertical-align: top;
+        .invoice-badge .inv-number {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 3px;
         }
-        .bill-to h3 {
-            margin: 0 0 10px 0;
+
+        /* ─── BODY CONTENT ─── */
+        .content { padding: 30px 40px 20px 40px; }
+
+        /* ─── META ROW ─── */
+        .meta-strip {
+            display: flex;
+            justify-content: space-between;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 14px 20px;
+            margin-bottom: 25px;
+        }
+        .meta-strip table { width: 100%; border-collapse: collapse; }
+        .meta-item { text-align: center; padding: 0 10px; }
+        .meta-item .label { font-size: 8px; text-transform: uppercase; letter-spacing: 1.5px; color: #a0aec0; font-weight: 700; }
+        .meta-item .value { font-size: 12px; font-weight: 600; color: #1a202c; margin-top: 2px; }
+        .status-paid {
+            display: inline-block;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            padding: 3px 14px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        /* ─── SECTION TITLES ─── */
+        .section { margin-bottom: 22px; }
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
             color: #0e64a6;
-            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 6px;
+            margin-bottom: 12px;
         }
-        .info-table {
+        .section-title::before {
+            content: '●';
+            margin-right: 8px;
+            color: #0e64a6;
+        }
+
+        /* ─── INFO GRID ─── */
+        .info-grid { width: 100%; border-collapse: collapse; }
+        .info-grid td { padding: 4px 8px; vertical-align: top; }
+        .info-label { font-size: 8px; text-transform: uppercase; letter-spacing: 1.2px; color: #a0aec0; font-weight: 700; display: block; margin-bottom: 1px; }
+        .info-value { font-size: 12px; color: #1a202c; font-weight: 500; }
+
+        /* ─── CHARGES TABLE ─── */
+        .charges-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
+            margin-top: 10px;
+            border-radius: 8px;
+            overflow: hidden;
         }
-        .info-table th {
-            background: #f8f9fa;
-            padding: 12px;
+        .charges-table thead th {
+            background: #0a2540;
+            color: #fff;
+            padding: 10px 14px;
             text-align: left;
-            border-bottom: 2px solid #ddd;
-            color: #333;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
         }
-        .info-table td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
+        .charges-table thead th:last-child { text-align: right; }
+        .charges-table tbody td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 11px;
         }
-        .total-section {
-            width: 100%;
-            margin-top: 30px;
+        .charges-table tbody td:last-child { text-align: right; font-weight: 600; }
+        .charges-table tbody tr:nth-child(even) { background: #f9fafb; }
+
+        /* ─── TOTALS BOX ─── */
+        .totals-box {
+            width: 300px;
+            float: right;
+            margin-top: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
         }
-        .total-row {
-            font-size: 18px;
-            font-weight: bold;
-            color: #0e64a6;
-        }
-        .footer {
-            margin-top: 50px;
-            text-align: center;
-            font-size: 12px;
-            color: #888;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 5px 10px;
-            background: #28a745;
+        .totals-box table { width: 100%; border-collapse: collapse; }
+        .totals-box td { padding: 8px 14px; font-size: 11px; }
+        .totals-box .subtotal td { border-bottom: 1px solid #f0f0f0; }
+        .totals-box .discount td { color: #16a34a; }
+        .totals-box .grand-total td {
+            background: linear-gradient(135deg, #0a2540, #0e64a6);
             color: white;
-            border-radius: 3px;
-            font-weight: bold;
             font-size: 14px;
+            font-weight: 700;
+            padding: 12px 14px;
+        }
+        .clear { clear: both; }
+
+        /* ─── PAYMENT BOX ─── */
+        .payment-box {
+            background: #f0f7ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-top: 20px;
+        }
+
+        /* ─── FOOTER ─── */
+        .footer-bar {
+            background: #f7fafc;
+            border-top: 2px solid #e2e8f0;
+            padding: 20px 40px;
+            margin-top: 20px;
+        }
+        .footer-bar table { width: 100%; border-collapse: collapse; }
+        .footer-bar .support-info { font-size: 10px; color: #64748b; }
+        .footer-bar .support-info p { margin: 2px 0; }
+        .footer-bar .support-info a { color: #0e64a6; text-decoration: none; }
+        .legal-text { font-size: 8px; color: #a0aec0; margin-top: 10px; text-align: justify; line-height: 1.4; }
+        .qr-holder { text-align: right; }
+        .qr-holder img { width: 70px; height: 70px; }
+        .qr-holder p { font-size: 7px; color: #a0aec0; margin-top: 2px; }
+
+        .thank-you {
+            text-align: center;
+            padding: 12px;
+            font-size: 11px;
+            color: #64748b;
+            font-style: italic;
         }
     </style>
 </head>
 <body>
-    <div class="header">
+    <!-- ─── BRAND BAR ─── -->
+    <div class="brand-bar">
         <table>
             <tr>
-                <td class="company-info">
-                    <h1>C2C Journeys</h1>
-                    <p>Coast to Coast Journeys</p>
-                    <p>info@coasttocoastjourneys.com</p>
-                    <p>www.coasttocoastjourneys.com</p>
+                <td style="width: 60%;">
+                    <table><tr>
+                        <td class="brand-logo"><img src="{{logo_data_uri}}" alt="C2C Journeys"></td>
+                        <td style="vertical-align: middle; padding-left: 15px;">
+                            <span class="brand-name">C2C JOURNEYS</span>
+                            <span class="brand-tagline">Coast To Coast Journeys LLC</span>
+                        </td>
+                    </tr></table>
                 </td>
-                <td class="invoice-title">
-                    <h2>INVOICE</h2>
-                    <p><strong>Date:</strong> {{date}}</p>
-                    <p><strong>Invoice #:</strong> {{booking_id}}</p>
-                    <div style="margin-top: 10px;"><span class="status-badge">PAID</span></div>
+                <td class="invoice-badge">
+                    <h2>TAX INVOICE</h2>
+                    <div class="inv-number">{{invoice_number}}</div>
                 </td>
             </tr>
         </table>
     </div>
 
-    <table class="invoice-details">
-        <tr>
-            <td class="bill-to">
-                <h3>Billed To:</h3>
-                <p><strong>{{guest_name}}</strong></p>
-                <p>Email: {{guest_email}}</p>
-                <p>Phone: {{guest_phone}}</p>
-            </td>
-        </tr>
-    </table>
+    <div class="content">
+        <!-- ─── META STRIP ─── -->
+        <div class="meta-strip">
+            <table>
+                <tr>
+                    <td class="meta-item">
+                        <div class="label">Invoice Date</div>
+                        <div class="value">{{issue_date}}</div>
+                    </td>
+                    <td class="meta-item">
+                        <div class="label">Due Date</div>
+                        <div class="value">{{due_date}}</div>
+                    </td>
+                    <td class="meta-item">
+                        <div class="label">Booking Ref</div>
+                        <div class="value">{{booking_id}}</div>
+                    </td>
+                    <td class="meta-item">
+                        <div class="label">Transaction ID</div>
+                        <div class="value">{{transaction_id}}</div>
+                    </td>
+                    <td class="meta-item">
+                        <div class="label">Status</div>
+                        <div class="value"><span class="status-paid">{{payment_status}}</span></div>
+                    </td>
+                </tr>
+            </table>
+        </div>
 
-    <table class="info-table">
-        <thead>
+        <!-- ─── BILLED TO / SUPPLIER ─── -->
+        <div class="section">
+            <table class="info-grid">
+                <tr>
+                    <td style="width: 50%;">
+                        <div class="section-title">Billed To</div>
+                        <span class="info-label">Customer Name</span>
+                        <span class="info-value" style="font-size: 14px; font-weight: 700;">{{guest_name}}</span><br>
+                        <span class="info-label" style="margin-top: 6px;">Email</span>
+                        <span class="info-value">{{guest_email}}</span><br>
+                        <span class="info-label" style="margin-top: 4px;">Phone</span>
+                        <span class="info-value">{{guest_phone}}</span><br>
+                        <span class="info-label" style="margin-top: 4px;">Billing Address</span>
+                        <span class="info-value">{{billing_address}}</span>
+                    </td>
+                    <td style="width: 50%;">
+                        <div class="section-title">Issued By</div>
+                        <span class="info-value" style="font-size: 14px; font-weight: 700;">Coast To Coast Journeys LLC</span><br>
+                        <span class="info-value">1309 Coffeen Ave Ste 1200</span><br>
+                        <span class="info-value">Sheridan, WY 82801, USA</span><br>
+                        <span class="info-label" style="margin-top: 6px;">Phone</span>
+                        <span class="info-value">1 888 315 9768</span><br>
+                        <span class="info-label" style="margin-top: 4px;">Email</span>
+                        <span class="info-value">Info@coasttocoastjourneys.com</span><br>
+                        <span class="info-label" style="margin-top: 4px;">Website</span>
+                        <span class="info-value">www.c2cjourneys.com</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- ─── BOOKING DETAILS ─── -->
+        <div class="section">
+            <div class="section-title">Booking Details</div>
+            <table class="info-grid">
+                <tr>
+                    <td style="width: 50%;">
+                        <span class="info-label">Hotel</span>
+                        <span class="info-value" style="font-weight: 700;">{{hotel_name}}</span><br>
+                        <span class="info-label" style="margin-top: 4px;">Address</span>
+                        <span class="info-value">{{hotel_address}}</span>
+                    </td>
+                    <td style="width: 25%;">
+                        <span class="info-label">Check-in</span>
+                        <span class="info-value">{{checkin}}</span><br>
+                        <span class="info-label" style="margin-top: 4px;">Check-out</span>
+                        <span class="info-value">{{checkout}}</span>
+                    </td>
+                    <td style="width: 25%;">
+                        <span class="info-label">Duration</span>
+                        <span class="info-value">{{nights}} Nights</span><br>
+                        <span class="info-label" style="margin-top: 4px;">Guests</span>
+                        <span class="info-value">{{adults}} Adults, {{children}} Children</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="info-label" style="margin-top: 6px;">Room Type</span>
+                        <span class="info-value">{{room_type}}</span>
+                    </td>
+                    <td>
+                        <span class="info-label" style="margin-top: 6px;">Meal Plan</span>
+                        <span class="info-value">{{meal_plan}}</span>
+                    </td>
+                    <td>
+                        <span class="info-label" style="margin-top: 6px;">Confirmation #</span>
+                        <span class="info-value">{{supplier_ref}}</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- ─── CHARGES TABLE ─── -->
+        <div class="section">
+            <div class="section-title">Charges</div>
+            <table class="charges-table">
+                <thead>
+                    <tr>
+                        <th style="width: 55%;">Description</th>
+                        <th style="width: 15%; text-align: center;">Qty / Nights</th>
+                        <th style="width: 15%; text-align: right;">Rate</th>
+                        <th style="width: 15%; text-align: right;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>{{room_type}}</strong><br>
+                            <span style="font-size: 9px; color: #718096;">{{hotel_name}} · {{meal_plan}}</span>
+                        </td>
+                        <td style="text-align: center;">{{nights}}</td>
+                        <td style="text-align: right;">{{currency}} {{rate_per_night}}</td>
+                        <td style="text-align: right;">{{currency}} {{room_charges}}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Totals -->
+            <div class="totals-box">
+                <table>
+                    <tr class="subtotal"><td>Room Charges</td><td style="text-align: right;">{{currency}} {{room_charges}}</td></tr>
+                    <tr class="subtotal"><td>Taxes & Fees</td><td style="text-align: right;">{{currency}} {{taxes_fees}}</td></tr>
+                    <tr class="subtotal"><td>Service Fee</td><td style="text-align: right;">{{currency}} {{service_fee}}</td></tr>
+                    <tr class="subtotal discount"><td>Discount</td><td style="text-align: right;">- {{currency}} {{discount}}</td></tr>
+                    <tr class="grand-total"><td>TOTAL</td><td style="text-align: right;">{{currency}} {{total_amount}}</td></tr>
+                </table>
+            </div>
+            <div class="clear"></div>
+        </div>
+
+        <!-- ─── PAYMENT INFO ─── -->
+        <div class="payment-box">
+            <table class="info-grid">
+                <tr>
+                    <td style="width: 33%;">
+                        <span class="info-label">Payment Method</span>
+                        <span class="info-value">{{payment_method}}</span>
+                    </td>
+                    <td style="width: 34%;">
+                        <span class="info-label">Card / Source</span>
+                        <span class="info-value">{{card_type}}</span>
+                    </td>
+                    <td style="width: 33%;">
+                        <span class="info-label">Payment Date</span>
+                        <span class="info-value">{{paid_date}}</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- ─── TERMS ─── -->
+        <div class="section" style="margin-top: 18px;">
+            <div class="section-title">Terms & Conditions</div>
+            <p style="font-size: 9px; color: #718096; line-height: 1.5;">
+                1. This invoice is computer-generated and does not require a physical signature.<br>
+                2. Cancellations and refunds are subject to the hotel's cancellation policy.<br>
+                3. Taxes shown are estimated; actual taxes may vary based on local regulations.<br>
+                4. For disputes or queries, contact our support within 30 days of invoice date.
+            </p>
+        </div>
+    </div>
+
+    <!-- ─── FOOTER BAR ─── -->
+    <div class="footer-bar">
+        <table>
             <tr>
-                <th>Description</th>
-                <th>Dates</th>
-                <th>Qty</th>
-                <th style="text-align: right;">Amount</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>
-                    <strong>Hotel Booking: {{hotel_name}}</strong><br>
-                    <small>Destination: {{destination}}</small>
+                <td class="support-info" style="width: 75%;">
+                    <p><strong>24/7 Support:</strong> <a href="mailto:Info@coasttocoastjourneys.com">Info@coasttocoastjourneys.com</a> &nbsp;|&nbsp; Phone: 1 888 315 9768</p>
+                    <p><strong>Website:</strong> <a href="https://coasttocoastjourneys.com">www.coasttocoastjourneys.com</a></p>
+                    <p>Tax ID (EIN): {{ein}} &nbsp;|&nbsp; Sales Tax: {{sales_tax}}</p>
+                    <div class="legal-text">
+                        <strong>Disclaimer:</strong> Coast To Coast Journeys LLC acts as an intermediary agent for hotel suppliers. The company is not liable for the acts, omissions, or defaults of any supplier. All bookings are subject to the supplier's terms. This invoice constitutes acknowledgment of payment and does not serve as a contract for services.
+                    </div>
                 </td>
-                <td>{{checkin}} to {{checkout}}</td>
-                <td>1</td>
-                <td style="text-align: right;">{{currency}} {{amount}}</td>
+                <td class="qr-holder" style="width: 25%;">
+                    {{qr_code_html}}
+                    <p>Scan to verify booking</p>
+                </td>
             </tr>
-        </tbody>
-    </table>
-
-    <table class="total-section">
-        <tr>
-            <td style="text-align: right; width: 70%;"><strong>Subtotal:</strong></td>
-            <td style="text-align: right;">{{currency}} {{amount}}</td>
-        </tr>
-        <tr class="total-row">
-            <td style="text-align: right;"><strong>Total Paid:</strong></td>
-            <td style="text-align: right;">{{currency}} {{amount}}</td>
-        </tr>
-    </table>
-
-    <div class="footer">
-        <p>Thank you for choosing C2C Journeys!</p>
-        <p>If you have any questions about this invoice, please contact us at info@coasttocoastjourneys.com</p>
+        </table>
+        <div class="thank-you">Thank you for choosing C2C Journeys! ✈️ We wish you a wonderful stay.</div>
     </div>
 </body>
 </html>

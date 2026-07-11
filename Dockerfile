@@ -7,16 +7,12 @@ WORKDIR /app
 # Copy requirement file first to leverage Docker cache
 COPY backend/requirements.txt requirements.txt
 
-# Install system dependencies for WeasyPrint
-RUN apt-get update && apt-get install -y \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libpangoft2-1.0-0 \
-    && rm -rf /var/lib/apt/lists/*
-
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install gunicorn
+
+# Install Playwright and its dependencies
+RUN playwright install chromium --with-deps
 
 # Copy the rest of the application
 COPY . .

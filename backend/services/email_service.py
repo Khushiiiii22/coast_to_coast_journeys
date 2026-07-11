@@ -78,14 +78,14 @@ class EmailService:
         
         # 2. Try Brevo API if configured
         if self.api_key:
-            success = self._send_via_brevo(to_email, subject, body, html_body)
+            success = self._send_via_brevo(to_email, subject, body, html_body, attachments)
             if success:
                 return True
             print("⚠️ Brevo failed. Attempting Resend fallback...")
             
         # 3. Try Resend as last resort (test mode may redirect to owner)
         if self.resend_api_key:
-            return self._send_via_resend(to_email, subject, body, html_body)
+            return self._send_via_resend(to_email, subject, body, html_body, attachments)
             
         print("⚠️ No working email provider configured. Skipping email.")
         return False
@@ -153,9 +153,10 @@ class EmailService:
             print(f"❌ SMTP failure: {str(e)}")
             return False
 
-    def _send_via_brevo(self, to_email, subject, body, html_body=None):
+    def _send_via_brevo(self, to_email, subject, body, html_body=None, attachments=None):
         """Internal helper for Brevo API"""
         try:
+            import base64
             headers = {
                 "accept": "application/json",
                 "content-type": "application/json",
@@ -169,6 +170,16 @@ class EmailService:
             }
             if html_body:
                 payload["htmlContent"] = html_body
+                
+            if attachments:
+                brevo_attachments = []
+                for attachment in attachments:
+                    b64_content = base64.b64encode(attachment['content']).decode('utf-8')
+                    brevo_attachments.append({
+                        "name": attachment["filename"],
+                        "content": b64_content
+                    })
+                payload["attachment"] = brevo_attachments
             
             response = requests.post(self.BREVO_API_URL, json=payload, headers=headers, timeout=10)
             if response.status_code in [200, 201, 202]:
@@ -185,7 +196,7 @@ class EmailService:
         # Explicitly use the corporate email for owner notifications to ensure delivery
         return os.getenv('MAIL_DEFAULT_SENDER', 'info@coasttocoastjourneys.com')
 
-    def _send_via_resend(self, to_email, subject, body, html_body=None):
+    def _send_via_resend(self, to_email, subject, body, html_body=None, attachments=None):
         """Internal helper for Resend API.
         
         Strategy (for environments where the sending domain is not verified):
@@ -212,6 +223,18 @@ class EmailService:
             }
             if html_body:
                 payload["html"] = html_body
+                
+            if attachments:
+                import base64
+                resend_attachments = []
+                for attachment in attachments:
+                    b64_content = base64.b64encode(attachment['content']).decode('utf-8')
+                    # Resend uses standard base64 strings or raw lists of numbers. Base64 string is usually supported in content.
+                    resend_attachments.append({
+                        "filename": attachment["filename"],
+                        "content": list(attachment['content']) # Resend accepts list of numbers
+                    })
+                payload["attachments"] = resend_attachments
 
             response = requests.post(url, json=payload, headers=resend_headers, timeout=10)
 
@@ -539,7 +562,7 @@ Thank you for choosing C2C Journeys!
         # Generate PDF attachments
         attachments = []
         try:
-            from backend.services.pdf_service import PDFService
+            from services.pdf_service import PDFService
             from flask import current_app
             import os
             # Get templates dir securely, fallback to relative path
@@ -566,11 +589,11 @@ Thank you for choosing C2C Journeys!
         customer_email_sent = self.send_email(to_email, subject, body, html_body=invoice_html, attachments=attachments)
         
         # Send copy to owner
-        self._send_owner_notification(to_email, booking_details)
+        self._send_owner_notification(to_email, booking_details, attachments)
         
         return customer_email_sent
 
-    def _send_owner_notification(self, guest_email, booking_details):
+    def _send_owner_notification(self, guest_email, booking_details, attachments=None):
         """Send booking notification to owner/admin"""
         # Use verified owner email (works with Resend test mode)
         # This ensures the owner ALWAYS receives the admin notification directly
@@ -594,9 +617,7 @@ Thank you for choosing C2C Journeys!
         print(f"📧 Sending owner notification to {owner_email}")
         
         # Attach PDFs for owner too if they were generated
-        # We need to re-fetch attachments from locals if possible, but since it's a separate method, we pass them down.
-        # Actually, let's just send the HTML for the owner to save bandwidth, or we can update the signature.
-        self.send_email(owner_email, subject, "New booking received. See HTML version for details.", html_body=invoice_html)
+        self.send_email(owner_email, subject, "New booking received. See HTML version for details.", html_body=invoice_html, attachments=attachments)
 
     def _format_date(self, date_str):
         """Format date string nicely"""
