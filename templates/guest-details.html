@@ -512,7 +512,7 @@
 
             // Format with correct currency symbol using HotelUtils
             const originalCurrency = rate.currency || bookingData.currency || 'USD';
-            const currencySymbol = originalCurrency === 'USD' ? '$' : (originalCurrency === 'INR' ? '₹' : originalCurrency + ' ');
+            const currencySymbol = originalCurrency === 'USD' ? '$' : (originalCurrency === 'INR' ? '$' : originalCurrency + ' ');
 
             // --- PRICE DETAILS BREAKDOWN ---
             // Resolve taxes first — needed to compute pre-tax base for the rate row
@@ -551,7 +551,7 @@
             document.getElementById('totalAmount').innerHTML = HotelUtils.formatPrice(totalPayableNow, originalCurrency);
 
             // 5. Currency note
-            const currencyNames = { 'INR': 'INR (₹)', 'USD': 'USD ($)', 'EUR': 'EUR (€)', 'GBP': 'GBP (£)' };
+            const currencyNames = { 'INR': 'INR ($)', 'USD': 'USD ($)', 'EUR': 'EUR (€)', 'GBP': 'GBP (£)' };
             document.getElementById('currencyNote').textContent = `Rates are quoted in ${currencyNames[originalCurrency] || originalCurrency}.`;
 
             // Breakfast extra is already included in totalPayableNow — no separate line item

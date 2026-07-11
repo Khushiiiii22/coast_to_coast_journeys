@@ -160,7 +160,7 @@
             </div>
             <div class="detail-row">
                 <span>Amount Paid</span>
-                <strong id="amount">₹0</strong>
+                <strong id="amount">$0</strong>
             </div>
             <div class="detail-row">
                 <span>Status</span>
@@ -280,7 +280,7 @@
                             if (typeof HotelUtils !== 'undefined') {
                                 return HotelUtils.formatPrice(data.amount, originalCurrency);
                             }
-                            const symbols = { 'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'AED': 'AED ' };
+                            const symbols = { 'INR': '$', 'USD': '$', 'EUR': '€', 'GBP': '£', 'AED': 'AED ' };
                             const symbol = symbols[originalCurrency] || originalCurrency + ' ';
                             return `${symbol}${formatNumber(data.amount)}`;
                         })()}</strong>

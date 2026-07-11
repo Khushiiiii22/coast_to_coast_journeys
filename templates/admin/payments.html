@@ -238,28 +238,28 @@
                 <div class="quick-stats">
                     <div class="quick-stat">
                         <div class="quick-stat-label">Total Revenue (This Month)</div>
-                        <div class="quick-stat-value">₹12,45,500</div>
+                        <div class="quick-stat-value">$12,45,500</div>
                         <div class="quick-stat-trend trend-up">
                             <i class="fas fa-arrow-up"></i> 12% vs last month
                         </div>
                     </div>
                     <div class="quick-stat">
                         <div class="quick-stat-label">Pending Payments</div>
-                        <div class="quick-stat-value">₹85,200</div>
+                        <div class="quick-stat-value">$85,200</div>
                         <div class="quick-stat-trend text-muted">
                             <i class="fas fa-clock"></i> 15 transactions
                         </div>
                     </div>
                     <div class="quick-stat">
                         <div class="quick-stat-label">Refunds Processed</div>
-                        <div class="quick-stat-value">₹28,500</div>
+                        <div class="quick-stat-value">$28,500</div>
                         <div class="quick-stat-trend feature-stat">
                             <i class="fas fa-undo"></i> 4 transactions
                         </div>
                     </div>
                     <div class="quick-stat">
                         <div class="quick-stat-label">Net Profit</div>
-                        <div class="quick-stat-value">₹1,86,800</div>
+                        <div class="quick-stat-value">$1,86,800</div>
                         <div class="quick-stat-trend trend-up">
                             <i class="fas fa-arrow-up"></i> 8% vs last month
                         </div>
@@ -327,7 +327,7 @@
                                         <span class="booking-type">Hotel Booking</span>
                                     </div>
                                 </td>
-                                <td class="amount-cell amount-in">+₹45,500</td>
+                                <td class="amount-cell amount-in">+$45,500</td>
                                 <td>
                                     <div class="payment-method">
                                         <i class="fab fa-cc-visa fa-lg text-primary"></i>
@@ -361,7 +361,7 @@
                                         <span class="booking-type">Flight Booking</span>
                                     </div>
                                 </td>
-                                <td class="amount-cell amount-in">+₹12,800</td>
+                                <td class="amount-cell amount-in">+$12,800</td>
                                 <td>
                                     <div class="payment-method">
                                         <i class="fas fa-wallet fa-lg text-warning"></i>
@@ -395,7 +395,7 @@
                                         <span class="booking-type">Hotel Booking</span>
                                     </div>
                                 </td>
-                                <td class="amount-cell text-muted">₹78,000</td>
+                                <td class="amount-cell text-muted">$78,000</td>
                                 <td>
                                     <div class="payment-method">
                                         <i class="fab fa-cc-mastercard fa-lg text-danger"></i>
@@ -426,7 +426,7 @@
                                         <span class="booking-type">Hotel Booking</span>
                                     </div>
                                 </td>
-                                <td class="amount-cell amount-out">-₹28,500</td>
+                                <td class="amount-cell amount-out">-$28,500</td>
                                 <td>
                                     <div class="payment-method">
                                         <i class="fas fa-undo fa-lg text-info"></i>
@@ -494,7 +494,7 @@
                 const totalRevenue = captured.reduce((sum, p) => sum + (parseFloat(p.total_price) || 0), 0);
 
                 const statValues = document.querySelectorAll('.quick-stat-value');
-                if (statValues[0]) statValues[0].textContent = '₹' + totalRevenue.toLocaleString('en-IN');
+                if (statValues[0]) statValues[0].textContent = '$' + totalRevenue.toLocaleString('en-IN');
                 if (statValues[1]) statValues[1].textContent = total;
 
                 renderTable(allPayments);
@@ -539,7 +539,7 @@
                                 <span class="booking-type">Hotel Booking</span>
                             </div>
                         </td>
-                        <td class="amount-cell ${statusClass === 'confirmed' ? 'amount-in' : ''}">₹${amount.toLocaleString('en-IN')}</td>
+                        <td class="amount-cell ${statusClass === 'confirmed' ? 'amount-in' : ''}">$${amount.toLocaleString('en-IN')}</td>
                         <td>
                             <div class="payment-method">
                                 <i class="fas fa-credit-card text-primary"></i>

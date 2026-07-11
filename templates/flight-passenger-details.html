@@ -633,7 +633,7 @@
         }
 
         function formatPrice(amount, currency) {
-            const symbols = { 'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'AED': 'AED ' };
+            const symbols = { 'INR': '$', 'USD': '$', 'EUR': '€', 'GBP': '£', 'AED': 'AED ' };
             const sym = symbols[currency] || currency + ' ';
             const locale = currency === 'USD' ? 'en-IN' : 'en-US';
             return sym + Math.round(amount).toLocaleString(locale);

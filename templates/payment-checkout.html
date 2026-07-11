@@ -475,7 +475,7 @@
 
             // Determine currency
             const originalCurrency = rate.currency || bookingData.currency || 'USD';
-            const currencySymbol = originalCurrency === 'USD' ? '₹' : (originalCurrency === 'USD' ? '$' : originalCurrency + ' ');
+            const currencySymbol = originalCurrency === 'USD' ? '$' : (originalCurrency === 'USD' ? '$' : originalCurrency + ' ');
 
             // Helper: format price with currency
             function fmtPrice(amount) {
@@ -559,7 +559,7 @@
             }
 
             // 5. Currency note
-            const currencyNames = { 'INR': 'INR (₹)', 'USD': 'USD ($)', 'EUR': 'EUR (€)', 'GBP': 'GBP (£)' };
+            const currencyNames = { 'INR': 'INR ($)', 'USD': 'USD ($)', 'EUR': 'EUR (€)', 'GBP': 'GBP (£)' };
             document.getElementById('currencyNote').textContent = `Rates are quoted in ${currencyNames[originalCurrency] || originalCurrency}.`;
 
             // Hardening Notices: Last-Minute & Residency

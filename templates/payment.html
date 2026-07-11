@@ -900,7 +900,7 @@
             const nightsCount = parseInt(rate.nights || calculateNights(searchParams.checkin, searchParams.checkout) || 1);
             const roomsCount = parseInt(searchParams.rooms) || 1;
             const originalCurrency = rate.currency || bookingData.currency || 'USD';
-            const currencySymbol = originalCurrency === 'USD' ? '$' : (originalCurrency === 'INR' ? '₹' : originalCurrency + ' ');
+            const currencySymbol = originalCurrency === 'USD' ? '$' : (originalCurrency === 'INR' ? '$' : originalCurrency + ' ');
 
             // Identification of Prepaid vs Property-Payable
             const propertyFees = rate.property_payable_fees || [];
@@ -980,7 +980,7 @@
             document.getElementById('totalAmount').textContent = fmtPrice(totalPayableNow);
 
             // 5. Currency note
-            const currencyNames = { 'INR': 'INR (₹)', 'USD': 'USD ($)', 'EUR': 'EUR (€)', 'GBP': 'GBP (£)' };
+            const currencyNames = { 'INR': 'INR ($)', 'USD': 'USD ($)', 'EUR': 'EUR (€)', 'GBP': 'GBP (£)' };
             const displayCurrency = typeof HotelUtils !== 'undefined' ? HotelUtils.getSelectedCurrency() : originalCurrency;
             document.getElementById('currencyNote').textContent = `Rates are quoted in ${currencyNames[displayCurrency] || displayCurrency}.`;
 
@@ -1144,7 +1144,7 @@
                     if (data.error_code === 'PRICE_CHANGED') {
                         const newTotal = data.new_price_inr || Math.round(data.new_price * 86.5 * 1.15); // Fallback conversion
 
-                        document.getElementById('totalAmount').innerHTML = `₹${newTotal.toLocaleString('en-IN')}`;
+                        document.getElementById('totalAmount').innerHTML = `$${newTotal.toLocaleString('en-IN')}`;
 
                         const notification = document.createElement('div');
                         notification.innerHTML = `
@@ -1153,7 +1153,7 @@
                                     <i class="fas fa-exclamation-circle" style="font-size: 1.5rem;"></i>
                                     <div>
                                         <h4 style="margin: 0 0 5px; font-weight: 700;">Price Updated</h4>
-                                        <p style="margin: 0 0 15px; font-size: 0.9rem;">The hotel price has updated to ₹${newTotal.toLocaleString('en-IN')}. Please click 'Pay Now' again to accept and proceed.</p>
+                                        <p style="margin: 0 0 15px; font-size: 0.9rem;">The hotel price has updated to $${newTotal.toLocaleString('en-IN')}. Please click 'Pay Now' again to accept and proceed.</p>
                                     </div>
                                 </div>
                             </div>

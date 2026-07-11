@@ -714,7 +714,7 @@
                 </div>
                 <div class="booking-amount">
                     <span class="total-label">Total Amount</span>
-                    <span class="total-value">₹${(booking.total_amount || 0).toLocaleString('en-IN')}</span>
+                    <span class="total-value">$${(booking.total_amount || 0).toLocaleString('en-IN')}</span>
                 </div>
                 <div class="booking-actions">
                     <button class="btn btn-email" onclick="resendEmail('${booking.partner_order_id}')">

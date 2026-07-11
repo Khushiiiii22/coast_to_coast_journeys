@@ -666,7 +666,7 @@
                             <i class="fas fa-rupee-sign"></i>
                         </div>
                         <div>
-                            <div class="flight-stat-value" id="statRevenue">₹0</div>
+                            <div class="flight-stat-value" id="statRevenue">$0</div>
                             <div class="flight-stat-label">Revenue (This Month)</div>
                         </div>
                     </div>
@@ -847,19 +847,19 @@
                     <div class="info-grid">
                         <div class="info-item">
                             <div class="info-item-label">Base Fare</div>
-                            <div class="info-item-value">₹6,500</div>
+                            <div class="info-item-value">$6,500</div>
                         </div>
                         <div class="info-item">
                             <div class="info-item-label">Taxes & Fees</div>
-                            <div class="info-item-value">₹1,150</div>
+                            <div class="info-item-value">$1,150</div>
                         </div>
                         <div class="info-item">
                             <div class="info-item-label">Service Markup</div>
-                            <div class="info-item-value" style="color: #10b981;">₹850</div>
+                            <div class="info-item-value" style="color: #10b981;">$850</div>
                         </div>
                         <div class="info-item">
                             <div class="info-item-label">Total Amount</div>
-                            <div class="info-item-value" style="font-weight: 700; font-size: 1.1rem;">₹8,500</div>
+                            <div class="info-item-value" style="font-weight: 700; font-size: 1.1rem;">$8,500</div>
                         </div>
                         <div class="info-item">
                             <div class="info-item-label">Payment Method</div>
@@ -1118,13 +1118,13 @@
 
         // ── Helpers ──
         function formatCurrency(amount) {
-            return '₹' + Math.round(amount || 0).toLocaleString('en-IN');
+            return '$' + Math.round(amount || 0).toLocaleString('en-IN');
         }
         function formatRevenue(amount) {
-            if (amount >= 10000000) return '₹' + (amount / 10000000).toFixed(1) + 'Cr';
-            if (amount >= 100000) return '₹' + (amount / 100000).toFixed(1) + 'L';
-            if (amount >= 1000) return '₹' + (amount / 1000).toFixed(1) + 'K';
-            return '₹' + Math.round(amount);
+            if (amount >= 10000000) return '$' + (amount / 10000000).toFixed(1) + 'Cr';
+            if (amount >= 100000) return '$' + (amount / 100000).toFixed(1) + 'L';
+            if (amount >= 1000) return '$' + (amount / 1000).toFixed(1) + 'K';
+            return '$' + Math.round(amount);
         }
         function formatDate(dt) {
             if (!dt) return '--';
