@@ -276,7 +276,7 @@
                         <span>Amount Paid (Online)</span>
                         <strong style="color: #16a34a;">${(() => {
                             const bookingData = JSON.parse(sessionStorage.getItem('ctc_booking_data') || '{}');
-                            const originalCurrency = bookingData.rate?.currency || bookingData.currency || 'INR';
+                            const originalCurrency = bookingData.rate?.currency || bookingData.currency || 'USD';
                             if (typeof HotelUtils !== 'undefined') {
                                 return HotelUtils.formatPrice(data.amount, originalCurrency);
                             }

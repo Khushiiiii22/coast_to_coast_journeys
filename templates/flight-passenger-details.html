@@ -635,7 +635,7 @@
         function formatPrice(amount, currency) {
             const symbols = { 'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'AED': 'AED ' };
             const sym = symbols[currency] || currency + ' ';
-            const locale = currency === 'INR' ? 'en-IN' : 'en-US';
+            const locale = currency === 'USD' ? 'en-IN' : 'en-US';
             return sym + Math.round(amount).toLocaleString(locale);
         }
 
@@ -670,7 +670,7 @@
             const baseTotal  = parseFloat(flight.price || 0) * travelers;
             const surcharge  = Math.round(baseTotal * 0.15);
             const totalAmt   = baseTotal + surcharge;
-            const currency   = flight.currency || 'INR';
+            const currency   = flight.currency || 'USD';
 
             document.getElementById('farirBase').textContent     = formatPrice(baseTotal, currency);
             document.getElementById('fareSurcharge').textContent = formatPrice(surcharge, currency);

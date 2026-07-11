@@ -455,7 +455,7 @@ const HotelUtils = {
         const symbol = symbols[displayCurrency] || displayCurrency + ' ';
 
         // Use appropriate locale for formatting
-        const locale = displayCurrency === 'INR' ? 'en-IN' : 'en-US';
+        const locale = displayCurrency === 'USD' ? 'en-IN' : 'en-US';
         return `${symbol}${convertedAmount.toLocaleString(locale)}`;
     },
 

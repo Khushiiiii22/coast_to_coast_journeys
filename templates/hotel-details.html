@@ -567,7 +567,7 @@
 
             // Currency selector initialization
             const currencySelect = document.getElementById('currencySelect');
-            const savedCurrency = localStorage.getItem('ctc_currency') || 'INR';
+            const savedCurrency = localStorage.getItem('ctc_currency') || 'USD';
             if (currencySelect) {
                 currencySelect.value = savedCurrency;
                 currencySelect.addEventListener('change', function () {

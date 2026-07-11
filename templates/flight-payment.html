@@ -347,13 +347,13 @@
         }
 
         function formatPrice(amount, currency) {
-            currency = currency || 'INR';
+            currency = currency || 'USD';
             if (typeof HotelUtils !== 'undefined' && HotelUtils.formatPrice) {
                 return HotelUtils.formatPrice(amount, currency);
             }
             const symbols = { 'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'AED': 'AED ' };
             const sym = symbols[currency] || currency + ' ';
-            const locale = currency === 'INR' ? 'en-IN' : 'en-US';
+            const locale = currency === 'USD' ? 'en-IN' : 'en-US';
             return `${sym}${Math.round(amount).toLocaleString(locale)}`;
         }
 
@@ -368,7 +368,7 @@
                 return;
             }
 
-            const currency = flight.currency || 'INR';
+            const currency = flight.currency || 'USD';
             const totalPrice = parseFloat(flightBooking.totalPrice || flight.price || 0);
 
             // Passenger review
@@ -505,7 +505,7 @@
                             date: flight.date || '',
                             flightClass: flight.flightClass || flight.class || 'economy',
                             travelers: flight.travelers || 1,
-                            currency: flight.currency || 'INR',
+                            currency: flight.currency || 'USD',
                             departTime: flight.depart_time || flight.departTime || '',
                             arriveTime: flight.arrival_time || flight.arriveTime || '',
                             duration: flight.duration || '',
@@ -610,7 +610,7 @@
                             date: storedBooking.date || '',
                             flightClass: storedBooking.flightClass || 'economy',
                             travelers: storedBooking.travelers || 1,
-                            currency: storedBooking.currency || 'INR',
+                            currency: storedBooking.currency || 'USD',
                             departTime: storedBooking.departTime || '',
                             arriveTime: storedBooking.arriveTime || '',
                             duration: storedBooking.duration || '',
@@ -702,7 +702,7 @@
                         body: JSON.stringify({
                             booking_id: referenceId,
                             amount: flightBooking.total || 0,
-                            currency: flight.currency || 'INR',
+                            currency: flight.currency || 'USD',
                             flight: {
                                 flightId: flight.id || flight.flightId || '',
                                 airline: flight.airline?.name || flight.airline || '',
@@ -712,7 +712,7 @@
                                 date: flight.date || '',
                                 flightClass: flight.flightClass || flight.class || 'economy',
                                 travelers: flight.travelers || 1,
-                                currency: flight.currency || 'INR',
+                                currency: flight.currency || 'USD',
                                 departTime: flight.depart_time || flight.departTime || '',
                                 arriveTime: flight.arrival_time || flight.arriveTime || '',
                                 duration: flight.duration || '',
@@ -744,7 +744,7 @@
 
         function showConfirmation(paymentIdOrRef) {
             const referenceId = (paymentIdOrRef && paymentIdOrRef.startsWith('C2C-')) ? paymentIdOrRef : generateReferenceId();
-            const currency = flightBooking.currency || 'INR';
+            const currency = flightBooking.currency || 'USD';
 
             document.getElementById('confirmRefId').textContent = referenceId;
             document.getElementById('confirmFlightInfo').textContent = `${flightBooking.airline || ''} ${flightBooking.flightNumber || ''}`;

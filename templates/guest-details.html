@@ -511,8 +511,8 @@
                 : roomLabel;
 
             // Format with correct currency symbol using HotelUtils
-            const originalCurrency = rate.currency || bookingData.currency || 'INR';
-            const currencySymbol = originalCurrency === 'INR' ? '₹' : (originalCurrency === 'USD' ? '$' : originalCurrency + ' ');
+            const originalCurrency = rate.currency || bookingData.currency || 'USD';
+            const currencySymbol = originalCurrency === 'USD' ? '₹' : (originalCurrency === 'USD' ? '$' : originalCurrency + ' ');
 
             // --- PRICE DETAILS BREAKDOWN ---
             // Resolve taxes first — needed to compute pre-tax base for the rate row

@@ -474,8 +474,8 @@
             const roomsCount = parseInt(searchParams.rooms) || 1;
 
             // Determine currency
-            const originalCurrency = rate.currency || bookingData.currency || 'INR';
-            const currencySymbol = originalCurrency === 'INR' ? '₹' : (originalCurrency === 'USD' ? '$' : originalCurrency + ' ');
+            const originalCurrency = rate.currency || bookingData.currency || 'USD';
+            const currencySymbol = originalCurrency === 'USD' ? '₹' : (originalCurrency === 'USD' ? '$' : originalCurrency + ' ');
 
             // Helper: format price with currency
             function fmtPrice(amount) {

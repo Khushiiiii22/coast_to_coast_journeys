@@ -899,8 +899,8 @@
             // Price parsing
             const nightsCount = parseInt(rate.nights || calculateNights(searchParams.checkin, searchParams.checkout) || 1);
             const roomsCount = parseInt(searchParams.rooms) || 1;
-            const originalCurrency = rate.currency || bookingData.currency || 'INR';
-            const currencySymbol = originalCurrency === 'INR' ? '₹' : (originalCurrency === 'USD' ? '$' : originalCurrency + ' ');
+            const originalCurrency = rate.currency || bookingData.currency || 'USD';
+            const currencySymbol = originalCurrency === 'USD' ? '₹' : (originalCurrency === 'USD' ? '$' : originalCurrency + ' ');
 
             // Identification of Prepaid vs Property-Payable
             const propertyFees = rate.property_payable_fees || [];
@@ -1094,7 +1094,7 @@
                 checkin: bookingData.search_params.checkin,
                 checkout: bookingData.search_params.checkout,
                 total_amount: bookingData.total,
-                currency: bookingData.rate.currency || bookingData.currency || 'INR',
+                currency: bookingData.rate.currency || bookingData.currency || 'USD',
                 email: email,
                 phone: phone,
                 user_id: userId,
@@ -1199,7 +1199,7 @@
             });
 
             try {
-                const rateCurrency = bookingData.rate.currency || bookingData.currency || 'INR';
+                const rateCurrency = bookingData.rate.currency || bookingData.currency || 'USD';
                 let razorpayAmount = bookingData.total;
 
                 // If the booking is not in INR, convert it for Razorpay (which expects INR)
