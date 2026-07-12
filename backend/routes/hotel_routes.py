@@ -3303,8 +3303,8 @@ def create_booking():
             'customer_email': data.get('email'),
             'customer_phone': data.get('phone'),
             'special_requests': data.get('special_requests'),
-            'total_amount': float(etg_payment_amount) if etg_payment_amount else data.get('total_amount', 0),
-            'currency': etg_payment_currency or data.get('currency', 'USD'),
+            'total_amount': float(data.get('total_amount', 0)) if data.get('total_amount') else float(etg_payment_amount) if etg_payment_amount else 0,
+            'currency': data.get('currency', 'USD') if data.get('currency') else etg_payment_currency,
             'status': 'created',
             'booking_response': etg_result.get('data')
         }
@@ -3400,11 +3400,18 @@ def finish_booking():
         if len(phone) < 5:
             phone = phone.ljust(5, '0')  # Pad with zeros if too short
         
-        # Use the ETG-original amount and currency stored during /book
-        # These come from the /booking/form/ response, not the frontend's converted INR
-        etg_amount = booking_info.get('total_amount', 0)
-        etg_currency = booking_info.get('currency', 'USD')
+        # We MUST extract the ETG Net Amount from the booking_response to send to ETG API!
+        # The database 'total_amount' is now the Gross Customer Paid Amount.
+        booking_response = booking_info.get('booking_response', {})
+        etg_data = booking_response.get('data', booking_response) if isinstance(booking_response, dict) else {}
+        payment_types = etg_data.get('payment_types', [])
         
+        if payment_types and len(payment_types) > 0:
+            etg_amount = payment_types[0].get('amount', booking_info.get('total_amount', 0))
+            etg_currency = payment_types[0].get('currency_code', booking_info.get('currency', 'USD'))
+        else:
+            etg_amount = booking_info.get('total_amount', 0)
+            etg_currency = booking_info.get('currency', 'USD')
         print(f"📤 Finishing booking {partner_order_id}: amount={etg_amount} {etg_currency}, phone={phone}")
         
         result = etg_service.finish_booking(
