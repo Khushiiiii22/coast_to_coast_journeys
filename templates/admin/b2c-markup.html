@@ -152,13 +152,13 @@
                     <h3><i class="fas fa-eye" style="color:#3b82f6"></i> Preview Final Price</h3>
                     <div class="preview-row">
                         <div class="preview-field">
-                            <label>Original Price (₹)</label>
+                            <label>Original Price ($)</label>
                             <input type="number" id="previewPrice" value="5000" min="0">
                         </div>
                         <div class="preview-field">
                             <label>Markup Type</label>
                             <select id="previewType">
-                                <option value="flat">Flat (₹)</option>
+                                <option value="flat">Flat ($)</option>
                                 <option value="percentage">Percentage (%)</option>
                             </select>
                         </div>
@@ -175,22 +175,22 @@
                         <div class="preview-flow">
                             <div class="preview-step ps-original">
                                 <div class="step-label">Original Price</div>
-                                <div class="step-value" id="pvOriginal">₹5,000</div>
+                                <div class="step-value" id="pvOriginal">$5,000</div>
                             </div>
                             <div class="preview-arrow"><i class="fas fa-arrow-right"></i></div>
                             <div class="preview-step ps-markup">
                                 <div class="step-label">Markup</div>
-                                <div class="step-value" id="pvMarkup">+₹250</div>
+                                <div class="step-value" id="pvMarkup">+$250</div>
                             </div>
                             <div class="preview-arrow"><i class="fas fa-arrow-right"></i></div>
                             <div class="preview-step ps-final">
                                 <div class="step-label">Customer Pays</div>
-                                <div class="step-value" id="pvFinal">₹5,250</div>
+                                <div class="step-value" id="pvFinal">$5,250</div>
                             </div>
                             <div class="preview-arrow"><i class="fas fa-arrow-right"></i></div>
                             <div class="preview-step ps-profit">
                                 <div class="step-label">Profit</div>
-                                <div class="step-value" id="pvProfit">₹250</div>
+                                <div class="step-value" id="pvProfit">$250</div>
                             </div>
                         </div>
                     </div>
@@ -395,10 +395,10 @@
                     original_price: price, markup_type: type, markup_value: value
                 });
                 if (res.success) {
-                    document.getElementById('pvOriginal').textContent = '₹' + formatNum(res.original_price);
-                    document.getElementById('pvMarkup').textContent = '+₹' + formatNum(res.markup_amount);
-                    document.getElementById('pvFinal').textContent = '₹' + formatNum(res.final_price);
-                    document.getElementById('pvProfit').textContent = '₹' + formatNum(res.profit);
+                    document.getElementById('pvOriginal').textContent = '$' + formatNum(res.original_price);
+                    document.getElementById('pvMarkup').textContent = '+$' + formatNum(res.markup_amount);
+                    document.getElementById('pvFinal').textContent = '$' + formatNum(res.final_price);
+                    document.getElementById('pvProfit').textContent = '$' + formatNum(res.profit);
                     document.getElementById('previewResult').classList.add('active');
                 }
             } catch (e) {

@@ -1691,6 +1691,11 @@
         const returnDateDisplay = document.getElementById('returnDateDisplay');
         const returnDateWrapper = document.getElementById('returnDateContainer');
 
+        // Disable past dates on both date pickers
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (departDate) departDate.min = todayStr;
+        if (returnDate) returnDate.min = todayStr;
+
         if(departDate) departDate.addEventListener('change', function () {
             departDateDisplay.textContent = formatDate(this.value);
             if (returnDate) {
@@ -1733,12 +1738,20 @@
         const checkInDisplay = document.getElementById('checkInDisplay');
         const checkOutDisplay = document.getElementById('checkOutDisplay');
 
-        checkInDate.addEventListener('change', function () {
+        const hotelTodayStr = new Date().toISOString().split('T')[0];
+        if (checkInDate) checkInDate.min = hotelTodayStr;
+        if (checkOutDate) checkOutDate.min = hotelTodayStr;
+
+        if (checkInDate) checkInDate.addEventListener('change', function () {
             checkInDisplay.textContent = formatDate(this.value);
-            checkOutDate.min = this.value;
-            if (checkOutDate.value && checkOutDate.value <= this.value) {
-                checkOutDate.value = '';
-                checkOutDisplay.textContent = 'Select Date';
+            if (checkOutDate) {
+                let nextDay = new Date(this.value);
+                nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+                checkOutDate.min = nextDay.toISOString().split('T')[0];
+                if (checkOutDate.value && checkOutDate.value <= this.value) {
+                    checkOutDate.value = '';
+                    if (checkOutDisplay) checkOutDisplay.textContent = 'Select Date';
+                }
             }
         });
 

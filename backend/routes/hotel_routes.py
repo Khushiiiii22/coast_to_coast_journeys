@@ -915,15 +915,30 @@ def calculate_markup_amount(prepaid_amount, currency, target_currency, conversio
     if markup_rule.get('type') == 'percentage':
         return prepaid_amount * (markup_rule.get('value', 0) / 100)
     else:
-        # Flat amount is in INR
-        flat_inr = markup_rule.get('value', 0)
-        if target_currency == 'INR':
-            return flat_inr
+        # Flat amount is in Base Currency (USD)
+        flat_usd = markup_rule.get('value', 0)
+        if target_currency == 'USD':
+            return flat_usd
+        elif target_currency == 'INR':
+            usd_to_inr = conversion_rates.get('USD_TO_INR', 86.5) if conversion_rates else 86.5
+            return flat_usd * usd_to_inr
+        elif target_currency == 'EUR':
+            usd_to_inr = conversion_rates.get('USD_TO_INR', 86.5) if conversion_rates else 86.5
+            eur_to_inr = conversion_rates.get('EUR_TO_INR', 92.0) if conversion_rates else 92.0
+            usd_to_eur = usd_to_inr / (eur_to_inr if eur_to_inr > 0 else 92.0)
+            return flat_usd * usd_to_eur
+        elif target_currency == 'GBP':
+            usd_to_inr = conversion_rates.get('USD_TO_INR', 86.5) if conversion_rates else 86.5
+            gbp_to_inr = conversion_rates.get('GBP_TO_INR', 108.0) if conversion_rates else 108.0
+            usd_to_gbp = usd_to_inr / (gbp_to_inr if gbp_to_inr > 0 else 108.0)
+            return flat_usd * usd_to_gbp
+        elif target_currency == 'AED':
+            usd_to_inr = conversion_rates.get('USD_TO_INR', 86.5) if conversion_rates else 86.5
+            aed_to_inr = conversion_rates.get('AED_TO_INR', 23.5) if conversion_rates else 23.5
+            usd_to_aed = usd_to_inr / (aed_to_inr if aed_to_inr > 0 else 23.5)
+            return flat_usd * usd_to_aed
         else:
-            inr_to_target = conversion_rates.get(f'INR_TO_{target_currency}') if conversion_rates else None
-            if not inr_to_target:
-                inr_to_target = 0.0116 if target_currency == 'USD' else 0.011
-            return flat_inr * inr_to_target
+            return flat_usd
 
 
 
@@ -3291,6 +3306,9 @@ def create_booking():
             etg_payment_amount = payment_types[0].get('amount')
             etg_payment_currency = payment_types[0].get('currency_code')
         
+        frontend_amount = data.get('total_amount', 0)
+        etg_amount = float(etg_payment_amount) if etg_payment_amount else frontend_amount
+        
         booking_data = {
             'partner_order_id': partner_order_id,
             'user_id': data.get('user_id'),
@@ -3303,7 +3321,8 @@ def create_booking():
             'customer_email': data.get('email'),
             'customer_phone': data.get('phone'),
             'special_requests': data.get('special_requests'),
-            'total_amount': float(etg_payment_amount) if etg_payment_amount else data.get('total_amount', 0),
+            'base_price': etg_amount,
+            'total_amount': frontend_amount,
             'currency': etg_payment_currency or data.get('currency', 'USD'),
             'status': 'created',
             'booking_response': etg_result.get('data')

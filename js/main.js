@@ -766,11 +766,27 @@ function initDatePickers() {
         disableMobile: "true" // Use Flatpickr UI on mobile rather than native
     };
 
-    if (document.getElementById('departDate')) {
-        flatpickr("#departDate", commonConfig);
-    }
-    if (document.getElementById('returnDate')) {
-        flatpickr("#returnDate", commonConfig);
+    // Flight Linked Dates
+    const departInput = document.getElementById('departDate');
+    const returnInput = document.getElementById('returnDate');
+    
+    if (departInput && returnInput) {
+        const returnPicker = flatpickr("#returnDate", commonConfig);
+        const departPicker = flatpickr("#departDate", {
+            ...commonConfig,
+            onChange: function(selectedDates) {
+                if (selectedDates.length > 0) {
+                    returnPicker.set("minDate", selectedDates[0]);
+                    if (returnPicker.selectedDates.length > 0 && returnPicker.selectedDates[0] < selectedDates[0]) {
+                        returnPicker.setDate(selectedDates[0]);
+                        returnInput.dispatchEvent(new Event('change'));
+                    }
+                }
+            }
+        });
+    } else {
+        if (departInput) flatpickr("#departDate", commonConfig);
+        if (returnInput) flatpickr("#returnDate", commonConfig);
     }
 
     // Hotel Linked Dates
@@ -778,32 +794,30 @@ function initDatePickers() {
     const checkOutInput = document.getElementById('checkOutDate');
 
     if (checkInInput && checkOutInput) {
+        const checkOutPicker = flatpickr("#checkOutDate", commonConfig);
         const checkInPicker = flatpickr("#checkInDate", {
             ...commonConfig,
-            onChange: function(selectedDates, dateStr, instance) {
+            onChange: function(selectedDates) {
                 if (selectedDates.length > 0) {
                     const nextDay = new Date(selectedDates[0]);
                     nextDay.setDate(nextDay.getDate() + 1);
                     checkOutPicker.set("minDate", nextDay);
                     
-                    // If current checkout is <= new checkin, force it to next day
                     if (checkOutPicker.selectedDates.length > 0 && checkOutPicker.selectedDates[0] <= selectedDates[0]) {
                         checkOutPicker.setDate(nextDay);
-                        // Trigger change for UI displays
                         checkOutInput.dispatchEvent(new Event('change'));
                     }
                 }
             }
         });
-
-        const checkOutPicker = flatpickr("#checkOutDate", {
-            ...commonConfig,
-            minDate: (checkInPicker.selectedDates.length > 0) 
-                ? new Date(new Date(checkInPicker.selectedDates[0]).getTime() + 24*60*60*1000)
-                : "today"
-        });
+        
+        // Initialize checkOut minDate if checkIn already has a value
+        if (checkInPicker.selectedDates.length > 0) {
+            const nextDay = new Date(checkInPicker.selectedDates[0]);
+            nextDay.setDate(nextDay.getDate() + 1);
+            checkOutPicker.set("minDate", nextDay);
+        }
     } else {
-        // Fallback if only one exists (unlikely in current templates)
         if (checkInInput) flatpickr("#checkInDate", commonConfig);
         if (checkOutInput) flatpickr("#checkOutDate", commonConfig);
     }

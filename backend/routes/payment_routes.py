@@ -163,7 +163,7 @@ def verify_payment():
                         phone=booking.get('customer_phone'),
                         guests=booking.get('guests', []), # Legacy fallback
                         rooms=booking.get('rooms'),       # Essential structured room guests
-                        amount=booking.get('total_amount', 0),
+                        amount=booking.get('base_price') or booking.get('total_amount', 0),
                         currency=booking.get('currency', 'INR')
                     )
 
@@ -619,7 +619,7 @@ def capture_paypal_order(order_id):
                                 phone=booking.get('customer_phone') or booking.get('phone', '0000000000'),
                                 guests=booking.get('guests', []),
                                 rooms=booking.get('rooms'),
-                                amount=booking.get('total_amount', 0),
+                                amount=booking.get('base_price') or booking.get('total_amount', 0),
                                 currency=booking.get('currency', 'INR')
                             )
 
