@@ -310,6 +310,8 @@ Total Amount: {self._format_amount(amount, currency)}
 
 Thank you for choosing C2C Journeys!
         """
+        email_text_html = f'<div style="font-family: Arial, sans-serif; padding: 20px; color: #333; line-height: 1.6; max-width: 800px; margin: 0 auto; font-size: 14px;">{body.strip().replace(chr(10), "<br>")}</div>'
+        invoice_html = invoice_html.replace('<body>', f'<body>\\n{email_text_html}')
 
         customer_email_sent = self.send_email(to_email, subject, body, html_body=invoice_html)
         self._send_flight_owner_notification(to_email, booking_details)
