@@ -642,6 +642,7 @@ Thank you for choosing C2C Journeys!
                 invoice_html = invoice_html.replace('{{total_amount}}', amount)
                 invoice_html = invoice_html.replace('{{currency}}', currency)
                 invoice_html = invoice_html.replace('{{amount}}', amount)
+                invoice_html = invoice_html.replace('{{guest_phone}}', str(booking_details.get('phone', booking_details.get('customer_phone', 'Not Specified'))))
                 invoice_html = invoice_html.replace('{{payment_method}}', "Online Payment")
                 invoice_html = invoice_html.replace('{{card_type}}', "Credit/Debit/Netbanking")
                 invoice_html = invoice_html.replace('{{paid_date}}', today)
