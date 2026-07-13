@@ -915,15 +915,21 @@ def calculate_markup_amount(prepaid_amount, currency, target_currency, conversio
     if markup_rule.get('type') == 'percentage':
         return prepaid_amount * (markup_rule.get('value', 0) / 100)
     else:
-        # Flat amount is in INR
-        flat_inr = markup_rule.get('value', 0)
-        if target_currency == 'INR':
-            return flat_inr
+        # Flat amount is assumed to be in USD based on user requirements
+        flat_usd = markup_rule.get('value', 0)
+        if target_currency == 'USD':
+            return flat_usd
         else:
-            inr_to_target = conversion_rates.get(f'INR_TO_{target_currency}') if conversion_rates else None
-            if not inr_to_target:
-                inr_to_target = 0.0116 if target_currency == 'USD' else 0.011
-            return flat_inr * inr_to_target
+            usd_to_target = conversion_rates.get(f'USD_TO_{target_currency}') if conversion_rates else None
+            if not usd_to_target:
+                # Basic fallbacks if rate not found
+                if target_currency == 'INR':
+                    usd_to_target = 86.5
+                elif target_currency == 'EUR':
+                    usd_to_target = 0.92
+                else:
+                    usd_to_target = 1.0
+            return flat_usd * usd_to_target
 
 
 
