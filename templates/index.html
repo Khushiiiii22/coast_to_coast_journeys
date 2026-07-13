@@ -1692,18 +1692,20 @@
         const returnDateWrapper = document.getElementById('returnDateContainer');
 
         if(departDate) departDate.addEventListener('change', function () {
-            departDateDisplay.textContent = formatDate(this.value);
+            if (departDateDisplay) departDateDisplay.textContent = formatDate(this.value);
             if (returnDate) {
                 returnDate.min = this.value;
-                if (returnDate.value && returnDate.value < this.value) {
-                    returnDate.value = '';
-                    returnDateDisplay.textContent = 'Select Date';
+                if (!returnDate.value || returnDate.value < this.value) {
+                    const nextDay = new Date(this.value);
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    returnDate.value = nextDay.toISOString().split('T')[0];
+                    if (returnDateDisplay) returnDateDisplay.textContent = formatDate(returnDate.value);
                 }
             }
         });
 
         if(returnDate) returnDate.addEventListener('change', function () {
-            returnDateDisplay.textContent = formatDate(this.value);
+            if (returnDateDisplay) returnDateDisplay.textContent = formatDate(this.value);
         });
 
         // Trip type toggle
@@ -1734,16 +1736,20 @@
         const checkOutDisplay = document.getElementById('checkOutDisplay');
 
         checkInDate.addEventListener('change', function () {
-            checkInDisplay.textContent = formatDate(this.value);
+            if (checkInDisplay) checkInDisplay.textContent = formatDate(this.value);
             checkOutDate.min = this.value;
-            if (checkOutDate.value && checkOutDate.value <= this.value) {
-                checkOutDate.value = '';
-                checkOutDisplay.textContent = 'Select Date';
+            
+            // Auto-advance checkout date if it's invalid or empty
+            if (!checkOutDate.value || checkOutDate.value <= this.value) {
+                const nextDay = new Date(this.value);
+                nextDay.setDate(nextDay.getDate() + 1);
+                checkOutDate.value = nextDay.toISOString().split('T')[0];
+                if (checkOutDisplay) checkOutDisplay.textContent = formatDate(checkOutDate.value);
             }
         });
 
         checkOutDate.addEventListener('change', function () {
-            checkOutDisplay.textContent = formatDate(this.value);
+            if (checkOutDisplay) checkOutDisplay.textContent = formatDate(this.value);
         });
 
         // ========== Travelers Dropdown (Flights) ==========
