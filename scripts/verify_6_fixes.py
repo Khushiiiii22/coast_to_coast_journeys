@@ -212,7 +212,7 @@ def test_fix_5():
         with open(routes_path, 'r') as f:
             content = f.read()
         
-        old_domain_count = content.count('coasttocoastjourneys.com')
+        old_domain_count = content.count('c2cjourneys.com')
         print(f"  Old domain occurrences in hotel_routes.py: {old_domain_count}")
         
         assert config_ok, f"Config still has old domain: {default_email}"

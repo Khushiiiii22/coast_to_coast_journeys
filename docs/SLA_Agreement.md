@@ -194,9 +194,9 @@ This SLA does not apply to:
 
 | Role | Name | Contact |
 |------|------|---------|
-| Technical Lead | Priyesh Srivastava | priyesh@c2cjourneys.com |
-| Operations Lead | Khushi | khushi@c2cjourneys.com |
-| Support Email | - | sales@c2cjourneys.com |
+| Technical Lead | Priyesh Srivastava | priyesh@coasttocoastjourneys.com |
+| Operations Lead | Khushi | khushi@coasttocoastjourneys.com |
+| Support Email | - | sales@coasttocoastjourneys.com |
 | Emergency Hotline | - | +91 8237216173 |
 
 ---

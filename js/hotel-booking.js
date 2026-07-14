@@ -271,6 +271,8 @@ async function processRealBooking(guests, email, phone, specialRequests) {
             special_requests: specialRequests,
             hotel_id: hotel.id,
             hotel_name: hotel.name,
+            hotel_address: hotel.address || 'Not Specified',
+            city: hotel.city || hotel.region_name || 'Not Specified',
             checkin: searchParams.checkin,
             checkout: searchParams.checkout,
             total_amount: bookingData.total_amount,

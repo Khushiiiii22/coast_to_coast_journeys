@@ -19,7 +19,7 @@
 | **Project Type** | Full-Stack Enterprise Travel Booking Platform |
 | **Duration** | December 2025 - January 2026 |
 | **Status** | ✅ Completed & Deployed |
-| **Live URL** | https://coasttocoastjourneys.com (if deployed) |
+| **Live URL** | https://c2cjourneys.com (if deployed) |
 | **GitHub Repository** | https://github.com/Khushiiiii22/coast_to_coast_journeys |
 
 ---

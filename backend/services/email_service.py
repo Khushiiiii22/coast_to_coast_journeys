@@ -537,7 +537,7 @@ This is an automated notification from C2C Journeys.
                     <tr>
                         <td style="background-color: #f8fafc; padding: 20px 40px; text-align: center; border-top: 1px solid #e2e8f0;">
                             <p style="color: #94a3b8; font-size: 11px; margin: 0 0 4px;">© 2026 Coast to Coast Journeys. All Rights Reserved.</p>
-                            <p style="color: #cbd5e1; font-size: 10px; margin: 0;">coasttocoastjourneys.com</p>
+                            <p style="color: #cbd5e1; font-size: 10px; margin: 0;">c2cjourneys.com</p>
                         </td>
                     </tr>
                 </table>
@@ -946,7 +946,7 @@ Thank you for choosing C2C Journeys!
                                 © 2026 Coast to Coast Journeys. All Rights Reserved.
                             </p>
                             <p style="color: #cbd5e1; font-size: 10px; margin: 0;">
-                                coasttocoastjourneys.com
+                                c2cjourneys.com
                             </p>
                         </td>
                     </tr>
@@ -1116,7 +1116,7 @@ Thank you for choosing C2C Journeys!
     <tr>
         <td style="background:#0f172a; padding:20px; text-align:center;">
             <p style="color:#94a3b8; font-size:12px; margin:0;">© 2026 C2C Journeys. All Rights Reserved.</p>
-            <p style="color:#64748b; font-size:11px; margin:5px 0 0;">coasttocoastjourneys.com</p>
+            <p style="color:#64748b; font-size:11px; margin:5px 0 0;">c2cjourneys.com</p>
         </td>
     </tr>
 </table>

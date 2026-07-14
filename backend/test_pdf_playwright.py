@@ -33,7 +33,7 @@ def generate():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     logo_uri = get_logo_data_uri()
-    qr_html = create_qr_code('https://coasttocoastjourneys.com/verify/CTC-20260710-XYZ123')
+    qr_html = create_qr_code('https://c2cjourneys.com/verify/CTC-20260710-XYZ123')
 
     data = {
         'logo_data_uri': logo_uri,

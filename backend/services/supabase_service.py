@@ -19,40 +19,35 @@ class SupabaseService:
     
     @property
     def client(self):
-        """Lazy initialization of Supabase client with health check"""
+        """Lazy initialization of Supabase client with retry"""
         if self._client is None:
             from supabase import create_client
+            import time
             
-            # 1. Try with Service Role Key first
-            try:
-                self._client = create_client(
-                    Config.SUPABASE_URL,
-                    Config.SUPABASE_SERVICE_ROLE_KEY
-                )
-                self._client.table('hotel_bookings').select('id', count='exact').limit(1).execute()
-                self._is_healthy = True
-                self._health_checked = True
-                print("✅ Supabase successfully connected via Service Role key.")
-            except Exception as e:
-                print(f"⚠️  Supabase Service Role connection failed: {e}")
-                print("🔄 Attempting automatic self-healing fallback to Anon Key...")
-                
-                # 2. Fall back to Anon Key (Self-Healing Safeguard)
+            # Try to connect with Service Role Key (max 3 attempts)
+            for attempt in range(3):
                 try:
                     self._client = create_client(
                         Config.SUPABASE_URL,
-                        Config.SUPABASE_ANON_KEY
+                        Config.SUPABASE_SERVICE_ROLE_KEY
                     )
+                    # Verify connection
                     self._client.table('hotel_bookings').select('id', count='exact').limit(1).execute()
                     self._is_healthy = True
                     self._health_checked = True
-                    print("✅ Supabase successfully connected via self-healed Anon key!")
-                except Exception as he:
-                    print(f"❌ Supabase Anon Key health check also failed: {he}")
-                    self._client = None
-                    self._is_healthy = False
-                    self._health_checked = True
-                    
+                    print(f"✅ Supabase successfully connected via Service Role key on attempt {attempt+1}.")
+                    break
+                except Exception as e:
+                    print(f"⚠️ Supabase connection attempt {attempt+1} failed: {e}")
+                    if attempt < 2:
+                        print("🔄 Retrying in 2 seconds...")
+                        time.sleep(2)
+                    else:
+                        print("❌ Supabase connection failed after 3 attempts.")
+                        self._client = None
+                        self._is_healthy = False
+                        self._health_checked = True
+                        
         return self._client if self._is_healthy else None
     
     def _execute_query(self, operation):

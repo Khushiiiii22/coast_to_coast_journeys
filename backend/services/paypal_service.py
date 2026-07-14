@@ -133,8 +133,8 @@ class PayPalService:
                     }
                 }],
                 'application_context': {
-                    'return_url': return_url or 'https://coasttocoastjourneys.com/flight-payment.html',
-                    'cancel_url': cancel_url or 'https://coasttocoastjourneys.com/flight-payment.html'
+                    'return_url': return_url or 'https://c2cjourneys.com/flight-payment.html',
+                    'cancel_url': cancel_url or 'https://c2cjourneys.com/flight-payment.html'
                 }
             }
             

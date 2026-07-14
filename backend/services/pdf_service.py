@@ -80,7 +80,7 @@ class PDFService:
                 html_content = html_content.replace('{{customer_email}}', guest_email)
                 html_content = html_content.replace('{{billing_address}}', city)
                 html_content = html_content.replace('{{hotel_name}}', hotel_name)
-                html_content = html_content.replace('{{hotel_address}}', city)
+                html_content = html_content.replace('{{hotel_address}}', str(booking_data.get('hotel_address', city)))
                 html_content = html_content.replace('{{checkin}}', checkin)
                 html_content = html_content.replace('{{check-in}}', checkin)
                 html_content = html_content.replace('{{checkout}}', checkout)
