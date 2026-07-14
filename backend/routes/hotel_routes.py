@@ -3302,6 +3302,8 @@ def create_booking():
             'user_id': data.get('user_id'),
             'hotel_id': data.get('hotel_id', ''),
             'hotel_name': data.get('hotel_name', ''),
+            'hotel_address': data.get('hotel_address', ''),
+            'hotel_city': data.get('city', ''),
             'check_in': data.get('checkin'),
             'check_out': data.get('checkout'),
             'rooms': len(data.get('rooms')) if isinstance(data.get('rooms'), list) else 1,
@@ -3745,11 +3747,14 @@ def poll_booking_status():
                                     'booking_id': partner_order_id,
                                     'customer_name': customer_name,
                                     'customer_email': customer_email,
+                                    'customer_phone': booking_data.get('customer_phone') or booking_data.get('phone', ''),
                                     'hotel_name': booking_data.get('hotel_name', 'Hotel'),
+                                    'hotel_address': booking_data.get('hotel_address', ''),
+                                    'destination': booking_data.get('hotel_city', ''),
                                     'checkin': booking_data.get('check_in') or booking_data.get('checkin'),
                                     'checkout': booking_data.get('check_out') or booking_data.get('checkout'),
                                     'amount': booking_data.get('total_amount', 0),
-                                    'currency': booking_data.get('currency', 'INR'),
+                                    'currency': booking_data.get('currency', 'USD'),
                                     'room_name': booking_data.get('room_name', 'Standard Room')
                                 }
                                 email_sent = email_service.send_booking_confirmation(customer_email, email_details)
