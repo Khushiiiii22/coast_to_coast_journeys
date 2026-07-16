@@ -196,9 +196,9 @@
                 <nav>
                     <ul class="nav-menu" id="navMenu">
                         <li><a href="index.html" class="nav-link">Home</a></li>
-                        <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
                         <li><a href="hotel-booking.html" class="nav-link active">Hotels</a></li>
-                                                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                        <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
+                        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
                     </ul>
                 </nav>
 
@@ -786,8 +786,10 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <!-- Footer Image Background -->
-        <img src="../assets/images/hotel-footer-bg.jpg" alt="Footer Background" class="footer-img-bg">
+        <!-- Footer Video Background -->
+        <video autoplay loop muted playsinline class="footer-video-bg">
+            <source src="../assets/videos/hotel-footer-bg.mp4" type="video/mp4">
+        </video>
         <div class="footer-overlay"></div>
         
         <div class="container">
@@ -803,14 +805,15 @@
                         <i class="fas fa-shield-alt"></i>
                         "Your trust is our responsibility."
                     </div>
-                    <div class="payment-partners" style="margin-top: 15px;">
-                        <span style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #9ca3af;">Payment
-                            Partners:</span>
+                    <div class="payment-partners" style="margin-top: 20px;">
+                        <span style="display: block; margin-bottom: 12px; font-size: 0.95rem; color: #f8fafc; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">Payment Partners:</span>
                         <div style="display: flex; gap: 12px; align-items: center;">
-                            <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Razorpay"
-                                style="height: 20px; width: auto; filter: brightness(0) invert(1) opacity(0.8);">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
-                                style="height: 20px; width: auto; background: white; padding: 2px 5px; border-radius: 4px;">
+                            <div style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay" style="height: 18px; width: auto; display: block;">
+                            </div>
+                            <div style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style="height: 18px; width: auto; display: block;">
+                            </div>
                         </div>
                     </div>
                     <!-- Trustpilot Review Badge -->

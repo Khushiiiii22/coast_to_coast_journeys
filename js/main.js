@@ -1090,85 +1090,47 @@ function initEventListeners() {
 // Testimonial Slider Logic
 // ========================================
 function initTestimonialSlider() {
-    DOM.testimonialDots.forEach((dot, index) => {
+    const track = document.querySelector('.testimonials-track');
+    const dots = document.querySelectorAll('#testimonialDots .dot');
+    
+    if (!track || dots.length === 0) return;
+
+    // Optional: click dots to scroll to specific card
+    dots.forEach((dot, index) => {
         dot.addEventListener('click', () => {
-            goToTestimonialSlide(index);
-            resetTestimonialInterval();
+            const cards = track.querySelectorAll('.testimonial-card');
+            if (cards[index]) {
+                const cardLeft = cards[index].offsetLeft - track.offsetLeft;
+                track.scrollTo({ left: cardLeft, behavior: 'smooth' });
+            }
         });
     });
 
-    startTestimonialInterval();
-}
-
-function goToTestimonialSlide(index) {
-    const track = DOM.testimonialTrack;
-    const cards = track.querySelectorAll('.testimonial-card');
-    const totalSlides = cards.length;
-
-    // Determine overlapping/visible items based on screen width
-    // On mobile, 1 item visible (100% width). On desktop, 2 items (50% width).
-    // The previous CSS sets width: calc(50% - 32px) and margin 0 16px.
-    // Movement logic:
-    // If we move by 1 slide index, we should translate by 50% (desktop) or 100% (mobile).
-
-    // Check if mobile
-    const isMobile = window.innerWidth <= 768;
-    const slidePercentage = isMobile ? 100 : 50;
-
-    // Cap index
-    // For simple linear slider that stops at end:
-    let maxIndex = totalSlides - (isMobile ? 1 : 2);
-    if (maxIndex < 0) maxIndex = 0;
-
-    // Handle index bounds
-    if (index > maxIndex) {
-        if (!isMobile && index === maxIndex + 1) {
-            // Allow clicking the last dot to show the last view
-            index = maxIndex;
-        } else {
-            index = 0;
+    // Update dots on scroll
+    track.addEventListener('scroll', () => {
+        const cards = track.querySelectorAll('.testimonial-card');
+        let currentIndex = 0;
+        let minDiff = Infinity;
+        
+        cards.forEach((card, index) => {
+            const diff = Math.abs((card.offsetLeft - track.offsetLeft) - track.scrollLeft);
+            if (diff < minDiff) {
+                minDiff = diff;
+                currentIndex = index;
+            }
+        });
+        
+        dots.forEach(dot => dot.classList.remove('active'));
+        if (dots[currentIndex]) {
+            dots[currentIndex].classList.add('active');
         }
-    }
-
-    currentTestimonialSlide = index;
-
-    // Update Dots
-    DOM.testimonialDots.forEach(dot => dot.classList.remove('active'));
-    // Activate the dot corresponding to current slide, or nearest
-    if (DOM.testimonialDots[currentTestimonialSlide]) {
-        DOM.testimonialDots[currentTestimonialSlide].classList.add('active');
-    }
-
-    // Update Track
-    const translateX = -(currentTestimonialSlide * slidePercentage);
-    track.style.transform = `translateX(${translateX}%)`;
+    });
 }
 
-function nextTestimonialSlide() {
-    const track = DOM.testimonialTrack;
-    if (!track) return;
-    const cards = track.querySelectorAll('.testimonial-card');
-    const isMobile = window.innerWidth <= 768;
-    const totalSlides = cards.length;
-    let maxIndex = totalSlides - (isMobile ? 1 : 2);
-    if (maxIndex < 0) maxIndex = 0;
-
-    let nextIndex = currentTestimonialSlide + 1;
-    if (nextIndex > maxIndex) {
-        nextIndex = 0;
-    }
-    goToTestimonialSlide(nextIndex);
-}
-
-function startTestimonialInterval() {
-    if (testimonialInterval) clearInterval(testimonialInterval);
-    testimonialInterval = setInterval(nextTestimonialSlide, 5000);
-}
-
-function resetTestimonialInterval() {
-    clearInterval(testimonialInterval);
-    startTestimonialInterval();
-}
+function goToTestimonialSlide(index) {}
+function nextTestimonialSlide() {}
+function startTestimonialInterval() {}
+function resetTestimonialInterval() {}
 
 // ========================================
 // Scroll Reveal Animation

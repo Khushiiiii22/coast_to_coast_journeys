@@ -934,104 +934,125 @@ h6 {
     color: var(--text-secondary);
 }
 
-/* === Offers Section === */
-.offers-section {
-    padding: 80px 0;
-}
-
-.offers-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 28px;
-}
-
-.offer-card {
-    background: var(--white);
-    border-radius: var(--radius-lg);
+/* === Features & Rewards Section === */
+.featured-promo-card {
+    display: flex;
+    background: #fbf9f4; /* Light beige matching screenshot */
+    border-radius: var(--radius-xl);
     overflow: hidden;
-    box-shadow: var(--shadow);
-    transition: var(--transition-medium);
-    border: 1px solid var(--gray-100);
+    margin-bottom: 40px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-.offer-card:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-xl);
+.promo-content {
+    flex: 1;
+    padding: 60px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
 }
 
-.offer-image {
-    position: relative;
-    height: 200px;
-    overflow: hidden;
-}
-
-.offer-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: var(--transition-slow);
-}
-
-.offer-card:hover .offer-image img {
-    transform: scale(1.08);
-}
-
-.offer-badge {
-    position: absolute;
-    top: 16px;
-    left: 16px;
-    padding: 6px 14px;
-    background: var(--danger);
-    color: var(--white);
+.promo-badge {
+    background: #e31837;
+    color: white;
     font-size: 0.75rem;
-    font-weight: 600;
-    border-radius: var(--radius-full);
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-bottom: 16px;
     text-transform: uppercase;
 }
 
-.offer-content {
-    padding: 24px;
-}
-
-.offer-route {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 8px;
-}
-
-.offer-route .city {
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.offer-route i {
-    color: var(--primary);
-    font-size: 0.9rem;
-}
-
-.offer-meta {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-bottom: 16px;
-}
-
-.offer-price {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-}
-
-.offer-price .from {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-}
-
-.offer-price .amount {
-    font-size: 1.5rem;
+.promo-content h2 {
+    font-size: 2.2rem;
+    color: #111827;
+    margin-bottom: 12px;
     font-weight: 700;
-    color: var(--primary);
 }
+
+.promo-content p {
+    font-size: 1.1rem;
+    color: #374151;
+    margin-bottom: 24px;
+}
+
+.promo-btn {
+    background: #111827;
+    color: white;
+    border-radius: 30px;
+    padding: 12px 24px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.3s;
+}
+.promo-btn:hover { background: #000; }
+
+.promo-image {
+    flex: 1;
+    min-height: 300px;
+}
+
+.promo-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
+}
+
+.promo-features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.feature-box {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: var(--radius-lg);
+    padding: 32px 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.feature-box:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.feature-icon-img {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 20px;
+}
+
+.feature-icon-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.feature-box h3 {
+    font-size: 1.25rem;
+    color: #111827;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.feature-box p {
+    font-size: 0.95rem;
+    color: #4b5563;
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.feature-link {
+    font-size: 0.95rem;
+    color: var(--primary);
+    text-decoration: underline;
+    font-weight: 500;
+}
+.feature-link:hover { color: var(--primary-dark); }
 
 /* === Contact Section === */
 .contact-section {
@@ -3019,19 +3040,27 @@ h6 {
 
 .testimonials-slider {
     width: 100%;
-    overflow: hidden;
     margin-top: 48px;
     margin-bottom: 24px;
     position: relative;
     padding: 10px 0;
-    /* Add padding for shadow visibility */
 }
 
 .testimonials-track {
     display: flex;
-    transition: transform 0.5s ease-in-out;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
     width: 100%;
     gap: 0;
+    padding-bottom: 20px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.testimonials-track::-webkit-scrollbar {
+    display: none;
 }
 
 .testimonial-card {
@@ -3043,12 +3072,10 @@ h6 {
     display: flex;
     flex-direction: column;
     min-width: 50%;
-    /* Default: 2 cards view */
     flex-shrink: 0;
     margin: 0 16px;
-    /* Spacing between cards */
     width: calc(50% - 32px);
-    /* Adjust width based on margin */
+    scroll-snap-align: center;
 }
 
 .testimonial-card:hover {
@@ -3675,6 +3702,102 @@ input:disabled+.date-display-content {
 
 body {
     animation: pageFadeIn 0.4s ease-out;
+}
+
+/* =====================================================
+   MODAL CSS
+   ===================================================== */
+.reward-modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.reward-modal.show {
+    display: flex;
+    animation: fadeInModal 0.3s ease-out;
+}
+
+@keyframes fadeInModal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.reward-modal-content {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: var(--radius-xl);
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    text-align: center;
+    animation: slideUpModal 0.3s ease-out;
+}
+
+@keyframes slideUpModal {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.reward-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #999;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.reward-modal-close:hover {
+    color: #111;
+}
+
+/* =====================================================
+   RESPONSIVE FEATURES SECTION
+   ===================================================== */
+@media (max-width: 992px) {
+    .featured-promo-card {
+        flex-direction: column;
+    }
+    .promo-image {
+        min-height: 300px;
+    }
+    .promo-image img {
+        border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    }
+    .promo-features-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .promo-features-grid {
+        grid-template-columns: 1fr;
+    }
+    .promo-content {
+        padding: 40px 24px;
+    }
+    .promo-content h2 {
+        font-size: 1.8rem;
+    }
+    .testimonial-card {
+        min-width: 85%;
+        width: 85%;
+        margin: 0 8px;
+    }
 }
 
 /* =====================================================
