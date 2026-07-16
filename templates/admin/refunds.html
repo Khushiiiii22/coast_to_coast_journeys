@@ -175,8 +175,9 @@
                         <thead>
                             <tr>
                                 <th>Booking Date</th>
-                                <th>Hotel / Destination</th>
-                                <th>Check-In Date</th>
+                                <th>Type</th>
+                                <th>Item / Destination</th>
+                                <th>Check-In / Travel Date</th>
                                 <th>Passenger</th>
                                 <th>Agent Details</th>
                                 <th>Ref No</th>
@@ -220,18 +221,39 @@
 
                 tbody.innerHTML = allRefunds.map(r => {
                     const bookingDate = r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN') : '—';
-                    const checkIn = r.check_in ? new Date(r.check_in).toLocaleDateString('en-IN') : '—';
-                    const amount = parseFloat(r.total_price) || 0;
+                    
+                    let travelDate = '—';
+                    let itemName = '—';
+                    let typeBadge = '';
+                    
+                    if (r.booking_type === 'hotel') {
+                        typeBadge = '<span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-size:0.8rem;">Hotel</span>';
+                        travelDate = r.check_in ? new Date(r.check_in).toLocaleDateString('en-IN') : '—';
+                        itemName = r.hotel_name || '—';
+                    } else if (r.booking_type === 'flight') {
+                        typeBadge = '<span style="background:#fce7f3; color:#be185d; padding:2px 6px; border-radius:4px; font-size:0.8rem;">Flight</span>';
+                        travelDate = r.departure_date ? new Date(r.departure_date).toLocaleDateString('en-IN') : '—';
+                        itemName = r.airline || '—';
+                    }
+
+                    const amount = parseFloat(r.total_price || r.total_amount) || 0;
+                    
+                    let statusColor = r.status === 'refunded' ? '#10b981' : '#f59e0b';
+                    let statusText = r.status === 'refunded' ? 'REFUNDED' : 'PENDING';
 
                     return `
                         <tr>
                             <td>${bookingDate}</td>
-                            <td>${r.hotel_name || '—'}</td>
-                            <td>${checkIn}</td>
-                            <td>${r.guest_name || '—'}</td>
-                            <td>${r.guest_email || '—'}</td>
+                            <td>${typeBadge}</td>
+                            <td>${itemName}</td>
+                            <td>${travelDate}</td>
+                            <td>${r.guest_name || r.passenger_name || '—'}</td>
+                            <td>${r.guest_email || r.contact_email || '—'}</td>
                             <td>${r.booking_id || '—'}</td>
-                            <td>₹${amount.toLocaleString('en-IN')}</td>
+                            <td>
+                                <div>₹${amount.toLocaleString('en-IN')}</div>
+                                <div style="color: ${statusColor}; font-size: 0.8rem; font-weight: bold;">${statusText}</div>
+                            </td>
                             <td>
                                 <button class="btn-icon-mint" onclick="window.location.href='booking-details.html?id=${r.id}'" title="View">
                                     <i class="fas fa-eye"></i>

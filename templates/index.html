@@ -399,6 +399,9 @@
             <a href="about.html" class="sidebar-link">
                 <i class="fas fa-info-circle"></i> About Us
             </a>
+            <a href="flight-quote.html" class="sidebar-link">
+                <i class="fas fa-paper-plane"></i> Request a Quote
+            </a>
             <div class="sidebar-divider"></div>
             <a href="terms.html" class="sidebar-link">
                 <i class="fas fa-file-contract"></i> Terms & Conditions
@@ -507,7 +510,8 @@
                     <ul class="nav-menu" id="navMenu">
                         <li><a href="hotel-booking.html" class="nav-link">Hotels</a></li>
                         <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
-                                                <li><a href="#contact" class="nav-link">Contact</a></li>
+                        <li><a href="flight-quote.html" class="nav-link">Request Quote</a></li>
+                        <li><a href="#contact" class="nav-link">Contact</a></li>
                     </ul>
                 </nav>
 
@@ -1692,7 +1696,6 @@
         const returnDateWrapper = document.getElementById('returnDateContainer');
 
         // Disable past dates on both date pickers
-        const todayStr = new Date().toISOString().split('T')[0];
         if (departDate) departDate.min = todayStr;
         if (returnDate) returnDate.min = todayStr;
 

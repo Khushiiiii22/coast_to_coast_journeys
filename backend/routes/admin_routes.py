@@ -466,7 +466,20 @@ def get_booking_details(booking_id):
 
         booking = supabase.table('hotel_bookings').select('*').eq('id', booking_id).execute()
         
-        if not booking.data:
+        booking_data = None
+        if booking.data:
+            booking_data = booking.data[0]
+            booking_data['booking_type'] = 'hotel'
+        else:
+            try:
+                flight_booking = supabase.table('flight_bookings').select('*').eq('id', booking_id).execute()
+                if flight_booking.data:
+                    booking_data = flight_booking.data[0]
+                    booking_data['booking_type'] = 'flight'
+            except Exception:
+                pass
+                
+        if not booking_data:
             return jsonify({'success': False, 'error': 'Booking not found'}), 404
         
         # Get payment
@@ -483,7 +496,7 @@ def get_booking_details(booking_id):
         return jsonify({
             'success': True,
             'data': {
-                'booking': booking.data[0],
+                'booking': booking_data,
                 'payment': payment.data[0] if payment.data else None,
                 'cancellation': cancellation_data
             }
@@ -1709,18 +1722,79 @@ def get_refunds():
         page = int(request.args.get('page', 1))
         offset = (page - 1) * limit
         
-        result = supabase.table('hotel_bookings').select(
-            '*',
-            count='exact'
-        ).in_('status', ['cancelled', 'refunded']).order('created_at', desc=True).range(offset, offset + limit - 1).execute()
+        # Fetch hotel cancellations/refunds
+        hotel_res = supabase.table('hotel_bookings').select('*').in_('status', ['cancelled', 'refunded']).order('created_at', desc=True).execute()
         
+        # Format unified data
+        unified_data = []
+        for b in (hotel_res.data or []):
+            b['booking_type'] = 'hotel'
+            unified_data.append(b)
+            
+        # Try to fetch flight cancellations/refunds (if table exists)
+        try:
+            flight_res = supabase.table('flight_bookings').select('*').in_('status', ['cancelled', 'refunded']).order('created_at', desc=True).execute()
+            for b in (flight_res.data or []):
+                b['booking_type'] = 'flight'
+                unified_data.append(b)
+        except Exception:
+            pass # Ignore if flight_bookings doesn't exist
+            
+        # Sort unified data by created_at desc
+        unified_data.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+        
+        total = len(unified_data)
+        paginated_data = unified_data[offset:offset+limit]
+
         return jsonify({
             'success': True,
-            'data': result.data,
-            'total': result.count or 0,
+            'data': paginated_data,
+            'total': total,
             'page': page,
             'limit': limit
         }), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@admin_bp.route('/bookings/<booking_id>/refund', methods=['POST'])
+@require_auth()
+def process_refund(booking_id):
+    """Process a refund for a cancelled booking"""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        data = request.json or {}
+        refund_amount = data.get('refund_amount', 0)
+        
+        # Try updating hotel_bookings first
+        res = supabase.table('hotel_bookings').update({
+            'status': 'refunded'
+        }).eq('id', booking_id).execute()
+        
+        if not res.data:
+            # Try flight_bookings if not found in hotel_bookings
+            try:
+                res = supabase.table('flight_bookings').update({
+                    'status': 'refunded'
+                }).eq('id', booking_id).execute()
+            except Exception:
+                pass
+                
+        if not res.data:
+            return jsonify({'success': False, 'error': 'Booking not found'}), 404
+            
+        # Also update cancellation_requests if it exists
+        try:
+            supabase.table('cancellation_requests').update({
+                'refund_status': 'refunded',
+                'refund_amount': refund_amount
+            }).eq('booking_id', booking_id).execute()
+        except Exception:
+            pass
+
+        return jsonify({'success': True, 'message': 'Refund processed successfully'}), 200
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
