@@ -196,12 +196,13 @@ async function signInWithGoogle() {
         const currentOrigin = window.location.origin;
         let redirectUrl = currentOrigin + '/templates/auth.html';
 
+        const searchParams = window.location.search;
         // If we're accessing from templates folder structure (local development)
         if (window.location.pathname.includes('/templates/')) {
-            redirectUrl = currentOrigin + '/templates/auth.html';
+            redirectUrl = currentOrigin + '/templates/auth.html' + searchParams;
         } else {
             // Production or root-level access
-            redirectUrl = currentOrigin + '/auth.html';
+            redirectUrl = currentOrigin + '/auth.html' + searchParams;
         }
 
         console.log('Google OAuth redirect URL:', redirectUrl);

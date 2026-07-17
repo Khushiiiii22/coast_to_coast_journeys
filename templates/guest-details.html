@@ -725,6 +725,7 @@
             bookingData.guestName = firstName.value.trim() + ' ' + lastName.value.trim();
 
             sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
+            localStorage.setItem('ctc_booking_data_backup', JSON.stringify(bookingData));
 
             // Check if logged in before proceeding to payment
             if (typeof SupabaseDB !== 'undefined') {

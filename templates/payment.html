@@ -837,7 +837,14 @@
 
     <script>
         // Get booking details from sessionStorage
-        const bookingData = JSON.parse(sessionStorage.getItem('ctc_booking_data') || '{}');
+        const sessionDataStr = sessionStorage.getItem('ctc_booking_data');
+        const localBackupStr = localStorage.getItem('ctc_booking_data_backup');
+        let bookingData = JSON.parse(sessionDataStr || localBackupStr || '{}');
+        
+        // Restore to sessionStorage if it was lost
+        if (!sessionDataStr && localBackupStr) {
+            sessionStorage.setItem('ctc_booking_data', localBackupStr);
+        }
 
         // Populate booking details
         async function loadBookingDetails() {
