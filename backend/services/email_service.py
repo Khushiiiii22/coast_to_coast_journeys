@@ -49,7 +49,7 @@ class EmailService:
         self.resend_api_key = app.config.get('RESEND_API_KEY') or os.getenv('RESEND_API_KEY')
         
         # Verified sender
-        self.default_sender = os.getenv('MAIL_DEFAULT_SENDER', 'info@coasttocoastjourneys.com')
+        self.default_sender = 'info@coasttocoastjourneys.com'
         
         # Log configured providers
         providers = []
@@ -71,41 +71,50 @@ class EmailService:
         """Send an email using SMTP (primary) → Brevo → Resend (fallback)"""
         # 1. Try SMTP first — sends to ANY email address, no restrictions
         if self.smtp_server and self.smtp_username and self.smtp_password:
-            success = self._send_via_smtp(to_email, subject, body, html_body)
+            success = self._send_via_smtp(to_email, subject, body, html_body, attachments)
             if success:
                 return True
             print("⚠️ SMTP failed. Trying API fallbacks...")
         
         # 2. Try Brevo API if configured
         if self.api_key:
-            success = self._send_via_brevo(to_email, subject, body, html_body)
+            success = self._send_via_brevo(to_email, subject, body, html_body, attachments)
             if success:
                 return True
             print("⚠️ Brevo failed. Attempting Resend fallback...")
             
         # 3. Try Resend as last resort (test mode may redirect to owner)
         if self.resend_api_key:
-            return self._send_via_resend(to_email, subject, body, html_body)
+            return self._send_via_resend(to_email, subject, body, html_body, attachments)
             
         print("⚠️ No working email provider configured. Skipping email.")
         return False
 
-    def _send_via_smtp(self, to_email, subject, body, html_body=None):
+    def _send_via_smtp(self, to_email, subject, body, html_body=None, attachments=None):
         """Send email via SMTP (GoDaddy or any SMTP provider).
         Works with ANY recipient email — no test mode restrictions."""
         try:
+            from email.mime.application import MIMEApplication
             # Build the email message
-            msg = MIMEMultipart('alternative')
+            msg = MIMEMultipart('mixed')  # Changed from 'alternative' to 'mixed' for attachments
+            
             msg['From'] = f"{self.sender_name} <{self.default_sender}>"
             msg['To'] = to_email
             msg['Subject'] = subject
             
-            # Add plain text body
-            msg.attach(MIMEText(body, 'plain', 'utf-8'))
-            
-            # Add HTML body if available
+            # Create a multipart/alternative part for text/html
+            alt_part = MIMEMultipart('alternative')
+            alt_part.attach(MIMEText(body, 'plain', 'utf-8'))
             if html_body:
-                msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+                alt_part.attach(MIMEText(html_body, 'html', 'utf-8'))
+            msg.attach(alt_part)
+            
+            # Add attachments if any
+            if attachments:
+                for attachment in attachments:
+                    part = MIMEApplication(attachment['content'], Name=attachment['filename'])
+                    part['Content-Disposition'] = f'attachment; filename="{attachment["filename"]}"'
+                    msg.attach(part)
             
             # Connect and send
             if self.smtp_use_ssl:
@@ -144,9 +153,10 @@ class EmailService:
             print(f"❌ SMTP failure: {str(e)}")
             return False
 
-    def _send_via_brevo(self, to_email, subject, body, html_body=None):
+    def _send_via_brevo(self, to_email, subject, body, html_body=None, attachments=None):
         """Internal helper for Brevo API"""
         try:
+            import base64
             headers = {
                 "accept": "application/json",
                 "content-type": "application/json",
@@ -160,8 +170,30 @@ class EmailService:
             }
             if html_body:
                 payload["htmlContent"] = html_body
+                
+            if attachments:
+                brevo_attachments = []
+                for attachment in attachments:
+                    b64_content = base64.b64encode(attachment['content']).decode('utf-8')
+                    brevo_attachments.append({
+                        "name": attachment["filename"],
+                        "content": b64_content
+                    })
+                payload["attachment"] = brevo_attachments
             
-            response = requests.post(self.BREVO_API_URL, json=payload, headers=headers, timeout=10)
+            import socket
+            import requests.packages.urllib3.util.connection as urllib3_cn
+            
+            # Force IPv4 for Brevo because Brevo blocks IPv6 addresses
+            orig_gai_family = urllib3_cn.allowed_gai_family
+            def allowed_gai_family():
+                return socket.AF_INET
+            urllib3_cn.allowed_gai_family = allowed_gai_family
+            
+            try:
+                response = requests.post(self.BREVO_API_URL, json=payload, headers=headers, timeout=30)
+            finally:
+                urllib3_cn.allowed_gai_family = orig_gai_family
             if response.status_code in [200, 201, 202]:
                 print(f"✅ Email sent via Brevo to {to_email}")
                 return True
@@ -173,10 +205,9 @@ class EmailService:
 
     def _get_verified_owner_email(self):
         """Get the verified owner email for admin notifications."""
-        # Explicitly use the corporate email for owner notifications to ensure delivery
-        return os.getenv('MAIL_DEFAULT_SENDER', 'info@coasttocoastjourneys.com')
+        return 'info@coasttocoastjourneys.com'
 
-    def _send_via_resend(self, to_email, subject, body, html_body=None):
+    def _send_via_resend(self, to_email, subject, body, html_body=None, attachments=None):
         """Internal helper for Resend API.
         
         Strategy (for environments where the sending domain is not verified):
@@ -203,8 +234,20 @@ class EmailService:
             }
             if html_body:
                 payload["html"] = html_body
+                
+            if attachments:
+                import base64
+                resend_attachments = []
+                for attachment in attachments:
+                    b64_content = base64.b64encode(attachment['content']).decode('utf-8')
+                    # Resend uses standard base64 strings or raw lists of numbers. Base64 string is usually supported in content.
+                    resend_attachments.append({
+                        "filename": attachment["filename"],
+                        "content": list(attachment['content']) # Resend accepts list of numbers
+                    })
+                payload["attachments"] = resend_attachments
 
-            response = requests.post(url, json=payload, headers=resend_headers, timeout=10)
+            response = requests.post(url, json=payload, headers=resend_headers, timeout=30)
 
             if response.status_code in [200, 201]:
                 print(f"✅ Email sent via Resend to {to_email}")
@@ -230,7 +273,7 @@ class EmailService:
                 if "html" in payload:
                     payload["html"] = redirect_html_banner + payload["html"]
 
-                r2 = requests.post(url, json=payload, headers=resend_headers, timeout=10)
+                r2 = requests.post(url, json=payload, headers=resend_headers, timeout=30)
                 if r2.status_code in [200, 201]:
                     print(f"✅ Redirected email delivered to {owner_email} (was for {to_email})")
                     return True
@@ -266,6 +309,8 @@ Total Amount: {self._format_amount(amount, currency)}
 
 Thank you for choosing C2C Journeys!
         """
+        email_text_html = f'<div style="font-family: Arial, sans-serif; padding: 20px; color: #333; line-height: 1.6; max-width: 800px; margin: 0 auto; font-size: 14px;">{body.strip().replace(chr(10), "<br>")}</div>'
+        invoice_html = invoice_html.replace('<body>', f'<body>\\n{email_text_html}')
 
         customer_email_sent = self.send_email(to_email, subject, body, html_body=invoice_html)
         self._send_flight_owner_notification(to_email, booking_details)
@@ -492,7 +537,7 @@ This is an automated notification from C2C Journeys.
                     <tr>
                         <td style="background-color: #f8fafc; padding: 20px 40px; text-align: center; border-top: 1px solid #e2e8f0;">
                             <p style="color: #94a3b8; font-size: 11px; margin: 0 0 4px;">© 2026 Coast to Coast Journeys. All Rights Reserved.</p>
-                            <p style="color: #cbd5e1; font-size: 10px; margin: 0;">coasttocoastjourneys.com</p>
+                            <p style="color: #cbd5e1; font-size: 10px; margin: 0;">c2cjourneys.com</p>
                         </td>
                     </tr>
                 </table>
@@ -507,9 +552,6 @@ This is an automated notification from C2C Journeys.
         """Send booking confirmation with professional invoice"""
         hotel_name = booking_details.get('hotel_name', 'Hotel')
         subject = f"Booking Confirmed ✅ — {hotel_name} | C2C Journeys"
-        
-        # Generate professional HTML email
-        invoice_html = self._generate_invoice_html(booking_details)
         
         # Plain text fallback
         amount = booking_details.get('amount', 0)
@@ -527,15 +569,118 @@ Total Amount: {self._format_amount(amount, currency)}
 Thank you for choosing C2C Journeys!
         """
         
+        invoice_html = None
+        attachments = []
+        try:
+            from services.pdf_service import PDFService
+            import os
+            # Point to backend/templates where the beautiful PDF templates live
+            backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            templates_dir = os.path.join(backend_dir, 'templates')
+            pdf_service = PDFService(templates_dir)
+            
+            # 1. Generate Invoice HTML for the email body itself to make it highly professional
+            template_path = os.path.join(templates_dir, 'pdf', 'invoice.html')
+            if os.path.exists(template_path):
+                with open(template_path, 'r') as f:
+                    invoice_html = f.read()
+                    
+                from datetime import datetime
+                guest_name = str(booking_details.get('customer_name', booking_details.get('guest_name', 'Valued Customer')))
+                guest_email = str(booking_details.get('customer_email', booking_details.get('guest_email', '')))
+                booking_id = str(booking_details.get('booking_id', 'N/A'))
+                hotel_name = str(booking_details.get('hotel_name', 'N/A'))
+                amount = str(booking_details.get('amount', '0.00'))
+                currency = str(booking_details.get('currency', 'USD'))
+                city = str(booking_details.get('destination', booking_details.get('city', 'Not Specified')))
+                checkin = str(booking_details.get('checkin', 'N/A'))
+                checkout = str(booking_details.get('checkout', 'N/A'))
+                
+                # Calculate nights
+                try:
+                    d1 = datetime.strptime(checkin, "%Y-%m-%d")
+                    d2 = datetime.strptime(checkout, "%Y-%m-%d")
+                    nights = str(max(1, (d2 - d1).days))
+                except:
+                    nights = "1"
+                    
+                room_name = str(booking_details.get('room_name', 'Standard Room'))
+                today = datetime.now().strftime("%d %b %Y")
+                
+                # Use raw Github URL for the logo so it renders correctly in email clients like Gmail
+                logo_uri = "https://raw.githubusercontent.com/Khushiiiii22/coast_to_coast_journeys/main/assets/images/logo.jpg"
+                
+                invoice_html = invoice_html.replace('{{logo_data_uri}}', logo_uri)
+                invoice_html = invoice_html.replace('{{invoice_number}}', f"INV-{booking_id[-8:]}" if len(booking_id)>8 else booking_id)
+                invoice_html = invoice_html.replace('{{issue_date}}', today)
+                invoice_html = invoice_html.replace('{{due_date}}', today)
+                invoice_html = invoice_html.replace('{{booking_id}}', booking_id)
+                invoice_html = invoice_html.replace('{{transaction_id}}', booking_id)
+                invoice_html = invoice_html.replace('{{payment_status}}', "PAID")
+                invoice_html = invoice_html.replace('{{guest_name}}', guest_name)
+                invoice_html = invoice_html.replace('{{customer_name}}', guest_name)
+                invoice_html = invoice_html.replace('{{guest_email}}', guest_email)
+                invoice_html = invoice_html.replace('{{customer_email}}', guest_email)
+                invoice_html = invoice_html.replace('{{billing_address}}', city)
+                invoice_html = invoice_html.replace('{{hotel_name}}', hotel_name)
+                invoice_html = invoice_html.replace('{{hotel_address}}', city)
+                invoice_html = invoice_html.replace('{{checkin}}', checkin)
+                invoice_html = invoice_html.replace('{{check-in}}', checkin)
+                invoice_html = invoice_html.replace('{{checkout}}', checkout)
+                invoice_html = invoice_html.replace('{{check-out}}', checkout)
+                invoice_html = invoice_html.replace('{{nights}}', nights)
+                invoice_html = invoice_html.replace('{{adults}}', str(booking_details.get('adults', '2')))
+                invoice_html = invoice_html.replace('{{children}}', "0")
+                invoice_html = invoice_html.replace('{{room_type}}', room_name)
+                invoice_html = invoice_html.replace('{{meal_plan}}', "Room Only")
+                invoice_html = invoice_html.replace('{{supplier_ref}}', "N/A")
+                invoice_html = invoice_html.replace('{{rate_per_night}}', "See Total")
+                invoice_html = invoice_html.replace('{{room_charges}}', amount)
+                invoice_html = invoice_html.replace('{{taxes_fees}}', "0.00")
+                invoice_html = invoice_html.replace('{{service_fee}}', "0.00")
+                invoice_html = invoice_html.replace('{{discount}}', "0.00")
+                invoice_html = invoice_html.replace('{{total_amount}}', amount)
+                invoice_html = invoice_html.replace('{{currency}}', currency)
+                invoice_html = invoice_html.replace('{{amount}}', amount)
+                invoice_html = invoice_html.replace('{{guest_phone}}', str(booking_details.get('phone', booking_details.get('customer_phone', 'Not Specified'))))
+                invoice_html = invoice_html.replace('{{payment_method}}', "Online Payment")
+                invoice_html = invoice_html.replace('{{card_type}}', "Credit/Debit/Netbanking")
+                invoice_html = invoice_html.replace('{{paid_date}}', today)
+                invoice_html = invoice_html.replace('{{ein}}', "N/A")
+                invoice_html = invoice_html.replace('{{sales_tax}}', "Included")
+                invoice_html = invoice_html.replace('{{qr_code_html}}', "")
+                invoice_html = invoice_html.replace('{{date}}', today)
+                invoice_html = invoice_html.replace('{{city}}', city)
+                invoice_html = invoice_html.replace('{{guest_phone}}', str(booking_details.get('guest_phone', '')))
+            else:
+                invoice_html = self._generate_invoice_html(booking_details) # Fallback to AI gen
+            
+            # 2. Generate PDF attachments
+            invoice_pdf = pdf_service.generate_invoice(booking_details)
+            attachments.append({
+                'filename': f"Invoice_{booking_details.get('booking_id', 'Booking')}.pdf",
+                'content': invoice_pdf
+            })
+            
+            ticket_pdf = pdf_service.generate_ticket(booking_details)
+            attachments.append({
+                'filename': f"Voucher_{booking_details.get('booking_id', 'Booking')}.pdf",
+                'content': ticket_pdf
+            })
+        except Exception as e:
+            print(f"⚠️ Failed to generate PDFs/HTML: {e}")
+            if not invoice_html:
+                invoice_html = self._generate_invoice_html(booking_details)
+
         # Send email to customer
-        customer_email_sent = self.send_email(to_email, subject, body, html_body=invoice_html)
+        customer_email_sent = self.send_email(to_email, subject, body, html_body=invoice_html, attachments=attachments)
         
         # Send copy to owner
-        self._send_owner_notification(to_email, booking_details)
+        self._send_owner_notification(to_email, booking_details, attachments)
         
         return customer_email_sent
 
-    def _send_owner_notification(self, guest_email, booking_details):
+    def _send_owner_notification(self, guest_email, booking_details, attachments=None):
         """Send booking notification to owner/admin"""
         # Use verified owner email (works with Resend test mode)
         # This ensures the owner ALWAYS receives the admin notification directly
@@ -557,7 +702,9 @@ Thank you for choosing C2C Journeys!
         invoice_html = admin_header + invoice_html
 
         print(f"📧 Sending owner notification to {owner_email}")
-        self.send_email(owner_email, subject, "New booking received. See HTML version for details.", html_body=invoice_html)
+        
+        # Attach PDFs for owner too if they were generated
+        self.send_email(owner_email, subject, "New booking received. See HTML version for details.", html_body=invoice_html, attachments=attachments)
 
     def _format_date(self, date_str):
         """Format date string nicely"""
@@ -799,7 +946,7 @@ Thank you for choosing C2C Journeys!
                                 © 2026 Coast to Coast Journeys. All Rights Reserved.
                             </p>
                             <p style="color: #cbd5e1; font-size: 10px; margin: 0;">
-                                coasttocoastjourneys.com
+                                c2cjourneys.com
                             </p>
                         </td>
                     </tr>
@@ -814,5 +961,177 @@ Thank you for choosing C2C Journeys!
 """
 
 
+    # ═══════════════════════════════════════════════════
+    # FLIGHT ENQUIRY EMAILS
+    # ═══════════════════════════════════════════════════
+
+    def send_flight_enquiry_admin_notification(self, details):
+        """Send a professional HTML email to admin when a new flight enquiry is received"""
+        admin_email = 'info@coasttocoastjourneys.com'
+        
+        subject = "✈️ New Flight Quote Request"
+        
+        passengers = []
+        if details.get('adults', 0) > 0:
+            passengers.append(f"{details['adults']} Adult(s)")
+        if details.get('children', 0) > 0:
+            passengers.append(f"{details['children']} Child(ren)")
+        if details.get('infants', 0) > 0:
+            passengers.append(f"{details['infants']} Infant(s)")
+        passenger_str = ', '.join(passengers) if passengers else '1 Adult'
+
+        return_row = ''
+        if details.get('return_date'):
+            return_row = f"""
+            <tr>
+                <td style="padding: 10px 15px; color: #64748b; font-size: 14px; border-bottom: 1px solid #f1f5f9;">Return Date</td>
+                <td style="padding: 10px 15px; font-weight: 600; color: #1e293b; font-size: 14px; border-bottom: 1px solid #f1f5f9;">{details.get('return_date', 'N/A')}</td>
+            </tr>"""
+        
+        html_body = f"""
+<!DOCTYPE html>
+<html>
+<body style="margin:0; padding:0; font-family: 'Segoe UI', Arial, sans-serif; background:#f1f5f9;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:20px auto; background:white; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+    <tr>
+        <td style="background:linear-gradient(135deg, #0e64a6, #1a365d); padding:30px; text-align:center;">
+            <h1 style="color:white; margin:0; font-size:24px;">✈️ New Flight Quote Request</h1>
+            <p style="color:rgba(255,255,255,0.8); margin:8px 0 0; font-size:14px;">A customer has submitted a flight enquiry</p>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:25px;">
+            <h2 style="color:#0e64a6; font-size:16px; margin:0 0 15px; border-bottom:2px solid #e2e8f0; padding-bottom:8px;">👤 Customer Details</h2>
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+                <tr>
+                    <td style="padding:10px 15px; color:#64748b; font-size:14px; border-bottom:1px solid #f1f5f9;">Name</td>
+                    <td style="padding:10px 15px; font-weight:600; color:#1e293b; font-size:14px; border-bottom:1px solid #f1f5f9;">{details.get('full_name', 'N/A')}</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 15px; color:#64748b; font-size:14px; border-bottom:1px solid #f1f5f9;">Email</td>
+                    <td style="padding:10px 15px; font-weight:600; color:#1e293b; font-size:14px; border-bottom:1px solid #f1f5f9;">{details.get('email', 'N/A')}</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 15px; color:#64748b; font-size:14px; border-bottom:1px solid #f1f5f9;">Phone</td>
+                    <td style="padding:10px 15px; font-weight:600; color:#1e293b; font-size:14px; border-bottom:1px solid #f1f5f9;">{details.get('country_code', '')} {details.get('phone', 'N/A')}</td>
+                </tr>
+            </table>
+            
+            <h2 style="color:#0e64a6; font-size:16px; margin:0 0 15px; border-bottom:2px solid #e2e8f0; padding-bottom:8px;">✈️ Flight Details</h2>
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+                <tr>
+                    <td style="padding:10px 15px; color:#64748b; font-size:14px; border-bottom:1px solid #f1f5f9;">Travel Class</td>
+                    <td style="padding:10px 15px; font-weight:600; color:#1e293b; font-size:14px; border-bottom:1px solid #f1f5f9;">{details.get('travel_class', 'N/A')}</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 15px; color:#64748b; font-size:14px; border-bottom:1px solid #f1f5f9;">Trip Type</td>
+                    <td style="padding:10px 15px; font-weight:600; color:#1e293b; font-size:14px; border-bottom:1px solid #f1f5f9;">{details.get('trip_type', 'N/A')}</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 15px; color:#64748b; font-size:14px; border-bottom:1px solid #f1f5f9;">From</td>
+                    <td style="padding:10px 15px; font-weight:600; color:#1e293b; font-size:14px; border-bottom:1px solid #f1f5f9;">{details.get('from_airport', '')} ({details.get('from_airport_code', '')})</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 15px; color:#64748b; font-size:14px; border-bottom:1px solid #f1f5f9;">To</td>
+                    <td style="padding:10px 15px; font-weight:600; color:#1e293b; font-size:14px; border-bottom:1px solid #f1f5f9;">{details.get('to_airport', '')} ({details.get('to_airport_code', '')})</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 15px; color:#64748b; font-size:14px; border-bottom:1px solid #f1f5f9;">Departure Date</td>
+                    <td style="padding:10px 15px; font-weight:600; color:#1e293b; font-size:14px; border-bottom:1px solid #f1f5f9;">{details.get('departure_date', 'N/A')}</td>
+                </tr>
+                {return_row}
+                <tr>
+                    <td style="padding:10px 15px; color:#64748b; font-size:14px; border-bottom:1px solid #f1f5f9;">Passengers</td>
+                    <td style="padding:10px 15px; font-weight:600; color:#1e293b; font-size:14px; border-bottom:1px solid #f1f5f9;">{passenger_str}</td>
+                </tr>
+            </table>
+            
+            <p style="color:#64748b; font-size:12px; text-align:center; margin-top:20px;">
+                Submitted on {datetime.now().strftime('%d %B %Y at %I:%M %p')}
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td style="background:#0f172a; padding:20px; text-align:center;">
+            <p style="color:#94a3b8; font-size:12px; margin:0;">C2C Journeys — Admin Notification</p>
+        </td>
+    </tr>
+</table>
+</body>
+</html>"""
+
+        text_body = f"New Flight Quote Request from {details.get('full_name', 'N/A')} — {details.get('from_airport_code', '')} to {details.get('to_airport_code', '')}"
+        
+        try:
+            return self.send_email(admin_email, subject, text_body, html_body)
+        except Exception as e:
+            print(f"⚠️ Failed to send admin flight enquiry email: {e}")
+            return False
+
+    def send_flight_enquiry_customer_confirmation(self, to_email, details):
+        """Send confirmation email to customer after flight enquiry submission"""
+        subject = "We have received your Flight Request — C2C Journeys"
+        
+        customer_name = details.get('full_name', 'Valued Customer')
+        
+        html_body = f"""
+<!DOCTYPE html>
+<html>
+<body style="margin:0; padding:0; font-family: 'Segoe UI', Arial, sans-serif; background:#f1f5f9;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:20px auto; background:white; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+    <tr>
+        <td style="background:linear-gradient(135deg, #0e64a6, #1a365d); padding:30px; text-align:center;">
+            <h1 style="color:white; margin:0; font-size:24px;">✈️ C2C Journeys</h1>
+            <p style="color:rgba(255,255,255,0.8); margin:8px 0 0; font-size:14px;">Flight Enquiry Confirmation</p>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:30px;">
+            <p style="font-size:16px; color:#1e293b; margin:0 0 15px;">Dear <strong>{customer_name}</strong>,</p>
+            
+            <p style="font-size:14px; color:#475569; line-height:1.8; margin:0 0 15px;">
+                Thank you for choosing <strong>C2C Journeys</strong>.
+            </p>
+            
+            <p style="font-size:14px; color:#475569; line-height:1.8; margin:0 0 15px;">
+                We have successfully received your flight enquiry for <strong>{details.get('from_airport_code', '')} → {details.get('to_airport_code', '')}</strong> on <strong>{details.get('departure_date', '')}</strong>.
+            </p>
+            
+            <div style="background:#f8fafc; border-radius:10px; padding:20px; margin:20px 0; border-left:4px solid #0e64a6;">
+                <p style="font-size:14px; color:#475569; line-height:1.8; margin:0;">
+                    One of our travel executives will review your request and contact you shortly with the <strong>best available fare</strong>.
+                </p>
+            </div>
+            
+            <p style="font-size:14px; color:#475569; line-height:1.8; margin:0 0 15px;">
+                No further action is required from your side.
+            </p>
+            
+            <p style="font-size:14px; color:#475569; line-height:1.8; margin:20px 0 0;">
+                Thank you for choosing us.<br>
+                <strong>Team C2C Journeys</strong>
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td style="background:#0f172a; padding:20px; text-align:center;">
+            <p style="color:#94a3b8; font-size:12px; margin:0;">© 2026 C2C Journeys. All Rights Reserved.</p>
+            <p style="color:#64748b; font-size:11px; margin:5px 0 0;">c2cjourneys.com</p>
+        </td>
+    </tr>
+</table>
+</body>
+</html>"""
+
+        text_body = f"Dear {customer_name}, Thank you for choosing C2C Journeys. We have received your flight enquiry. Our team will contact you shortly."
+        
+        try:
+            return self.send_email(to_email, subject, text_body, html_body)
+        except Exception as e:
+            print(f"⚠️ Failed to send customer flight enquiry email: {e}")
+            return False
+
+
 # Singleton
 email_service = EmailService()
+
