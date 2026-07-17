@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/main.css?v=2.0">
 
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -505,9 +505,10 @@
 
                 <nav>
                     <ul class="nav-menu" id="navMenu">
+                        <li><a href="index.html" class="nav-link active">Home</a></li>
                         <li><a href="hotel-booking.html" class="nav-link">Hotels</a></li>
                         <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
-                                                <li><a href="#contact" class="nav-link">Contact</a></li>
+                        <li><a href="#contact" class="nav-link">Contact</a></li>
                     </ul>
                 </nav>
 
@@ -887,71 +888,47 @@
         </div>
     </section>
 
-    <!-- Offers Section -->
-    <section class="offers-section">
+    <!-- Features & Rewards Section -->
+    <section class="features-rewards-section" style="padding: 60px 0;">
         <div class="container">
-            <h2 class="section-title">Special Offers</h2>
-            <p class="section-subtitle">Exclusive deals on flights and hotels just for you</p>
-
-            <div class="offers-grid">
-                <div class="offer-card">
-                    <div class="offer-image">
-                        <img src="https://images.unsplash.com/photo-1587474260584-136574528ed5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                            alt="Delhi to Mumbai Flight">
-                        <span class="offer-badge">Hot Deal</span>
-                    </div>
-                    <div class="offer-content">
-                        <div class="offer-route">
-                            <span class="city">Delhi</span>
-                            <i class="fas fa-plane"></i>
-                            <span class="city">Mumbai</span>
-                        </div>
-                        <p class="offer-meta">Non-stop flights • 2h 10m</p>
-                        <div class="offer-price">
-                            <span class="from">From</span>
-                            <span class="amount">$4,999</span>
-                        </div>
-                    </div>
+            <!-- Main Featured Promo -->
+            <div class="featured-promo-card">
+                <div class="promo-content">
+                    <span class="promo-badge">Featured</span>
+                    <h2>Travel rewards add up</h2>
+                    <p>Stay 10 nights, get 1 night in C2C Rewards.</p>
+                    <a href="#" class="btn promo-btn" onclick="event.preventDefault(); document.getElementById('rewardModal').classList.add('show');">How rewards work</a>
                 </div>
-
-                <div class="offer-card">
-                    <div class="offer-image">
-                        <img src="https://images.unsplash.com/photo-1570168007204-dfb528c6958f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                            alt="Mumbai to Dubai Flight">
-                        <span class="offer-badge">Popular</span>
-                    </div>
-                    <div class="offer-content">
-                        <div class="offer-route">
-                            <span class="city">Mumbai</span>
-                            <i class="fas fa-plane"></i>
-                            <span class="city">Dubai</span>
-                        </div>
-                        <p class="offer-meta">Non-stop flights • 3h 30m</p>
-                        <div class="offer-price">
-                            <span class="from">From</span>
-                            <span class="amount">$12,499</span>
-                        </div>
-                    </div>
+                <div class="promo-image">
+                    <img src="../assets/images/hotel-banner.jpg" alt="Travel Rewards" onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80'">
                 </div>
+            </div>
 
-                <div class="offer-card">
-                    <div class="offer-image">
-                        <img src="https://images.unsplash.com/photo-1525625293386-3f8f99389edd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                            alt="Bangalore to Singapore Flight">
-                        <span class="offer-badge">Limited</span>
+            <!-- 3-Column Feature Cards -->
+            <div class="promo-features-grid">
+                <div class="feature-box">
+                    <div class="feature-icon-img">
+                        <img src="https://cdn-icons-png.flaticon.com/512/8730/8730999.png" alt="Rewards Icon">
                     </div>
-                    <div class="offer-content">
-                        <div class="offer-route">
-                            <span class="city">Bangalore</span>
-                            <i class="fas fa-plane"></i>
-                            <span class="city">Singapore</span>
-                        </div>
-                        <p class="offer-meta">Non-stop flights • 4h 45m</p>
-                        <div class="offer-price">
-                            <span class="from">From</span>
-                            <span class="amount">$8,999</span>
-                        </div>
+                    <h3>Travel adds up</h3>
+                    <p>Stay 10 nights, get a reward night to use however you like.</p>
+                    <a href="#" class="feature-link" onclick="event.preventDefault(); document.getElementById('rewardModal').classList.add('show');">How it works</a>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon-img">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3030/3030336.png" alt="VIP Access">
                     </div>
+                    <h3>Stays that deliver</h3>
+                    <p>Traveller-favourite VIP Access stays come with high ratings and perks for our top-tier members.</p>
+                    <a href="hotel-booking.html" class="feature-link">Explore stays</a>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon-img">
+                        <img src="https://cdn-icons-png.flaticon.com/512/7603/7603120.png" alt="Flexible Booking">
+                    </div>
+                    <h3>Plans change. We get it.</h3>
+                    <p>Flexible booking options so you can adjust or cancel easily.</p>
+                    <a href="#" class="feature-link">Search now</a>
                 </div>
             </div>
         </div>
@@ -1302,6 +1279,22 @@
         </div>
     </section>
 
+    <!-- Reward Info Modal -->
+    <div id="rewardModal" class="reward-modal">
+        <div class="reward-modal-content">
+            <span class="reward-modal-close" onclick="document.getElementById('rewardModal').classList.remove('show');">&times;</span>
+            <img src="https://cdn-icons-png.flaticon.com/512/8730/8730999.png" alt="Rewards" style="width: 80px; margin-bottom: 20px;">
+            <h2 style="margin-bottom: 15px; color: #111827;">Book Hotels at Best Offers</h2>
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+                Earn rewards every time you stay with C2C Journeys! Collect 10 nights across any eligible properties worldwide and we'll give you 1 reward night absolutely free.
+            </p>
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 25px;">
+                Plus, enjoy exclusive member pricing, VIP access to premium properties, and flexible cancellation on thousands of hotels.
+            </p>
+            <a href="hotel-booking.html" class="btn promo-btn" style="display: inline-block;">Start Earning Now</a>
+        </div>
+    </div>
+    
     <!-- Footer -->
     <footer class="footer">
         <!-- Footer Video Background -->
@@ -1324,14 +1317,15 @@
                         <i class="fas fa-shield-alt"></i>
                         "Your trust is our responsibility."
                     </div>
-                    <div class="payment-partners" style="margin-top: 15px;">
-                        <span style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #9ca3af;">Payment
-                            Partners:</span>
+                    <div class="payment-partners" style="margin-top: 20px;">
+                        <span style="display: block; margin-bottom: 12px; font-size: 0.95rem; color: #f8fafc; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">Payment Partners:</span>
                         <div style="display: flex; gap: 12px; align-items: center;">
-                            <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Razorpay"
-                                style="height: 20px; width: auto; filter: brightness(0) invert(1) opacity(0.8);">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
-                                style="height: 20px; width: auto; background: white; padding: 2px 5px; border-radius: 4px;">
+                            <div style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay" style="height: 18px; width: auto; display: block;">
+                            </div>
+                            <div style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style="height: 18px; width: auto; display: block;">
+                            </div>
                         </div>
                     </div>
                     <!-- Trustpilot Review Badge -->

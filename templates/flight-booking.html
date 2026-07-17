@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/main.css?v=2.0">
 </head>
 
 <body>
@@ -110,9 +110,9 @@
                 <nav>
                     <ul class="nav-menu" id="navMenu">
                         <li><a href="index.html" class="nav-link">Home</a></li>
-                        <li><a href="flight-booking.html" class="nav-link active">Flights</a></li>
                         <li><a href="hotel-booking.html" class="nav-link">Hotels</a></li>
-                                                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                        <li><a href="flight-booking.html" class="nav-link active">Flights</a></li>
+                        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
                     </ul>
                 </nav>
 
@@ -132,7 +132,13 @@
     </header>
 
     <!-- Page Hero -->
-    <section class="page-hero flight-hero" style="padding-top: 100px; padding-bottom: 60px; min-height: 50vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: linear-gradient(rgba(14, 100, 166, 0.8), rgba(26, 54, 93, 0.9)), url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;">
+    <section class="page-hero flight-hero" style="padding-top: 100px; padding-bottom: 60px; min-height: 50vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; overflow: hidden; position: relative;">
+        <!-- Flight Hero Video Background -->
+        <video autoplay loop muted playsinline class="hero-video-bg">
+            <source src="../assets/videos/flight-hero-bg.mp4" type="video/mp4">
+        </video>
+        <div class="hero-overlay"></div>
+
         <div class="container" style="position: relative; z-index: 2; width: 100%;">
             <h1 class="hero-title" style="font-size: 3rem; margin-bottom: 10px; color: white;">Book Your Next Flight</h1>
             <p class="hero-subtitle" style="font-size: 1.1rem; color: rgba(255,255,255,0.9); margin-bottom: 30px;">Premium flight experiences at unbeatable prices.</p>
@@ -281,6 +287,12 @@
 
     <!-- Footer -->
     <footer class="footer">
+        <!-- Footer Video Background -->
+        <video autoplay loop muted playsinline class="footer-video-bg">
+            <source src="../assets/videos/flight-footer-bg.mp4" type="video/mp4">
+        </video>
+        <div class="footer-overlay"></div>
+
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
@@ -294,14 +306,15 @@
                         <i class="fas fa-shield-alt"></i>
                         "Your trust is our responsibility."
                     </div>
-                    <div class="payment-partners" style="margin-top: 15px;">
-                        <span style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #9ca3af;">Payment
-                            Partners:</span>
+                    <div class="payment-partners" style="margin-top: 20px;">
+                        <span style="display: block; margin-bottom: 12px; font-size: 0.95rem; color: #f8fafc; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">Payment Partners:</span>
                         <div style="display: flex; gap: 12px; align-items: center;">
-                            <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Razorpay"
-                                style="height: 20px; width: auto; filter: brightness(0) invert(1) opacity(0.8);">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
-                                style="height: 20px; width: auto; background: white; padding: 2px 5px; border-radius: 4px;">
+                            <div style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay" style="height: 18px; width: auto; display: block;">
+                            </div>
+                            <div style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style="height: 18px; width: auto; display: block;">
+                            </div>
                         </div>
                     </div>
                     <!-- Trustpilot Review Badge -->
