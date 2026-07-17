@@ -727,24 +727,8 @@
             sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
             localStorage.setItem('ctc_booking_data_backup', JSON.stringify(bookingData));
 
-            // Check if logged in before proceeding to payment
-            if (typeof SupabaseDB !== 'undefined') {
-                SupabaseDB.getCurrentUser().then(currentUser => {
-                    const adminToken = localStorage.getItem('admin_token');
-                    if (!currentUser && !adminToken) {
-                        // User must login first, redirect to auth, then return to payment.html
-                        window.location.href = `auth.html?redirect=${encodeURIComponent('payment.html')}`;
-                    } else {
-                        // Redirect to payment
-                        window.location.href = 'payment.html';
-                    }
-                }).catch(err => {
-                    window.location.href = 'payment.html';
-                });
-            } else {
-                // Redirect to payment
-                window.location.href = 'payment.html';
-            }
+            // Guest checkout allowed, proceed directly to payment
+            window.location.href = 'payment.html';
         }
 
         // Load booking details on page load

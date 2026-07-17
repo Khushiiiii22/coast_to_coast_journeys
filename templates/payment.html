@@ -1532,14 +1532,6 @@
 
         // Load booking details on page load
         document.addEventListener('DOMContentLoaded', async function () {
-            if (typeof SupabaseDB !== 'undefined') {
-                const currentUser = await SupabaseDB.getCurrentUser();
-                const adminToken = localStorage.getItem('admin_token');
-                if (!currentUser && !adminToken) {
-                    window.location.href = `auth.html?redirect=${encodeURIComponent(window.location.href)}`;
-                    return;
-                }
-            }
             loadBookingDetails();
         });
     </script>
