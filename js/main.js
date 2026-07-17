@@ -10,6 +10,7 @@ const DOM = {
     preloader: document.getElementById('preloader'),
     header: document.getElementById('header'),
     mobileMenuToggle: document.getElementById('mobileMenuToggle'),
+    hamburgerMenu: document.getElementById('hamburgerMenu'),
     navMenu: document.getElementById('navMenu'),
     currencySelect: document.getElementById('currencySelect'),
 
@@ -139,8 +140,8 @@ function updateSectionNav() {
 // Mobile Menu
 // ========================================
 function toggleMobileMenu() {
-    DOM.navMenu.classList.toggle('active');
-    DOM.mobileMenuToggle.classList.toggle('active');
+    if (DOM.navMenu) DOM.navMenu.classList.toggle('active');
+    if (DOM.mobileMenuToggle) DOM.mobileMenuToggle.classList.toggle('active');
 }
 
 // ========================================
@@ -758,6 +759,7 @@ function smoothScroll(e) {
 // Date Picker Init (Flatpickr)
 // ========================================
 function initDatePickers() {
+    if (typeof flatpickr === 'undefined') return;
     const commonConfig = {
         dateFormat: "Y-m-d",
         altInput: true,
@@ -877,6 +879,51 @@ function initEventListeners() {
     // Mobile Menu
     if (DOM.mobileMenuToggle) {
         DOM.mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+    }
+
+
+    // ========================================
+    // Sidebar Logic
+    // ========================================
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const sidebarClose = document.getElementById('sidebarClose');
+    
+    function openSidebar() {
+        if (sidebar) sidebar.classList.add('open');
+        if (sidebarOverlay) sidebarOverlay.classList.add('active');
+    }
+    
+    function closeSidebar() {
+        if (sidebar) sidebar.classList.remove('open');
+        if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+    }
+    
+    if (DOM.hamburgerMenu) {
+        DOM.hamburgerMenu.addEventListener('click', openSidebar);
+    }
+    if (sidebarClose) {
+        sidebarClose.addEventListener('click', closeSidebar);
+    }
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', closeSidebar);
+    }
+    
+    // Close sidebar if support link clicked
+    const sidebarSupport = document.getElementById('sidebarSupport');
+    if (sidebarSupport) {
+        sidebarSupport.addEventListener('click', closeSidebar);
+    }
+    
+    // Feedback modal from sidebar
+    const feedbackLink = document.getElementById('feedbackLink');
+    const feedbackModal = document.getElementById('feedbackModal');
+    if (feedbackLink && feedbackModal) {
+        feedbackLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            closeSidebar();
+            feedbackModal.classList.add('active');
+        });
     }
 
     // Slider Controls

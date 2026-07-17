@@ -3458,7 +3458,7 @@ input:disabled+.date-display-content {
     }
 
     .nav-menu.active {
-        display: flex;
+        display: flex !important;
     }
 
     .header-actions,
@@ -3484,9 +3484,9 @@ input:disabled+.date-display-content {
 
     .search-box {
         padding: 15px;
-        margin: 0 10px;
-        max-width: calc(100vw - 20px);
+        margin: 0 auto;
         width: 100%;
+        box-sizing: border-box;
         overflow: hidden;
     }
 
@@ -4283,7 +4283,8 @@ body {
     }
     
     .hero-video-bg, .footer-video-bg {
-        display: none !important; /* Hide heavy videos on mobile to prevent layout lag */
+        /* display: none !important; Removed to allow videos on mobile */
+        pointer-events: none;
     }
     
     .hero::before {
