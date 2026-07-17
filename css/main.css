@@ -788,7 +788,8 @@ h6 {
     color: var(--text-muted);
 }
 
-.btn-search {
+.btn-search,
+.btn-search-improved {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -805,7 +806,8 @@ h6 {
     white-space: nowrap;
 }
 
-.btn-search:hover {
+.btn-search:hover,
+.btn-search-improved:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-accent);
 }
