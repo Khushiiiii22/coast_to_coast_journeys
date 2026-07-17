@@ -4150,3 +4150,21 @@ body {
 .date-field-hotel .custom-calendar.open {
     z-index: 10000 !important;
 }
+/* ===== Mobile Responsive Fixes for Theme Updates ===== */
+@media (max-width: 768px) {
+    .hero {
+        padding: 100px 0 40px; /* Reduce padding so search box is visible */
+    }
+    
+    .hero-video-bg, .footer-video-bg {
+        display: none !important; /* Hide heavy videos on mobile to prevent layout lag */
+    }
+    
+    .hero::before {
+        opacity: 0.7; /* Make the fallback background image more visible */
+    }
+    
+    .search-box {
+        padding: 20px;
+    }
+}
