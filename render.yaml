@@ -10,7 +10,7 @@ services:
     plan: starter  # $7/month - upgrade to standard for better performance
     
     # Build settings
-    buildCommand: pip install -r backend/requirements.txt
+    buildCommand: pip install -r backend/requirements.txt && playwright install chromium
     startCommand: cd backend && python app.py
     
     # Environment variables (add in Render dashboard or here)
