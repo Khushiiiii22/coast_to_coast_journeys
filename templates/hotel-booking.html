@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Book Hotels - C2C Journeys. Search and book hotels at the best prices worldwide.">
-    <title>Book Hotels | C2C Journeys</title>
+    <meta name="description" content="Find your perfect stay. Book luxury hotels, cheap stays, and exclusive accommodations across the US and worldwide.">
+    <title>Luxury Hotels & Cheap Stays | Coast To Coast</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/jpeg" href="../assets/images/c2c-logo.png">
@@ -181,6 +181,38 @@
             border-bottom: 1px solid #e5e7eb;
         }
     </style>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
+
+    <meta property="og:title" content="Luxury Hotels & Cheap Stays | Coast To Coast">
+    <meta property="og:description" content="Find your perfect stay. Book luxury hotels, cheap stays, and exclusive accommodations across the US and worldwide.">
+    <meta property="og:type" content="website">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TravelAgency",
+      "name": "Coast To Coast",
+      "telephone": "+1-888-315-9768",
+      "email": "Sales@c2cjourneys.com",
+      "url": "https://c2cjourneys.com"
+    }
+    </script>
 </head>
 
 <body>
@@ -189,8 +221,8 @@
         <div class="container">
             <div class="header-content">
                 <a href="index.html" class="logo">
-                    <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
-                    <span class="logo-text">C2C Journeys</span>
+                    <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
+                    <span class="logo-text">Coast To Coast</span>
                 </a>
 
                 <nav>
@@ -203,6 +235,11 @@
                 </nav>
 
                 <div class="header-actions">
+                    
+                    <a href="tel:+18883159768" class="phone-link">
+                        <i class="fas fa-phone"></i>
+                        <span>+1-888-315-9768</span>
+                    </a>
                     <a href="auth.html" class="btn btn-outline">
                         <i class="fas fa-user"></i> Login
                     </a>
@@ -669,7 +706,16 @@
                 // Populate Recently Viewed Hotels
                 (function () {
                     const RV_KEY = 'ctc_recently_viewed';
-                    const viewed = JSON.parse(localStorage.getItem(RV_KEY) || '[]');
+                    let viewed = JSON.parse(localStorage.getItem(RV_KEY) || '[]');
+                    
+                    // Filter out Indian hotels or hotels with broken/map images
+                    viewed = viewed.filter(h => {
+                        const searchString = (h.name + ' ' + (h.address || '')).toLowerCase();
+                        if (searchString.includes('india') || searchString.includes('mumbai') || searchString.includes('delhi') || searchString.includes('goa') || searchString.includes('bangalore') || searchString.includes('chennai') || searchString.includes('jaipur')) return false;
+                        if (h.image && h.image.includes('maps.google')) return false;
+                        return true;
+                    });
+                    
                     if (viewed.length === 0) return;
 
                     const section = document.getElementById('recentlyViewedSection');
@@ -681,9 +727,9 @@
                     grid.innerHTML = viewed.map(h => `
                         <div class="route-card" style="cursor: pointer;" onclick="window.location.href='hotel-details.html?id=${h.id}'">
                             <div class="route-image">
-                                <img src="${h.image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400'}" 
+                                <img src="${h.image || 'https://images.unsplash.com/photo-1542314831-c6a4d14cd2e1?auto=format&fit=crop&w=400&q=80'}" 
                                      alt="${h.name}" 
-                                     onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400'">
+                                     onerror="this.src='https://images.unsplash.com/photo-1542314831-c6a4d14cd2e1?auto=format&fit=crop&w=400&q=80'">
                             </div>
                             <div class="route-info">
                                 <h4>${h.name}</h4>
@@ -691,7 +737,7 @@
                                     ${h.star_rating ? '★'.repeat(Math.round(h.star_rating)) : ''}
                                     ${h.address ? ' · ' + h.address.substring(0, 40) : ''}
                                 </p>
-                                ${h.price ? '<p style="font-weight: 700; color: #0e64a6; margin-top: 4px;">$' + Math.round(h.price).toLocaleString('en-IN') + '/night</p>' : ''}
+                                ${h.price ? '<p style="font-weight: 700; color: #0e64a6; margin-top: 4px;">$' + Math.round(h.price).toLocaleString('en-US') + '/night</p>' : ''}
                             </div>
                         </div>
                     `).join('');
@@ -706,13 +752,13 @@
                 <div class="routes-grid">
                     <div class="route-card">
                         <div class="route-image">
-                            <img src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                                alt="Delhi Hotels">
-                            <span class="route-price">From $2,499/night</span>
+                            <img src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                alt="New York Hotels">
+                            <span class="route-price">From $199/night</span>
                         </div>
                         <div class="route-content">
                             <div class="route-path">
-                                <span class="city">Delhi</span>
+                                <span class="city">New York</span>
                             </div>
                             <span class="route-meta">1,200+ Hotels Available</span>
                         </div>
@@ -720,13 +766,13 @@
 
                     <div class="route-card">
                         <div class="route-image">
-                            <img src="https://images.unsplash.com/photo-1582510003544-4d00b7f74220?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                                alt="Goa Hotels">
-                            <span class="route-price">From $1,999/night</span>
+                            <img src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                alt="Las Vegas Hotels">
+                            <span class="route-price">From $149/night</span>
                         </div>
                         <div class="route-content">
                             <div class="route-path">
-                                <span class="city">Goa</span>
+                                <span class="city">Las Vegas</span>
                             </div>
                             <span class="route-meta">850+ Hotels Available</span>
                         </div>
@@ -734,13 +780,13 @@
 
                     <div class="route-card">
                         <div class="route-image">
-                            <img src="https://images.unsplash.com/photo-1564507592333-c60657eea523?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                                alt="Jaipur Hotels">
-                            <span class="route-price">From $1,799/night</span>
+                            <img src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                alt="Miami Hotels" style="object-fit: cover;">
+                            <span class="route-price">From $249/night</span>
                         </div>
                         <div class="route-content">
                             <div class="route-path">
-                                <span class="city">Jaipur</span>
+                                <span class="city">Miami</span>
                             </div>
                             <span class="route-meta">650+ Hotels Available</span>
                         </div>
@@ -748,17 +794,73 @@
 
                     <div class="route-card">
                         <div class="route-image">
-                            <img src="https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                                alt="Dubai Hotels">
-                            <span class="route-price">From $4,999/night</span>
+                            <img src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                alt="Los Angeles Hotels" style="object-fit: cover;">
+                            <span class="route-price">From $179/night</span>
                         </div>
                         <div class="route-content">
                             <div class="route-path">
-                                <span class="city">Dubai</span>
+                                <span class="city">Los Angeles</span>
                             </div>
                             <span class="route-meta">2,000+ Hotels Available</span>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <!-- Travel Guides / Blog Section -->
+            <section class="routes-section" style="margin-top: 4rem;">
+                <div class="routes-header">
+                    <h3><i class="fas fa-book-open"></i> Travel Guides & Inspiration</h3>
+                </div>
+                <div class="routes-grid">
+                    <!-- Blog Card 1 -->
+                    <a href="blog-beach-resorts.html" style="text-decoration: none; color: inherit; display: block;">
+                        <div class="route-card" style="cursor: pointer; height: 100%;">
+                            <div class="route-image" style="height: 200px;">
+                                <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Top 10 Beach Resorts" style="object-fit: cover;">
+                            </div>
+                            <div class="route-content" style="padding: 20px;">
+                                <span style="font-size: 0.8rem; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Hotels</span>
+                                <h4 style="margin: 10px 0; font-size: 1.1rem; color: #1e293b;">The 10 Best Luxury Beach Resorts in the US</h4>
+                                <p style="font-size: 0.9rem; color: #64748b; line-height: 1.5; margin-bottom: 15px;">Discover breathtaking oceanfront properties with world-class amenities and exclusive beaches.</p>
+                                <span style="font-size: 0.8rem; color: #94a3b8;"><i class="far fa-clock"></i> 5 min read</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Blog Card 2 -->
+                    <a href="blog-nyc-guide.html" style="text-decoration: none; color: inherit; display: block;">
+                        <div class="route-card" style="cursor: pointer; height: 100%;">
+                            <div class="route-image" style="height: 200px;">
+                                <img src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=600&q=80" alt="New York City Guide" style="object-fit: cover;">
+                            </div>
+                            <div class="route-content" style="padding: 20px;">
+                                <span style="font-size: 0.8rem; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">City Guides</span>
+                                <h4 style="margin: 10px 0; font-size: 1.1rem; color: #1e293b;">Where to Stay in New York City: First Timer's Guide</h4>
+                                <p style="font-size: 0.9rem; color: #64748b; line-height: 1.5; margin-bottom: 15px;">From Times Square to Brooklyn, find the perfect neighborhood for your NYC adventure.</p>
+                                <span style="font-size: 0.8rem; color: #94a3b8;"><i class="far fa-clock"></i> 8 min read</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Blog Card 3 -->
+                    <a href="blog-vegas-upgrades.html" style="text-decoration: none; color: inherit; display: block;">
+                        <div class="route-card" style="cursor: pointer; height: 100%;">
+                            <div class="route-image" style="height: 200px;">
+                                <img src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=600&q=80" alt="Vegas Hotels" style="object-fit: cover;">
+                            </div>
+                            <div class="route-content" style="padding: 20px;">
+                                <span style="font-size: 0.8rem; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Tips & Tricks</span>
+                                <h4 style="margin: 10px 0; font-size: 1.1rem; color: #1e293b;">How to Score Free Room Upgrades in Las Vegas</h4>
+                                <p style="font-size: 0.9rem; color: #64748b; line-height: 1.5; margin-bottom: 15px;">Learn the insider secrets to getting complimentary suites and resort credits.</p>
+                                <span style="font-size: 0.8rem; color: #94a3b8;"><i class="far fa-clock"></i> 4 min read</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
+                    <a href="#footer" class="btn btn-outline" style="border-radius: 20px; padding: 10px 24px;">View All Articles</a>
                 </div>
             </section>
 
@@ -771,10 +873,10 @@
                     <h3>Need Help with Hotel Booking?</h3>
                     <p>Our travel experts are available 24×7 to assist you find the perfect stay.</p>
                     <div class="help-actions">
-                        <a href="tel:+919934547108" class="btn btn-white">
-                            <i class="fas fa-phone"></i> +91 99345 47108
+                        <a href="tel:+18883159768" class="btn btn-white">
+                            <i class="fas fa-phone"></i> +1-888-315-9768
                         </a>
-                        <a href="mailto:sales@coasttocoastjourneys.com" class="btn btn-outline"
+                        <a href="mailto:Sales@c2cjourneys.com" class="btn btn-outline"
                             style="border-color: white; color: white;">
                             <i class="fas fa-envelope"></i> Email Support
                         </a>
@@ -785,7 +887,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="footer">
+    <footer id="footer" class="footer">
         <!-- Footer Video Background -->
         <video autoplay loop muted playsinline class="footer-video-bg">
             <source src="../assets/videos/hotel-footer-bg.mp4" type="video/mp4">
@@ -796,8 +898,8 @@
             <div class="footer-grid">
                 <div class="footer-brand">
                     <div class="footer-logo">
-                        <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
-                        <span>C2C Journeys</span>
+                        <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
+                        <span>Coast To Coast</span>
                     </div>
                     <p>Your trusted travel partner. We specialize in creating unforgettable travel experiences across
                         the globe.</p>
@@ -851,21 +953,24 @@
                 </div>
 
                 <div class="footer-col">
-                    <h4>Connect With Us</h4>
-                    <div style="display: flex; gap: 12px; margin-top: 8px;">
-                        <a href="https://www.facebook.com/people/Coast-to-Coast-Journeys/61574464089885/"
-                            target="_blank" class="social-link"><i class="fab fa-facebook-f"></i></a>
-                        <a href="https://www.instagram.com/coasttocoastjourneys/" target="_blank" class="social-link"><i
-                                class="fab fa-instagram"></i></a>
-                        <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"
-                            class="social-link"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
+                    <h4>Top Destinations</h4>
+                    <ul>
+                        <li><a href="blog-india.html">Hotels in India</a></li>
+                        <li><a href="blog-uae.html">Hotels in United Arab Emirates</a></li>
+                        <li><a href="blog-uk.html">Hotels in United Kingdom</a></li>
+                        <li><a href="blog-usa.html">Hotels in United States of America</a></li>
+                        <li><a href="blog-indonesia.html">Hotels in Indonesia</a></li>
+                        <li><a href="blog-singapore.html">Hotels in Singapore</a></li>
+                        <li><a href="blog-maldives.html">Hotels in Maldives</a></li>
+                    </ul>
                 </div>
+
+                
             </div>
 
             <div class="footer-bottom">
-                <p>C2C Journeys is a customer-facing brand operated by Coast to Coast Journeys</p>
-                <p>&copy; 2026 C2C Journeys. All Rights Reserved.</p>
+                <p>Coast To Coast is a premium travel brand</p>
+                <p>&copy; 2026 Coast To Coast. All Rights Reserved.</p>
             </div>
         </div>
     </footer>

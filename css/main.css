@@ -239,6 +239,7 @@ h6 {
     font-weight: 700;
     color: var(--primary);
     letter-spacing: -0.5px;
+    white-space: nowrap;
 }
 
 @media (max-width: 768px) {
@@ -1073,7 +1074,7 @@ h6 {
 
 .contact-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 32px;
     margin-bottom: 40px;
 }

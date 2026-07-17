@@ -6,9 +6,9 @@
     <meta name="google-site-verification" content="jEj4It2Lz90JQev9i0BlUWInu5-M1-fESfnX7UHa_FI" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="C2C Journeys - Your trusted travel partner. Book cheap flights, hotels. Best prices guaranteed with 24/7 support.">
+        content="Coast To Coast - Your trusted US travel partner. Book premium flights, luxury hotels, and exclusive travel deals.">
     <meta name="keywords" content="flights, hotels, travel booking, cheap flights, hotel booking, travel agency">
-    <title>C2C Journeys | Book Flights & Hotels</title>
+    <title>Coast To Coast | Book Premium Flights & Hotels</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/jpeg" href="../assets/images/c2c-logo.png">
@@ -356,6 +356,39 @@
             border-bottom: 1px solid #e5e7eb;
         }
     </style>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'AW-XXXXXXXXXX');
+    </script>
+
+    <meta property="og:title" content="Coast To Coast | Book Premium Flights & Hotels">
+    <meta property="og:description"
+        content="Coast To Coast - Your trusted US travel partner. Book premium flights, luxury hotels, and exclusive travel deals.">
+    <meta property="og:type" content="website">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TravelAgency",
+      "name": "Coast To Coast",
+      "telephone": "+1-888-315-9768",
+      "email": "Sales@c2cjourneys.com",
+      "url": "https://c2cjourneys.com"
+    }
+    </script>
 </head>
 
 <body>
@@ -363,7 +396,7 @@
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
+            <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
             <span>Coast to Coast</span>
             <button class="sidebar-close" id="sidebarClose">
                 <i class="fas fa-times"></i>
@@ -379,14 +412,14 @@
             <a href="hotel-booking.html" class="sidebar-link">
                 <i class="fas fa-hotel"></i> Book Hotels
             </a>
-                        <div class="sidebar-divider"></div>
+            <div class="sidebar-divider"></div>
             <a href="#contact" class="sidebar-link" id="sidebarSupport">
                 <i class="fas fa-headset"></i> 24/7 Support
             </a>
-            <a href="mailto:sales@coasttocoastjourneys.com" class="sidebar-link">
+            <a href="mailto:Sales@c2cjourneys.com" class="sidebar-link">
                 <i class="fas fa-envelope"></i> Email Us
             </a>
-            <a href="tel:+919934547108" class="sidebar-link">
+            <a href="tel:+18883159768" class="sidebar-link">
                 <i class="fas fa-phone"></i> Call Us
             </a>
             <div class="sidebar-divider"></div>
@@ -410,7 +443,7 @@
                 <i class="fas fa-undo"></i> Refund Policy
             </a>
             <div class="sidebar-divider"></div>
-            <a href="https://wa.me/919934547108" class="sidebar-link" target="_blank">
+            <a href="https://wa.me/18883159768" class="sidebar-link" target="_blank">
                 <i class="fab fa-whatsapp"></i> WhatsApp
             </a>
         </nav>
@@ -423,8 +456,8 @@
                 <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"><i
                         class="fab fa-linkedin-in"></i></a>
             </div>
-            <p>C2C Journeys is a customer-facing brand operated by Coast to Coast Journeys</p>
-            <p>© 2026 C2C Journeys</p>
+            <p>Coast To Coast is a premium travel brand</p>
+            <p>© 2026 Coast To Coast</p>
         </div>
     </aside>
 
@@ -499,8 +532,8 @@
                 </button>
 
                 <a href="index.html" class="logo">
-                    <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
-                    <span class="logo-text">C2C Journeys</span>
+                    <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
+                    <span class="logo-text">Coast To Coast</span>
                 </a>
 
                 <nav>
@@ -525,9 +558,9 @@
                         </select>
                     </div>
 
-                    <a href="tel:+919934547108" class="phone-link">
+                    <a href="tel:+18883159768" class="phone-link">
                         <i class="fas fa-phone"></i>
-                        <span>+91 99345 47108</span>
+                        <span>+1-888-315-9768</span>
                     </a>
                     <a href="auth.html" class="btn btn-outline">Sign In</a>
                 </div>
@@ -548,7 +581,7 @@
             <!-- Put your video file here. Replace the src below when uploaded. -->
             <source src="../assets/videos/hero-background.mp4" type="video/mp4">
         </video>
-        
+
         <!-- Optional overlay to make text readable over the video -->
         <div class="hero-overlay"></div>
 
@@ -572,27 +605,33 @@
                     <button class="search-tab" data-tab="flights">
                         <i class="fas fa-plane"></i> Flights
                     </button>
-                                    </div>
+                </div>
 
                 <!-- Flight Search Form -->
                 <div id="flights-form" class="search-content hidden">
                     <form class="search-form-improved" id="flightSearchForm">
-                        
+
                         <!-- Trip Options -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
                             <div class="trip-types" style="display: flex; gap: 20px;">
-                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: #1e293b;">
-                                    <input type="radio" name="tripType" value="oneway" style="accent-color: #0e64a6; width: 16px; height: 16px;">
+                                <label
+                                    style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: #1e293b;">
+                                    <input type="radio" name="tripType" value="oneway"
+                                        style="accent-color: #0e64a6; width: 16px; height: 16px;">
                                     One Way
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: #1e293b;">
-                                    <input type="radio" name="tripType" value="roundtrip" checked style="accent-color: #0e64a6; width: 16px; height: 16px;">
+                                <label
+                                    style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: #1e293b;">
+                                    <input type="radio" name="tripType" value="roundtrip" checked
+                                        style="accent-color: #0e64a6; width: 16px; height: 16px;">
                                     Round Trip
                                 </label>
                             </div>
-                            
+
                             <div class="travel-class">
-                                <select id="cabinClass" style="padding: 8px 16px; border-radius: 20px; border: 1px solid #e2e8f0; background: #f8fafc; color: #334155; font-weight: 500; cursor: pointer; outline: none;">
+                                <select id="cabinClass"
+                                    style="padding: 8px 16px; border-radius: 20px; border: 1px solid #e2e8f0; background: #f8fafc; color: #334155; font-weight: 500; cursor: pointer; outline: none;">
                                     <option value="Premium Economy">Premium Economy</option>
                                     <option value="Business Class" selected>Business Class</option>
                                     <option value="First Class">First Class</option>
@@ -604,18 +643,21 @@
                             <!-- Origin -->
                             <div class="form-field-improved" style="flex: 2; position: relative;">
                                 <label><i class="fas fa-plane-departure"></i> Flying From</label>
-                                <input type="text" id="fromCity" placeholder="City or Airport Code" autocomplete="off" required>
+                                <input type="text" id="fromCity" placeholder="City or Airport Code" autocomplete="off"
+                                    required>
                             </div>
-                            
+
                             <!-- Swap Icon -->
-                            <button type="button" id="swapCitiesBtn" style="background: white; border: 1px solid #e2e8f0; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #0e64a6; z-index: 10; margin: 0 -20px; align-self: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.3s;">
+                            <button type="button" id="swapCitiesBtn"
+                                style="background: white; border: 1px solid #e2e8f0; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #0e64a6; z-index: 10; margin: 0 -20px; align-self: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.3s;">
                                 <i class="fas fa-exchange-alt"></i>
                             </button>
-                            
+
                             <!-- Destination -->
                             <div class="form-field-improved" style="flex: 2; position: relative;">
                                 <label><i class="fas fa-plane-arrival"></i> Flying To</label>
-                                <input type="text" id="toCity" placeholder="City or Airport Code" autocomplete="off" required>
+                                <input type="text" id="toCity" placeholder="City or Airport Code" autocomplete="off"
+                                    required>
                             </div>
                         </div>
 
@@ -629,7 +671,7 @@
                                 <label><i class="fas fa-calendar-alt"></i> Return</label>
                                 <input type="date" id="returnDate" required>
                             </div>
-                            
+
                             <!-- Passengers -->
                             <div class="form-field-improved travelers-field" style="flex: 1.5;">
                                 <label><i class="fas fa-user-friends"></i> Passengers</label>
@@ -639,45 +681,68 @@
                                 </div>
                                 <!-- Passenger Popup -->
                                 <div class="travelers-popup" id="flightGuestsPopup" style="width: 280px;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <div
+                                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                                         <div>
                                             <div style="font-weight: 600; color: #1e293b;">Adults</div>
                                             <div style="font-size: 0.8rem; color: #64748b;">Aged 12+</div>
                                         </div>
-                                        <div class="counter-group" style="display: flex; align-items: center; gap: 12px;">
-                                            <button type="button" class="counter-btn" onclick="updateFlightPax('adults', -1)" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">-</button>
-                                            <span id="adultCount" style="font-weight: 600; min-width: 12px; text-align: center;">1</span>
-                                            <button type="button" class="counter-btn" onclick="updateFlightPax('adults', 1)" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">+</button>
+                                        <div class="counter-group"
+                                            style="display: flex; align-items: center; gap: 12px;">
+                                            <button type="button" class="counter-btn"
+                                                onclick="updateFlightPax('adults', -1)"
+                                                style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">-</button>
+                                            <span id="adultCount"
+                                                style="font-weight: 600; min-width: 12px; text-align: center;">1</span>
+                                            <button type="button" class="counter-btn"
+                                                onclick="updateFlightPax('adults', 1)"
+                                                style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">+</button>
                                         </div>
                                     </div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <div
+                                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                                         <div>
                                             <div style="font-weight: 600; color: #1e293b;">Children</div>
                                             <div style="font-size: 0.8rem; color: #64748b;">Aged 2-11</div>
                                         </div>
-                                        <div class="counter-group" style="display: flex; align-items: center; gap: 12px;">
-                                            <button type="button" class="counter-btn" onclick="updateFlightPax('children', -1)" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">-</button>
-                                            <span id="childCount" style="font-weight: 600; min-width: 12px; text-align: center;">0</span>
-                                            <button type="button" class="counter-btn" onclick="updateFlightPax('children', 1)" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">+</button>
+                                        <div class="counter-group"
+                                            style="display: flex; align-items: center; gap: 12px;">
+                                            <button type="button" class="counter-btn"
+                                                onclick="updateFlightPax('children', -1)"
+                                                style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">-</button>
+                                            <span id="childCount"
+                                                style="font-weight: 600; min-width: 12px; text-align: center;">0</span>
+                                            <button type="button" class="counter-btn"
+                                                onclick="updateFlightPax('children', 1)"
+                                                style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">+</button>
                                         </div>
                                     </div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                    <div
+                                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                                         <div>
                                             <div style="font-weight: 600; color: #1e293b;">Infants</div>
                                             <div style="font-size: 0.8rem; color: #64748b;">Under 2</div>
                                         </div>
-                                        <div class="counter-group" style="display: flex; align-items: center; gap: 12px;">
-                                            <button type="button" class="counter-btn" onclick="updateFlightPax('infants', -1)" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">-</button>
-                                            <span id="infantCount" style="font-weight: 600; min-width: 12px; text-align: center;">0</span>
-                                            <button type="button" class="counter-btn" onclick="updateFlightPax('infants', 1)" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">+</button>
+                                        <div class="counter-group"
+                                            style="display: flex; align-items: center; gap: 12px;">
+                                            <button type="button" class="counter-btn"
+                                                onclick="updateFlightPax('infants', -1)"
+                                                style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">-</button>
+                                            <span id="infantCount"
+                                                style="font-weight: 600; min-width: 12px; text-align: center;">0</span>
+                                            <button type="button" class="counter-btn"
+                                                onclick="updateFlightPax('infants', 1)"
+                                                style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">+</button>
                                         </div>
                                     </div>
-                                    <button type="button" class="travelers-done" id="flightGuestsDone" style="width: 100%; padding: 10px; background: #0e64a6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Done</button>
+                                    <button type="button" class="travelers-done" id="flightGuestsDone"
+                                        style="width: 100%; padding: 10px; background: #0e64a6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Done</button>
                                 </div>
                             </div>
-                            
+
                             <!-- Search Button -->
-                            <button type="submit" class="btn-search-improved" style="flex: 1; padding: 0 20px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                            <button type="submit" class="btn-search-improved"
+                                style="flex: 1; padding: 0 20px; display: flex; align-items: center; justify-content: center; gap: 10px;">
                                 <i class="fas fa-search"></i> Request Quote
                             </button>
                         </div>
@@ -813,7 +878,7 @@
                     </form>
                 </div>
 
-                </div>
+            </div>
         </div>
     </section>
 
@@ -897,10 +962,13 @@
                     <span class="promo-badge">Featured</span>
                     <h2>Travel rewards add up</h2>
                     <p>Stay 10 nights, get 1 night in C2C Rewards.</p>
-                    <a href="#" class="btn promo-btn" onclick="event.preventDefault(); document.getElementById('rewardModal').classList.add('show');">How rewards work</a>
+                    <a href="#" class="btn promo-btn"
+                        onclick="event.preventDefault(); document.getElementById('rewardModal').classList.add('show');">How
+                        rewards work</a>
                 </div>
                 <div class="promo-image">
-                    <img src="../assets/images/hotel-banner.jpg" alt="Travel Rewards" onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80'">
+                    <img src="../assets/images/hotel-banner.jpg" alt="Travel Rewards"
+                        onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80'">
                 </div>
             </div>
 
@@ -912,14 +980,17 @@
                     </div>
                     <h3>Travel adds up</h3>
                     <p>Stay 10 nights, get a reward night to use however you like.</p>
-                    <a href="#" class="feature-link" onclick="event.preventDefault(); document.getElementById('rewardModal').classList.add('show');">How it works</a>
+                    <a href="#" class="feature-link"
+                        onclick="event.preventDefault(); document.getElementById('rewardModal').classList.add('show');">How
+                        it works</a>
                 </div>
                 <div class="feature-box">
                     <div class="feature-icon-img">
                         <img src="https://cdn-icons-png.flaticon.com/512/3030/3030336.png" alt="VIP Access">
                     </div>
                     <h3>Stays that deliver</h3>
-                    <p>Traveller-favourite VIP Access stays come with high ratings and perks for our top-tier members.</p>
+                    <p>Traveller-favourite VIP Access stays come with high ratings and perks for our top-tier members.
+                    </p>
                     <a href="hotel-booking.html" class="feature-link">Explore stays</a>
                 </div>
                 <div class="feature-box">
@@ -1230,51 +1301,24 @@
 
             <div class="contact-card">
                 <div class="contact-grid">
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </div>
-                        <h4>Our Office</h4>
-                        <p>B 114, H N Rd, Radhika Nagar,<br>Jamshedpur, Jharkhand 831004</p>
-                    </div>
+
                     <div class="contact-item">
                         <div class="contact-icon">
                             <i class="fas fa-phone"></i>
                         </div>
                         <h4>Call Us</h4>
-                        <p>+91 99345 47108<br><small style="color: var(--text-muted);">24×7 Available</small></p>
+                        <p>+1-888-315-9768<br><small style="color: var(--text-muted);">24×7 Available</small></p>
                     </div>
                     <div class="contact-item">
                         <div class="contact-icon">
                             <i class="fas fa-envelope"></i>
                         </div>
                         <h4>Email Us</h4>
-                        <p>Info@coasttocoastjourneys.com<br>sales@coasttocoastjourneys.com</p>
+                        <p>Info@coasttocoastjourneys.com<br>Sales@c2cjourneys.com</p>
                     </div>
                 </div>
 
-                <div class="social-links">
-                    <a href="https://www.facebook.com/people/Coast-to-Coast-Journeys/61574464089885/" target="_blank"
-                        class="social-link" title="Facebook">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg"
-                            alt="Facebook" style="width: 24px; height: 24px;">
-                    </a>
-                    <a href="https://www.instagram.com/coasttocoastjourneys/" target="_blank" class="social-link"
-                        title="Instagram">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg"
-                            alt="Instagram" style="width: 24px; height: 24px;">
-                    </a>
-                    <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"
-                        class="social-link" title="LinkedIn">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/8/81/LinkedIn_icon.svg" alt="LinkedIn"
-                            style="width: 24px; height: 24px;">
-                    </a>
 
-                    <a href="https://wa.me/919934547108" target="_blank" class="social-link" title="WhatsApp">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp"
-                            style="width: 24px; height: 24px;">
-                    </a>
-                </div>
             </div>
         </div>
     </section>
@@ -1282,24 +1326,27 @@
     <!-- Reward Info Modal -->
     <div id="rewardModal" class="reward-modal">
         <div class="reward-modal-content">
-            <span class="reward-modal-close" onclick="document.getElementById('rewardModal').classList.remove('show');">&times;</span>
-            <img src="https://cdn-icons-png.flaticon.com/512/8730/8730999.png" alt="Rewards" style="width: 80px; margin-bottom: 20px;">
+            <span class="reward-modal-close"
+                onclick="document.getElementById('rewardModal').classList.remove('show');">&times;</span>
+            <img src="https://cdn-icons-png.flaticon.com/512/8730/8730999.png" alt="Rewards"
+                style="width: 80px; margin-bottom: 20px;">
             <h2 style="margin-bottom: 15px; color: #111827;">Book Hotels at Best Offers</h2>
             <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
-                Earn rewards every time you stay with C2C Journeys! Collect 10 nights across any eligible properties worldwide and we'll give you 1 reward night absolutely free.
+                Earn rewards every time you stay with Coast To Coast! Collect 10 nights across any eligible properties
+                worldwide and we'll give you 1 reward night absolutely free.
             </p>
             <p style="color: #4b5563; line-height: 1.6; margin-bottom: 25px;">
-                Plus, enjoy exclusive member pricing, VIP access to premium properties, and flexible cancellation on thousands of hotels.
+                Plus, enjoy exclusive member pricing, VIP access to premium properties, and flexible cancellation on
+                thousands of hotels.
             </p>
             <a href="hotel-booking.html" class="btn promo-btn" style="display: inline-block;">Start Earning Now</a>
         </div>
     </div>
-    
+
     <!-- Footer -->
     <footer class="footer">
         <!-- Footer Video Background -->
         <video autoplay loop muted playsinline class="footer-video-bg">
-            <!-- Replace the src below when uploaded. -->
             <source src="../assets/videos/footer-background.mp4" type="video/mp4">
         </video>
         <div class="footer-overlay"></div>
@@ -1308,8 +1355,8 @@
             <div class="footer-grid">
                 <div class="footer-brand">
                     <div class="footer-logo">
-                        <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
-                        <span>C2C Journeys</span>
+                        <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
+                        <span>Coast To Coast</span>
                     </div>
                     <p>Your trusted travel partner. We specialize in creating unforgettable travel experiences across
                         the globe with the best prices and exceptional service.</p>
@@ -1318,13 +1365,19 @@
                         "Your trust is our responsibility."
                     </div>
                     <div class="payment-partners" style="margin-top: 20px;">
-                        <span style="display: block; margin-bottom: 12px; font-size: 0.95rem; color: #f8fafc; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">Payment Partners:</span>
+                        <span
+                            style="display: block; margin-bottom: 12px; font-size: 0.95rem; color: #f8fafc; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">Payment
+                            Partners:</span>
                         <div style="display: flex; gap: 12px; align-items: center;">
-                            <div style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-                                <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay" style="height: 18px; width: auto; display: block;">
+                            <div
+                                style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay"
+                                    style="height: 18px; width: auto; display: block;">
                             </div>
-                            <div style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style="height: 18px; width: auto; display: block;">
+                            <div
+                                style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
+                                    style="height: 18px; width: auto; display: block;">
                             </div>
                         </div>
                     </div>
@@ -1367,7 +1420,7 @@
                     <ul>
                         <li><a href="flight-booking.html">Flight Booking</a></li>
                         <li><a href="hotel-booking.html">Hotel Booking</a></li>
-                                            </ul>
+                    </ul>
                 </div>
             </div>
 
@@ -1431,8 +1484,8 @@
             </div>
 
             <div class="footer-bottom">
-                <p>C2C Journeys is a customer-facing brand operated by Coast to Coast Journeys</p>
-                <p>&copy; 2026 C2C Journeys. All Rights Reserved.</p>
+                <p>Coast To Coast is a premium travel brand</p>
+                <p>&copy; 2026 Coast To Coast. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
@@ -1559,8 +1612,8 @@
         }
 
         // Initialize autocomplete on From and To fields
-        if(document.getElementById('fromCity')) setupFlightAutocomplete(document.getElementById('fromCity'));
-        if(document.getElementById('toCity')) setupFlightAutocomplete(document.getElementById('toCity'));
+        if (document.getElementById('fromCity')) setupFlightAutocomplete(document.getElementById('fromCity'));
+        if (document.getElementById('toCity')) setupFlightAutocomplete(document.getElementById('toCity'));
 
         // ========== Sidebar Menu ==========
         const sidebar = document.getElementById('sidebar');
@@ -1701,7 +1754,7 @@
         const returnDateDisplay = document.getElementById('returnDateDisplay');
         const returnDateWrapper = document.getElementById('returnDateContainer');
 
-        if(departDate) departDate.addEventListener('change', function () {
+        if (departDate) departDate.addEventListener('change', function () {
             if (departDateDisplay) departDateDisplay.textContent = formatDate(this.value);
             if (returnDate) {
                 returnDate.min = this.value;
@@ -1714,7 +1767,7 @@
             }
         });
 
-        if(returnDate) returnDate.addEventListener('change', function () {
+        if (returnDate) returnDate.addEventListener('change', function () {
             if (returnDateDisplay) returnDateDisplay.textContent = formatDate(this.value);
         });
 
@@ -1748,7 +1801,7 @@
         checkInDate.addEventListener('change', function () {
             if (checkInDisplay) checkInDisplay.textContent = formatDate(this.value);
             checkOutDate.min = this.value;
-            
+
             // Auto-advance checkout date if it's invalid or empty
             if (!checkOutDate.value || checkOutDate.value <= this.value) {
                 const nextDay = new Date(this.value);
@@ -1769,11 +1822,11 @@
         const travelersDisplay = document.getElementById('travelersDisplay');
         const travelersDone = document.getElementById('travelersDone');
 
-        if(travelersDropdown) travelersDropdown.addEventListener('click', function () {
+        if (travelersDropdown) travelersDropdown.addEventListener('click', function () {
             travelersPopup.classList.toggle('active');
         });
 
-        if(travelersDone) travelersDone.addEventListener('click', function () {
+        if (travelersDone) travelersDone.addEventListener('click', function () {
             travelersPopup.classList.remove('active');
         });
 
@@ -1981,7 +2034,7 @@
         renderRooms();
 
         // ========== Swap Cities ==========
-        if(document.getElementById('swapCitiesBtn')) document.getElementById('swapCitiesBtn').addEventListener('click', function () {
+        if (document.getElementById('swapCitiesBtn')) document.getElementById('swapCitiesBtn').addEventListener('click', function () {
             const fromCity = document.getElementById('fromCity');
             const toCity = document.getElementById('toCity');
             const temp = fromCity.value;
@@ -1992,7 +2045,7 @@
         });
 
         // ========== Form Submissions ==========
-        if(document.getElementById('flightSearchForm')) document.getElementById('flightSearchForm').addEventListener('submit', function (e) {
+        if (document.getElementById('flightSearchForm')) document.getElementById('flightSearchForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
             const from = extractAirportCode(document.getElementById('fromCity').value);
@@ -2094,7 +2147,7 @@
         });
 
 
-        
+
 
         // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -2124,18 +2177,18 @@
     <script src="../js/main.js?v=2"></script>
     <script src="../js/hotel-search.js"></script>
     <!--Start of Tawk.to Script-->
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/6a533a559a72601d480b4624/1jtahno9g';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script>
-<!--End of Tawk.to Script-->
+    <script type="text/javascript">
+        var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+        (function () {
+            var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+            s1.async = true;
+            s1.src = 'https://embed.tawk.to/6a533a559a72601d480b4624/1jtahno9g';
+            s1.charset = 'UTF-8';
+            s1.setAttribute('crossorigin', '*');
+            s0.parentNode.insertBefore(s1, s0);
+        })();
+    </script>
+    <!--End of Tawk.to Script-->
 </body>
 
 </html>
