@@ -1800,13 +1800,16 @@
 
         checkInDate.addEventListener('change', function () {
             if (checkInDisplay) checkInDisplay.textContent = formatDate(this.value);
-            checkOutDate.min = this.value;
+            
+            const nextDay = new Date(this.value);
+            nextDay.setDate(nextDay.getDate() + 1);
+            const minCheckOutStr = nextDay.toISOString().split('T')[0];
+            
+            checkOutDate.min = minCheckOutStr;
 
             // Auto-advance checkout date if it's invalid or empty
-            if (!checkOutDate.value || checkOutDate.value <= this.value) {
-                const nextDay = new Date(this.value);
-                nextDay.setDate(nextDay.getDate() + 1);
-                checkOutDate.value = nextDay.toISOString().split('T')[0];
+            if (!checkOutDate.value || checkOutDate.value < minCheckOutStr) {
+                checkOutDate.value = minCheckOutStr;
                 if (checkOutDisplay) checkOutDisplay.textContent = formatDate(checkOutDate.value);
             }
         });

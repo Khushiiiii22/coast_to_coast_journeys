@@ -659,6 +659,26 @@ function setupEventListeners() {
     // Modify search form
     document.getElementById('modifySearchForm')?.addEventListener('submit', handleModifySearch);
 
+    // Date validation for modify search
+    const modifyCheckin = document.getElementById('modifyCheckin');
+    const modifyCheckout = document.getElementById('modifyCheckout');
+    if (modifyCheckin && modifyCheckout) {
+        modifyCheckin.addEventListener('change', (e) => {
+            if (e.target.value) {
+                const checkinDate = new Date(e.target.value);
+                const minCheckout = new Date(checkinDate);
+                minCheckout.setDate(minCheckout.getDate() + 1);
+                
+                const minCheckoutStr = minCheckout.toISOString().split('T')[0];
+                modifyCheckout.min = minCheckoutStr;
+                
+                if (modifyCheckout.value && modifyCheckout.value < minCheckoutStr) {
+                    modifyCheckout.value = minCheckoutStr;
+                }
+            }
+        });
+    }
+
     // Add/Remove Room buttons in Modify Modal
     document.getElementById('modifyAddRoomBtn')?.addEventListener('click', () => {
         if (modifyRooms.length < 8) {
@@ -784,9 +804,26 @@ function openModifyModal() {
     const params = SearchSession.getSearchParams();
 
     if (params) {
+        const checkinInput = document.getElementById('modifyCheckin');
+        const checkoutInput = document.getElementById('modifyCheckout');
+        
         document.getElementById('modifyDestination').value = params.destination || '';
-        document.getElementById('modifyCheckin').value = params.checkin || '';
-        document.getElementById('modifyCheckout').value = params.checkout || '';
+        checkinInput.value = params.checkin || '';
+        checkoutInput.value = params.checkout || '';
+
+        // Set min date constraints
+        const todayStr = new Date().toISOString().split('T')[0];
+        checkinInput.min = todayStr;
+        
+        if (checkinInput.value) {
+            const minCheckout = new Date(checkinInput.value);
+            minCheckout.setDate(minCheckout.getDate() + 1);
+            checkoutInput.min = minCheckout.toISOString().split('T')[0];
+        } else {
+            const minCheckout = new Date();
+            minCheckout.setDate(minCheckout.getDate() + 1);
+            checkoutInput.min = minCheckout.toISOString().split('T')[0];
+        }
 
         // Initialize modifyRooms from params
         if (params.rooms && Array.isArray(params.rooms)) {
