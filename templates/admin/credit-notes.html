@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Notes | Coast To Coast Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="../../admin/css/admin.css">
+    <link rel="icon" href="data:,">
+
+    <style>
+        .notes-banner {
+            background: #000;
+            color: #4df3c5;
+            text-align: center;
+            padding: 1rem;
+            font-size: 1.25rem;
+            font-weight: 800;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2rem;
+        }
+
+        .table-container {
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        .ss-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .ss-table th {
+            background: #ffffff;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 700;
+            color: #1e293b;
+            border-bottom: 2px solid #e0f2f1;
+            white-space: nowrap;
+        }
+
+        .ss-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            color: #475569;
+        }
+
+        .status-badge {
+            background: #2e7d32;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+    </style>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Credit Notes</h1>
+                </div>
+                <div class="header-right">
+                    <div style="font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-right: 1.5rem;">
+                        COAST TO COAST JOURNEYS
+                    </div>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <div class="notes-banner">ADMIN CREDIT NOTES</div>
+
+                <div class="table-container">
+                    <table class="ss-table">
+                        <thead>
+                            <tr>
+                                <th>S.No.</th>
+                                <th>Reference No</th>
+                                <th>Manual Type</th>
+                                <th>Description</th>
+                                <th>Payment Mode</th>
+                                <th>Voucher Type</th>
+                                <th>Product</th>
+                                <th>Amount</th>
+                                <th>Approve Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1.</td>
+                                <td class="na-text">---</td>
+                                <td>without_ref_no</td>
+                                <td>DEMO AMOUNT</td>
+                                <td>wallet</td>
+                                <td>credit</td>
+                                <td>Topup</td>
+                                <td>10</td>
+                                <td><span class="status-badge">Approved</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../admin/js/admin.js"></script>
+</body>
+
+</html>

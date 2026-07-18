@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Enquiry | Coast To Coast Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="../../admin/css/admin.css">
+    <link rel="icon" href="data:,">
+
+    <style>
+        .enquiry-banner {
+            background: #000;
+            color: #4df3c5;
+            text-align: center;
+            padding: 1rem;
+            font-size: 1.4rem;
+            font-weight: 800;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+        }
+
+        .enquiry-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
+            background: #fff;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .filter-input-sm {
+            padding: 0.6rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            width: 150px;
+        }
+
+        .search-group {
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0 0.5rem;
+        }
+
+        .search-group input {
+            border: none;
+            padding: 0.6rem;
+            outline: none;
+            width: 250px;
+        }
+
+        .btn-mint-icon {
+            background: #4db6ac;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-export-mint {
+            background: #4db6ac;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* Table */
+        .table-container {
+            background: #fff;
+            border: 1px solid #e0f2f1;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .enquiry-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .enquiry-table th {
+            background: #ffffff;
+            padding: 0.75rem 0.5rem;
+            text-align: left;
+            font-weight: 700;
+            color: #1e293b;
+            border-bottom: 2px solid #e0f2f1;
+            white-space: nowrap;
+        }
+
+        .enquiry-table td {
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+            color: #475569;
+        }
+
+        .col-link {
+            color: #1e293b;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .col-email {
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .badge-rooms {
+            background: #e2e8f0;
+            color: #475569;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+    </style>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Hotel Enquiry</h1>
+                </div>
+                <div class="header-right">
+                    <div style="font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-right: 1.5rem;">
+                        COAST TO COAST JOURNEYS
+                    </div>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <div class="enquiry-banner">HOTEL ENQUIRY</div>
+
+                <!-- Toolbar -->
+                <div class="enquiry-toolbar">
+                    <input type="text" class="filter-input-sm" placeholder="From Date" onfocus="(this.type='date')">
+                    <input type="text" class="filter-input-sm" placeholder="To Date" onfocus="(this.type='date')">
+                    <div class="search-group">
+                        <input type="text" placeholder="Enter Keyword">
+                    </div>
+                    <button class="btn-mint-icon"><i class="fas fa-search"></i></button>
+                    <button class="btn-export-mint">Export</button>
+                </div>
+
+                <!-- Table -->
+                <div class="table-container">
+                    <table class="enquiry-table">
+                        <thead>
+                            <tr>
+                                <th>S.No.</th>
+                                <th>Name</th>
+                                <th>Contact</th>
+                                <th>Destination</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
+                                <th>Rooms/Guests</th>
+                                <th>Requirement</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hotelEnquiryBody">
+                            <!-- Real data will load here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../admin/js/admin.js"></script>
+</body>
+
+</html>

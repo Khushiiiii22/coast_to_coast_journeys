@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Booking Markup | Coast To Coast Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="../../admin/css/admin.css">
+    <link rel="icon" href="data:,">
+
+    <style>
+        /* ═══════════════════════════════════════
+           Matching Screenshot UI
+           ═══════════════════════════════════════ */
+        
+        .block-markup-banner {
+            background: #000;
+            color: #4df3c5;
+            text-align: center;
+            padding: 1.25rem;
+            font-size: 1.4rem;
+            font-weight: 800;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .block-markup-table-container {
+            border: 2px solid #b2dfdb;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .block-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .block-table th {
+            background: #ffffff;
+            padding: 1.25rem;
+            text-align: left;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #1e293b;
+            border: 1px solid #e0f2f1;
+        }
+
+        .block-table td {
+            padding: 1.25rem;
+            border: 1px solid #e0f2f1;
+            font-size: 0.95rem;
+            color: #475569;
+            vertical-align: middle;
+        }
+
+        /* Input Styles matching screenshot */
+        .ss-select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            background-color: #fff;
+            color: #1e293b;
+            font-size: 0.95rem;
+        }
+
+        .ss-input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            background-color: #fff;
+            color: #1e293b;
+            font-size: 0.95rem;
+            text-align: left;
+        }
+
+        .save-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+
+        .ss-save-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 2.5rem;
+            border-radius: 4px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .ss-save-btn:hover {
+            background: #2563eb;
+        }
+
+        .na-text {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+    </style>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1 class="page-title">Manage Block Bookings Markup</h1>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <div style="font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-right: 1.5rem;">
+                        COAST TO COAST JOURNEYS
+                    </div>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <!-- Banner -->
+                <div class="block-markup-banner">
+                    <i class="fas fa-briefcase"></i>
+                    MANAGE BLOCK BOOKINGS MARKUP (B2C ONLY)
+                </div>
+
+                <!-- Table -->
+                <form id="markupForm">
+                    <div class="block-markup-table-container">
+                        <table class="block-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">#</th>
+                                    <th>Service</th>
+                                    <th style="width: 250px;">Type</th>
+                                    <th>Charges</th>
+                                    <th style="width: 200px;">Charges by API</th>
+                                </tr>
+                            </thead>
+                            <tbody id="markupBody">
+                                <!-- Row 1 -->
+                                <tr>
+                                    <td>1.</td>
+                                    <td>Hotel Domestic</td>
+                                    <td>
+                                        <select name="hotel_dom_type" class="ss-select">
+                                            <option value="flat">Flat</option>
+                                            <option value="percentage">Percentage</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="hotel_dom_val" class="ss-input" value="0">
+                                    </td>
+                                    <td class="na-text">N/A</td>
+                                </tr>
+                                <!-- Row 2 -->
+                                <tr>
+                                    <td>2.</td>
+                                    <td>Hotel International</td>
+                                    <td>
+                                        <select name="hotel_int_type" class="ss-select">
+                                            <option value="flat" selected>Flat</option>
+                                            <option value="percentage">Percentage</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="hotel_int_val" class="ss-input" value="0">
+                                    </td>
+                                    <td class="na-text">N/A</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="save-container">
+                        <button type="submit" class="ss-save-btn">Save</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Admin JS -->
+    <script src="../../admin/js/admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            loadMarkupRules();
+
+            document.getElementById('markupForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await saveMarkupRules();
+            });
+        });
+
+        async function loadMarkupRules() {
+            try {
+                // This would fetch existing rules from the DB
+                const res = await apiRequest('/markup/rules/block');
+                if (res.success && res.data) {
+                    const data = res.data;
+                    // Populate based on rule_name or similar mapping
+                    // (Simplified for now - matching fields to form names)
+                    data.forEach(rule => {
+                        const base = rule.rule_name.toLowerCase().replace(' ', '_');
+                        const typeSelect = document.querySelector(`select[name="${base}_type"]`);
+                        const valInput = document.querySelector(`input[name="${base}_val"]`);
+                        
+                        if (typeSelect) typeSelect.value = rule.markup_type;
+                        if (valInput) valInput.value = rule.markup_value;
+                    });
+                }
+            } catch (error) {
+                console.error('Load Error:', error);
+            }
+        }
+
+        async function saveMarkupRules() {
+            const saveBtn = document.querySelector('.ss-save-btn');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            const form = document.getElementById('markupForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const res = await apiRequest('/markup/rules/block', 'POST', data);
+                if (res.success) {
+                    showNotification('Markup rules updated successfully!', 'success');
+                }
+            } catch (error) {
+                showNotification('Failed to save rules', 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = 'Save';
+            }
+        }
+    </script>
+</body>
+
+</html>

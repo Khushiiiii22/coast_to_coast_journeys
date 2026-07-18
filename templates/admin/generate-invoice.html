@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Invoice | Coast To Coast Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="../../admin/css/admin.css">
+    <link rel="icon" href="data:,">
+
+    <style>
+        .invoice-banner {
+            background: #000;
+            color: #4df3c5;
+            text-align: center;
+            padding: 1rem;
+            font-size: 1.4rem;
+            font-weight: 800;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+        }
+
+        .form-container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 2rem;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+        }
+
+        .btn-mint { background: #80cbc4; color: #004d40; }
+        .btn-black { background: #000; color: #fff; }
+
+        .radio-group {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .row-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .col-grid-4 {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #64748b;
+        }
+
+        .form-control {
+            padding: 0.75rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: #4db6ac;
+        }
+
+        .item-row {
+            display: grid;
+            grid-template-columns: 2fr 3fr 1.5fr 1.5fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: flex-end;
+        }
+
+        .btn-add {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            font-weight: 700;
+            width: fit-content;
+            margin-top: 1rem;
+            cursor: pointer;
+        }
+
+        .footer-metrics {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 1.5rem;
+        }
+
+        .total-box {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .btn-generate {
+            background: #80cbc4;
+            color: #004d40;
+            padding: 0.8rem 2.5rem;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Generate Invoice</h1>
+                </div>
+                <div class="header-right">
+                    <div style="font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-right: 1.5rem;">
+                        COAST TO COAST JOURNEYS
+                    </div>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <div class="invoice-banner">Generate Invoice</div>
+
+                <div class="form-container">
+                    <div class="tab-buttons">
+                        <button class="tab-btn btn-black" onclick="switchTab('create')">Create Invoice</button>
+                        <button class="tab-btn btn-mint" onclick="switchTab('list')">My Invoice</button>
+                    </div>
+
+                    <!-- Create Invoice Form -->
+                    <div id="createInvoiceSection">
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="invType" value="Tax Invoice" checked> Tax Invoice
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="invType" value="Proforma Invoice"> Proforma Invoice
+                            </label>
+                        </div>
+
+                        <div class="row-grid">
+                            <div class="form-group">
+                                <label>Customer Name</label>
+                                <input type="text" id="invCustName" class="form-control" placeholder="Enter name">
+                            </div>
+                            <div class="form-group">
+                                <label>Phone Number</label>
+                                <input type="text" id="invPhone" class="form-control" placeholder="Enter phone">
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                            <label>Customer Address</label>
+                            <input type="text" id="invAddr" class="form-control" placeholder="Enter full address">
+                        </div>
+
+                        <div class="col-grid-4">
+                            <div class="form-group">
+                                <label>GST NO.</label>
+                                <input type="text" id="invGst" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>GST Type</label>
+                                <select id="invGstType" class="form-control">
+                                    <option value="GST">GST</option>
+                                    <option value="IGST">IGST</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>GST %</label>
+                                <select id="invGstPct" class="form-control">
+                                    <option value="0">0%</option>
+                                    <option value="5">5%</option>
+                                    <option value="12">12%</option>
+                                    <option value="18">18%</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="item-row">
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select id="invCategory" class="form-control">
+                                    <option>Accommodation (Hotel)</option>
+                                    <option>Consultancy</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <input type="text" id="invDesc" class="form-control" placeholder="Item description">
+                            </div>
+                            <div class="form-group">
+                                <label>Price</label>
+                                <input type="number" id="invPrice" class="form-control" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>SAC</label>
+                                <input type="text" id="invSac" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <button class="btn-add">Add</button>
+
+                        <div class="footer-metrics">
+                            <div class="total-box">Total Price: <span id="invTotalDisplay" style="margin-left: 2rem;">0</span></div>
+                            <button class="btn-generate" onclick="submitInvoice()">Generate</button>
+                        </div>
+                    </div>
+
+                    <!-- Invoice List View -->
+                    <div id="invoiceListSection" style="display: none;">
+                        <h2 style="color: #4db6ac; text-align: center; font-size: 2.5rem; font-weight: 800; margin-bottom: 2rem;">Invoice List</h2>
+                        <div class="table-container" style="border: 1px solid #e0f2f1; border-radius: 4px;">
+                            <table class="enquiry-table" style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="border-bottom: 2px solid #e0f2f1;">
+                                        <th style="padding: 1rem; text-align: left;">Sr. No.</th>
+                                        <th style="padding: 1rem; text-align: left;">Invoice No.</th>
+                                        <th style="padding: 1rem; text-align: left;">Customer Name</th>
+                                        <th style="padding: 1rem; text-align: left;">Price</th>
+                                        <th style="padding: 1rem; text-align: left;">Download</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="manualInvoiceBody">
+                                    <!-- Real data will load here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../admin/js/admin.js"></script>
+    <script>
+        function switchTab(tab) {
+            const createSection = document.getElementById('createInvoiceSection');
+            const listSection = document.getElementById('invoiceListSection');
+            const btns = document.querySelectorAll('.tab-btn');
+
+            if (tab === 'create') {
+                createSection.style.display = 'block';
+                listSection.style.display = 'none';
+                btns[0].className = 'tab-btn btn-black';
+                btns[1].className = 'tab-btn btn-mint';
+            } else {
+                createSection.style.display = 'none';
+                listSection.style.display = 'block';
+                btns[0].className = 'tab-btn btn-mint';
+                btns[1].className = 'tab-btn btn-black';
+                loadInvoicesList(); // Refresh list when switching to it
+            }
+        }
+
+        async function submitInvoice() {
+            const data = {
+                customer_name: document.getElementById('invCustName').value,
+                phone_number: document.getElementById('invPhone').value,
+                customer_address: document.getElementById('invAddr').value,
+                gst_no: document.getElementById('invGst').value,
+                gst_type: document.getElementById('invGstType').value,
+                gst_percentage: parseFloat(document.getElementById('invGstPct').value),
+                category: document.getElementById('invCategory').value,
+                description: document.getElementById('invDesc').value,
+                price: parseFloat(document.getElementById('invPrice').value),
+                sac: document.getElementById('invSac').value,
+                invoice_type: document.querySelector('input[name="invType"]:checked').value
+            };
+
+            if (!data.customer_name || !data.price) {
+                alert('Customer name and price are required.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/account/invoices', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    alert('Invoice Generated Successfully!');
+                    switchTab('list');
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error submitting invoice:', error);
+                alert('Connection error.');
+            }
+        }
+
+        // Auto-update total display
+        document.getElementById('invPrice')?.addEventListener('input', (e) => {
+            document.getElementById('invTotalDisplay').innerText = parseFloat(e.target.value || 0).toLocaleString();
+        });
+    </script>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../admin/js/admin.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Slots | Coast To Coast Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="../../admin/css/admin.css">
+    <link rel="icon" href="data:,">
+
+    <style>
+        .utility-box {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .utility-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+        }
+
+        .calendar-filters {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-end;
+            margin-bottom: 3rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #64748b;
+        }
+
+        .filter-select {
+            padding: 0.75rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            min-width: 200px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .btn-fetch {
+            background: #f4511e;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-fetch:hover {
+            background: #e64a19;
+        }
+
+        .section-subtitle {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+        }
+
+        .table-container {
+            border: 1px solid #e0f2f1;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .meeting-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .meeting-table th {
+            text-align: left;
+            padding: 1rem;
+            background: #fff;
+            color: #1e293b;
+            font-weight: 700;
+            border-bottom: 2px solid #e0f2f1;
+            font-size: 0.9rem;
+        }
+
+        .empty-row {
+            text-align: center;
+            padding: 3rem !important;
+            color: #ef4444;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+    </style>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Meeting Slots</h1>
+                </div>
+                <div class="header-right">
+                    <div style="font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-right: 1.5rem;">
+                        COAST TO COAST JOURNEYS
+                    </div>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <div class="utility-box">
+                    <h2 class="utility-title">Meeting Calendar</h2>
+
+                    <div class="calendar-filters">
+                        <div class="filter-group">
+                            <label>Month</label>
+                            <select class="filter-select">
+                                <option>June</option>
+                                <option>July</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Year</label>
+                            <select class="filter-select">
+                                <option>2026</option>
+                                <option>2027</option>
+                            </select>
+                        </div>
+                        <button class="btn-fetch">Fetch</button>
+                    </div>
+
+                    <h3 class="section-subtitle">Meeting History</h3>
+                    <div class="table-container">
+                        <table class="meeting-table">
+                            <thead>
+                                <tr>
+                                    <th>Meeting Date</th>
+                                    <th>Meeting Time</th>
+                                    <th>Gmeet Link</th>
+                                    <th>Status</th>
+                                    <th>Remark</th>
+                                    <th>Support Remark</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6" class="empty-row">No Data Found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../admin/js/admin.js"></script>
+</body>
+
+</html>

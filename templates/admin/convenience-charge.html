@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convenience Charge | Coast To Coast Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="../../admin/css/admin.css">
+    <link rel="icon" href="data:,">
+
+    <style>
+        .conv-banner {
+            background: #000;
+            color: #4df3c5;
+            text-align: center;
+            padding: 1rem;
+            font-size: 1.25rem;
+            font-weight: 800;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2rem;
+        }
+
+        .conv-body {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 4px;
+            min-height: 400px;
+        }
+
+        .error-msg {
+            color: #ef4444;
+            font-size: 2.5rem;
+            font-weight: 800;
+            padding-top: 1rem;
+        }
+
+        .add-form-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .form-header {
+            background: #2e7d32;
+            color: white;
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .form-body {
+            padding: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 1.25rem;
+            font-size: 0.95rem;
+        }
+
+        .btn-submit {
+            background: #f4511e;
+            /* Orange from screenshot */
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            width: fit-content;
+        }
+    </style>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Manage Convenience Charge</h1>
+                </div>
+                <div class="header-right">
+                    <div style="font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-right: 1.5rem;">
+                        COAST TO COAST JOURNEYS
+                    </div>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <div class="conv-banner">MANAGE CONVENIENCE CHARGE</div>
+
+                <div class="conv-body" style="display: flex; justify-content: center;">
+                    <form id="convenienceForm" class="add-form-card" style="width: 100%; max-width: 600px;">
+                        <div class="form-header">Add/Edit Convenience Charge</div>
+                        <div class="form-body">
+                            <label class="form-label">Convenience Charge</label>
+                            <input type="number" id="charge_val" class="form-input" value="0" required>
+
+                            <label class="form-label">Convenience Charge Type</label>
+                            <select id="charge_type" class="form-input">
+                                <option value="flat">Flat</option>
+                                <option value="percentage">Percentage</option>
+                            </select>
+
+                            <label class="form-label">Service</label>
+                            <select id="service_type" class="form-input">
+                                <option value="Hotel">Hotel</option>
+                            </select>
+
+                            <label class="form-label">Category</label>
+                            <select id="category_type" class="form-input">
+                                <option value="Domestic">Domestic</option>
+                                <option value="International">International</option>
+                            </select>
+
+                            <button type="submit" class="btn-submit">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../admin/js/admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('admin_token');
+            if (!token) return window.location.href = 'login.html';
+
+            // Load Existing Setup
+            try {
+                const response = await apiRequest('/markup/rules/convenience');
+                if (response.success && response.data) {
+                    const domesticRule = response.data.find(r => r.target_value === 'Domestic');
+                    if (domesticRule) {
+                        document.getElementById('charge_val').value = domesticRule.markup_value;
+                        document.getElementById('charge_type').value = domesticRule.markup_type || 'flat';
+                        document.getElementById('category_type').value = 'Domestic';
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to fetch rules', err);
+            }
+
+            // Handle Submit
+            document.getElementById('convenienceForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const payload = {
+                    charge_val: parseFloat(document.getElementById('charge_val').value) || 0,
+                    charge_type: document.getElementById('charge_type').value,
+                    category: document.getElementById('category_type').value
+                };
+
+                try {
+                    const response = await apiRequest('/markup/rules/convenience', 'POST', payload);
+                    if (response.success) {
+                        showNotification('Convenience Charge successfully updated!', 'success');
+                    } else {
+                        showNotification('Failed to update: ' + response.error, 'error');
+                    }
+                } catch (err) {
+                    showNotification('An error occurred while saving.', 'error');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

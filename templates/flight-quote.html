@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Request Flight Quote - Coast To Coast.">
+    <title>Request Flight Quote | Coast To Coast</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="../assets/images/c2c-logo.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="../css/main.css">
+    
+    <style>
+        .quote-container {
+            max-width: 1200px;
+            margin: 120px auto 60px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 40px;
+        }
+
+        @media (max-width: 992px) {
+            .quote-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .flight-summary-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .quote-form-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(14, 100, 166, 0.08);
+            border: 1px solid #f1f5f9;
+        }
+
+        .summary-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .summary-header i {
+            font-size: 2rem;
+            color: #0e64a6;
+        }
+
+        .summary-header h2 {
+            font-size: 1.5rem;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        .flight-route-box {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .route-point {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            position: relative;
+        }
+
+        .route-point:first-child::after {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 30px;
+            bottom: -30px;
+            width: 2px;
+            background: #cbd5e1;
+            border-left: 2px dashed #94a3b8;
+        }
+
+        .route-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0e64a6;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 2;
+        }
+
+        .route-details h4 {
+            margin: 0 0 5px;
+            color: #1e293b;
+            font-size: 1.1rem;
+        }
+
+        .route-details p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .flight-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .meta-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .meta-label {
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .meta-value {
+            color: #1e293b;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #334155;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            color: #1e293b;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #0e64a6;
+            box-shadow: 0 0 0 4px rgba(14, 100, 166, 0.1);
+        }
+
+        .phone-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .country-code {
+            width: 120px;
+            flex-shrink: 0;
+        }
+
+        .btn-submit-quote {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #0e64a6, #1a365d);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-submit-quote:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(14, 100, 166, 0.2);
+        }
+
+        .btn-submit-quote:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Success State */
+        .success-state {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: #dcfce7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #16a34a;
+            font-size: 3rem;
+            margin: 0 auto 25px;
+            animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes scaleIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header scrolled" id="header" style="background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <div class="container">
+            <div class="header-content">
+                                <!-- Hamburger Menu Button -->
+                <button class="hamburger-menu" id="hamburgerMenu" aria-label="Open navigation menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+<a href="index.html" class="logo">
+                    <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
+                    <span class="logo-text" style="color: #1e293b;">Coast To Coast</span>
+                </a>
+                <div class="header-actions">
+                    <a href="flight-booking.html" class="btn btn-outline" style="border-color: #e2e8f0; color: #64748b;">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="quote-container">
+        <!-- Left: Summary -->
+        <div class="flight-summary-card">
+            <div class="summary-header">
+                <i class="fas fa-plane-departure"></i>
+                <div>
+                    <h2>Flight Details</h2>
+                    <p style="color: #64748b; margin: 5px 0 0; font-size: 0.9rem;">Review your request before submitting</p>
+                </div>
+            </div>
+
+            <div class="flight-route-box">
+                <div class="route-point" style="margin-bottom: 30px;">
+                    <div class="route-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="route-details">
+                        <h4 id="summaryFromCode">...</h4>
+                        <p id="summaryFromCity">...</p>
+                    </div>
+                </div>
+                <div class="route-point">
+                    <div class="route-icon" style="color: #16a34a;">
+                        <i class="fas fa-map-pin"></i>
+                    </div>
+                    <div class="route-details">
+                        <h4 id="summaryToCode">...</h4>
+                        <p id="summaryToCity">...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flight-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Departure Date</span>
+                    <span class="meta-value"><i class="far fa-calendar"></i> <span id="summaryDepart">...</span></span>
+                </div>
+                <div class="meta-item" id="summaryReturnContainer">
+                    <span class="meta-label">Return Date</span>
+                    <span class="meta-value"><i class="far fa-calendar-check"></i> <span id="summaryReturn">...</span></span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Travel Class</span>
+                    <span class="meta-value"><i class="fas fa-star"></i> <span id="summaryClass">...</span></span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Passengers</span>
+                    <span class="meta-value"><i class="fas fa-users"></i> <span id="summaryPax">...</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Form -->
+        <div class="quote-form-card" id="formSection">
+            <h2 style="font-size: 1.8rem; color: #1e293b; margin-bottom: 10px;">Request a Quote</h2>
+            <p style="color: #64748b; margin-bottom: 30px; font-size: 1.05rem;">
+                Submit your details and our travel executives will contact you with the best unpublished fares for this route.
+            </p>
+
+            <form id="quoteForm">
+                <div class="form-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" class="form-control" placeholder="Enter your full name as per passport" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" class="form-control" placeholder="Enter your email" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@23.0.4/build/css/intlTelInput.css">
+                        <style>.iti { width: 100%; }</style>
+                        <input type="tel" id="phone" class="form-control" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@23.0.4/build/js/intlTelInput.min.js"></script>
+                        <script>
+                            const phoneInput = document.querySelector("#phone");
+                            const iti = window.intlTelInput(phoneInput, {
+                                initialCountry: "us",
+                                separateDialCode: true,
+                                utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@23.0.4/build/js/utils.js"
+                            });
+                        </script>
+                </div>
+
+                <div class="form-group" style="margin-top: 30px;">
+                    <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; font-weight: normal;">
+                        <input type="checkbox" required style="margin-top: 5px; width: 18px; height: 18px; accent-color: #0e64a6;">
+                        <span style="color: #475569; font-size: 0.95rem; line-height: 1.5;">
+                            I consent to Coast To Coast contacting me via phone, email, or WhatsApp regarding this flight enquiry and agree to the <a href="privacy-policy.html" target="_blank" style="color: #0e64a6;">Privacy Policy</a>.
+                        </span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-submit-quote" id="submitBtn">
+                    Submit Enquiry <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- Success State (Hidden by default) -->
+        <div class="quote-form-card success-state" id="successSection">
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <h2 style="font-size: 2rem; color: #1e293b; margin-bottom: 15px;">Enquiry Received!</h2>
+            <p style="color: #64748b; font-size: 1.1rem; line-height: 1.6; margin-bottom: 30px; max-width: 400px; margin-left: auto; margin-right: auto;">
+                Thank you for choosing Coast To Coast. One of our dedicated travel executives will contact you shortly with the best available fare for your trip.
+            </p>
+            <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 30px; border-left: 4px solid #0e64a6;">
+                <p style="margin: 0; color: #475569; font-weight: 500;">
+                    <i class="fas fa-envelope" style="color: #0e64a6; margin-right: 8px;"></i> A confirmation email has been sent to your inbox.
+                </p>
+            </div>
+            <a href="index.html" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px;">
+                <i class="fas fa-home"></i> Return to Home
+            </a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+                <p>Coast To Coast Journeys is a premium travel brand</p>
+                <p>&copy; 2026 Coast To Coast Journeys. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Parse URL parameters
+            const params = new URLSearchParams(window.location.search);
+            
+            const flightData = {
+                fromCode: params.get('from') || '...',
+                toCode: params.get('to') || '...',
+                departDate: params.get('date') || '',
+                returnDate: params.get('return') || '',
+                tripType: params.get('type') || 'oneway',
+                adults: parseInt(params.get('adults')) || 1,
+                children: parseInt(params.get('children')) || 0,
+                infants: parseInt(params.get('infants')) || 0,
+                cabinClass: params.get('class') || 'Business Class'
+            };
+
+            // Format dates
+            const formatDate = (dateStr) => {
+                if (!dateStr) return '...';
+                try {
+                    const date = new Date(dateStr);
+                    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+                } catch(e) { return dateStr; }
+            };
+
+            // Populate Summary
+            document.getElementById('summaryFromCode').textContent = flightData.fromCode;
+            document.getElementById('summaryToCode').textContent = flightData.toCode;
+            document.getElementById('summaryDepart').textContent = formatDate(flightData.departDate);
+            
+            if (flightData.tripType === 'roundtrip' && flightData.returnDate) {
+                document.getElementById('summaryReturn').textContent = formatDate(flightData.returnDate);
+            } else {
+                document.getElementById('summaryReturnContainer').style.display = 'none';
+            }
+
+            document.getElementById('summaryClass').textContent = flightData.cabinClass;
+            
+            const paxTotal = flightData.adults + flightData.children + flightData.infants;
+            document.getElementById('summaryPax').textContent = `${paxTotal} Passenger${paxTotal > 1 ? 's' : ''}`;
+
+            // Mock airport resolution for display (since we passed only codes in URL)
+            document.getElementById('summaryFromCity').textContent = `Origin Airport`;
+            document.getElementById('summaryToCity').textContent = `Destination Airport`;
+
+            // Form Submission
+            document.getElementById('quoteForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const btn = document.getElementById('submitBtn');
+                const originalText = btn.innerHTML;
+                
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+                btn.disabled = true;
+
+                const payload = {
+                    full_name: document.getElementById('fullName').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    country_code: document.getElementById('countryCode').value,
+                    travel_class: flightData.cabinClass,
+                    trip_type: flightData.tripType === 'roundtrip' ? 'Round Trip' : 'One Way',
+                    from_airport_code: flightData.fromCode,
+                    to_airport_code: flightData.toCode,
+                    departure_date: flightData.departDate,
+                    return_date: flightData.returnDate,
+                    adults: flightData.adults,
+                    children: flightData.children,
+                    infants: flightData.infants
+                };
+
+                try {
+                    const response = await fetch('/api/flights/enquiry', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        document.getElementById('formSection').style.display = 'none';
+                        document.getElementById('successSection').style.display = 'block';
+                    } else {
+                        alert(result.error || 'Failed to submit enquiry. Please try again.');
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
+                } catch (err) {
+                    console.error('Error submitting flight enquiry:', err);
+                    alert('An error occurred. Please try again later.');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            });
+        });
+    </script>
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6a533a559a72601d480b4624/1jtahno9g';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+</body>
+</html>
