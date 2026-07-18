@@ -665,11 +665,11 @@ function setupEventListeners() {
     if (modifyCheckin && modifyCheckout) {
         modifyCheckin.addEventListener('change', (e) => {
             if (e.target.value) {
-                const checkinDate = new Date(e.target.value);
-                const minCheckout = new Date(checkinDate);
+                const [y, m, d] = e.target.value.split('-');
+                const minCheckout = new Date(y, m - 1, d);
                 minCheckout.setDate(minCheckout.getDate() + 1);
                 
-                const minCheckoutStr = minCheckout.toISOString().split('T')[0];
+                const minCheckoutStr = minCheckout.getFullYear() + '-' + String(minCheckout.getMonth() + 1).padStart(2, '0') + '-' + String(minCheckout.getDate()).padStart(2, '0');
                 modifyCheckout.min = minCheckoutStr;
                 
                 if (modifyCheckout.value && modifyCheckout.value < minCheckoutStr) {
@@ -812,17 +812,25 @@ function openModifyModal() {
         checkoutInput.value = params.checkout || '';
 
         // Set min date constraints
-        const todayStr = new Date().toISOString().split('T')[0];
+        const today = new Date();
+        const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
         checkinInput.min = todayStr;
         
         if (checkinInput.value) {
-            const minCheckout = new Date(checkinInput.value);
+            const [y, m, d] = checkinInput.value.split('-');
+            const minCheckout = new Date(y, m - 1, d);
             minCheckout.setDate(minCheckout.getDate() + 1);
-            checkoutInput.min = minCheckout.toISOString().split('T')[0];
+            
+            const minCheckoutStr = minCheckout.getFullYear() + '-' + String(minCheckout.getMonth() + 1).padStart(2, '0') + '-' + String(minCheckout.getDate()).padStart(2, '0');
+            checkoutInput.min = minCheckoutStr;
+            
+            if (checkoutInput.value && checkoutInput.value < minCheckoutStr) {
+                checkoutInput.value = minCheckoutStr;
+            }
         } else {
             const minCheckout = new Date();
             minCheckout.setDate(minCheckout.getDate() + 1);
-            checkoutInput.min = minCheckout.toISOString().split('T')[0];
+            checkoutInput.min = minCheckout.getFullYear() + '-' + String(minCheckout.getMonth() + 1).padStart(2, '0') + '-' + String(minCheckout.getDate()).padStart(2, '0');
         }
 
         // Initialize modifyRooms from params
