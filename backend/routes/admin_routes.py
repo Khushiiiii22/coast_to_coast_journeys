@@ -428,29 +428,37 @@ def manage_cancellation_charge():
 @admin_bp.route('/system/general', methods=['GET', 'POST'])
 @require_auth()
 def manage_general_settings():
-    from flask import current_app
-    supabase = current_app.config.get('SUPABASE')
-    if not supabase:
-        return jsonify({'success': False, 'error': 'Database not initialized'}), 500
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        if not supabase:
+            return jsonify({'success': False, 'error': 'Database not initialized'}), 500
 
-    if request.method == 'GET':
-        result = supabase.table('system_settings').select('*').eq('category', 'general').execute()
-        return jsonify({'success': True, 'data': result.data}), 200
+        if request.method == 'GET':
+            result = supabase.table('system_settings').select('*').eq('category', 'general').execute()
+            return jsonify({'success': True, 'data': result.data}), 200
 
-    data = request.json
-    for key, value in data.items():
-        existing = supabase.table('system_settings').select('id').eq('setting_key', key).execute()
-        if existing.data and len(existing.data) > 0:
-            supabase.table('system_settings').update({'setting_value': str(value)}).eq('id', existing.data[0]['id']).execute()
-        else:
-            supabase.table('system_settings').insert({
-                'setting_key': key,
-                'setting_value': str(value),
-                'category': 'general',
-                'setting_type': 'string'
-            }).execute()
+        data = request.get_json(silent=True)
+        if data is None:
+            return jsonify({'success': False, 'error': 'Invalid JSON payload'}), 400
 
-    return jsonify({'success': True, 'message': 'Settings updated successfully'}), 200
+        for key, value in data.items():
+            existing = supabase.table('system_settings').select('id').eq('setting_key', key).execute()
+            if existing.data and len(existing.data) > 0:
+                supabase.table('system_settings').update({'setting_value': str(value)}).eq('id', existing.data[0]['id']).execute()
+            else:
+                supabase.table('system_settings').insert({
+                    'setting_key': key,
+                    'setting_value': str(value),
+                    'category': 'general',
+                    'setting_type': 'string'
+                }).execute()
+
+        return jsonify({'success': True, 'message': 'Settings updated successfully'}), 200
+    except Exception as e:
+        import traceback
+        print("Error in manage_general_settings:", traceback.format_exc())
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @admin_bp.route('/bookings/<booking_id>', methods=['GET'])
 @require_auth()

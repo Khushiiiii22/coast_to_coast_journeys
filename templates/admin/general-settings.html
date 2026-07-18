@@ -181,7 +181,7 @@
                 </div>
                 <div class="header-right">
                     <div style="font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-right: 1.5rem;">
-                        COAST TO COAST JOURNEYS <span style="background: black; color: #4df3c5; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; margin-left: 5px;">WL ID: FLYWL000188 [Admin]</span>
+                        COAST TO COAST JOURNEYS
                     </div>
                 </div>
             </header>
@@ -273,7 +273,7 @@
                     </div>
 
                     <div class="btn-submit-container">
-                        <button type="submit" class="btn-submit">Save Settings</button>
+                        <button type="button" class="btn-submit" onclick="saveGeneralSettings()">Save Settings</button>
                     </div>
                 </form>
             </div>
@@ -282,14 +282,14 @@
 
     <script src="../../admin/js/admin.js"></script>
     <script>
+        const fields = [
+            'first_name', 'last_name', 'email', 'contact_no', 'address', 'city', 'state', 'country', 'pincode',
+            'company_name', 'pan_number', 'aadhar_number', 'gst_number', 'domain_name', 'nearby_airport', 'agency_name'
+        ];
+
         document.addEventListener('DOMContentLoaded', async () => {
             const token = localStorage.getItem('admin_token');
             if (!token) return window.location.href = 'login.html';
-
-            const fields = [
-                'first_name', 'last_name', 'email', 'contact_no', 'address', 'city', 'state', 'country', 'pincode',
-                'company_name', 'pan_number', 'aadhar_number', 'gst_number', 'domain_name', 'nearby_airport', 'agency_name'
-            ];
 
             // Load Existing Setup
             try {
@@ -303,29 +303,37 @@
             } catch (err) {
                 console.error('Failed to fetch settings', err);
             }
-
-            // Handle Submit
-            document.getElementById('generalSettingsForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const payload = {};
-                
-                fields.forEach(f => {
-                    const el = document.getElementById(f);
-                    if (el) payload[f] = el.value;
-                });
-
-                try {
-                    const response = await apiRequest('/system/general', 'POST', payload);
-                    if (response.success) {
-                        showNotification('General settings successfully updated!', 'success');
-                    } else {
-                        showNotification('Failed to update: ' + response.error, 'error');
-                    }
-                } catch (err) {
-                    showNotification('An error occurred while saving.', 'error');
-                }
-            });
         });
+
+        // Handle Submit
+        async function saveGeneralSettings() {
+            const payload = {};
+            
+            fields.forEach(f => {
+                const el = document.getElementById(f);
+                if (el) payload[f] = el.value;
+            });
+
+            const btn = document.querySelector('.btn-submit');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            btn.disabled = true;
+
+            try {
+                const response = await apiRequest('/system/general', 'POST', payload);
+                if (response && response.success) {
+                    showNotification('General settings successfully updated!', 'success');
+                } else {
+                    showNotification('Failed to update: ' + (response ? response.error : 'Unknown error'), 'error');
+                }
+            } catch (err) {
+                console.error('Error saving settings:', err);
+                showNotification('An error occurred while saving.', 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
     </script>
 </body>
 
