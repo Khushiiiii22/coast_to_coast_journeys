@@ -363,17 +363,18 @@
 
                 <div class="form-group">
                     <label>Phone Number</label>
-                    <div class="phone-input-group">
-                        <select id="countryCode" class="form-control country-code">
-                            <option value="+91">🇮🇳 +91</option>
-                            <option value="+1">🇺🇸 +1</option>
-                            <option value="+44">🇬🇧 +44</option>
-                            <option value="+971">🇦🇪 +971</option>
-                            <option value="+65">🇸🇬 +65</option>
-                            <option value="+61">🇦🇺 +61</option>
-                        </select>
-                        <input type="tel" id="phone" class="form-control" placeholder="Enter your mobile number" required>
-                    </div>
+                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@23.0.4/build/css/intlTelInput.css">
+                        <style>.iti { width: 100%; }</style>
+                        <input type="tel" id="phone" class="form-control" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@23.0.4/build/js/intlTelInput.min.js"></script>
+                        <script>
+                            const phoneInput = document.querySelector("#phone");
+                            const iti = window.intlTelInput(phoneInput, {
+                                initialCountry: "us",
+                                separateDialCode: true,
+                                utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@23.0.4/build/js/utils.js"
+                            });
+                        </script>
                 </div>
 
                 <div class="form-group" style="margin-top: 30px;">

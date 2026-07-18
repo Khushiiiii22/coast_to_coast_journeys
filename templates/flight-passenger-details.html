@@ -801,14 +801,14 @@
         function completeStep1() {
             const phone = document.getElementById('contactPhone').value.trim();
             const email = document.getElementById('contactEmail').value.trim();
-            const cc    = document.getElementById('countryCode').value;
+            const cc = '';
 
             if (!phone) { alert('Please enter your mobile number.'); return; }
             if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
 
             // Show done summary
             document.getElementById('s1Email').textContent = email;
-            document.getElementById('s1Phone').textContent = cc + ' ' + phone;
+            document.getElementById('s1Phone').textContent = typeof iti !== 'undefined' ? iti.getNumber() : phone;
             document.getElementById('step1DoneSummary').style.display = 'block';
 
             markStepDone(1);
@@ -816,7 +816,7 @@
             openStep(2);
 
             // Save to booking
-            flightBooking.contact = { phone: cc + phone, email };
+            flightBooking.contact = { phone: typeof iti !== 'undefined' ? iti.getNumber() : phone, email };
         }
 
         // ── STEP 2 COMPLETE ──

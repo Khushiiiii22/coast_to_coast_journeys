@@ -1817,69 +1817,56 @@
 
         // ========== Travelers Dropdown (Flights) ==========
         const travelersData = { adults: 1, children: 0, infants: 0 };
-        const travelersDropdown = document.getElementById('travelersDropdown');
-        const travelersPopup = document.getElementById('travelersPopup');
-        const travelersDisplay = document.getElementById('travelersDisplay');
-        const travelersDone = document.getElementById('travelersDone');
+        const flightGuestsDropdown = document.getElementById('flightGuestsDropdown');
+        const flightGuestsPopup = document.getElementById('flightGuestsPopup');
+        const flightGuestsDisplay = document.getElementById('flightGuestsDisplay');
+        const flightGuestsDone = document.getElementById('flightGuestsDone');
 
-        if (travelersDropdown) travelersDropdown.addEventListener('click', function () {
-            travelersPopup.classList.toggle('active');
+        if (flightGuestsDropdown) flightGuestsDropdown.addEventListener('click', function (e) {
+            e.stopPropagation();
+            flightGuestsPopup.classList.toggle('active');
         });
 
-        if (travelersDone) travelersDone.addEventListener('click', function () {
-            travelersPopup.classList.remove('active');
+        if (flightGuestsDone) flightGuestsDone.addEventListener('click', function (e) {
+            e.stopPropagation();
+            flightGuestsPopup.classList.remove('active');
         });
 
         document.addEventListener('click', function (e) {
-            if (travelersDropdown && travelersPopup && !travelersDropdown.contains(e.target) && !travelersPopup.contains(e.target)) {
-                travelersPopup.classList.remove('active');
+            if (flightGuestsDropdown && flightGuestsPopup && !flightGuestsDropdown.contains(e.target) && !flightGuestsPopup.contains(e.target)) {
+                flightGuestsPopup.classList.remove('active');
             }
         });
 
         function updateTravelersDisplay() {
             const total = travelersData.adults + travelersData.children;
             const infants = travelersData.infants;
-            const cabinClass = document.getElementById('cabinClass').value;
-            const classLabels = { economy: 'Economy', premium: 'Premium', business: 'Business', first: 'First' };
             let text = `${total} Traveler${total > 1 ? 's' : ''}`;
             if (infants > 0) text += `, ${infants} Infant${infants > 1 ? 's' : ''}`;
-            text += `, ${classLabels[cabinClass]}`;
-            travelersDisplay.textContent = text;
+            if (flightGuestsDisplay) flightGuestsDisplay.textContent = text;
         }
 
-        document.querySelectorAll('#travelersPopup .counter-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const type = this.dataset.type;
-                const isPlus = this.classList.contains('plus');
+        window.updateFlightPax = function(type, delta) {
+            if (type === 'adults') {
+                if (delta > 0 && travelersData.adults < 9) travelersData.adults++;
+                if (delta < 0 && travelersData.adults > 1) travelersData.adults--;
+            }
+            if (type === 'children') {
+                if (delta > 0 && travelersData.children < 9) travelersData.children++;
+                if (delta < 0 && travelersData.children > 0) travelersData.children--;
+            }
+            if (type === 'infants') {
+                if (delta > 0 && travelersData.infants < travelersData.adults) travelersData.infants++;
+                if (delta < 0 && travelersData.infants > 0) travelersData.infants--;
+            }
+            if (travelersData.infants > travelersData.adults) travelersData.infants = travelersData.adults;
 
-                if (isPlus) {
-                    if (type === 'adults' && travelersData.adults < 9) travelersData.adults++;
-                    if (type === 'children' && travelersData.children < 9) travelersData.children++;
-                    if (type === 'infants' && travelersData.infants < travelersData.adults) travelersData.infants++;
-                } else {
-                    if (type === 'adults' && travelersData.adults > 1) travelersData.adults--;
-                    if (type === 'children' && travelersData.children > 0) travelersData.children--;
-                    if (type === 'infants' && travelersData.infants > 0) travelersData.infants--;
-                    if (travelersData.infants > travelersData.adults) travelersData.infants = travelersData.adults;
-                }
-
-                document.getElementById('adultsCount').textContent = travelersData.adults;
-                document.getElementById('childrenCount').textContent = travelersData.children;
-                document.getElementById('infantsCount').textContent = travelersData.infants;
-                updateTravelersDisplay();
-            });
-        });
-
-        document.querySelectorAll('.class-btn').forEach(btn => {
-            btn.addEventListener('click', function (e) {
-                e.preventDefault(); // Prevent closing popup
-                e.stopPropagation();
-                document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                document.getElementById('cabinClass').value = this.dataset.value;
-                updateTravelersDisplay();
-            });
-        });
+            if (document.getElementById('adultCount')) document.getElementById('adultCount').textContent = travelersData.adults;
+            if (document.getElementById('childCount')) document.getElementById('childCount').textContent = travelersData.children;
+            if (document.getElementById('infantCount')) document.getElementById('infantCount').textContent = travelersData.infants;
+            
+            updateTravelersDisplay();
+        };
 
         // ========== Guests Dropdown (Hotels) ==========
         // ========== Guests Dropdown (Hotels - Multi-room) ==========

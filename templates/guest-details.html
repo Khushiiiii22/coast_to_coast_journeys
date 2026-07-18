@@ -733,13 +733,13 @@
                 firstName: firstName.value.trim(),
                 lastName: lastName.value.trim(),
                 email: email.value.trim(),
-                phone: phone.value.trim(),
+                phone: typeof iti !== "undefined" ? iti.getNumber() : phone.value.trim(),
                 specialRequests: specialRequests
             };
 
             // Also store top-level for compat with old code if needed
             bookingData.email = email.value.trim();
-            bookingData.phone = phone.value.trim();
+            bookingData.phone = typeof iti !== "undefined" ? iti.getNumber() : phone.value.trim();
             bookingData.guestName = firstName.value.trim() + ' ' + lastName.value.trim();
 
             sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
