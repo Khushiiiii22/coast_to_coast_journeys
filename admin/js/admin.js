@@ -399,6 +399,8 @@ function initSidebar() {
                     isOpen: localStorage.getItem('account_submenu_open') === 'true',
                     subItems: [
                         { name: 'Payments', icon: 'fa-credit-card', href: 'payments.html' },
+                        { name: 'Razorpay', icon: 'fa-rupee-sign', href: 'payments.html?method=razorpay' },
+                        { name: 'PayPal', icon: 'fa-dollar-sign', href: 'payments.html?method=paypal' },
                         { name: 'Invoices', icon: 'fa-file-invoice', href: 'invoices.html' },
                         { name: 'Refunds', icon: 'fa-undo', href: 'refunds.html' }
                     ]

@@ -500,7 +500,19 @@
 
         async function loadPayments() {
             try {
-                const res = await apiRequest(`/payments?limit=${pageSize}&page=${currentPage}`);
+                const urlParams = new URLSearchParams(window.location.search);
+                const methodFilter = urlParams.get('method');
+                let endpoint = `/payments?limit=${pageSize}&page=${currentPage}`;
+                if (methodFilter) {
+                    endpoint += `&method=${methodFilter}`;
+                    // Update the page title to show which method we're viewing
+                    const titleEl = document.querySelector('.page-title');
+                    if (titleEl) {
+                        const capitalized = methodFilter.charAt(0).toUpperCase() + methodFilter.slice(1);
+                        titleEl.textContent = `${capitalized} Payments`;
+                    }
+                }
+                const res = await apiRequest(endpoint);
                 if (!res.success) throw new Error(res.error);
 
                 allPayments = res.data || [];

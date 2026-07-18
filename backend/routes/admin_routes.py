@@ -1654,6 +1654,7 @@ def create_admin_user():
             return jsonify({'success': False, 'error': 'Admin user already exists'}), 409
             
         user_record = {
+            'username': email.split('@')[0],
             'email': email,
             'full_name': full_name,
             'role': role,
@@ -1670,6 +1671,23 @@ def create_admin_user():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@admin_bp.route('/users/<user_id>', methods=['DELETE'])
+@require_auth(required_role='super_admin')
+def delete_admin_user(user_id):
+    """Delete an admin user"""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        if not supabase:
+            return jsonify({'success': False, 'error': 'Database not initialized'}), 500
+            
+        result = supabase.table('admin_users').delete().eq('id', user_id).execute()
+        
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @admin_bp.route('/payments', methods=['GET'])
 @require_auth()
@@ -1680,6 +1698,7 @@ def get_payments():
         supabase = current_app.config.get('SUPABASE')
         
         status = request.args.get('status', '')
+        method = request.args.get('method', '')
         limit = int(request.args.get('limit', 50))
         page = int(request.args.get('page', 1))
         offset = (page - 1) * limit
@@ -1692,6 +1711,9 @@ def get_payments():
         if status:
             query = query.eq('payment_status', status)
         
+        if method:
+            query = query.eq('payment_method', method.lower())
+            
         result = query.range(offset, offset + limit - 1).execute()
         
         return jsonify({
