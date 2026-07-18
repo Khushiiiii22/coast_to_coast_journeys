@@ -43,21 +43,31 @@ class AdminService:
         except jwt.InvalidTokenError:
             return {'success': False, 'error': 'Invalid token'}
     
-    def login(self, email, password, ip_address=None):
-        """Authenticate admin user"""
+    def login(self, email, password, mfa_code=None, ip_address=None):
+        """Authenticate admin user with MFA"""
         try:
+            import pyotp
             # Hardcoded admin credentials for demo
             ADMIN_CREDENTIALS = {
                 'admin@coasttocoast.com': {
                     'password': 'admin123',
                     'full_name': 'Super Admin',
-                    'role': 'super_admin'
+                    'role': 'super_admin',
+                    'mfa_secret': 'JBSWY3DPEHPK3PXP' # Dummy secret for testing
                 }
             }
             
             # Check hardcoded credentials
             if email in ADMIN_CREDENTIALS:
                 if password == ADMIN_CREDENTIALS[email]['password']:
+                    # MFA Check
+                    if not mfa_code:
+                        return {'success': False, 'mfa_required': True}
+                        
+                    totp = pyotp.TOTP(ADMIN_CREDENTIALS[email]['mfa_secret'])
+                    if not totp.verify(mfa_code):
+                        return {'success': False, 'error': 'Invalid Authenticator code'}
+                        
                     # Use hardcoded user data (don't require database)
                     user_id = 'admin-001'
                     full_name = ADMIN_CREDENTIALS[email]['full_name']
@@ -138,78 +148,188 @@ class AdminService:
         except Exception as e:
             return {'success': False, 'error': str(e)}
 
-    def get_dashboard_stats(self):
-        """Get dashboard statistics"""
+    def get_dashboard_stats(self, period='all'):
+        """Get comprehensive hotel-focused dashboard statistics"""
         try:
             if not self.supabase:
-                # Return demo data if Supabase is not available
                 return {
                     'success': True,
                     'data': {
-                        'total_bookings': 0,
-                        'confirmed_bookings': 0,
-                        'total_revenue': 0,
-                        'pending_cancellations': 0,
-                        'recent_bookings': [],
-                        'new_customers': 0,
+                        'total_bookings': 0, 'confirmed_bookings': 0, 'total_revenue': 0,
+                        'pending_cancellations': 0, 'recent_bookings': [], 'new_customers': 0,
+                        'avg_booking_value': 0, 'avg_nights': 0, 'total_room_nights': 0,
+                        'status_breakdown': {}, 'monthly_revenue': [], 'top_destinations': [],
+                        'star_rating_distribution': {}, 'currency_breakdown': {},
                         'message': 'Running in demo mode (Database offline)'
                     }
                 }
 
-            # Total bookings
-            total_bookings_count = 0
+            # Fetch all hotel bookings at once for efficient processing
+            all_bookings = []
             try:
-                total_bookings = self.supabase.table('hotel_bookings').select('id', count='exact').execute()
-                total_bookings_count = total_bookings.count or 0
+                query = self.supabase.table('hotel_bookings').select('*')
+                
+                # Apply date filter based on period
+                if period == 'month':
+                    start_date = (datetime.datetime.utcnow().replace(day=1)).isoformat()
+                    query = query.gte('created_at', start_date)
+                elif period == 'week':
+                    start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=7)).isoformat()
+                    query = query.gte('created_at', start_date)
+
+                res = query.order('created_at', desc=True).execute()
+                all_bookings = res.data or []
             except Exception:
                 pass
-            
-            # Confirmed bookings
-            confirmed_count = 0
-            try:
-                confirmed = self.supabase.table('hotel_bookings').select('id', count='exact').eq('status', 'confirmed').execute()
-                confirmed_count = confirmed.count or 0
-            except Exception:
-                pass
-            
-            # Total revenue (sum of total_amount for confirmed bookings)
-            total_revenue = 0
-            try:
-                revenue_result = self.supabase.table('hotel_bookings').select('total_amount').eq('status', 'confirmed').execute()
-                total_revenue = sum(float(b.get('total_amount', 0) or 0) for b in revenue_result.data)
-            except Exception:
-                pass
-            
+
+            total_bookings_count = len(all_bookings)
+
+            # Status breakdown
+            status_breakdown = {}
+            for b in all_bookings:
+                s = b.get('status', 'unknown')
+                status_breakdown[s] = status_breakdown.get(s, 0) + 1
+
+            confirmed_count = status_breakdown.get('confirmed', 0)
+
+            # Revenue calculations
+            confirmed_bookings = [b for b in all_bookings if b.get('status') == 'confirmed']
+            total_revenue = sum(float(b.get('total_amount', 0) or 0) for b in confirmed_bookings)
+            avg_booking_value = round(total_revenue / confirmed_count, 2) if confirmed_count > 0 else 0
+
+            # Total revenue (all statuses for overview)
+            total_revenue_all = sum(float(b.get('total_amount', 0) or 0) for b in all_bookings)
+
+            # Average nights stayed
+            total_nights = 0
+            bookings_with_dates = 0
+            for b in all_bookings:
+                try:
+                    from datetime import datetime as dt
+                    ci = dt.strptime(b['check_in'], '%Y-%m-%d')
+                    co = dt.strptime(b['check_out'], '%Y-%m-%d')
+                    nights = (co - ci).days
+                    if nights > 0:
+                        total_nights += nights
+                        bookings_with_dates += 1
+                except Exception:
+                    pass
+            avg_nights = round(total_nights / bookings_with_dates, 1) if bookings_with_dates > 0 else 0
+
+            # Total room-nights
+            total_room_nights = 0
+            for b in all_bookings:
+                try:
+                    from datetime import datetime as dt
+                    ci = dt.strptime(b['check_in'], '%Y-%m-%d')
+                    co = dt.strptime(b['check_out'], '%Y-%m-%d')
+                    nights = max((co - ci).days, 1)
+                    rooms = int(b.get('rooms', 1) or 1)
+                    total_room_nights += nights * rooms
+                except Exception:
+                    pass
+
+            # Monthly revenue and booking count (last 12 months)
+            monthly_data = {}
+            for b in all_bookings:
+                try:
+                    created = b.get('created_at', '')[:7]  # YYYY-MM
+                    if created:
+                        if created not in monthly_data:
+                            monthly_data[created] = {'bookings': 0, 'revenue': 0}
+                        monthly_data[created]['bookings'] += 1
+                        monthly_data[created]['revenue'] += float(b.get('total_amount', 0) or 0)
+                except Exception:
+                    pass
+
+            monthly_revenue = [
+                {'month': k, 'bookings': v['bookings'], 'revenue': round(v['revenue'], 2)}
+                for k, v in sorted(monthly_data.items())
+            ]
+
+            # Top destinations (by hotel_name since hotel_city is often null)
+            destination_counts = {}
+            for b in all_bookings:
+                dest = b.get('hotel_city') or b.get('hotel_name') or 'Unknown'
+                if dest not in destination_counts:
+                    destination_counts[dest] = {'count': 0, 'revenue': 0}
+                destination_counts[dest]['count'] += 1
+                destination_counts[dest]['revenue'] += float(b.get('total_amount', 0) or 0)
+            top_destinations = sorted(
+                [{'name': k, 'bookings': v['count'], 'revenue': round(v['revenue'], 2)} for k, v in destination_counts.items()],
+                key=lambda x: x['bookings'], reverse=True
+            )[:10]
+
+            # Star rating distribution
+            star_distribution = {}
+            for b in all_bookings:
+                stars = b.get('hotel_star_rating')
+                if stars:
+                    key = f"{stars} Star"
+                    star_distribution[key] = star_distribution.get(key, 0) + 1
+
+            # Currency breakdown
+            currency_breakdown = {}
+            for b in all_bookings:
+                curr = b.get('currency', 'USD')
+                if curr not in currency_breakdown:
+                    currency_breakdown[curr] = {'count': 0, 'revenue': 0}
+                currency_breakdown[curr]['count'] += 1
+                currency_breakdown[curr]['revenue'] += float(b.get('total_amount', 0) or 0)
+
             # Pending cancellations
             pending_cancellations_count = 0
             try:
                 pending_cancellations = self.supabase.table('cancellation_requests').select('id', count='exact').eq('refund_status', 'pending').execute()
                 pending_cancellations_count = pending_cancellations.count or 0
             except Exception:
-                # Table may not exist yet — fall back to bookings with cancelled status
-                try:
-                    cancelled = self.supabase.table('hotel_bookings').select('id', count='exact').eq('status', 'cancelled').execute()
-                    pending_cancellations_count = cancelled.count or 0
-                except Exception:
-                    pass
-            
-            # Recent bookings
-            recent_data = []
+                pending_cancellations_count = status_breakdown.get('cancelled', 0)
+
+            # Recent bookings (already sorted desc)
+            recent_data = all_bookings[:10]
+
+            # Guest name extraction for recent bookings
+            for b in recent_data:
+                guests = b.get('guests', [])
+                guest_name = 'Guest'
+                if isinstance(guests, list) and guests:
+                    first_room = guests[0] if isinstance(guests[0], dict) else {}
+                    room_guests = first_room.get('guests', [])
+                    if room_guests:
+                        g = room_guests[0]
+                        guest_name = f"{g.get('first_name', '')} {g.get('last_name', '')}".strip()
+                b['guest_name'] = guest_name if guest_name else 'Guest'
+
+            # New customer count (last 30 days)
+            new_customers = 0
             try:
-                recent = self.supabase.table('hotel_bookings').select('*').order('created_at', desc=True).limit(10).execute()
-                recent_data = recent.data
+                from datetime import datetime as dt, timedelta
+                thirty_days_ago = (dt.utcnow() - timedelta(days=30)).isoformat()
+                cust_res = self.supabase.table('customers').select('id', count='exact').gte('created_at', thirty_days_ago).execute()
+                new_customers = cust_res.count or 0
             except Exception:
                 pass
-            
+
             return {
                 'success': True,
                 'data': {
                     'total_bookings': total_bookings_count,
                     'confirmed_bookings': confirmed_count,
                     'total_revenue': round(total_revenue, 2),
+                    'total_revenue_all': round(total_revenue_all, 2),
+                    'avg_booking_value': avg_booking_value,
                     'pending_cancellations': pending_cancellations_count,
                     'recent_bookings': recent_data,
-                    'new_customers': 0 # Fallback
+                    'new_customers': new_customers,
+                    'avg_nights': avg_nights,
+                    'total_room_nights': total_room_nights,
+                    'status_breakdown': status_breakdown,
+                    'monthly_revenue': monthly_revenue,
+                    'top_destinations': top_destinations,
+                    'star_rating_distribution': star_distribution,
+                    'currency_breakdown': currency_breakdown,
+                    'failed_bookings': status_breakdown.get('failed', 0),
+                    'created_bookings': status_breakdown.get('created', 0)
                 }
             }
         except Exception as e:

@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Refunds | C2C Journeys Admin</title>
+    <title>Refunds | Coast To Coast Admin</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
     <!-- Font Awesome -->
@@ -17,157 +17,197 @@
 
     <!-- Admin Styles -->
     <link rel="stylesheet" href="../../admin/css/admin.css">
+    <link rel="icon" href="data:,">
+
+    <style>
+        .refund-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
+            background: #fff;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .filter-input-sm {
+            padding: 0.6rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            width: 150px;
+        }
+
+        .search-input-group {
+            display: flex;
+            align-items: center;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 0 0.5rem;
+        }
+
+        .search-input-group input {
+            border: none;
+            padding: 0.6rem;
+            outline: none;
+            width: 180px;
+        }
+
+        .btn-icon-mint {
+            background: #4db6ac;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-export-mint {
+            background: #4db6ac;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* Tabs */
+        .refund-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .refund-tab {
+            padding: 0.8rem 1.5rem;
+            background: #64748b;
+            color: white;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+        }
+
+        .refund-tab.active {
+            background: #f4511e;
+        }
+
+        /* Table */
+        .refund-table-container {
+            background: #fff;
+            border: 1px solid #e0f2f1;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .inv-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .inv-table th {
+            background: #ffffff;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 700;
+            color: #1e293b;
+            border-bottom: 2px solid #e0f2f1;
+            white-space: nowrap;
+        }
+
+        .empty-row {
+            text-align: center;
+            padding: 3rem !important;
+            font-weight: 800;
+            color: #ef4444; /* Red "No Booking Found" */
+            font-size: 1.5rem;
+            background: #fff5f5;
+        }
+    </style>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
 </head>
 
 <body>
     <div class="admin-wrapper">
-        <!-- Sidebar (Same as dashboard) -->
-        <aside class="admin-sidebar" id="adminSidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">C</div>
-                <span class="sidebar-brand">CTC Admin</span>
-            </div>
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
 
-            <nav class="sidebar-nav">
-                <div class="nav-section">
-                    <span class="nav-section-title">Main</span>
-                    <a href="dashboard.html" class="nav-item">
-                        <i class="fas fa-home"></i>
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="bookings.html" class="nav-item">
-                        <i class="fas fa-calendar-check"></i>
-                        <span>Bookings</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">Finance</span>
-                    <a href="payments.html" class="nav-item">
-                        <i class="fas fa-credit-card"></i>
-                        <span>Payments</span>
-                    </a>
-                    <a href="invoices.html" class="nav-item">
-                        <i class="fas fa-file-invoice"></i>
-                        <span>Invoices</span>
-                    </a>
-                    <a href="refunds.html" class="nav-item active">
-                        <i class="fas fa-undo"></i>
-                        <span>Refunds</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">Operations</span>
-                    <a href="markup.html" class="nav-item">
-                        <i class="fas fa-percentage"></i>
-                        <span>Markup Tool</span>
-                    </a>
-                    <a href="suppliers.html" class="nav-item">
-                        <i class="fas fa-handshake"></i>
-                        <span>Suppliers</span>
-                    </a>
-                    <a href="customers.html" class="nav-item">
-                        <i class="fas fa-users"></i>
-                        <span>Customers</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">Analytics</span>
-                    <a href="reports.html" class="nav-item">
-                        <i class="fas fa-chart-bar"></i>
-                        <span>Reports</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">System</span>
-                    <a href="users.html" class="nav-item">
-                        <i class="fas fa-user-shield"></i>
-                        <span>Admin Users</span>
-                    </a>
-                    <a href="settings.html" class="nav-item">
-                        <i class="fas fa-cog"></i>
-                        <span>Settings</span>
-                    </a>
-                    <a href="activity-logs.html" class="nav-item">
-                        <i class="fas fa-history"></i>
-                        <span>Activity Logs</span>
-                    </a>
-                    <a href="#" class="nav-item" onclick="logout(); return false;" style="color: var(--danger);">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
-                    </a>
-                </div>
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="admin-profile">
-                    <div class="admin-avatar">SA</div>
-                    <div class="admin-info">
-                        <div class="admin-name">Super Admin</div>
-                        <div class="admin-role">Administrator</div>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Main Content -->
         <main class="admin-main">
             <header class="admin-header">
                 <div class="header-left">
                     <button class="sidebar-toggle" id="sidebarToggle">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h1 class="page-title">Refunds Management</h1>
+                    <h1 class="page-title">Refunds</h1>
+                </div>
+                <div class="header-right">
+                    <div style="font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-right: 1.5rem;">
+                        COAST TO COAST JOURNEYS
+                    </div>
                 </div>
             </header>
 
             <div class="admin-content">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: #fee2e2; color: #ef4444;">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="stat-details">
-                            <span class="stat-label">Pending Refunds</span>
-                            <span class="stat-value" id="pendingRefunds">0</span>
-                        </div>
+                <!-- Toolbar -->
+                <div class="refund-toolbar">
+                    <input type="text" class="filter-input-sm" placeholder="From Date" onfocus="(this.type='date')">
+                    <input type="text" class="filter-input-sm" placeholder="To Date" onfocus="(this.type='date')">
+                    <div class="search-input-group">
+                        <input type="text" placeholder="Enter Keyword">
                     </div>
+                    <button class="btn-icon-mint"><i class="fas fa-search"></i></button>
+                    <button class="btn-export-mint">Export</button>
                 </div>
 
-                <div class="admin-card">
-                    <div class="card-header">
-                        <h3 class="card-title">Refund Requests</h3>
-                        <div class="card-actions">
-                            <select class="form-control" id="serviceFilter" onchange="loadRefunds()"
-                                style="width: auto;">
-                                <option value="all">All Services</option>
-                                <option value="hotel">Hotels</option>
-                                <option value="flight">Flights</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Booking ID</th>
-                                    <th>Service</th>
-                                    <th>Customer</th>
-                                    <th>Total Amount</th>
-                                    <th>Refund Amount</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="refundsTableBody">
-                                <!-- Data will be loaded here -->
-                            </tbody>
-                        </table>
-                    </div>
+                <!-- Tabs -->
+                <div class="refund-tabs">
+                    <button class="refund-tab active">Online Hotels</button>
+                    <button class="refund-tab">Offline Hotels</button>
+                    <button class="refund-tab">FD Hotels</button>
+                </div>
+
+                <!-- Table -->
+                <div class="refund-table-container">
+                    <table class="inv-table">
+                        <thead>
+                            <tr>
+                                <th>Booking Date</th>
+                                <th>Hotel / Destination</th>
+                                <th>Check-In Date</th>
+                                <th>Passenger</th>
+                                <th>Agent Details</th>
+                                <th>Ref No</th>
+                                <th>Statement</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="8" class="empty-row">No Booking Found</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </main>
@@ -175,69 +215,53 @@
 
     <script src="../../admin/js/admin.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', loadRefunds);
+        let allRefunds = [];
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            const token = localStorage.getItem('admin_token');
+            if (!token) { window.location.href = 'login.html'; return; }
+            await loadRefunds();
+        });
 
         async function loadRefunds() {
-            const tbody = document.getElementById('refundsTableBody');
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 3rem;"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
-
+            const tbody = document.querySelector('.inv-table tbody');
             try {
-                const response = await apiRequest('/finance?type=refunds');
-                if (response.success) {
-                    const filter = document.getElementById('serviceFilter').value;
-                    let data = response.data;
+                const res = await apiRequest('/refunds?limit=100');
+                if (!res.success) throw new Error(res.error);
 
-                    if (filter !== 'all') {
-                        data = data.filter(r => r.service_type === filter);
-                    }
+                allRefunds = res.data || [];
 
-                    if (data.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 3rem; color: #64748b;">No refund records found.</td></tr>';
-                        return;
-                    }
-
-                    let pendingCount = 0;
-                    tbody.innerHTML = data.map(record => {
-                        if (record.refund_status === 'pending') pendingCount++;
-
-                        return `
-                            <tr>
-                                <td>${new Date(record.created_at).toLocaleDateString()}</td>
-                                <td>
-                                    <div style="font-weight: 600; font-size: 0.9rem;">${record.booking_id}</div>
-                                    <div style="font-size: 0.75rem; color: #64748b;">${record.service_type === 'hotel' ? record.hotel_name : (record.origin_code + '-' + record.destination_code)}</div>
-                                </td>
-                                <td>
-                                    <span class="badge" style="background: ${record.service_type === 'hotel' ? '#e0f2fe; color: #0369a1' : '#fef3c7; color: #92400e'}">
-                                        <i class="fas ${record.service_type === 'hotel' ? 'fa-hotel' : 'fa-plane'}"></i> ${record.service_type.toUpperCase()}
-                                    </span>
-                                </td>
-                                <td>Customer #${record.customer_id ? record.customer_id.substring(0, 8) : 'N/A'}</td>
-                                <td>${formatCurrency(record.total_amount)}</td>
-                                <td style="font-weight: 600; color: #ef4444;">${formatCurrency(record.refund_amount || 0)}</td>
-                                <td>
-                                    <span class="status-badge ${record.refund_status || 'pending'}">
-                                        ${(record.refund_status || 'Pending').toUpperCase()}
-                                    </span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-secondary btn-sm" onclick="viewDetails('${record.id}', '${record.service_type}')">
-                                        <i class="fas fa-eye"></i> Details
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
-                    }).join('');
-
-                    document.getElementById('pendingRefunds').textContent = pendingCount;
+                if (allRefunds.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="empty-row">No Refunds Found</td></tr>';
+                    return;
                 }
-            } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 3rem; color: #ef4444;">Error: ${error.message}</td></tr>`;
-            }
-        }
 
-        function viewDetails(id, type) {
-            window.location.href = `bookings.html?id=${id}&type=${type}`;
+                tbody.innerHTML = allRefunds.map(r => {
+                    const bookingDate = r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN') : '—';
+                    const checkIn = r.check_in ? new Date(r.check_in).toLocaleDateString('en-IN') : '—';
+                    const amount = parseFloat(r.total_price) || 0;
+
+                    return `
+                        <tr>
+                            <td>${bookingDate}</td>
+                            <td>${r.hotel_name || '—'}</td>
+                            <td>${checkIn}</td>
+                            <td>${r.guest_name || '—'}</td>
+                            <td>${r.guest_email || '—'}</td>
+                            <td>${r.booking_id || '—'}</td>
+                            <td>$${amount.toLocaleString('en-IN')}</td>
+                            <td>
+                                <button class="btn-icon-mint" onclick="window.location.href='booking-details.html?id=${r.booking_id}'" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error('Failed to load refunds:', err);
+                if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="empty-row" style="color:#ef4444;">Failed to load refunds</td></tr>';
+            }
         }
     </script>
 </body>

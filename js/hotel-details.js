@@ -44,23 +44,18 @@ async function initHotelDetails() {
         showNotification('Search parameters not found', 'warning');
     }
 
-    // Display hotel static data immediately if available
+    // Display hotel data
     if (currentHotel) {
-        // ETG CERTIFICATION FIX: 
-        // We must ALWAYS call /search/hp/ to get valid book_hashes before booking.
-        // The cached SERP currentHotel only has match_hashes, which cause invalid_params errors.
-        // We clone the hotel and clear its rates so the page loads instantly with static info
-        // but the rooms section shows a loading skeleton until fresh rates arrive.
-        const staticHotel = { ...currentHotel, rates: [] };
-        displayHotelDetails(staticHotel);
-        
-        // Show loading state specifically for the rooms section
-        const loadingEl = document.getElementById('loadingSpinner');
-        if (loadingEl) loadingEl.classList.remove('hidden');
-    }
+        displayHotelDetails(currentHotel);
 
-    // ALWAYS fetch fresh rates from API (calls /details-enriched -> /search/hp/)
-    await fetchHotelDetails();
+        // For Google Places hotels, fetch additional photos for gallery is completely disabled
+        // if (currentHotel.id && currentHotel.id.startsWith('google_')) {
+        //     fetchGooglePlacePhotos(currentHotel.id);
+        // }
+    } else {
+        // Fetch from API
+        await fetchHotelDetails();
+    }
 
     setupEventListeners();
     setupTabNavigation();
@@ -97,9 +92,7 @@ async function fetchHotelDetails() {
                 checkout: searchParams?.checkout || getDefaultCheckout(),
                 adults: searchParams?.adults || 2,
                 children_ages: searchParams?.children_ages || [],
-                rooms: searchParams?.rooms || [],
-                currency: searchParams?.currency || localStorage.getItem('ctc_currency') || 'INR',
-                residency: searchParams?.residency || 'in'
+                currency: searchParams?.currency || localStorage.getItem('ctc_currency') || 'USD'
             });
 
             if (enrichedResult.success && enrichedResult.data?.hotels?.length > 0) {
@@ -125,11 +118,7 @@ async function fetchHotelDetails() {
             hotel_id: hotelId,
             checkin: searchParams?.checkin || getDefaultCheckin(),
             checkout: searchParams?.checkout || getDefaultCheckout(),
-            adults: searchParams?.adults || 2,
-            children_ages: searchParams?.children_ages || [],
-            rooms: searchParams?.rooms || [],
-            currency: searchParams?.currency || localStorage.getItem('ctc_currency') || 'INR',
-            residency: searchParams?.residency || 'in'
+            adults: searchParams?.adults || 2
         });
 
         if (result.success && result.data && (result.data.name || result.data.hotels?.length > 0)) {
@@ -191,7 +180,7 @@ function generateDemoHotelDetails(hotelId) {
                 meal_info: { display_name: 'Breakfast included', no_child_meal: false },
                 price: Math.floor(Math.random() * 5000) + 8000,
                 original_price: Math.floor(Math.random() * 3000) + 12000,
-                currency: 'INR',
+                currency: 'USD',
                 cancellation: 'free',
                 cancellation_info: {
                     is_free_cancellation: true,
@@ -215,7 +204,7 @@ function generateDemoHotelDetails(hotelId) {
                 meal_info: { display_name: 'Breakfast + Dinner included', no_child_meal: false },
                 price: Math.floor(Math.random() * 8000) + 15000,
                 original_price: Math.floor(Math.random() * 5000) + 20000,
-                currency: 'INR',
+                currency: 'USD',
                 cancellation: 'free',
                 cancellation_info: {
                     is_free_cancellation: true,
@@ -239,7 +228,7 @@ function generateDemoHotelDetails(hotelId) {
                 meal_plan: 'nomeal',
                 meal_info: { display_name: 'Room only (no meals)', no_child_meal: true },
                 price: Math.floor(Math.random() * 3000) + 5000,
-                currency: 'INR',
+                currency: 'USD',
                 cancellation: 'non-refundable',
                 features: ['Queen Bed', 'Garden View', '30 sqm', 'Free WiFi'],
                 room_static: {
@@ -1564,8 +1553,7 @@ function showRoomDetails(rateIndex) {
                         ${policies.map(p => {
             const isFree = p.type === 'free' || p.penalty_amount === '0' || p.penalty_amount === 0;
             const startStr = p.start_formatted || 'Now';
-            const currencyStr = p.currency || '';
-            const penaltyStr = isFree ? '<span style="color:#059669">No charge</span>' : `<span style="color:#dc2626">${currencyStr} ${p.penalty_amount}</span>`;
+            const penaltyStr = isFree ? '<span style="color:#059669">No charge</span>' : `<span style="color:#dc2626">${p.penalty_amount}</span>`;
             return `<tr>
                                 <td style="padding:8px;border-bottom:1px solid #f3f4f6;">${isFree ? 'Until ' + (p.end_formatted || deadline) : 'From ' + startStr}</td>
                                 <td style="padding:8px;border-bottom:1px solid #f3f4f6;text-align:right;">${penaltyStr}</td>
@@ -1824,11 +1812,9 @@ function switchCancellationTab(btn, tab) {
 }
 
 /**
- * Select a rate and proceed to booking.
- * ETG Certification Flow: Calls /hotel/prebook/ BEFORE redirecting to checkout.
- * If the price changed, shows a confirmation modal so the user can accept or decline.
+ * Select a rate and proceed to booking
  */
-async function selectRate(rate, index) {
+function selectRate(rate, index) {
     selectedRate = rate;
 
     // Update UI
@@ -1838,205 +1824,34 @@ async function selectRate(rate, index) {
     const selectedCard = document.querySelector(`.rate-card[data-rate-index="${index}"]`);
     if (selectedCard) selectedCard.classList.add('selected');
 
-    // Show loading overlay while prebook runs
-    showPrebookOverlay('Checking availability and confirming price...');
+    // Calculate totals
+    const nights = searchParams ? HotelUtils.calculateNights(searchParams.checkin, searchParams.checkout) : 1;
+    const baseNightlyPrice = rate.price;
+    const totalPrice = baseNightlyPrice * nights;
 
-    try {
-        // ── PREBOOK STEP (ETG Certification Requirement) ──
-        // Must call /hotel/prebook/ BEFORE the user commits to payment.
-        const prebookResult = await HotelAPI.prebookRate(rate.book_hash, 5, searchParams?.checkin);
+    // Build the rate object that checkout pages will read
+    const rateForCheckout = {
+        ...rate,
+        price: baseNightlyPrice,
+        total_price: totalPrice,
+        nights: nights
+    };
 
-        if (!prebookResult.success) {
-            hidePrebookOverlay();
-            showNotification('This room is no longer available at this price. Please select a different room.', 'error');
-            return;
-        }
-
-        // Extract the prebook-confirmed hash from ETG's nested response
-        const etgData = prebookResult.data?.data || {};
-        let confirmedHash = null;
-
-        if (etgData.hotels && etgData.hotels[0] && etgData.hotels[0].rates && etgData.hotels[0].rates[0]) {
-            confirmedHash = etgData.hotels[0].rates[0].book_hash;
-        }
-        confirmedHash = confirmedHash || etgData.hash || prebookResult.data?.hash || rate.book_hash;
-
-        // Check for price changes
-        const priceChanged = etgData.price_changed || prebookResult.price_changed || false;
-
-        if (priceChanged) {
-            hidePrebookOverlay();
-
-            // Extract new price from prebook response
-            let newTotal = 0;
-            const paymentOptions = etgData.payment_options || {};
-            const paymentTypes = paymentOptions.payment_types || [];
-            if (paymentTypes.length > 0) {
-                newTotal = parseFloat(paymentTypes[0].amount || 0);
-            }
-
-            // Show price change modal and wait for user decision
-            const userAccepted = await showPriceChangeModal(rate.price, newTotal, rate.currency || 'INR');
-
-            if (!userAccepted) {
-                showNotification('Booking cancelled due to price change.', 'info');
-                return;
-            }
-
-            // User accepted — update the rate price
-            rate.price = newTotal;
-        }
-
-        // ── Prebook successful — INIT BOOKING (ETG Form Step) ──
-        showPrebookOverlay('Securing your room...');
-        
-        const nights = searchParams ? HotelUtils.calculateNights(searchParams.checkin, searchParams.checkout) : 1;
-        const baseNightlyPrice = rate.price;
-        const totalPrice = baseNightlyPrice * nights;
-        
-        let partnerOrderId = null;
-        try {
-            const initResult = await HotelAPI.initBooking({
-                book_hash: confirmedHash,
-                hotel_id: currentHotel.id || currentHotel.hid,
-                hotel_name: currentHotel.name,
-                checkin: searchParams?.checkin,
-                checkout: searchParams?.checkout,
-                total_amount: totalPrice,
-                currency: rate.currency || 'USD'
-            });
-            
-            if (!initResult.success) {
-                hidePrebookOverlay();
-                showNotification(initResult.error || 'Failed to secure room. Please try again.', 'error');
-                return;
-            }
-            partnerOrderId = initResult.partner_order_id;
-            console.log(`✅ Room locked. Partner Order ID: ${partnerOrderId}`);
-        } catch (initError) {
-            hidePrebookOverlay();
-            console.error('Init booking error:', initError);
-            showNotification('Failed to secure room. Please check your connection and try again.', 'error');
-            return;
-        }
-
-        hidePrebookOverlay();
-
-        const rateForCheckout = {
-            ...rate,
-            book_hash: confirmedHash,
-            price: baseNightlyPrice,
-            total_price: totalPrice,
-            nights: nights,
-            prebook_validated: true,
-            partner_order_id: partnerOrderId
-        };
-
-        // Save to session
-        SearchSession.saveSelectedRate(rateForCheckout);
-        SearchSession.saveBookingData({
-            hotel: currentHotel,
-            rate: rateForCheckout,
-            search_params: searchParams
-        });
-
-        showNotification(`${rate.room_name} confirmed! Redirecting to checkout...`, 'success');
-
-        // Redirect to checkout page
-        setTimeout(() => {
-            window.location.href = 'guest-details.html?v=' + Date.now();
-        }, 800);
-
-    } catch (error) {
-        hidePrebookOverlay();
-        console.error('Prebook error:', error);
-        showNotification('Could not verify availability. Please try again.', 'error');
-    }
-}
-
-/**
- * Show a loading overlay during prebook
- */
-function showPrebookOverlay(message) {
-    let overlay = document.getElementById('prebookOverlay');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'prebookOverlay';
-        overlay.style.cssText = `
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 10000;
-        `;
-        overlay.innerHTML = `
-            <div style="background: white; border-radius: 16px; padding: 40px; text-align: center; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
-                <div style="width: 48px; height: 48px; border: 4px solid #e5e7eb; border-top: 4px solid #2563eb; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
-                <p id="prebookMessage" style="font-size: 1.1rem; color: #374151; font-weight: 500;">${message}</p>
-            </div>
-            <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
-        `;
-        document.body.appendChild(overlay);
-    } else {
-        overlay.style.display = 'flex';
-        const msg = overlay.querySelector('#prebookMessage');
-        if (msg) msg.textContent = message;
-    }
-}
-
-/**
- * Hide the prebook loading overlay
- */
-function hidePrebookOverlay() {
-    const overlay = document.getElementById('prebookOverlay');
-    if (overlay) overlay.style.display = 'none';
-}
-
-/**
- * Show a price change confirmation modal.
- * Returns a Promise that resolves to true (accept) or false (decline).
- */
-function showPriceChangeModal(oldPrice, newPrice, currency) {
-    return new Promise((resolve) => {
-        const oldFormatted = HotelUtils.formatPrice(oldPrice, currency);
-        const newFormatted = HotelUtils.formatPrice(newPrice, currency);
-
-        const modal = document.createElement('div');
-        modal.id = 'priceChangeModal';
-        modal.style.cssText = `
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 10001;
-        `;
-        modal.innerHTML = `
-            <div style="background: white; border-radius: 16px; padding: 32px; max-width: 440px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center;">
-                <div style="width: 56px; height: 56px; background: #fef3c7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
-                    <i class="fas fa-exclamation-triangle" style="color: #d97706; font-size: 1.5rem;"></i>
-                </div>
-                <h3 style="font-size: 1.25rem; color: #111827; margin-bottom: 8px;">Price Changed</h3>
-                <p style="color: #6b7280; margin-bottom: 20px; line-height: 1.5;">
-                    The price for this room has been updated by the hotel.<br>
-                    <span style="text-decoration: line-through; color: #9ca3af;">${oldFormatted}</span>
-                    &rarr;
-                    <strong style="color: #111827; font-size: 1.2rem;">${newFormatted}</strong>
-                </p>
-                <div style="display: flex; gap: 12px; justify-content: center;">
-                    <button id="priceDeclineBtn" style="padding: 12px 24px; border: 1px solid #d1d5db; border-radius: 8px; background: white; color: #374151; cursor: pointer; font-weight: 500;">Decline</button>
-                    <button id="priceAcceptBtn" style="padding: 12px 24px; border: none; border-radius: 8px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; cursor: pointer; font-weight: 500;">Accept New Price</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-
-        modal.querySelector('#priceAcceptBtn').addEventListener('click', () => {
-            modal.remove();
-            resolve(true);
-        });
-        modal.querySelector('#priceDeclineBtn').addEventListener('click', () => {
-            modal.remove();
-            resolve(false);
-        });
+    // Save to session
+    SearchSession.saveSelectedRate(rateForCheckout);
+    SearchSession.saveBookingData({
+        hotel: currentHotel,
+        rate: rateForCheckout,
+        search_params: searchParams
     });
+
+    showNotification(`${rate.room_name} selected! Redirecting to checkout...`, 'success');
+
+    // Redirect to checkout page
+    setTimeout(() => {
+        // Appended timestamp to force browser to ignore cached HTML
+        window.location.href = 'guest-details.html?v=' + Date.now();
+    }, 800);
 }
 
 /**

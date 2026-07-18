@@ -83,7 +83,7 @@ def verify_multi_room_booking():
             "partner_order_id": partner_order_id
         },
         "user": {
-            "email": "test@c2cjourneys.com",
+            "email": "test@coasttocoastjourneys.com",
             "phone": "919934547108"
         },
         "language": "en",

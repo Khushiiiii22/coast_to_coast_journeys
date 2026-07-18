@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reports & Analytics | C2C Journeys Admin</title>
+    <title>Reports & Analytics | Coast To Coast Admin</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,6 +20,24 @@
 
     <!-- Chart.js -->
     <script src="../../admin/libs/chart.min.js"></script>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
 </head>
 
 <body>
@@ -93,7 +111,7 @@
                         </div>
                         <div class="stat-details">
                             <span class="stat-label">Total Sales</span>
-                            <span class="stat-value" id="statTotalSales">₹0</span>
+                            <span class="stat-value" id="statTotalSales">$0</span>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -102,7 +120,7 @@
                         </div>
                         <div class="stat-details">
                             <span class="stat-label">Gross Margin</span>
-                            <span class="stat-value" id="statMargin">₹0</span>
+                            <span class="stat-value" id="statMargin">$0</span>
                         </div>
                     </div>
                 </div>

@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="../assets/images/c2c-logo.png">
-    <meta name="description" content="Search results for hotels - C2C Journeys">
-    <title>Hotel Search Results | Coast To Coast Journeys</title>
+    <meta name="description" content="Search results for hotels - Coast To Coast">
+    <title>Hotel Search Results | Coast To Coast</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,6 +25,24 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/hotel-booking.css">
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
 </head>
 
 <body class="hotel-results-page">
@@ -34,16 +52,15 @@
             <div class="container">
                 <div class="nav-content">
                     <a href="index.html" class="logo">
-                        <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
-                        <span class="brand-name">C2C Journeys</span>
+                        <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
+                        <span class="brand-name">Coast To Coast</span>
                     </a>
 
                     <ul class="nav-menu" id="navMenu">
                         <li><a href="index.html" class="nav-link">Home</a></li>
                         <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
                         <li><a href="hotel-booking.html" class="nav-link active">Hotels</a></li>
-                        <li><a href="visa.html" class="nav-link">Visa</a></li>
-                        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                                                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
                     </ul>
 
                     <div class="nav-actions">
@@ -249,8 +266,8 @@
                                     </div>
                                     <input type="range" id="priceRange" min="0" max="50000" value="50000" step="500">
                                     <div class="price-labels">
-                                        <span>₹0</span>
-                                        <span id="maxPriceLabel">₹50,000+</span>
+                                        <span>$0</span>
+                                        <span id="maxPriceLabel">$50,000+</span>
                                     </div>
                                 </div>
                             </div>
@@ -474,7 +491,7 @@
                             </div>
                             <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 16px;">
                                 <i class="fas fa-headset" style="margin-right: 4px;"></i>
-                                Still having trouble? <a href="https://wa.me/919934547108" target="_blank"
+                                Still having trouble? <a href="https://wa.me/18883159768" target="_blank"
                                     style="color: #056cb9; text-decoration: underline;">Contact Support</a>
                             </p>
                         </div>
@@ -619,7 +636,7 @@
         <div class="container">
             <!-- Trustpilot Review Badge -->
             <div class="trustpilot-badge" style="margin: 20px 0; text-align: center;">
-                <a href="https://www.trustpilot.com/review/coasttocoastjourneys.com" target="_blank"
+                <a href="https://www.trustpilot.com/review/c2cjourneys.com" target="_blank"
                     style="display: inline-flex; align-items: center; gap: 10px; background: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.2s;"
                     onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
                     onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';">
@@ -639,8 +656,8 @@
                     style="height: 24px; background: white; padding: 3px 6px; border-radius: 4px;">
             </div>
             <div class="footer-bottom">
-                <p>C2C Journeys is a customer-facing brand operated by Coast to Coast Journeys</p>
-                <p>&copy; 2026 C2C Journeys. All Rights Reserved.</p>
+                <p>Coast To Coast Journeys is a premium travel brand</p>
+                <p>&copy; 2026 Coast To Coast Journeys. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
@@ -666,12 +683,19 @@
     <!-- Hotel API (defines SearchSession, HotelUtils, HotelAPI) -->
     <script src="../js/hotel-api.js"></script>
     <script src="../js/hotel-results.js"></script>
-    <!-- Floating WhatsApp Button -->
-    <a href="https://wa.me/919934547108" target="_blank" class="whatsapp-float" title="Chat on WhatsApp"
-        style="position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: block; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.3s;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp"
-            style="width: 60px; height: 60px; display: block; border-radius: 50%;">
-    </a>
+    <!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6a533a559a72601d480b4624/1jtahno9g';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
 </body>
 
 </html>

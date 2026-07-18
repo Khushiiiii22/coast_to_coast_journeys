@@ -103,7 +103,7 @@ def run_backend_booking_test():
         # Apply the fix: rooms is length (integer)
         'rooms': len(rooms_payload) if isinstance(rooms_payload, list) else 1,
         'guests': guests_payload,
-        'customer_email': "test_backend@c2cjourneys.com",
+        'customer_email': "test_backend@coasttocoastjourneys.com",
         'customer_phone': "+919999999999",
         'special_requests': "Testing backend Supabase insertion directly",
         'total_amount': float(rate.get('total_price', 100.0)),

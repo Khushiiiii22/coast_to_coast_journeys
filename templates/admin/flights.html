@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flight Bookings | C2C Journeys Admin</title>
+    <title>Flight Bookings | Coast To Coast Admin</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -596,106 +596,29 @@
             background: rgba(255, 255, 255, 0.3);
         }
     </style>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
 </head>
 
 <body>
     <div class="admin-wrapper">
-        <!-- Sidebar -->
-        <aside class="admin-sidebar" id="adminSidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">C</div>
-                <span class="sidebar-brand">CTC Admin</span>
-            </div>
-
-            <nav class="sidebar-nav">
-                <div class="nav-section">
-                    <span class="nav-section-title">Main</span>
-                    <a href="dashboard.html" class="nav-item">
-                        <i class="fas fa-home"></i>
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="bookings.html" class="nav-item">
-                        <i class="fas fa-hotel"></i>
-                        <span>Hotel Bookings</span>
-                    </a>
-                    <a href="flights.html" class="nav-item active">
-                        <i class="fas fa-plane"></i>
-                        <span>Flight Bookings</span>
-                        <span class="nav-badge">8</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">Finance</span>
-                    <a href="payments.html" class="nav-item">
-                        <i class="fas fa-credit-card"></i>
-                        <span>Payments</span>
-                    </a>
-                    <a href="invoices.html" class="nav-item">
-                        <i class="fas fa-file-invoice"></i>
-                        <span>Invoices</span>
-                    </a>
-                    <a href="refunds.html" class="nav-item">
-                        <i class="fas fa-undo"></i>
-                        <span>Refunds</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">Operations</span>
-                    <a href="markup.html" class="nav-item">
-                        <i class="fas fa-percentage"></i>
-                        <span>Markup Tool</span>
-                    </a>
-                    <a href="suppliers.html" class="nav-item">
-                        <i class="fas fa-handshake"></i>
-                        <span>Suppliers</span>
-                    </a>
-                    <a href="customers.html" class="nav-item">
-                        <i class="fas fa-users"></i>
-                        <span>Customers</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">Analytics</span>
-                    <a href="reports.html" class="nav-item">
-                        <i class="fas fa-chart-bar"></i>
-                        <span>Reports</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">System</span>
-                    <a href="users.html" class="nav-item">
-                        <i class="fas fa-user-shield"></i>
-                        <span>Admin Users</span>
-                    </a>
-                    <a href="settings.html" class="nav-item">
-                        <i class="fas fa-cog"></i>
-                        <span>Settings</span>
-                    </a>
-                    <a href="activity-logs.html" class="nav-item">
-                        <i class="fas fa-history"></i>
-                        <span>Activity Logs</span>
-                    </a>
-                    <a href="#" class="nav-item" onclick="logout(); return false;" style="color: var(--danger);">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
-                    </a>
-                </div>
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="admin-profile">
-                    <div class="admin-avatar">SA</div>
-                    <div class="admin-info">
-                        <div class="admin-name">Super Admin</div>
-                        <div class="admin-role">Administrator</div>
-                    </div>
-                </div>
-            </div>
-        </aside>
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
 
         <!-- Main Content -->
         <main class="admin-main">
@@ -761,7 +684,7 @@
                             <i class="fas fa-rupee-sign"></i>
                         </div>
                         <div>
-                            <div class="flight-stat-value" id="statRevenue">₹0</div>
+                            <div class="flight-stat-value" id="statRevenue">$0</div>
                             <div class="flight-stat-label">Revenue (This Month)</div>
                         </div>
                     </div>
@@ -942,19 +865,19 @@
                     <div class="info-grid">
                         <div class="info-item">
                             <div class="info-item-label">Base Fare</div>
-                            <div class="info-item-value">₹6,500</div>
+                            <div class="info-item-value">$6,500</div>
                         </div>
                         <div class="info-item">
                             <div class="info-item-label">Taxes & Fees</div>
-                            <div class="info-item-value">₹1,150</div>
+                            <div class="info-item-value">$1,150</div>
                         </div>
                         <div class="info-item">
                             <div class="info-item-label">Service Markup</div>
-                            <div class="info-item-value" style="color: #10b981;">₹850</div>
+                            <div class="info-item-value" style="color: #10b981;">$850</div>
                         </div>
                         <div class="info-item">
                             <div class="info-item-label">Total Amount</div>
-                            <div class="info-item-value" style="font-weight: 700; font-size: 1.1rem;">₹8,500</div>
+                            <div class="info-item-value" style="font-weight: 700; font-size: 1.1rem;">$8,500</div>
                         </div>
                         <div class="info-item">
                             <div class="info-item-label">Payment Method</div>
@@ -1213,13 +1136,13 @@
 
         // ── Helpers ──
         function formatCurrency(amount) {
-            return '₹' + Math.round(amount || 0).toLocaleString('en-IN');
+            return '$' + Math.round(amount || 0).toLocaleString('en-IN');
         }
         function formatRevenue(amount) {
-            if (amount >= 10000000) return '₹' + (amount / 10000000).toFixed(1) + 'Cr';
-            if (amount >= 100000) return '₹' + (amount / 100000).toFixed(1) + 'L';
-            if (amount >= 1000) return '₹' + (amount / 1000).toFixed(1) + 'K';
-            return '₹' + Math.round(amount);
+            if (amount >= 10000000) return '$' + (amount / 10000000).toFixed(1) + 'Cr';
+            if (amount >= 100000) return '$' + (amount / 100000).toFixed(1) + 'L';
+            if (amount >= 1000) return '$' + (amount / 1000).toFixed(1) + 'K';
+            return '$' + Math.round(amount);
         }
         function formatDate(dt) {
             if (!dt) return '--';

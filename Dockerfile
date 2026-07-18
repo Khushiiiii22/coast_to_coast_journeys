@@ -11,6 +11,9 @@ COPY backend/requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install gunicorn
 
+# Install Playwright and its dependencies
+RUN playwright install chromium --with-deps
+
 # Copy the rest of the application
 COPY . .
 

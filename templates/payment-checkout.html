@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="../assets/images/c2c-logo.png">
-    <title>Payment Checkout | C2C Journeys</title>
+    <title>Payment Checkout | Coast To Coast</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -129,6 +129,24 @@
             }
         }
     </style>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
 </head>
 
 <body>
@@ -137,7 +155,7 @@
         <div class="nav-container">
             <a href="index.html" class="logo">
                 <i class="fas fa-plane"></i>
-                C2C Journeys
+                Coast To Coast
             </a>
         </div>
     </nav>
@@ -322,7 +340,7 @@
 
                 <!-- Currency Note -->
                 <p id="currencyNote" style="margin: 12px 0 0 0; font-size: 0.8rem; color: #64748b;">Rates are quoted in
-                    INR (₹).</p>
+                    USD ($).</p>
 
                 <!-- Price may increase warning -->
                 <div
@@ -395,7 +413,7 @@
             </div>
             <!-- Trustpilot Review Badge -->
             <div class="trustpilot-badge" style="margin: 20px 0; text-align: center;">
-                <a href="https://www.trustpilot.com/review/coasttocoastjourneys.com" target="_blank"
+                <a href="https://www.trustpilot.com/review/c2cjourneys.com" target="_blank"
                     rel="noopener noreferrer"
                     style="display: inline-flex; align-items: center; gap: 8px; background: #fff; color: #191919; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s;"
                     onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
@@ -408,9 +426,9 @@
             </div>
 
             <div class="footer-bottom">
-                <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">C2C Journeys is a customer-facing
-                    brand operated by Coast to Coast Journeys</p>
-                <p style="color: #94a3b8; font-size: 0.9rem;">&copy; 2026 C2C Journeys. All Rights Reserved.</p>
+                <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">Coast To Coast is a customer-facing
+                    brand operated by Coast To Coast</p>
+                <p style="color: #94a3b8; font-size: 0.9rem;">&copy; 2026 Coast To Coast Journeys. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
@@ -474,8 +492,8 @@
             const roomsCount = parseInt(searchParams.rooms) || 1;
 
             // Determine currency
-            const originalCurrency = rate.currency || bookingData.currency || 'INR';
-            const currencySymbol = originalCurrency === 'INR' ? '₹' : (originalCurrency === 'USD' ? '$' : originalCurrency + ' ');
+            const originalCurrency = rate.currency || bookingData.currency || 'USD';
+            const currencySymbol = originalCurrency === 'USD' ? '$' : (originalCurrency === 'USD' ? '$' : originalCurrency + ' ');
 
             // Helper: format price with currency
             function fmtPrice(amount) {
@@ -559,7 +577,7 @@
             }
 
             // 5. Currency note
-            const currencyNames = { 'INR': 'INR (₹)', 'USD': 'USD ($)', 'EUR': 'EUR (€)', 'GBP': 'GBP (£)' };
+            const currencyNames = { 'INR': 'INR ($)', 'USD': 'USD ($)', 'EUR': 'EUR (€)', 'GBP': 'GBP (£)' };
             document.getElementById('currencyNote').textContent = `Rates are quoted in ${currencyNames[originalCurrency] || originalCurrency}.`;
 
             // Hardening Notices: Last-Minute & Residency
@@ -742,7 +760,7 @@
                 checkin: bookingData.search_params.checkin,
                 checkout: bookingData.search_params.checkout,
                 total_amount: bookingData.total,
-                currency: 'INR',
+                currency: 'USD',
                 email: email,
                 phone: phone,
                 user_id: userId
@@ -851,7 +869,7 @@
                     key: orderData.key_id,
                     amount: orderData.amount,
                     currency: orderData.currency,
-                    name: 'C2C Journeys',
+                    name: 'Coast To Coast',
                     description: 'Hotel Booking: ' + bookingData.hotel.name,
                     order_id: orderData.order_id,
                     handler: async function (response) {
@@ -1083,6 +1101,19 @@
             }
         }
     </script>
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6a533a559a72601d480b4624/1jtahno9g';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
 </body>
 
 </html>

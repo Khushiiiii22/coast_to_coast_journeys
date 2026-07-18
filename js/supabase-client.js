@@ -67,41 +67,92 @@ checkSupabaseHealth();
  * =====================================================
  */
 
-// Sign up new customer
-// Sign up new customer
+// Sign up new customer with OTP verification
 async function signUpCustomer(email, password, fullName, phone = null) {
     try {
-        // Use backend API to create user with auto-confirmation
-        const response = await fetch('/api/auth/signup', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email,
-                password,
-                full_name: fullName,
-                phone
-            })
-        });
-
-        const result = await response.json();
-
-        if (!result.success) {
-            throw new Error(result.error || 'Failed to create account');
-        }
-
-        // Account created successfully (and confirmed). Now sign in.
-        const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
+        // Use Supabase built-in signUp. This will send an OTP if email confirmation is enabled.
+        const { data, error } = await supabaseClient.auth.signUp({
             email,
-            password
+            password,
+            options: {
+                data: {
+                    full_name: fullName,
+                    phone: phone,
+                    user_type: 'customer'
+                }
+            }
         });
 
-        if (authError) throw authError;
+        if (error) throw error;
 
-        return { success: true, data: authData };
+        // Note: If auto-confirm is OFF in Supabase, data.session will be null and the user must verify the OTP.
+        return { success: true, data };
     } catch (error) {
         console.error('Sign up error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Verify OTP for Signup or Login
+async function verifyEmailOtp(email, token, type = 'signup') {
+    try {
+        const { data, error } = await supabaseClient.auth.verifyOtp({
+            email,
+            token,
+            type: type // 'signup', 'magiclink', 'recovery', 'email_change'
+        });
+
+        if (error) throw error;
+
+        // Ensure customer record exists if they just signed up
+        if (data.user) {
+            await ensureCustomerRecordExists(data.user);
+        }
+
+        return { success: true, data };
+    } catch (error) {
+        console.error('Verify OTP error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Ensure customer record is present in public.customers
+async function ensureCustomerRecordExists(user) {
+    try {
+        // Check if exists
+        const { data: existing } = await supabaseClient
+            .from('customers')
+            .select('id')
+            .eq('user_id', user.id)
+            .single();
+
+        if (!existing) {
+            await supabaseClient.from('customers').insert({
+                user_id: user.id,
+                email: user.email,
+                full_name: user.user_metadata?.full_name || user.email.split('@')[0],
+                phone: user.user_metadata?.phone || '',
+                customer_type: 'regular'
+            });
+        }
+    } catch (e) {
+        console.error('Customer record check failed:', e);
+    }
+}
+
+// Send OTP for Login (Passwordless)
+async function sendLoginOtp(email) {
+    try {
+        const { error } = await supabaseClient.auth.signInWithOtp({
+            email,
+            options: {
+                shouldCreateUser: false // Only allow existing users to log in this way if preferred, or true for passwordless signup
+            }
+        });
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        console.error('Send OTP error:', error);
         return { success: false, error: error.message };
     }
 }
@@ -145,12 +196,13 @@ async function signInWithGoogle() {
         const currentOrigin = window.location.origin;
         let redirectUrl = currentOrigin + '/templates/auth.html';
 
+        const searchParams = window.location.search;
         // If we're accessing from templates folder structure (local development)
         if (window.location.pathname.includes('/templates/')) {
-            redirectUrl = currentOrigin + '/templates/auth.html';
+            redirectUrl = currentOrigin + '/templates/auth.html' + searchParams;
         } else {
             // Production or root-level access
-            redirectUrl = currentOrigin + '/auth.html';
+            redirectUrl = currentOrigin + '/auth.html' + searchParams;
         }
 
         console.log('Google OAuth redirect URL:', redirectUrl);

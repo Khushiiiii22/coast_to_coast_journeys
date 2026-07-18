@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bookings | C2C Journeys Admin</title>
+    <title>Hotel Bookings | Coast To Coast Admin</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
     <!-- Font Awesome -->
@@ -20,278 +20,196 @@
     <link rel="icon" href="data:,">
 
     <style>
-        .filters-bar {
+        /* ═══════════════════════════════════════
+           Matching Screenshot Layout & Colors
+           ═══════════════════════════════════════ */
+        
+        :root {
+            --mint-green: #2ecc71;
+            --mint-light: rgba(46, 204, 113, 0.1);
+            --border-muted: #e2e8f0;
+            --text-muted: #64748b;
+        }
+
+        .booking-header-controls {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: #fff;
+            border-bottom: 1px solid var(--border-muted);
+            margin-bottom: 0;
             flex-wrap: wrap;
-            align-items: center;
         }
 
-        .filter-group {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .filter-group label {
-            font-size: 0.85rem;
-            color: #64748b;
-            white-space: nowrap;
-        }
-
-        .filter-group select,
-        .filter-group input {
+        .ctrl-input {
             padding: 0.5rem 1rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 0.9rem;
-        }
-
-        .search-box {
-            flex: 1;
-            min-width: 250px;
-            position: relative;
-        }
-
-        .search-box i {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 0.5rem 1rem 0.5rem 40px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-        }
-
-        .booking-id {
-            font-family: monospace;
-            font-weight: 600;
-            color: #0e64a6;
-        }
-
-        .customer-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .customer-name {
-            font-weight: 500;
-        }
-
-        .customer-email {
-            font-size: 0.8rem;
-            color: #64748b;
-        }
-
-        .hotel-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .hotel-name {
-            font-weight: 500;
-        }
-
-        .hotel-dates {
-            font-size: 0.8rem;
-            color: #64748b;
-        }
-
-        .amount-cell {
-            text-align: right;
-        }
-
-        .amount-main {
-            font-weight: 600;
-            font-size: 1rem;
-        }
-
-        .amount-margin {
-            font-size: 0.75rem;
-            color: #10b981;
-        }
-
-        .action-btns {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .pagination {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 1.5rem;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .pagination-info {
-            font-size: 0.9rem;
-            color: #64748b;
-        }
-
-        .pagination-buttons {
-            display: flex;
-            gap: 0.25rem;
-        }
-
-        .page-btn {
-            padding: 0.5rem 0.75rem;
-            border: 1px solid #e2e8f0;
-            background: white;
+            border: 1px solid var(--border-muted);
             border-radius: 4px;
+            font-size: 0.9rem;
+            color: #1e293b;
+        }
+
+        .ctrl-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-muted);
+            background: #fff;
             cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
             transition: all 0.2s;
         }
 
-        .page-btn:hover,
-        .page-btn.active {
-            background: #0e64a6;
+        .ctrl-btn:hover {
+            background: #f8fafc;
+        }
+
+        .btn-green {
+            background: var(--mint-green);
             color: white;
-            border-color: #0e64a6;
+            border-color: var(--mint-green);
         }
 
-        .quick-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+        .btn-green:hover {
+            background: #27ae60;
         }
 
-        .quick-stat {
-            background: white;
-            padding: 1rem;
-            border-radius: 8px;
+        .btn-cyan {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-container input {
+            padding-right: 2.5rem;
+            min-width: 250px;
+        }
+
+        .search-icon-btn {
+            position: absolute;
+            right: 1px;
+            top: 1px;
+            bottom: 1px;
+            width: 38px;
+            background: #ebf5ff;
+            border: none;
+            border-left: 1px solid var(--border-muted);
+            color: #3b82f6;
+            cursor: pointer;
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+        }
+
+        /* Table Styling matching screenshot */
+        .ss-table-container {
+            margin: 0;
+            border: 1px solid #3498db;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .ss-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .ss-table th {
+            background: #f8fafc;
+            padding: 0.75rem 1rem;
             text-align: center;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .quick-stat-value {
-            font-size: 1.5rem;
             font-weight: 700;
+            color: #1e293b;
+            border: 1px solid var(--border-muted);
+            white-space: nowrap;
         }
 
-        .quick-stat-label {
-            font-size: 0.8rem;
-            color: #64748b;
+        .ss-table td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-muted);
+            text-align: center;
+            color: #475569;
         }
 
-        .quick-stat.confirmed .quick-stat-value {
-            color: #10b981;
+        .empty-row td {
+            background: #fff;
+            color: #94a3b8;
+            padding: 2rem;
+            font-style: italic;
         }
 
-        .quick-stat.pending .quick-stat-value {
-            color: #f59e0b;
+        /* Status colors */
+        .st-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .st-confirmed { background: #d1fae5; color: #065f46; }
+        .st-created { background: #dbeafe; color: #1e40af; }
+        .st-failed { background: #fee2e2; color: #991b1b; }
+        .st-cancelled { background: #f3f4f6; color: #374151; }
+
+        .action-link {
+            color: #3b82f6;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
         }
 
-        .quick-stat.cancelled .quick-stat-value {
-            color: #ef4444;
+        .action-link:hover {
+            text-decoration: underline;
         }
 
-        .quick-stat.total .quick-stat-value {
+        .sidebar-item.active-mint {
+            background: var(--mint-green) !important;
+            color: white !important;
+        }
+
+        .hotel-info-cell {
+            text-align: left !important;
+        }
+
+        .highlight-blue {
             color: #0e64a6;
+            font-weight: 600;
         }
     </style>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
 </head>
 
 <body>
     <div class="admin-wrapper">
-        <!-- Sidebar (Same as dashboard) -->
-        <aside class="admin-sidebar" id="adminSidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">C</div>
-                <span class="sidebar-brand">CTC Admin</span>
-            </div>
-
-            <nav class="sidebar-nav">
-                <div class="nav-section">
-                    <span class="nav-section-title">Main</span>
-                    <a href="dashboard.html" class="nav-item">
-                        <i class="fas fa-home"></i>
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="bookings.html" class="nav-item active">
-                        <i class="fas fa-calendar-check"></i>
-                        <span>Bookings</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">Finance</span>
-                    <a href="payments.html" class="nav-item">
-                        <i class="fas fa-credit-card"></i>
-                        <span>Payments</span>
-                    </a>
-                    <a href="invoices.html" class="nav-item">
-                        <i class="fas fa-file-invoice"></i>
-                        <span>Invoices</span>
-                    </a>
-                    <a href="refunds.html" class="nav-item">
-                        <i class="fas fa-undo"></i>
-                        <span>Refunds</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">Operations</span>
-                    <a href="markup.html" class="nav-item">
-                        <i class="fas fa-percentage"></i>
-                        <span>Markup Tool</span>
-                    </a>
-                    <a href="suppliers.html" class="nav-item">
-                        <i class="fas fa-handshake"></i>
-                        <span>Suppliers</span>
-                    </a>
-                    <a href="customers.html" class="nav-item">
-                        <i class="fas fa-users"></i>
-                        <span>Customers</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">Analytics</span>
-                    <a href="reports.html" class="nav-item">
-                        <i class="fas fa-chart-bar"></i>
-                        <span>Reports</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">System</span>
-                    <a href="users.html" class="nav-item">
-                        <i class="fas fa-user-shield"></i>
-                        <span>Admin Users</span>
-                    </a>
-                    <a href="settings.html" class="nav-item">
-                        <i class="fas fa-cog"></i>
-                        <span>Settings</span>
-                    </a>
-                    <a href="activity-logs.html" class="nav-item">
-                        <i class="fas fa-history"></i>
-                        <span>Activity Logs</span>
-                    </a>
-                    <a href="#" class="nav-item" onclick="logout(); return false;" style="color: var(--danger);">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
-                    </a>
-                </div>
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="admin-profile">
-                    <div class="admin-avatar">SA</div>
-                    <div class="admin-info">
-                        <div class="admin-name">Super Admin</div>
-                        <div class="admin-role">Administrator</div>
-                    </div>
-                </div>
-            </div>
-        </aside>
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
 
         <!-- Main Content -->
         <main class="admin-main">
@@ -300,273 +218,106 @@
                     <button class="sidebar-toggle" id="sidebarToggle">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h1 class="page-title">Bookings Management</h1>
+                    <div>
+                        <h1 class="page-title">Hotel Bookings</h1>
+                    </div>
                 </div>
 
                 <div class="header-right">
-                    <button class="btn btn-secondary">
-                        <i class="fas fa-download"></i> Export
-                    </button>
-                    <button class="btn btn-primary" onclick="openModal('manualBookingModal')">
-                        <i class="fas fa-plus"></i> Manual Booking
-                    </button>
+                    <div style="font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-right: 1.5rem;">
+                        COAST TO COAST JOURNEYS
+                    </div>
                 </div>
             </header>
 
-            <div class="admin-content">
-                <!-- Quick Stats -->
-                <div class="quick-stats">
-                    <div class="quick-stat total">
-                        <div class="quick-stat-value" id="statTotal">0</div>
-                        <div class="quick-stat-label">Total Bookings</div>
-                    </div>
-                    <div class="quick-stat confirmed">
-                        <div class="quick-stat-value" id="statConfirmed">0</div>
-                        <div class="quick-stat-label">Confirmed</div>
-                    </div>
-                    <div class="quick-stat pending">
-                        <div class="quick-stat-value" id="statPending">0</div>
-                        <div class="quick-stat-label">Pending</div>
-                    </div>
-                    <div class="quick-stat cancelled">
-                        <div class="quick-stat-value" id="statCancelled">0</div>
-                        <div class="quick-stat-label">Cancelled</div>
-                    </div>
-                </div>
-
-                <!-- Filters -->
-                <div class="filters-bar">
-                    <div class="search-box">
+            <!-- Controls (Matching Screenshot top right) -->
+            <div class="booking-header-controls">
+                <input type="date" id="fromDate" class="ctrl-input" placeholder="From Date">
+                <input type="date" id="toDate" class="ctrl-input" placeholder="To Date">
+                
+                <button class="ctrl-btn" onclick="resetFilters()">Show All</button>
+                
+                <div class="search-container">
+                    <input type="text" id="bookingSearch" class="ctrl-input" placeholder="Enter Keyword">
+                    <button class="search-icon-btn" onclick="loadBookings()">
                         <i class="fas fa-search"></i>
-                        <input type="text" id="bookingSearch" placeholder="Search by booking ID, customer, hotel...">
-                    </div>
-
-                    <div class="filter-group">
-                        <label>Status:</label>
-                        <select id="statusFilter" onchange="currentPage=0; loadBookings()">
-                            <option value="">All Status</option>
-                            <option value="confirmed">Confirmed</option>
-                            <option value="pending">Pending</option>
-                            <option value="cancelled">Cancelled</option>
-                            <option value="processing">Processing</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label>Date:</label>
-                        <input type="date" id="fromDate">
-                        <span>to</span>
-                        <input type="date" id="toDate">
-                    </div>
-
-                    <button class="btn btn-secondary" onclick="currentPage=0; loadBookings()">
-                        <i class="fas fa-filter"></i> Apply
                     </button>
                 </div>
 
-                <!-- Bookings Table -->
-                <div class="admin-card">
-                    <table class="admin-table" id="bookingsTable">
+                <button class="ctrl-btn btn-cyan" onclick="exportCSV()">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+
+            <div class="admin-content">
+                <!-- Table (Matching Screenshot structure) -->
+                <div class="ss-table-container">
+                    <table class="ss-table" id="bookingsTable">
                         <thead>
                             <tr>
+                                <th>#</th>
+                                <th>Created On</th>
                                 <th>Booking ID</th>
-                                <th>Customer</th>
-                                <th>Hotel & Dates</th>
-                                <th>Rooms</th>
+                                <th>Hotel Details</th>
+                                <th>Booking CN</th>
+                                <th>Check In</th>
+                                <th>Check Out</th>
+                                <th>Total Nights</th>
+                                <th>Guest Name</th>
                                 <th>Amount</th>
                                 <th>Status</th>
-                                <th>Payment</th>
-                                <th>Actions</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody id="bookingsBody">
-                            <tr>
-                                <td colspan="8" style="text-align: center; padding: 2rem;">
-                                    <i class="fas fa-spinner fa-spin"></i> Loading bookings...
+                            <tr class="empty-row">
+                                <td colspan="12">
+                                    <i class="fas fa-spinner fa-spin"></i> Fetching hotel data...
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
 
-                    <div class="pagination">
-                        <div class="pagination-info" id="paginationInfo">
-                            Showing 0-0 of 0 bookings
-                        </div>
-                        <div class="pagination-buttons" id="paginationButtons">
-                            <!-- Pagination buttons will be inserted here -->
-                        </div>
-                    </div>
+                <!-- Footer style message -->
+                <div style="display: flex; justify-content: space-between; margin-top: 2rem; padding: 1rem; color: #94a3b8; font-size: 0.75rem; border-top: 1px solid #f1f5f9;">
+                    <div>© 2026 COAST TO COAST JOURNEYS . All Rights Reserved.</div>
+                    <div>Developed & Maintained by <span style="color: #3b82f6;">COAST TO COAST JOURNEYS</span></div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Manual Booking Modal -->
-    <div class="modal" id="manualBookingModal">
-        <div class="modal-overlay" onclick="closeModal('manualBookingModal')"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fas fa-plus-circle"></i> Create Manual Hotel Booking</h3>
-                <button class="modal-close" onclick="closeModal('manualBookingModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="manualBookingForm">
-                    <div class="info-section">
-                        <div class="info-section-title">
-                            <i class="fas fa-hotel"></i> Hotel Details
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Hotel Name</label>
-                            <input type="text" name="hotel_name" class="form-control"
-                                placeholder="Search or enter hotel name" required>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Check-in</label>
-                                <input type="date" name="check_in" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Check-out</label>
-                                <input type="date" name="check_out" class="form-control" required>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Rooms</label>
-                                <input type="number" name="rooms" class="form-control" value="1" min="1" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Hotel Star Rating</label>
-                                <select name="hotel_star_rating" class="form-control">
-                                    <option value="3">3 Star</option>
-                                    <option value="4">4 Star</option>
-                                    <option value="5" selected>5 Star</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="info-section">
-                        <div class="info-section-title">
-                            <i class="fas fa-user"></i> Customer Details
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Full Name</label>
-                            <input type="text" name="customer_name" class="form-control" placeholder="e.g. Rahul Sharma"
-                                required>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Email</label>
-                                <input type="email" name="customer_email" class="form-control"
-                                    placeholder="customer@email.com" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Phone</label>
-                                <input type="tel" name="customer_phone" class="form-control"
-                                    placeholder="+91 98765 43210" required>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="info-section">
-                        <div class="info-section-title">
-                            <i class="fas fa-rupee-sign"></i> Payment & Pricing
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Base Price</label>
-                                <input type="number" name="base_price" class="form-control" placeholder="0" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Markup</label>
-                                <input type="number" name="markup_amount" class="form-control" value="0">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Status</label>
-                                <select name="status" class="form-control">
-                                    <option value="confirmed">Confirmed</option>
-                                    <option value="pending">Pending</option>
-                                    <option value="processing">Processing</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Payment Status</label>
-                                <select name="payment_status" class="form-control">
-                                    <option value="paid">Paid</option>
-                                    <option value="pending">Pending</option>
-                                    <option value="partial">Partial</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('manualBookingModal')">Cancel</button>
-                <button class="btn btn-primary" onclick="saveManualBooking()">
-                    <i class="fas fa-save"></i> Create Booking
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Admin JavaScript -->
+    <!-- Admin JS -->
     <script src="../../admin/js/admin.js"></script>
     <script>
-        let currentPage = 0;
-        const PAGE_SIZE = 10;
-        let totalBookings = 0;
+        let allBookings = [];
 
         document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('status') === 'created') {
+                document.querySelector('.page-title').textContent = 'Incomplete Bookings';
+            }
             loadBookings();
-            loadStats();
-
-            // Set up search debouncing
-            const searchInput = document.getElementById('bookingSearch');
-            let searchTimeout;
-            if (searchInput) {
-                searchInput.addEventListener('input', function () {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        currentPage = 0;
-                        loadBookings();
-                    }, 500);
-                });
-            }
         });
-
-        async function loadStats() {
-            try {
-                const res = await apiRequest('/bookings/stats');
-                if (res.success) {
-                    const s = res.data;
-                    document.getElementById('statTotal').textContent = s.total || 0;
-                    document.getElementById('statConfirmed').textContent = s.confirmed || 0;
-                    document.getElementById('statPending').textContent = s.pending || 0;
-                    document.getElementById('statCancelled').textContent = s.cancelled || 0;
-                }
-            } catch (e) {
-                console.error('Stats error:', e);
-            }
-        }
 
         async function loadBookings() {
             const tbody = document.getElementById('bookingsBody');
-            const status = document.getElementById('statusFilter')?.value || '';
-            const search = document.getElementById('bookingSearch')?.value || '';
-            const fromDate = document.getElementById('fromDate')?.value || '';
-            const toDate = document.getElementById('toDate')?.value || '';
+            const search = document.getElementById('bookingSearch').value;
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const statusFilter = urlParams.get('status');
+            const customerId = urlParams.get('customer_id');
 
             try {
                 const params = new URLSearchParams({
-                    limit: PAGE_SIZE,
-                    offset: currentPage * PAGE_SIZE
+                    limit: 100
                 });
 
-                if (status) params.append('status', status);
+                if (statusFilter) params.append('status', statusFilter);
+                if (customerId) params.append('customer_id', customerId);
                 if (search) params.append('search', search);
                 if (fromDate) params.append('from_date', fromDate);
                 if (toDate) params.append('to_date', toDate);
@@ -574,125 +325,93 @@
                 const res = await apiRequest(`/bookings?${params.toString()}`);
 
                 if (res.success) {
-                    const bookings = res.data;
-                    totalBookings = res.count || 0;
-
-                    if (bookings.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem;">No bookings found</td></tr>';
-                    } else {
-                        tbody.innerHTML = bookings.map(b => `
-                            <tr>
-                                <td><span class="booking-id">#${b.booking_id || (b.id ? b.id.substring(0, 8).toUpperCase() : 'N/A')}</span></td>
-                                <td>
-                                    <div class="customer-info">
-                                        <span class="customer-name">${b.customer_name || 'Guest'}</span>
-                                        <span class="customer-email">${b.customer_email || '--'}</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="hotel-info">
-                                        <span class="hotel-name">${b.hotel_name || 'N/A'}</span>
-                                        <span class="hotel-dates">${formatDate(b.check_in)} - ${formatDate(b.check_out)}</span>
-                                    </div>
-                                </td>
-                                <td>${b.rooms || 1}</td>
-                                <td class="amount-cell">
-                                    <div class="amount-main">${formatCurrency(b.total_amount || 0, b.currency)}</div>
-                                    ${b.markup_amount ? `<div class="amount-margin">M: ${formatCurrency(b.markup_amount, b.currency)}</div>` : ''}
-                                </td>
-                                <td><span class="status-badge ${b.status || 'pending'}">${(b.status || 'pending').toUpperCase()}</span></td>
-                                <td><span class="status-badge ${b.payment_status || 'pending'}">${(b.payment_status || 'pending').toUpperCase()}</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn btn-secondary btn-icon" onclick="viewBookingDetails('${b.id}')" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-secondary btn-icon" onclick="downloadVoucher('${b.id}')" title="Download Voucher">
-                                            <i class="fas fa-download"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `).join('');
-                    }
-
-                    renderPagination();
+                    allBookings = res.data;
+                    renderTable(allBookings);
                 }
             } catch (error) {
-                console.error('Error loading bookings:', error);
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #ef4444;">Failed to load bookings</td></tr>';
+                console.error('Error:', error);
+                tbody.innerHTML = '<tr><td colspan="12" style="color: red;">Failed to load data.</td></tr>';
             }
         }
 
-        function renderPagination() {
-            const info = document.getElementById('paginationInfo');
-            const buttons = document.getElementById('paginationButtons');
+        function renderTable(data) {
+            const tbody = document.getElementById('bookingsBody');
+            
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr class="empty-row"><td colspan="12">No hotel bookings found</td></tr>';
+                return;
+            }
 
-            const start = totalBookings > 0 ? (currentPage * PAGE_SIZE + 1) : 0;
-            const end = Math.min(start + PAGE_SIZE - 1, totalBookings);
-
-            info.textContent = `Showing ${start}-${end} of ${totalBookings} bookings`;
-
-            const totalPages = Math.ceil(totalBookings / PAGE_SIZE);
-            let html = '';
-
-            if (totalPages > 1) {
-                html += `<button class="page-btn" ${currentPage === 0 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})"><i class="fas fa-chevron-left"></i></button>`;
-
-                const maxPages = 5;
-                let s = Math.max(0, currentPage - 2);
-                let e = Math.min(totalPages - 1, s + maxPages - 1);
-                if (e - s < maxPages - 1) s = Math.max(0, e - maxPages + 1);
-
-                if (s > 0) html += `<button class="page-btn" onclick="changePage(0)">1</button>${s > 1 ? '<span class="page-dots">...</span>' : ''}`;
-
-                for (let i = s; i <= e; i++) {
-                    html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i + 1}</button>`;
+            tbody.innerHTML = data.map((b, index) => {
+                const createdOn = formatDate(b.created_at);
+                const checkIn = b.check_in || '—';
+                const checkOut = b.check_out || '—';
+                const nights = calculateNights(b.check_in, b.check_out);
+                const orderId = b.partner_order_id || b.id.substring(0, 8).toUpperCase();
+                const bookingCN = b.etg_order_id || b.booking_id || '—';
+                
+                // Guest Info
+                let guestName = b.customer_name || 'Guest';
+                if (b.guests && Array.isArray(b.guests) && b.guests.length > 0) {
+                    try {
+                        const room = b.guests[0];
+                        if (room.guests && room.guests.length > 0) {
+                            const g = room.guests[0];
+                            guestName = `${g.first_name || ''} ${g.last_name || ''}`.trim();
+                        }
+                    } catch (e) {}
                 }
 
-                if (e < totalPages - 1) html += `${e < totalPages - 2 ? '<span class="page-dots">...</span>' : ''}<button class="page-btn" onclick="changePage(${totalPages - 1})">${totalPages}</button>`;
+                const amount = `${b.currency || 'USD'} ${parseFloat(b.total_amount || 0).toLocaleString()}`;
+                const status = b.status || 'unknown';
+                const statusClass = `st-${status.toLowerCase()}`;
 
-                html += `<button class="page-btn" ${currentPage === totalPages - 1 ? 'disabled' : ''} onclick="changePage(${currentPage + 1})"><i class="fas fa-chevron-right"></i></button>`;
-            }
-
-            buttons.innerHTML = html;
+                return `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${createdOn}</td>
+                        <td class="highlight-blue">${orderId}</td>
+                        <td class="hotel-info-cell">
+                            <strong>${b.hotel_name || 'N/A'}</strong><br>
+                            <small>${b.hotel_city || ''}, ${b.hotel_country || ''}</small>
+                        </td>
+                        <td>${bookingCN}</td>
+                        <td>${checkIn}</td>
+                        <td>${checkOut}</td>
+                        <td>${nights}</td>
+                        <td>${guestName}</td>
+                        <td style="font-weight: 700;">${amount}</td>
+                        <td><span class="st-badge ${statusClass}">${status}</span></td>
+                        <td>
+                            <a href="booking-details.html?id=${b.id}" class="action-link">View Details</a>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
-        function changePage(page) {
-            currentPage = page;
+        function calculateNights(inDate, outDate) {
+            if (!inDate || !outDate) return 0;
+            const ci = new Date(inDate);
+            const co = new Date(outDate);
+            const diff = Math.ceil((co - ci) / (1000 * 60 * 60 * 24));
+            return diff > 0 ? diff : 0;
+        }
+
+        function resetFilters() {
+            document.getElementById('fromDate').value = '';
+            document.getElementById('toDate').value = '';
+            document.getElementById('bookingSearch').value = '';
             loadBookings();
-            window.scrollTo(0, 0);
         }
 
-        async function saveManualBooking() {
-            const form = document.getElementById('manualBookingForm');
-            if (!validateForm('manualBookingForm')) return;
-
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
-
-            // Convert numbers
-            data.base_price = parseFloat(data.base_price);
-            data.markup_amount = parseFloat(data.markup_amount || 0);
-            data.total_amount = data.base_price + data.markup_amount;
-            data.booking_source = 'admin_manual';
-
-            try {
-                const res = await apiRequest('/bookings', 'POST', data);
-                if (res.success) {
-                    showNotification('Manual booking created successfully', 'success');
-                    closeModal('manualBookingModal');
-                    form.reset();
-                    loadStats();
-                    loadBookings();
-                }
-            } catch (error) {
-                showNotification(error.message || 'Failed to create booking', 'error');
+        function exportCSV() {
+            if (allBookings.length === 0) {
+                showNotification('No data to export', 'warning');
+                return;
             }
+            exportToCSV(allBookings, 'hotel_bookings_report');
         }
-
-        function viewBookingDetails(id) { showNotification(`Viewing details for booking ${id}`, 'info'); }
-        function downloadVoucher(id) { showNotification(`Generating voucher for booking ${id}`, 'info'); }
     </script>
 </body>
 

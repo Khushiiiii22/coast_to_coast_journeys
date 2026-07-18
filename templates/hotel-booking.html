@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Book Hotels - C2C Journeys. Search and book hotels at the best prices worldwide.">
-    <title>Book Hotels | C2C Journeys</title>
+    <meta name="description" content="Find your perfect stay. Book luxury hotels, cheap stays, and exclusive accommodations across the US and worldwide.">
+    <title>Luxury Hotels & Cheap Stays | Coast To Coast</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/jpeg" href="../assets/images/c2c-logo.png">
@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/main.css?v=2.1">
     <link rel="stylesheet" href="../css/hotel-booking.css">
 
     <!-- Location Autocomplete Styles -->
@@ -181,29 +181,137 @@
             border-bottom: 1px solid #e5e7eb;
         }
     </style>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
+
+    <meta property="og:title" content="Luxury Hotels & Cheap Stays | Coast To Coast">
+    <meta property="og:description" content="Find your perfect stay. Book luxury hotels, cheap stays, and exclusive accommodations across the US and worldwide.">
+    <meta property="og:type" content="website">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TravelAgency",
+      "name": "Coast To Coast",
+      "telephone": "+1-888-315-9768",
+      "email": "Sales@c2cjourneys.com",
+      "url": "https://c2cjourneys.com"
+    }
+    </script>
 </head>
 
 <body>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
+            <span>Coast To Coast</span>
+            <button class="sidebar-close" id="sidebarClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="sidebar-link">
+                <i class="fas fa-home"></i> Home
+            </a>
+            <a href="flight-booking.html" class="sidebar-link">
+                <i class="fas fa-plane"></i> Book Flights
+            </a>
+            <a href="hotel-booking.html" class="sidebar-link">
+                <i class="fas fa-hotel"></i> Book Hotels
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="#contact" class="sidebar-link" id="sidebarSupport">
+                <i class="fas fa-headset"></i> 24/7 Support
+            </a>
+            <a href="mailto:Sales@c2cjourneys.com" class="sidebar-link">
+                <i class="fas fa-envelope"></i> Email Us
+            </a>
+            <a href="tel:+18883159768" class="sidebar-link">
+                <i class="fas fa-phone"></i> Call Us
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="#" class="sidebar-link" id="feedbackLink">
+                <i class="fas fa-comment-dots"></i> Feedback
+            </a>
+            <a href="faqs.html" class="sidebar-link">
+                <i class="fas fa-question-circle"></i> FAQs
+            </a>
+            <a href="about.html" class="sidebar-link">
+                <i class="fas fa-info-circle"></i> About Us
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="terms.html" class="sidebar-link">
+                <i class="fas fa-file-contract"></i> Terms & Conditions
+            </a>
+            <a href="privacy-policy.html" class="sidebar-link">
+                <i class="fas fa-user-shield"></i> Privacy Policy
+            </a>
+            <a href="refund-policy.html" class="sidebar-link">
+                <i class="fas fa-undo-alt"></i> Refund Policy
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="https://wa.me/18883159768" class="sidebar-link" target="_blank">
+                <i class="fab fa-whatsapp"></i> WhatsApp Chat
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-social">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+            </div>
+            <p>&copy; 2026 Coast To Coast Journeys</p>
+        </div>
+    </aside>
+
     <!-- Header -->
     <header class="header scrolled" id="header">
         <div class="container">
             <div class="header-content">
-                <a href="index.html" class="logo">
-                    <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
-                    <span class="logo-text">C2C Journeys</span>
+                                <!-- Hamburger Menu Button -->
+                <button class="hamburger-menu" id="hamburgerMenu" aria-label="Open navigation menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+<a href="index.html" class="logo">
+                    <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
+                    <span class="logo-text">Coast To Coast</span>
                 </a>
 
                 <nav>
                     <ul class="nav-menu" id="navMenu">
                         <li><a href="index.html" class="nav-link">Home</a></li>
-                        <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
                         <li><a href="hotel-booking.html" class="nav-link active">Hotels</a></li>
-                        <li><a href="visa.html" class="nav-link">Visa</a></li>
+                        <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
                         <li><a href="index.html#contact" class="nav-link">Contact</a></li>
                     </ul>
                 </nav>
 
                 <div class="header-actions">
+                    
+                    <a href="tel:+18883159768" class="phone-link">
+                        <i class="fas fa-phone"></i>
+                        <span>+1-888-315-9768</span>
+                    </a>
                     <a href="auth.html" class="btn btn-outline">
                         <i class="fas fa-user"></i> Login
                     </a>
@@ -312,8 +420,8 @@
                                 <i class="fas fa-globe"></i>
                                 <select id="guestNationality" class="nationality-select" required>
                                     <option value="" disabled>Select Country</option>
-                                    <option value="in" selected>🇮🇳 India</option>
-                                    <option value="us">🇺🇸 United States</option>
+                                    <option value="in">🇮🇳 India</option>
+                                    <option value="us" selected>🇺🇸 United States</option>
                                     <option value="gb">🇬🇧 United Kingdom</option>
                                     <option value="ae">🇦🇪 UAE</option>
                                     <option value="sa">🇸🇦 Saudi Arabia</option>
@@ -387,19 +495,19 @@
                         <h4>Price Range</h4>
                         <label class="filter-option">
                             <input type="checkbox" id="p1">
-                            Under ₹2,000
+                            Under $2,000
                         </label>
                         <label class="filter-option">
                             <input type="checkbox" id="p2">
-                            ₹2,000 - ₹5,000
+                            $2,000 - $5,000
                         </label>
                         <label class="filter-option">
                             <input type="checkbox" id="p3" checked>
-                            ₹5,000 - ₹10,000
+                            $5,000 - $10,000
                         </label>
                         <label class="filter-option">
                             <input type="checkbox" id="p4">
-                            Above ₹10,000
+                            Above $10,000
                         </label>
                     </div>
 
@@ -498,7 +606,7 @@
                             <div class="hotel-price-section">
                                 <div>
                                     <p class="price-label">Starting from</p>
-                                    <p class="price-amount">₹15,999</p>
+                                    <p class="price-amount">$15,999</p>
                                     <p class="price-per-night">per night</p>
                                 </div>
                                 <button class="btn btn-accent">View Details</button>
@@ -535,7 +643,7 @@
                             <div class="hotel-price-section">
                                 <div>
                                     <p class="price-label">Starting from</p>
-                                    <p class="price-amount">₹18,500</p>
+                                    <p class="price-amount">$18,500</p>
                                     <p class="price-per-night">per night</p>
                                 </div>
                                 <button class="btn btn-accent">View Details</button>
@@ -572,7 +680,7 @@
                             <div class="hotel-price-section">
                                 <div>
                                     <p class="price-label">Starting from</p>
-                                    <p class="price-amount">₹12,999</p>
+                                    <p class="price-amount">$12,999</p>
                                     <p class="price-per-night">per night</p>
                                 </div>
                                 <button class="btn btn-accent">View Details</button>
@@ -609,7 +717,7 @@
                             <div class="hotel-price-section">
                                 <div>
                                     <p class="price-label">Starting from</p>
-                                    <p class="price-amount">₹9,999</p>
+                                    <p class="price-amount">$9,999</p>
                                     <p class="price-per-night">per night</p>
                                 </div>
                                 <button class="btn btn-accent">View Details</button>
@@ -646,7 +754,7 @@
                             <div class="hotel-price-section">
                                 <div>
                                     <p class="price-label">Starting from</p>
-                                    <p class="price-amount">₹14,500</p>
+                                    <p class="price-amount">$14,500</p>
                                     <p class="price-per-night">per night</p>
                                 </div>
                                 <button class="btn btn-accent">View Details</button>
@@ -670,7 +778,16 @@
                 // Populate Recently Viewed Hotels
                 (function () {
                     const RV_KEY = 'ctc_recently_viewed';
-                    const viewed = JSON.parse(localStorage.getItem(RV_KEY) || '[]');
+                    let viewed = JSON.parse(localStorage.getItem(RV_KEY) || '[]');
+                    
+                    // Filter out Indian hotels or hotels with broken/map images
+                    viewed = viewed.filter(h => {
+                        const searchString = (h.name + ' ' + (h.address || '')).toLowerCase();
+                        if (searchString.includes('india') || searchString.includes('mumbai') || searchString.includes('delhi') || searchString.includes('goa') || searchString.includes('bangalore') || searchString.includes('chennai') || searchString.includes('jaipur')) return false;
+                        if (h.image && h.image.includes('maps.google')) return false;
+                        return true;
+                    });
+                    
                     if (viewed.length === 0) return;
 
                     const section = document.getElementById('recentlyViewedSection');
@@ -682,9 +799,9 @@
                     grid.innerHTML = viewed.map(h => `
                         <div class="route-card" style="cursor: pointer;" onclick="window.location.href='hotel-details.html?id=${h.id}'">
                             <div class="route-image">
-                                <img src="${h.image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400'}" 
+                                <img src="${h.image || 'https://images.unsplash.com/photo-1542314831-c6a4d14cd2e1?auto=format&fit=crop&w=400&q=80'}" 
                                      alt="${h.name}" 
-                                     onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400'">
+                                     onerror="this.src='https://images.unsplash.com/photo-1542314831-c6a4d14cd2e1?auto=format&fit=crop&w=400&q=80'">
                             </div>
                             <div class="route-info">
                                 <h4>${h.name}</h4>
@@ -692,7 +809,7 @@
                                     ${h.star_rating ? '★'.repeat(Math.round(h.star_rating)) : ''}
                                     ${h.address ? ' · ' + h.address.substring(0, 40) : ''}
                                 </p>
-                                ${h.price ? '<p style="font-weight: 700; color: #0e64a6; margin-top: 4px;">₹' + Math.round(h.price).toLocaleString('en-IN') + '/night</p>' : ''}
+                                ${h.price ? '<p style="font-weight: 700; color: #0e64a6; margin-top: 4px;">$' + Math.round(h.price).toLocaleString('en-US') + '/night</p>' : ''}
                             </div>
                         </div>
                     `).join('');
@@ -707,13 +824,13 @@
                 <div class="routes-grid">
                     <div class="route-card">
                         <div class="route-image">
-                            <img src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                                alt="Delhi Hotels">
-                            <span class="route-price">From ₹2,499/night</span>
+                            <img src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                alt="New York Hotels">
+                            <span class="route-price">From $199/night</span>
                         </div>
                         <div class="route-content">
                             <div class="route-path">
-                                <span class="city">Delhi</span>
+                                <span class="city">New York</span>
                             </div>
                             <span class="route-meta">1,200+ Hotels Available</span>
                         </div>
@@ -721,13 +838,13 @@
 
                     <div class="route-card">
                         <div class="route-image">
-                            <img src="https://images.unsplash.com/photo-1582510003544-4d00b7f74220?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                                alt="Goa Hotels">
-                            <span class="route-price">From ₹1,999/night</span>
+                            <img src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                alt="Las Vegas Hotels">
+                            <span class="route-price">From $149/night</span>
                         </div>
                         <div class="route-content">
                             <div class="route-path">
-                                <span class="city">Goa</span>
+                                <span class="city">Las Vegas</span>
                             </div>
                             <span class="route-meta">850+ Hotels Available</span>
                         </div>
@@ -735,13 +852,13 @@
 
                     <div class="route-card">
                         <div class="route-image">
-                            <img src="https://images.unsplash.com/photo-1564507592333-c60657eea523?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                                alt="Jaipur Hotels">
-                            <span class="route-price">From ₹1,799/night</span>
+                            <img src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                alt="Miami Hotels" style="object-fit: cover;">
+                            <span class="route-price">From $249/night</span>
                         </div>
                         <div class="route-content">
                             <div class="route-path">
-                                <span class="city">Jaipur</span>
+                                <span class="city">Miami</span>
                             </div>
                             <span class="route-meta">650+ Hotels Available</span>
                         </div>
@@ -749,17 +866,100 @@
 
                     <div class="route-card">
                         <div class="route-image">
-                            <img src="https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                                alt="Dubai Hotels">
-                            <span class="route-price">From ₹4,999/night</span>
+                            <img src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                alt="Los Angeles Hotels" style="object-fit: cover;">
+                            <span class="route-price">From $179/night</span>
                         </div>
                         <div class="route-content">
                             <div class="route-path">
-                                <span class="city">Dubai</span>
+                                <span class="city">Los Angeles</span>
                             </div>
                             <span class="route-meta">2,000+ Hotels Available</span>
                         </div>
                     </div>
+                    <div class="route-card">
+                        <div class="route-image">
+                            <img src="https://images.unsplash.com/photo-1494522855154-9297ac14b55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                alt="Chicago Hotels" style="object-fit: cover;">
+                            <span class="route-price">From $159/night</span>
+                        </div>
+                        <div class="route-content">
+                            <div class="route-path">
+                                <span class="city">Chicago</span>
+                            </div>
+                            <span class="route-meta">900+ Hotels Available</span>
+                        </div>
+                    </div>
+
+                    <div class="route-card">
+                        <div class="route-image">
+                            <img src="https://images.unsplash.com/photo-1501594907352-04cda38ebc29?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                alt="San Francisco Hotels" style="object-fit: cover;">
+                            <span class="route-price">From $210/night</span>
+                        </div>
+                        <div class="route-content">
+                            <div class="route-path">
+                                <span class="city">San Francisco</span>
+                            </div>
+                            <span class="route-meta">1,100+ Hotels Available</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Travel Guides / Blog Section -->
+            <section class="routes-section" style="margin-top: 4rem;">
+                <div class="routes-header">
+                    <h3><i class="fas fa-book-open"></i> Travel Guides & Inspiration</h3>
+                </div>
+                <div class="routes-grid">
+                    <!-- Blog Card 1 -->
+                    <a href="blog-beach-resorts.html" style="text-decoration: none; color: inherit; display: block;">
+                        <div class="route-card" style="cursor: pointer; height: 100%;">
+                            <div class="route-image" style="height: 200px;">
+                                <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Top 10 Beach Resorts" style="object-fit: cover;">
+                            </div>
+                            <div class="route-content" style="padding: 20px;">
+                                <span style="font-size: 0.8rem; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Hotels</span>
+                                <h4 style="margin: 10px 0; font-size: 1.1rem; color: #1e293b;">The 10 Best Luxury Beach Resorts in the US</h4>
+                                <p style="font-size: 0.9rem; color: #64748b; line-height: 1.5; margin-bottom: 15px;">Discover breathtaking oceanfront properties with world-class amenities and exclusive beaches.</p>
+                                <span style="font-size: 0.8rem; color: #94a3b8;"><i class="far fa-clock"></i> 5 min read</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Blog Card 2 -->
+                    <a href="blog-nyc-guide.html" style="text-decoration: none; color: inherit; display: block;">
+                        <div class="route-card" style="cursor: pointer; height: 100%;">
+                            <div class="route-image" style="height: 200px;">
+                                <img src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=600&q=80" alt="New York City Guide" style="object-fit: cover;">
+                            </div>
+                            <div class="route-content" style="padding: 20px;">
+                                <span style="font-size: 0.8rem; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">City Guides</span>
+                                <h4 style="margin: 10px 0; font-size: 1.1rem; color: #1e293b;">Where to Stay in New York City: First Timer's Guide</h4>
+                                <p style="font-size: 0.9rem; color: #64748b; line-height: 1.5; margin-bottom: 15px;">From Times Square to Brooklyn, find the perfect neighborhood for your NYC adventure.</p>
+                                <span style="font-size: 0.8rem; color: #94a3b8;"><i class="far fa-clock"></i> 8 min read</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Blog Card 3 -->
+                    <a href="blog-vegas-upgrades.html" style="text-decoration: none; color: inherit; display: block;">
+                        <div class="route-card" style="cursor: pointer; height: 100%;">
+                            <div class="route-image" style="height: 200px;">
+                                <img src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=600&q=80" alt="Vegas Hotels" style="object-fit: cover;">
+                            </div>
+                            <div class="route-content" style="padding: 20px;">
+                                <span style="font-size: 0.8rem; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Tips & Tricks</span>
+                                <h4 style="margin: 10px 0; font-size: 1.1rem; color: #1e293b;">How to Score Free Room Upgrades in Las Vegas</h4>
+                                <p style="font-size: 0.9rem; color: #64748b; line-height: 1.5; margin-bottom: 15px;">Learn the insider secrets to getting complimentary suites and resort credits.</p>
+                                <span style="font-size: 0.8rem; color: #94a3b8;"><i class="far fa-clock"></i> 4 min read</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
+                    <a href="#footer" class="btn btn-outline" style="border-radius: 20px; padding: 10px 24px;">View All Articles</a>
                 </div>
             </section>
 
@@ -772,10 +972,10 @@
                     <h3>Need Help with Hotel Booking?</h3>
                     <p>Our travel experts are available 24×7 to assist you find the perfect stay.</p>
                     <div class="help-actions">
-                        <a href="tel:+919934547108" class="btn btn-white">
-                            <i class="fas fa-phone"></i> +91 99345 47108
+                        <a href="tel:+18883159768" class="btn btn-white">
+                            <i class="fas fa-phone"></i> +1-888-315-9768
                         </a>
-                        <a href="mailto:sales@c2cjourneys.com" class="btn btn-outline"
+                        <a href="mailto:Sales@c2cjourneys.com" class="btn btn-outline"
                             style="border-color: white; color: white;">
                             <i class="fas fa-envelope"></i> Email Support
                         </a>
@@ -786,13 +986,19 @@
     </main>
 
     <!-- Footer -->
-    <footer class="footer">
+    <footer id="footer" class="footer">
+        <!-- Footer Video Background -->
+        <video autoplay loop muted playsinline class="footer-video-bg">
+            <source src="../assets/videos/hotel-footer-bg.mp4" type="video/mp4">
+        </video>
+        <div class="footer-overlay"></div>
+        
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
                     <div class="footer-logo">
-                        <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
-                        <span>C2C Journeys</span>
+                        <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
+                        <span>Coast To Coast Journeys</span>
                     </div>
                     <p>Your trusted travel partner. We specialize in creating unforgettable travel experiences across
                         the globe.</p>
@@ -800,19 +1006,20 @@
                         <i class="fas fa-shield-alt"></i>
                         "Your trust is our responsibility."
                     </div>
-                    <div class="payment-partners" style="margin-top: 15px;">
-                        <span style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #9ca3af;">Payment
-                            Partners:</span>
+                    <div class="payment-partners" style="margin-top: 20px;">
+                        <span style="display: block; margin-bottom: 12px; font-size: 0.95rem; color: #f8fafc; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">Payment Partners:</span>
                         <div style="display: flex; gap: 12px; align-items: center;">
-                            <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Razorpay"
-                                style="height: 20px; width: auto; filter: brightness(0) invert(1) opacity(0.8);">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
-                                style="height: 20px; width: auto; background: white; padding: 2px 5px; border-radius: 4px;">
+                            <div style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay" style="height: 18px; width: auto; display: block;">
+                            </div>
+                            <div style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style="height: 18px; width: auto; display: block;">
+                            </div>
                         </div>
                     </div>
                     <!-- Trustpilot Review Badge -->
                     <div class="trustpilot-badge" style="margin-top: 15px;">
-                        <a href="https://www.trustpilot.com/review/coasttocoastjourneys.com" target="_blank"
+                        <a href="https://www.trustpilot.com/review/c2cjourneys.com" target="_blank"
                             rel="noopener noreferrer"
                             style="display: inline-flex; align-items: center; gap: 8px; background: #fff; color: #191919; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s;"
                             onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
@@ -845,21 +1052,24 @@
                 </div>
 
                 <div class="footer-col">
-                    <h4>Connect With Us</h4>
-                    <div style="display: flex; gap: 12px; margin-top: 8px;">
-                        <a href="https://www.facebook.com/people/Coast-to-Coast-Journeys/61574464089885/"
-                            target="_blank" class="social-link"><i class="fab fa-facebook-f"></i></a>
-                        <a href="https://www.instagram.com/coasttocoastjourneys/" target="_blank" class="social-link"><i
-                                class="fab fa-instagram"></i></a>
-                        <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"
-                            class="social-link"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
+                    <h4>Top Destinations</h4>
+                    <ul>
+                        <li><a href="blog-india.html">Hotels in India</a></li>
+                        <li><a href="blog-uae.html">Hotels in United Arab Emirates</a></li>
+                        <li><a href="blog-uk.html">Hotels in United Kingdom</a></li>
+                        <li><a href="blog-usa.html">Hotels in United States of America</a></li>
+                        <li><a href="blog-indonesia.html">Hotels in Indonesia</a></li>
+                        <li><a href="blog-singapore.html">Hotels in Singapore</a></li>
+                        <li><a href="blog-maldives.html">Hotels in Maldives</a></li>
+                    </ul>
                 </div>
+
+                
             </div>
 
             <div class="footer-bottom">
-                <p>C2C Journeys is a customer-facing brand operated by Coast to Coast Journeys</p>
-                <p>&copy; 2026 C2C Journeys. All Rights Reserved.</p>
+                <p>Coast To Coast Journeys is a premium travel brand</p>
+                <p>&copy; 2026 Coast To Coast Journeys. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
@@ -996,7 +1206,7 @@
             locationDropdown.classList.add('active');
         }
 
-        async function searchLocations(query) {
+                async function searchLocations(query) {
             highlightedIndex = -1;
             dropdownEmpty.style.display = 'none';
             dropdownLoading.classList.add('active');
@@ -1004,15 +1214,53 @@
             locationDropdown.classList.add('active');
 
             try {
-                // Use our backend API that wraps Google Places
-                const response = await fetch(`/api/hotels/autocomplete?query=${encodeURIComponent(query)}`);
-                const data = await response.json();
+                // Try ETG / RateHawk suggest API first (works on home page)
+                const response = await fetch(`/api/hotels/suggest?query=${encodeURIComponent(query)}&language=en`);
+                const result = await response.json();
 
                 dropdownLoading.classList.remove('active');
 
-                if (data.success && data.predictions && data.predictions.length > 0) {
+                if (result.success && result.data) {
+                    const inner = result.data.data || result.data;
+                    const regions = inner.regions || [];
+                    const hotels = inner.hotels || [];
+
+                    if (regions.length > 0 || hotels.length > 0) {
+                        let html = '<div class="dropdown-header">Search Results</div>';
+                        
+                        regions.forEach(region => {
+                            html += createLocationItemHtml({
+                                name: region.name,
+                                country: region.country || '',
+                                type: 'city',
+                                place_id: region.id,
+                                full_description: region.name + ', ' + (region.country || '')
+                            });
+                        });
+                        
+                        hotels.forEach(hotel => {
+                            html += createLocationItemHtml({
+                                name: hotel.name,
+                                country: hotel.region?.name || '',
+                                type: 'hotel',
+                                place_id: hotel.id,
+                                full_description: hotel.name + ', ' + (hotel.region?.name || '')
+                            });
+                        });
+                        
+                        dropdownResults.innerHTML = html;
+                        attachLocationListeners();
+                        return;
+                    }
+                }
+                
+                // Fallback to old behavior (Google places) if ETG empty
+                const fallbackResponse = await fetch(`/api/hotels/autocomplete?query=${encodeURIComponent(query)}`);
+                const fallbackData = await fallbackResponse.json();
+                
+                if (fallbackData.success && fallbackData.predictions && fallbackData.predictions.length > 0) {
                     let html = '<div class="dropdown-header">Search Results</div>';
-                    data.predictions.forEach(pred => {
+                    fallbackData.predictions.forEach(pred => {
                         const location = {
                             name: pred.structured_formatting?.main_text || pred.description.split(',')[0],
                             country: pred.structured_formatting?.secondary_text || pred.description.split(',').slice(1).join(',').trim(),
@@ -1025,27 +1273,11 @@
                     dropdownResults.innerHTML = html;
                     attachLocationListeners();
                 } else {
-                    // Fallback: filter popular destinations
-                    const filtered = popularDestinations.filter(loc =>
-                        loc.name.toLowerCase().includes(query.toLowerCase()) ||
-                        loc.country.toLowerCase().includes(query.toLowerCase())
-                    );
-
-                    if (filtered.length > 0) {
-                        let html = '<div class="dropdown-header">Matching Destinations</div>';
-                        filtered.forEach(loc => {
-                            html += createLocationItemHtml(loc);
-                        });
-                        dropdownResults.innerHTML = html;
-                        attachLocationListeners();
-                    } else {
-                        dropdownEmpty.style.display = 'block';
-                    }
+                    dropdownEmpty.style.display = 'block';
                 }
             } catch (error) {
                 console.error('Autocomplete error:', error);
                 dropdownLoading.classList.remove('active');
-                // Fallback to popular destinations on error
                 showPopularDestinations();
             }
         }
@@ -1514,8 +1746,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-client.js"></script>
     <script>
-        // Initialize auth state for header UI
-        document.addEventListener('DOMContentLoaded', function () {
+        // Wait for DOM
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Check auth state for header UI only (no forced redirect)
+            const currentUser = await SupabaseDB.getCurrentUser();
+
+            // Initialize auth state for header UI
             if (typeof SupabaseDB !== 'undefined' && SupabaseDB.initAuthUI) {
                 SupabaseDB.initAuthUI();
             }
@@ -1523,12 +1759,19 @@
     </script>
     <script src="../js/auth-guard.js"></script>
     <script src="../js/main.js"></script>
-    <!-- Floating WhatsApp Button -->
-    <a href="https://wa.me/919934547108" target="_blank" class="whatsapp-float" title="Chat on WhatsApp"
-        style="position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: block; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.3s;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp"
-            style="width: 60px; height: 60px; display: block; border-radius: 50%;">
-    </a>
+    <!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6a533a559a72601d480b4624/1jtahno9g';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
 </body>
 
 </html>

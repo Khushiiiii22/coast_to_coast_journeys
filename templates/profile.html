@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Profile Settings - C2C Journeys. Manage your account settings and preferences.">
-    <title>Profile Settings | C2C Journeys</title>
+    <meta name="description" content="Profile Settings - Coast To Coast. Manage your account settings and preferences.">
+    <title>Profile Settings | Coast To Coast</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/jpeg" href="../assets/images/c2c-logo.png">
@@ -358,6 +358,64 @@
             }
         }
 
+        /* OTP Modal Styles */
+        .otp-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .otp-overlay.show {
+            display: flex;
+        }
+
+        .otp-modal {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .otp-modal h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .otp-modal input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            text-align: center;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+        }
+
+        .otp-modal .btn-save {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .otp-modal .cancel-btn {
+            background: none;
+            border: none;
+            color: #64748b;
+            margin-top: 1rem;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
         @media (max-width: 768px) {
             .profile-header {
                 flex-direction: column;
@@ -369,6 +427,24 @@
             }
         }
     </style>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
 </head>
 
 <body>
@@ -378,13 +454,30 @@
         <p>Loading your profile...</p>
     </div>
 
+    <!-- OTP Modal Overlay -->
+    <div class="otp-overlay" id="otpOverlay">
+        <div class="otp-modal">
+            <h3>Verify Identity</h3>
+            <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1.5rem;">For your security, we've sent an OTP to your email. Enter it below to save changes.</p>
+            <input type="text" id="profileOtpCode" placeholder="Enter 6-digit OTP" maxlength="6" pattern="\d{6}">
+            <button class="btn-save" id="verifyOtpBtn" onclick="verifyProfileOtp()">Verify & Save</button>
+            <button class="cancel-btn" onclick="cancelProfileOtp()">Cancel</button>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="header scrolled" id="header">
         <div class="container">
             <div class="header-content">
-                <a href="index.html" class="logo">
-                    <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
-                    <span class="logo-text">C2C Journeys</span>
+                                <!-- Hamburger Menu Button -->
+                <button class="hamburger-menu" id="hamburgerMenu" aria-label="Open navigation menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+<a href="index.html" class="logo">
+                    <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
+                    <span class="logo-text">Coast To Coast</span>
                 </a>
 
                 <nav>
@@ -392,12 +485,16 @@
                         <li><a href="index.html" class="nav-link">Home</a></li>
                         <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
                         <li><a href="hotel-booking.html" class="nav-link">Hotels</a></li>
-                        <li><a href="visa.html" class="nav-link">Visa</a></li>
-                        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                                                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
                     </ul>
                 </nav>
 
                 <div class="header-actions">
+                    
+                    <a href="tel:+18883159768" class="phone-link">
+                        <i class="fas fa-phone"></i>
+                        <span>+1-888-315-9768</span>
+                    </a>
                     <a href="auth.html" class="btn btn-outline">Sign In</a>
                 </div>
             </div>
@@ -582,9 +679,9 @@
                 <div class="footer-col about-col">
                     <div class="footer-logo"
                         style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
-                        <img src="../assets/images/c2c-logo.png" alt="C2C Journeys"
+                        <img src="../assets/images/c2c-logo.png" alt="Coast To Coast"
                             style="height: 70px; width: auto; max-width: 80px; object-fit: contain; background: white; border-radius: 12px; padding: 8px;">
-                        <span style="font-size: 1.5rem; font-weight: 700; color: white;">C2C Journeys</span>
+                        <span style="font-size: 1.5rem; font-weight: 700; color: white;">Coast To Coast</span>
                     </div>
                     <p>Your trusted travel partner. We specialize in creating unforgettable travel experiences across
                         the globe.</p>
@@ -620,25 +717,19 @@
                 </div>
 
                 <div class="footer-col">
-                    <h4>Connect With Us</h4>
-                    <div class="footer-social">
-                        <a href="https://www.facebook.com/people/Coast-to-Coast-Journeys/61574464089885/"
-                            target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a href="https://www.instagram.com/coasttocoastjourneys/" target="_blank" title="Instagram"><i
-                                class="fab fa-instagram"></i></a>
-                        <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"
-                            title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
-                    <div class="footer-contact">
-                        <p><i class="fas fa-envelope"></i> Info@coasttocoastjourneys.com</p>
-                        <p><i class="fas fa-clock"></i> 24×7 Available</p>
-                    </div>
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="flight-booking.html">Flight Booking</a></li>
+                        <li><a href="hotel-booking.html">Hotel Booking</a></li>
+                    </ul>
                 </div>
+
+                
             </div>
 
             <!-- Trustpilot Review Badge -->
             <div class="trustpilot-badge" style="margin: 20px 0; text-align: center;">
-                <a href="https://www.trustpilot.com/review/coasttocoastjourneys.com" target="_blank"
+                <a href="https://www.trustpilot.com/review/c2cjourneys.com" target="_blank"
                     rel="noopener noreferrer"
                     style="display: inline-flex; align-items: center; gap: 8px; background: #fff; color: #191919; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s;"
                     onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
@@ -651,8 +742,8 @@
             </div>
 
             <div class="footer-bottom">
-                <p>C2C Journeys is a customer-facing brand operated by Coast to Coast Journeys</p>
-                <p>&copy; 2026 C2C Journeys. All Rights Reserved.</p>
+                <p>Coast To Coast Journeys is a premium travel brand</p>
+                <p>&copy; 2026 Coast To Coast Journeys. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
@@ -734,14 +825,75 @@
             document.getElementById('smsNotif').checked = prefs.smsNotif === true;
         }
 
+        let pendingProfileChanges = null;
+
         document.getElementById('profileForm').addEventListener('submit', async function (e) {
             e.preventDefault();
+
+            if (userProfile?.provider === 'google') {
+                // For Google users, we might skip OTP or handle differently. For security, we still send OTP to their Google email.
+            }
 
             const firstName = document.getElementById('firstName').value;
             const lastName = document.getElementById('lastName').value;
             const phone = document.getElementById('phone').value;
             const dob = document.getElementById('dob').value;
             const gender = document.getElementById('gender').value;
+
+            // Store pending changes
+            pendingProfileChanges = {
+                firstName, lastName, phone, dob, gender
+            };
+
+            // Trigger OTP to current email
+            try {
+                showNotification('Sending security code...', 'info');
+                await SupabaseDB.sendLoginOtp(currentUser.email);
+                
+                // Show OTP Modal
+                document.getElementById('otpOverlay').classList.add('show');
+            } catch (error) {
+                console.error('Error sending OTP:', error);
+                showNotification('Failed to send verification code.', 'error');
+            }
+        });
+
+        async function verifyProfileOtp() {
+            const token = document.getElementById('profileOtpCode').value;
+            const btn = document.getElementById('verifyOtpBtn');
+
+            if (!token || token.length < 6) {
+                showNotification('Please enter a valid 6-digit code', 'warning');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Verifying...';
+
+            try {
+                // Verify the OTP (type magiclink is used for login OTPs)
+                const result = await SupabaseDB.verifyEmailOtp(currentUser.email, token, 'magiclink');
+
+                if (!result.success) {
+                    showNotification('Invalid OTP code. Please try again.', 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'Verify & Save';
+                    return;
+                }
+
+                // OTP Verified! Now execute the update
+                await executeProfileUpdate();
+
+            } catch (error) {
+                console.error('Error verifying OTP:', error);
+                showNotification('Verification failed.', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Verify & Save';
+            }
+        }
+
+        async function executeProfileUpdate() {
+            const { firstName, lastName, phone, dob, gender } = pendingProfileChanges;
 
             try {
                 // Update user metadata in Supabase
@@ -764,6 +916,12 @@
                 };
                 localStorage.setItem('c2c_user_prefs', JSON.stringify(prefs));
 
+                // Close modal
+                document.getElementById('otpOverlay').classList.remove('show');
+                document.getElementById('profileOtpCode').value = '';
+                document.getElementById('verifyOtpBtn').disabled = false;
+                document.getElementById('verifyOtpBtn').textContent = 'Verify & Save';
+
                 showNotification('Profile updated successfully!', 'success');
 
                 // Update header name
@@ -773,7 +931,13 @@
                 console.error('Error updating profile:', error);
                 showNotification('Failed to update profile. Please try again.', 'error');
             }
-        });
+        }
+
+        function cancelProfileOtp() {
+            document.getElementById('otpOverlay').classList.remove('show');
+            document.getElementById('profileOtpCode').value = '';
+            pendingProfileChanges = null;
+        }
 
         function resetForm() {
             if (userProfile) {
@@ -850,6 +1014,19 @@
             setTimeout(() => notification.remove(), 4000);
         }
     </script>
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6a533a559a72601d480b4624/1jtahno9g';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
 </body>
 
 </html>

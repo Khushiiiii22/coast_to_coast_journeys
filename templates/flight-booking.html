@@ -4,9 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description"
-        content="Book Flights - C2C Journeys. Search and book domestic and international flights at the best prices.">
-    <title>Book Flights | C2C Journeys</title>
+    <meta name="description" content="Compare and book cheap flight tickets worldwide. Find exclusive deals and fly with premium airlines using Coast To Coast.">
+    <title>Cheap Flight Tickets & Bookings | Coast To Coast</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/jpeg" href="../assets/images/c2c-logo.png">
@@ -21,7 +20,39 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/main.css?v=2.1">
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
+
+    <meta property="og:title" content="Cheap Flight Tickets & Bookings | Coast To Coast">
+    <meta property="og:description" content="Compare and book cheap flight tickets worldwide. Find exclusive deals and fly with premium airlines using Coast To Coast.">
+    <meta property="og:type" content="website">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TravelAgency",
+      "name": "Coast To Coast",
+      "telephone": "+1-888-315-9768",
+      "email": "Sales@c2cjourneys.com",
+      "url": "https://c2cjourneys.com"
+    }
+    </script>
 </head>
 
 <body>
@@ -29,7 +60,7 @@
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
+            <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
             <span>Coast to Coast</span>
             <button class="sidebar-close" id="sidebarClose">
                 <i class="fas fa-times"></i>
@@ -45,17 +76,14 @@
             <a href="hotel-booking.html" class="sidebar-link">
                 <i class="fas fa-hotel"></i> Book Hotels
             </a>
-            <a href="visa.html" class="sidebar-link">
-                <i class="fas fa-passport"></i> Visa Services
-            </a>
-            <div class="sidebar-divider"></div>
+                        <div class="sidebar-divider"></div>
             <a href="index.html#contact" class="sidebar-link">
                 <i class="fas fa-headset"></i> 24/7 Support
             </a>
-            <a href="mailto:sales@c2cjourneys.com" class="sidebar-link">
+            <a href="mailto:Sales@c2cjourneys.com" class="sidebar-link">
                 <i class="fas fa-envelope"></i> Email Us
             </a>
-            <a href="tel:+919934547108" class="sidebar-link">
+            <a href="tel:+18883159768" class="sidebar-link">
                 <i class="fas fa-phone"></i> Call Us
             </a>
             <div class="sidebar-divider"></div>
@@ -76,7 +104,7 @@
                 <i class="fas fa-undo"></i> Refund Policy
             </a>
             <div class="sidebar-divider"></div>
-            <a href="https://wa.me/919934547108" class="sidebar-link" target="_blank">
+            <a href="https://wa.me/18883159768" class="sidebar-link" target="_blank">
                 <i class="fab fa-whatsapp"></i> WhatsApp
             </a>
         </nav>
@@ -89,8 +117,8 @@
                 <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"><i
                         class="fab fa-linkedin-in"></i></a>
             </div>
-            <p>C2C Journeys is a customer-facing brand operated by Coast to Coast Journeys</p>
-            <p>© 2026 C2C Journeys</p>
+            <p>Coast To Coast Journeys is a premium travel brand</p>
+            <p>© 2026 Coast To Coast</p>
         </div>
     </aside>
 
@@ -106,21 +134,25 @@
                 </button>
 
                 <a href="index.html" class="logo">
-                    <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
-                    <span class="logo-text">C2C Journeys</span>
+                    <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
+                    <span class="logo-text">Coast To Coast</span>
                 </a>
 
                 <nav>
                     <ul class="nav-menu" id="navMenu">
                         <li><a href="index.html" class="nav-link">Home</a></li>
-                        <li><a href="flight-booking.html" class="nav-link active">Flights</a></li>
                         <li><a href="hotel-booking.html" class="nav-link">Hotels</a></li>
-                        <li><a href="visa.html" class="nav-link">Visa</a></li>
+                        <li><a href="flight-booking.html" class="nav-link active">Flights</a></li>
                         <li><a href="index.html#contact" class="nav-link">Contact</a></li>
                     </ul>
                 </nav>
 
                 <div class="header-actions">
+                    
+                    <a href="tel:+18883159768" class="phone-link">
+                        <i class="fas fa-phone"></i>
+                        <span>+1-888-315-9768</span>
+                    </a>
                     <a href="auth.html" class="btn btn-outline">
                         <i class="fas fa-user"></i> Login
                     </a>
@@ -136,231 +168,154 @@
     </header>
 
     <!-- Page Hero -->
-    <section class="page-hero flight-hero">
-        <div class="container">
-            <h1><i class="fas fa-plane"></i> Book Your Flight</h1>
-            <p>Search and compare flights from top airlines worldwide</p>
-        </div>
-    </section>
+    <section class="page-hero flight-hero" style="padding-top: 100px; padding-bottom: 60px; min-height: 50vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; overflow: visible; position: relative; z-index: 11;">
+        <!-- Flight Hero Video Background -->
+        <video autoplay loop muted playsinline class="hero-video-bg">
+            <source src="../assets/videos/flight-hero-bg.mp4" type="video/mp4">
+        </video>
+        <div class="hero-overlay"></div>
 
-    <!-- Main Content -->
-    <main>
-        <div class="container">
-            <!-- Flight Search Box -->
-            <div class="booking-search-container">
-                <div class="trip-type-selector">
-                    <label class="trip-type-option active">
-                        <input type="radio" name="tripType" value="oneway" checked>
-                        One Way
-                    </label>
-                    <label class="trip-type-option">
-                        <input type="radio" name="tripType" value="roundtrip">
-                        Round Trip
-                    </label>
+        <div class="container" style="position: relative; z-index: 2; width: 100%;">
+            <h1 class="hero-title" style="font-size: 3rem; margin-bottom: 10px; color: white;">Book Your Next Flight</h1>
+            <p class="hero-subtitle" style="font-size: 1.1rem; color: rgba(255,255,255,0.9); margin-bottom: 30px;">Premium flight experiences at unbeatable prices.</p>
 
-                </div>
-
+            <!-- Search Box -->
+            <div class="search-box animate-fade-in-up" style="background: white; border-radius: 16px; padding: 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: left; max-width: 1100px; margin: 0 auto;">
+                
                 <form class="search-form-improved" id="flightSearchForm">
-                    <div class="search-row">
-                        <div class="form-field-improved">
-                            <label><i class="fas fa-plane-departure"></i> From</label>
-                            <input type="text" id="fromCity" placeholder="City or Airport" required>
+                    
+                    <!-- Trip Options -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                        <div class="trip-types" style="display: flex; gap: 20px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: #1e293b;">
+                                <input type="radio" name="tripType" value="oneway" style="accent-color: #0e64a6; width: 16px; height: 16px;">
+                                One Way
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: #1e293b;">
+                                <input type="radio" name="tripType" value="roundtrip" checked style="accent-color: #0e64a6; width: 16px; height: 16px;">
+                                Round Trip
+                            </label>
                         </div>
-                        <div class="swap-cities-btn" id="swapCitiesBtn">
-                            <i class="fas fa-exchange-alt"></i>
-                        </div>
-                        <div class="form-field-improved">
-                            <label><i class="fas fa-plane-arrival"></i> To</label>
-                            <input type="text" id="toCity" placeholder="City or Airport" required>
+                        
+                        <div class="travel-class">
+                            <select id="cabinClass" style="padding: 8px 16px; border-radius: 20px; border: 1px solid #e2e8f0; background: #f8fafc; color: #334155; font-weight: 500; cursor: pointer; outline: none;">
+                                <option value="Premium Economy">Premium Economy</option>
+                                <option value="Business Class" selected>Business Class</option>
+                                <option value="First Class">First Class</option>
+                            </select>
                         </div>
                     </div>
+
                     <div class="search-row">
-                        <div class="form-field-improved date-field" id="departDateWrapper">
+                        <!-- Origin -->
+                        <div class="form-field-improved" style="flex: 2; position: relative;">
+                            <label><i class="fas fa-plane-departure"></i> Flying From</label>
+                            <input type="text" id="fromCity" placeholder="City or Airport Code" autocomplete="off" required>
+                        </div>
+                        
+                        <!-- Swap Icon -->
+                        <button type="button" id="swapCitiesBtn" style="background: white; border: 1px solid #e2e8f0; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #0e64a6; z-index: 10; margin: 0 -20px; align-self: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.3s;">
+                            <i class="fas fa-exchange-alt"></i>
+                        </button>
+                        
+                        <!-- Destination -->
+                        <div class="form-field-improved" style="flex: 2; position: relative;">
+                            <label><i class="fas fa-plane-arrival"></i> Flying To</label>
+                            <input type="text" id="toCity" placeholder="City or Airport Code" autocomplete="off" required>
+                        </div>
+                    </div>
+
+                    <div class="search-row" style="margin-top: 15px;">
+                        <!-- Dates -->
+                        <div class="form-field-improved date-field" style="flex: 1.5;">
                             <label><i class="fas fa-calendar-alt"></i> Departure</label>
-                            <input type="hidden" id="departDate" required>
-                            <div class="date-display" id="departDateDisplay" tabindex="0" role="button" aria-label="Select departure date">
-                                <span class="date-main">Select Date</span>
-                                <span class="date-sub">Departure Day</span>
-                            </div>
-                            <div class="custom-calendar" id="departCalendar"></div>
+                            <input type="date" id="departDate" required>
                         </div>
-                        <div class="form-field-improved date-field" id="returnDateField">
+                        <div class="form-field-improved date-field" id="returnDateContainer" style="flex: 1.5;">
                             <label><i class="fas fa-calendar-alt"></i> Return</label>
-                            <input type="hidden" id="returnDate">
-                            <div class="date-display" id="returnDateDisplay" tabindex="0" role="button" aria-label="Select return date">
-                                <span class="date-main">Select Date</span>
-                                <span class="date-sub">Return Day</span>
-                            </div>
-                            <div class="custom-calendar" id="returnCalendar"></div>
+                            <input type="date" id="returnDate" required>
                         </div>
-                        <div class="form-field-improved travelers-field">
-                            <label><i class="fas fa-users"></i> Travelers & Class</label>
-                            <div class="travelers-dropdown" id="travelersDropdown">
-                                <span class="travelers-display" id="travelersDisplay">1 Adult, Economy</span>
+                        
+                        <!-- Passengers -->
+                        <div class="form-field-improved travelers-field" style="flex: 1.5;">
+                            <label><i class="fas fa-user-friends"></i> Passengers</label>
+                            <div class="travelers-dropdown" id="flightGuestsDropdown">
+                                <span class="travelers-display" id="flightGuestsDisplay">1 Adult</span>
                                 <i class="fas fa-chevron-down"></i>
                             </div>
-                            <div class="travelers-popup" id="travelersPopup">
-                                <div class="traveler-row">
-                                    <div class="traveler-info">
-                                        <span class="traveler-type">Adults</span>
-                                        <span class="traveler-age">11+ Years</span>
+                            <!-- Passenger Popup -->
+                            <div class="travelers-popup" id="flightGuestsPopup" style="width: 280px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <div>
+                                        <div style="font-weight: 600; color: #1e293b;">Adults</div>
+                                        <div style="font-size: 0.8rem; color: #64748b;">Aged 12+</div>
                                     </div>
-                                    <div class="traveler-counter">
-                                        <button type="button" class="counter-btn minus" data-type="adults">-</button>
-                                        <span id="adultsCount">1</span>
-                                        <button type="button" class="counter-btn plus" data-type="adults">+</button>
-                                    </div>
-                                </div>
-                                <div class="traveler-row">
-                                    <div class="traveler-info">
-                                        <span class="traveler-type">Children</span>
-                                        <span class="traveler-age">2 - 11 Years</span>
-                                    </div>
-                                    <div class="traveler-counter">
-                                        <button type="button" class="counter-btn minus" data-type="children">-</button>
-                                        <span id="childrenCount">0</span>
-                                        <button type="button" class="counter-btn plus" data-type="children">+</button>
+                                    <div class="counter-group" style="display: flex; align-items: center; gap: 12px;">
+                                        <button type="button" class="counter-btn" onclick="updateFlightPax('adults', -1)" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">-</button>
+                                        <span id="adultCount" style="font-weight: 600; min-width: 12px; text-align: center;">1</span>
+                                        <button type="button" class="counter-btn" onclick="updateFlightPax('adults', 1)" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">+</button>
                                     </div>
                                 </div>
-                                <div class="traveler-row">
-                                    <div class="traveler-info">
-                                        <span class="traveler-type">Infants</span>
-                                        <span class="traveler-age">&lt; 2 Years</span>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <div>
+                                        <div style="font-weight: 600; color: #1e293b;">Children</div>
+                                        <div style="font-size: 0.8rem; color: #64748b;">Aged 2-11</div>
                                     </div>
-                                    <div class="traveler-counter">
-                                        <button type="button" class="counter-btn minus" data-type="infants">-</button>
-                                        <span id="infantsCount">0</span>
-                                        <button type="button" class="counter-btn plus" data-type="infants">+</button>
+                                    <div class="counter-group" style="display: flex; align-items: center; gap: 12px;">
+                                        <button type="button" class="counter-btn" onclick="updateFlightPax('children', -1)" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">-</button>
+                                        <span id="childCount" style="font-weight: 600; min-width: 12px; text-align: center;">0</span>
+                                        <button type="button" class="counter-btn" onclick="updateFlightPax('children', 1)" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">+</button>
                                     </div>
                                 </div>
-                                <div class="class-selector">
-                                    <label>Travel Class</label>
-                                    <div class="class-options">
-                                        <button type="button" class="class-btn active"
-                                            data-value="economy">Economy</button>
-                                        <button type="button" class="class-btn" data-value="premium">Premium
-                                            Economy</button>
-                                        <button type="button" class="class-btn" data-value="business">Business</button>
-                                        <button type="button" class="class-btn" data-value="first">First</button>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                    <div>
+                                        <div style="font-weight: 600; color: #1e293b;">Infants</div>
+                                        <div style="font-size: 0.8rem; color: #64748b;">Under 2</div>
                                     </div>
-                                    <input type="hidden" id="cabinClass" value="economy">
+                                    <div class="counter-group" style="display: flex; align-items: center; gap: 12px;">
+                                        <button type="button" class="counter-btn" onclick="updateFlightPax('infants', -1)" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">-</button>
+                                        <span id="infantCount" style="font-weight: 600; min-width: 12px; text-align: center;">0</span>
+                                        <button type="button" class="counter-btn" onclick="updateFlightPax('infants', 1)" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: white; color: #0e64a6; cursor: pointer;">+</button>
+                                    </div>
                                 </div>
-                                <button type="button" class="travelers-done" id="travelersDone">Done</button>
+                                <button type="button" class="travelers-done" id="flightGuestsDone" style="width: 100%; padding: 10px; background: #0e64a6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Done</button>
                             </div>
                         </div>
-                    </div>
-                    <div style="display: flex; justify-content: center; margin-top: 24px;">
-                        <button type="submit" class="btn-search-main"
-                            style="min-width: 200px; padding: 16px 32px; font-size: 1.1rem;">
-                            <i class="fas fa-search"></i>
-                            Search Flights
+                        
+                        <!-- Search Button -->
+                        <button type="submit" class="btn-search-improved" style="flex: 1; padding: 0 20px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                            <i class="fas fa-search"></i> Request Quote
                         </button>
                     </div>
                 </form>
             </div>
+        </div>
+    </section>
 
-            <!-- Popular Routes -->
-            <section class="routes-section">
-                <div class="routes-header">
-                    <h3><i class="fas fa-fire"></i> Popular Flight Routes</h3>
+    <!-- Main Content Info -->
+    <main style="padding: 60px 0; background: #f8fafc;">
+        <div class="container">
+            <div class="features-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center;">
+                    <div style="width: 60px; height: 60px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #0e64a6; font-size: 1.5rem;">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 15px; color: #1e293b;">Premium Experience</h3>
+                    <p style="color: #64748b; font-size: 0.95rem; line-height: 1.6;">We specialize in Business, First Class, and Premium Economy bookings to ensure your journey is as comfortable as your destination.</p>
                 </div>
-                <div class="routes-grid">
-                    <div class="route-card">
-                        <div class="route-image">
-                            <img src="https://images.unsplash.com/photo-1587474260584-136574528ed5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                                alt="Delhi to Mumbai">
-                            <span class="route-price">From ₹4,999</span>
-                        </div>
-                        <div class="route-content">
-                            <div class="route-path">
-                                <span class="city">Delhi</span>
-                                <i class="fas fa-plane"></i>
-                                <span class="city">Mumbai</span>
-                            </div>
-                            <span class="route-meta">Non-stop • 2h 10m</span>
-                        </div>
+                <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center;">
+                    <div style="width: 60px; height: 60px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #0e64a6; font-size: 1.5rem;">
+                        <i class="fas fa-hand-holding-usd"></i>
                     </div>
-
-                    <div class="route-card">
-                        <div class="route-image">
-                            <img src="https://images.unsplash.com/photo-1570168007204-dfb528c6958f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                                alt="Mumbai to Dubai">
-                            <span class="route-price">From ₹12,499</span>
-                        </div>
-                        <div class="route-content">
-                            <div class="route-path">
-                                <span class="city">Mumbai</span>
-                                <i class="fas fa-plane"></i>
-                                <span class="city">Dubai</span>
-                            </div>
-                            <span class="route-meta">Non-stop • 3h 30m</span>
-                        </div>
-                    </div>
-
-                    <div class="route-card">
-                        <div class="route-image">
-                            <img src="https://images.unsplash.com/photo-1525625293386-3f8f99389edd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                                alt="Bangalore to Singapore">
-                            <span class="route-price">From ₹8,999</span>
-                        </div>
-                        <div class="route-content">
-                            <div class="route-path">
-                                <span class="city">Bangalore</span>
-                                <i class="fas fa-plane"></i>
-                                <span class="city">Singapore</span>
-                            </div>
-                            <span class="route-meta">Non-stop • 4h 45m</span>
-                        </div>
-                    </div>
-
-                    <div class="route-card">
-                        <div class="route-image">
-                            <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                                alt="Delhi to Bangkok">
-                            <span class="route-price">From ₹25,999</span>
-                        </div>
-                        <div class="route-content">
-                            <div class="route-path">
-                                <span class="city">Delhi</span>
-                                <i class="fas fa-plane"></i>
-                                <span class="city">Bangkok</span>
-                            </div>
-                            <span class="route-meta">Non-stop • 4h 20m</span>
-                        </div>
-                    </div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 15px; color: #1e293b;">Unpublished Fares</h3>
+                    <p style="color: #64748b; font-size: 0.95rem; line-height: 1.6;">Our travel executives negotiate directly with airlines to bring you exclusive rates not available on regular booking platforms.</p>
                 </div>
-            </section>
-
-            <!-- Airlines Section -->
-            <section class="airlines-section">
-                <h3>Our Airline Partners</h3>
-                <div class="airlines-grid">
-                    <div class="airline-tag"><i class="fas fa-plane-circle-check"></i> IndiGo</div>
-                    <div class="airline-tag"><i class="fas fa-plane-circle-check"></i> Air India</div>
-                    <div class="airline-tag"><i class="fas fa-plane-circle-check"></i> SpiceJet</div>
-                    <div class="airline-tag"><i class="fas fa-plane-circle-check"></i> Vistara</div>
-                    <div class="airline-tag"><i class="fas fa-plane-circle-check"></i> Emirates</div>
-                    <div class="airline-tag"><i class="fas fa-plane-circle-check"></i> Singapore Airlines</div>
-                </div>
-            </section>
-
-            <!-- Help Box -->
-            <div class="help-box">
-                <div class="help-icon">
-                    <i class="fas fa-headset"></i>
-                </div>
-                <div class="help-content">
-                    <h3>Need Help with Flight Booking?</h3>
-                    <p>Our travel experts are available 24×7 to assist you.</p>
-                    <div class="help-actions">
-                        <a href="tel:+919934547108" class="btn btn-white">
-                            <i class="fas fa-phone"></i> +91 99345 47108
-                        </a>
-                        <a href="mailto:sales@c2cjourneys.com" class="btn btn-outline"
-                            style="border-color: white; color: white;">
-                            <i class="fas fa-envelope"></i> Email Support
-                        </a>
+                <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center;">
+                    <div style="width: 60px; height: 60px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #0e64a6; font-size: 1.5rem;">
+                        <i class="fas fa-headset"></i>
                     </div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 15px; color: #1e293b;">Dedicated Support</h3>
+                    <p style="color: #64748b; font-size: 0.95rem; line-height: 1.6;">From quoting to boarding, our 24/7 dedicated travel concierge handles every aspect of your flight requirements.</p>
                 </div>
             </div>
         </div>
@@ -368,12 +323,18 @@
 
     <!-- Footer -->
     <footer class="footer">
+        <!-- Footer Video Background -->
+        <video autoplay loop muted playsinline class="footer-video-bg">
+            <source src="../assets/videos/flight-footer-bg.mp4" type="video/mp4">
+        </video>
+        <div class="footer-overlay"></div>
+
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
                     <div class="footer-logo">
-                        <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
-                        <span>C2C Journeys</span>
+                        <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
+                        <span>Coast To Coast Journeys</span>
                     </div>
                     <p>Your trusted travel partner. We specialize in creating unforgettable travel experiences across
                         the globe.</p>
@@ -381,19 +342,20 @@
                         <i class="fas fa-shield-alt"></i>
                         "Your trust is our responsibility."
                     </div>
-                    <div class="payment-partners" style="margin-top: 15px;">
-                        <span style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #9ca3af;">Payment
-                            Partners:</span>
+                    <div class="payment-partners" style="margin-top: 20px;">
+                        <span style="display: block; margin-bottom: 12px; font-size: 0.95rem; color: #f8fafc; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">Payment Partners:</span>
                         <div style="display: flex; gap: 12px; align-items: center;">
-                            <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Razorpay"
-                                style="height: 20px; width: auto; filter: brightness(0) invert(1) opacity(0.8);">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
-                                style="height: 20px; width: auto; background: white; padding: 2px 5px; border-radius: 4px;">
+                            <div style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay" style="height: 18px; width: auto; display: block;">
+                            </div>
+                            <div style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style="height: 18px; width: auto; display: block;">
+                            </div>
                         </div>
                     </div>
                     <!-- Trustpilot Review Badge -->
                     <div class="trustpilot-badge" style="margin-top: 15px;">
-                        <a href="https://www.trustpilot.com/review/coasttocoastjourneys.com" target="_blank"
+                        <a href="https://www.trustpilot.com/review/c2cjourneys.com" target="_blank"
                             rel="noopener noreferrer"
                             style="display: inline-flex; align-items: center; gap: 8px; background: #fff; color: #191919; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s;"
                             onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
@@ -426,45 +388,56 @@
                 </div>
 
                 <div class="footer-col">
-                    <h4>Connect With Us</h4>
-                    <div style="display: flex; gap: 12px; margin-top: 8px;">
-                        <a href="https://www.facebook.com/people/Coast-to-Coast-Journeys/61574464089885/"
-                            target="_blank" class="social-link"><i class="fab fa-facebook-f"></i></a>
-                        <a href="https://www.instagram.com/coasttocoastjourneys/" target="_blank" class="social-link"><i
-                                class="fab fa-instagram"></i></a>
-                        <a href="https://www.linkedin.com/company/coast-to-coast-journeys/" target="_blank"
-                            class="social-link"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="flight-booking.html">Flight Booking</a></li>
+                        <li><a href="hotel-booking.html">Hotel Booking</a></li>
+                    </ul>
                 </div>
+
+                
             </div>
 
             <div class="footer-bottom">
-                <p>C2C Journeys is a customer-facing brand operated by Coast to Coast Journeys</p>
-                <p>&copy; 2026 C2C Journeys. All Rights Reserved.</p>
+                <p>Coast To Coast Journeys is a premium travel brand</p>
+                <p>&copy; 2026 Coast To Coast Journeys. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
 
     <!-- Scripts -->
-    <script src="../js/main.js?v=2"></script>
+    <script src="../js/main.js?v=3.1"></script>
     <!-- Supabase and Auth -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-client.js"></script>
     <script>
         // Initialize auth state for header UI
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Check auth state for header UI only (no forced redirect)
+            const currentUser = await SupabaseDB.getCurrentUser();
+
+            // Populate passenger details (Moved to appropriate page)
+            // populatePassengerDetails();
+            // populateAddons();
             if (typeof SupabaseDB !== 'undefined' && SupabaseDB.initAuthUI) {
                 SupabaseDB.initAuthUI();
             }
         });
     </script>
-    <script src="../js/flight-booking.js?v=2"></script>
-    <!-- Floating WhatsApp Button -->
-    <a href="https://wa.me/919934547108" target="_blank" class="whatsapp-float" title="Chat on WhatsApp"
-        style="position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: block; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.3s;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp"
-            style="width: 60px; height: 60px; display: block; border-radius: 50%;">
-    </a>
+    <script src="../js/flight-booking.js?v=3"></script>
+    <!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6a533a559a72601d480b4624/1jtahno9g';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
 </body>
 
 </html>

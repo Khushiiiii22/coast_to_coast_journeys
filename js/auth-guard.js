@@ -142,7 +142,7 @@ const AuthGuard = {
                     <p style="color: #64748b; margin-bottom: 25px;">Please log in to continue browsing and booking hotels. This ensures you receive booking confirmations successfully.</p>
                     
                     <div style="display: flex; gap: 10px; justify-content: center;">
-                        <a href="auth.html?redirect=${encodeURIComponent(window.location.pathname)}" class="btn btn-primary" style="flex: 1;">
+                        <a href="auth.html?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}" class="btn btn-primary" style="flex: 1;">
                             Login / Sign Up
                         </a>
                         <button class="btn btn-outline" style="padding: 10px 20px;" onclick="AuthGuard.closeLoginModal()">

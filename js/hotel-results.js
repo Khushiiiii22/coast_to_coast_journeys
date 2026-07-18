@@ -1088,7 +1088,7 @@ function showNotification(message, type = 'info') {
 function initCurrency() {
     const currencySelect = document.getElementById('currencySelect');
     if (currencySelect) {
-        const savedCurrency = localStorage.getItem('ctc_currency') || 'INR';
+        const savedCurrency = localStorage.getItem('ctc_currency') || 'USD';
         currencySelect.value = savedCurrency;
 
         currencySelect.addEventListener('change', function () {

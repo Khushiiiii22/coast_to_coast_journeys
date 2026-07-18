@@ -153,8 +153,7 @@ const HotelAPI = {
                 adults: params.adults || 2,
                 children_ages: params.children_ages || [],
                 rooms: params.rooms || [],
-                currency: params.currency || 'USD',
-                residency: params.residency || 'gb'
+                currency: params.currency || 'USD'
             })
         });
     },
@@ -206,8 +205,7 @@ const HotelAPI = {
                 adults: params.adults || 2,
                 children_ages: params.children_ages || [],
                 rooms: params.rooms || [],
-                currency: params.currency || 'USD',
-                residency: params.residency || 'gb'
+                currency: params.currency || 'USD'
             })
         });
     },
@@ -243,8 +241,8 @@ const HotelAPI = {
      * @param {string} params.checkout - Check-out date
      * @param {number} params.total_amount - Total amount
      */
-    async initBooking(params) {
-        return this.request('/hotels/book/init', {
+    async createBooking(params) {
+        return this.request('/hotels/book', {
             method: 'POST',
             body: JSON.stringify(params)
         });
@@ -253,10 +251,12 @@ const HotelAPI = {
     /**
      * Finish booking process
      */
-    async finishBooking(params) {
+    async finishBooking(partnerOrderId) {
         return this.request('/hotels/book/finish', {
             method: 'POST',
-            body: JSON.stringify(params)
+            body: JSON.stringify({
+                partner_order_id: partnerOrderId
+            })
         });
     },
 
@@ -419,7 +419,7 @@ const HotelUtils = {
      * Get user's selected currency
      */
     getSelectedCurrency() {
-        return localStorage.getItem('ctc_currency') || 'INR';
+        return localStorage.getItem('ctc_currency') || 'USD';
     },
 
     /**
@@ -455,7 +455,7 @@ const HotelUtils = {
         const symbol = symbols[displayCurrency] || displayCurrency + ' ';
 
         // Use appropriate locale for formatting
-        const locale = displayCurrency === 'INR' ? 'en-IN' : 'en-US';
+        const locale = displayCurrency === 'USD' ? 'en-IN' : 'en-US';
         return `${symbol}${convertedAmount.toLocaleString(locale)}`;
     },
 
@@ -665,8 +665,7 @@ const HotelUtils = {
     getCancellationStatus(hotel) {
         if (!hotel || !hotel.rates || hotel.rates.length === 0) return { isRefundable: false };
         const rate = hotel.rates[0];
-        const paymentTypes = rate?.payment_options?.payment_types || [];
-        const policies = paymentTypes[0]?.cancellation_penalties?.policies || [];
+        const policies = rate?.payment_options?.cancellation_penalties?.policies || [];
         if (policies.length === 0) return { isRefundable: false };
         // Check if there is a policy that is free cancellation (amount_charge === '0.00' or 0)
         const hasFreeCancel = policies.some(p => parseFloat(p.amount_charge || '1') === 0);

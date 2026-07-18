@@ -239,6 +239,7 @@ h6 {
     font-weight: 700;
     color: var(--primary);
     letter-spacing: -0.5px;
+    white-space: nowrap;
 }
 
 @media (max-width: 768px) {
@@ -587,11 +588,34 @@ h6 {
 /* === Hero Section === */
 .hero {
     position: relative;
+    z-index: 11;
+    padding: 180px 0 80px; /* Pushed content down to help search box cover video text */
+    overflow: visible; /* Changed to visible to prevent dropdown from being cut off */
+    /* Fallback background in case video doesn't load */
     background: var(--primary-gradient);
-    padding: 140px 0 100px;
+}
+
+.hero-video-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 20%; /* Shifts video slightly to align text under box */
+    z-index: 0;
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    /* Light tint so the video is clearly visible but white text still pops */
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.4));
+    z-index: 1;
 }
 
 .hero::before {
+    /* Keeping the image fallback behind the overlay if needed, but it's hidden by the video now */
     content: '';
     position: absolute;
     inset: 0;
@@ -599,13 +623,15 @@ h6 {
     background-size: cover;
     background-position: center;
     opacity: 0.15;
+    z-index: 0;
 }
 
 .hero-content {
     position: relative;
+    z-index: 2;
     text-align: center;
     color: var(--white);
-    margin-bottom: 48px;
+    margin-bottom: 16px; /* Reduced to move search box slightly up */
 }
 
 .hero-badge {
@@ -640,12 +666,13 @@ h6 {
 /* === Search Box === */
 .search-box {
     position: relative;
+    z-index: 2;
     background: var(--white);
     border-radius: var(--radius-xl);
     padding: 28px;
     box-shadow: var(--shadow-2xl);
     max-width: 1000px;
-    margin: 0 auto;
+    margin: 0 auto; /* Restored position to hide text in video underneath */
 }
 
 .search-tabs {
@@ -763,7 +790,8 @@ h6 {
     color: var(--text-muted);
 }
 
-.btn-search {
+.btn-search,
+.btn-search-improved {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -780,7 +808,8 @@ h6 {
     white-space: nowrap;
 }
 
-.btn-search:hover {
+.btn-search:hover,
+.btn-search-improved:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-accent);
 }
@@ -909,104 +938,125 @@ h6 {
     color: var(--text-secondary);
 }
 
-/* === Offers Section === */
-.offers-section {
-    padding: 80px 0;
-}
-
-.offers-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 28px;
-}
-
-.offer-card {
-    background: var(--white);
-    border-radius: var(--radius-lg);
+/* === Features & Rewards Section === */
+.featured-promo-card {
+    display: flex;
+    background: #fbf9f4; /* Light beige matching screenshot */
+    border-radius: var(--radius-xl);
     overflow: hidden;
-    box-shadow: var(--shadow);
-    transition: var(--transition-medium);
-    border: 1px solid var(--gray-100);
+    margin-bottom: 40px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-.offer-card:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-xl);
+.promo-content {
+    flex: 1;
+    padding: 60px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
 }
 
-.offer-image {
-    position: relative;
-    height: 200px;
-    overflow: hidden;
-}
-
-.offer-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: var(--transition-slow);
-}
-
-.offer-card:hover .offer-image img {
-    transform: scale(1.08);
-}
-
-.offer-badge {
-    position: absolute;
-    top: 16px;
-    left: 16px;
-    padding: 6px 14px;
-    background: var(--danger);
-    color: var(--white);
+.promo-badge {
+    background: #e31837;
+    color: white;
     font-size: 0.75rem;
-    font-weight: 600;
-    border-radius: var(--radius-full);
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-bottom: 16px;
     text-transform: uppercase;
 }
 
-.offer-content {
-    padding: 24px;
-}
-
-.offer-route {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 8px;
-}
-
-.offer-route .city {
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.offer-route i {
-    color: var(--primary);
-    font-size: 0.9rem;
-}
-
-.offer-meta {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-bottom: 16px;
-}
-
-.offer-price {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-}
-
-.offer-price .from {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-}
-
-.offer-price .amount {
-    font-size: 1.5rem;
+.promo-content h2 {
+    font-size: 2.2rem;
+    color: #111827;
+    margin-bottom: 12px;
     font-weight: 700;
-    color: var(--primary);
 }
+
+.promo-content p {
+    font-size: 1.1rem;
+    color: #374151;
+    margin-bottom: 24px;
+}
+
+.promo-btn {
+    background: #111827;
+    color: white;
+    border-radius: 30px;
+    padding: 12px 24px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.3s;
+}
+.promo-btn:hover { background: #000; }
+
+.promo-image {
+    flex: 1;
+    min-height: 300px;
+}
+
+.promo-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
+}
+
+.promo-features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.feature-box {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: var(--radius-lg);
+    padding: 32px 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.feature-box:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.feature-icon-img {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 20px;
+}
+
+.feature-icon-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.feature-box h3 {
+    font-size: 1.25rem;
+    color: #111827;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.feature-box p {
+    font-size: 0.95rem;
+    color: #4b5563;
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.feature-link {
+    font-size: 0.95rem;
+    color: var(--primary);
+    text-decoration: underline;
+    font-weight: 500;
+}
+.feature-link:hover { color: var(--primary-dark); }
 
 /* === Contact Section === */
 .contact-section {
@@ -1025,7 +1075,7 @@ h6 {
 
 .contact-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 32px;
     margin-bottom: 40px;
 }
@@ -1087,9 +1137,36 @@ h6 {
 
 /* === Footer === */
 .footer {
-    background: linear-gradient(135deg, #034b85 0%, #056cb9 100%);
-    color: var(--gray-300);
+    position: relative;
+    overflow: hidden;
+    background: var(--white); /* Fallback */
+    color: var(--text-primary);
     padding: 64px 0 24px;
+}
+
+.footer-video-bg,
+.footer-img-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center; /* Ensures it covers completely without stretching */
+    z-index: 0;
+    opacity: 1; /* Fully visible */
+}
+
+.footer-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.4); /* Light tint for clear video and readable dark text */
+    z-index: 1;
+}
+
+.footer > .container {
+    position: relative;
+    z-index: 2;
 }
 
 
@@ -1124,28 +1201,30 @@ h6 {
 .footer-logo span {
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--white);
+    color: var(--primary-dark);
 }
 
 .footer-brand p {
-    font-size: 0.9rem;
+    font-size: 0.95rem; /* Slightly larger */
     line-height: 1.7;
-    color: var(--gray-400);
+    color: #000; /* Made black for visibility */
+    font-weight: 600; /* Bolder */
 }
 
 .trust-line {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.9rem;
-    color: var(--primary-light);
+    font-size: 0.95rem; /* Slightly larger */
+    color: var(--primary-dark); /* Darker for better contrast */
     font-style: italic;
+    font-weight: 700; /* Bolder */
 }
 
 .footer-col h4 {
     font-size: 1rem;
-    font-weight: 600;
-    color: var(--white);
+    font-weight: 700;
+    color: #000; /* Bold in black */
     margin-bottom: 20px;
 }
 
@@ -1156,22 +1235,24 @@ h6 {
 }
 
 .footer-col a {
-    font-size: 0.9rem;
-    color: var(--gray-400);
+    font-size: 0.95rem;
+    color: #000; /* Bold in black */
     transition: var(--transition);
+    font-weight: 600; /* bolder */
 }
 
 .footer-col a:hover {
-    color: var(--white);
+    color: var(--primary);
     padding-left: 4px;
 }
 
 .footer-bottom {
     padding-top: 24px;
-    border-top: 1px solid var(--gray-800);
+    border-top: 1px solid rgba(0, 0, 0, 0.2);
     text-align: center;
-    font-size: 0.85rem;
-    color: var(--gray-500);
+    font-size: 0.9rem; /* Slightly larger */
+    color: #000; /* Made black for visibility */
+    font-weight: 600; /* Bolder */
 }
 
 /* === Page Hero (for inner pages) === */
@@ -1215,8 +1296,9 @@ h6 {
 }
 
 .hotel-hero {
-    background: linear-gradient(135deg, rgba(14, 100, 166, 0.92), rgba(26, 54, 93, 0.95)),
-        url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920&q=80');
+    /* Reduced gradient opacity so the banner is clearly visible */
+    background: linear-gradient(135deg, rgba(14, 100, 166, 0.4), rgba(26, 54, 93, 0.6)),
+        url('../assets/images/hotel-banner.jpg'); /* Pointing to the new banner */
     background-size: cover;
     background-position: center;
 }
@@ -2346,7 +2428,7 @@ h6 {
 .search-row {
     display: flex;
     gap: 16px;
-    align-items: flex-end;
+    align-items: stretch;
 }
 
 .form-field-improved {
@@ -2373,7 +2455,9 @@ h6 {
     font-size: 0.85rem;
 }
 
-.form-field-improved input[type="text"] {
+.form-field-improved input[type="text"],
+.form-field-improved input[type="date"],
+.form-field-improved select {
     padding: 14px 16px;
     border: 2px solid var(--gray-200);
     border-radius: var(--radius);
@@ -2382,6 +2466,7 @@ h6 {
     transition: var(--transition);
     height: 52px;
     box-sizing: border-box;
+    margin-top: auto;
 }
 
 .form-field-improved input[type="text"]:focus {
@@ -2643,6 +2728,7 @@ h6 {
     transition: var(--transition);
     height: 52px;
     box-sizing: border-box;
+    margin-top: auto;
 }
 
 .travelers-dropdown:hover {
@@ -2958,19 +3044,27 @@ h6 {
 
 .testimonials-slider {
     width: 100%;
-    overflow: hidden;
     margin-top: 48px;
     margin-bottom: 24px;
     position: relative;
     padding: 10px 0;
-    /* Add padding for shadow visibility */
 }
 
 .testimonials-track {
     display: flex;
-    transition: transform 0.5s ease-in-out;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
     width: 100%;
     gap: 0;
+    padding-bottom: 20px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.testimonials-track::-webkit-scrollbar {
+    display: none;
 }
 
 .testimonial-card {
@@ -2982,12 +3076,10 @@ h6 {
     display: flex;
     flex-direction: column;
     min-width: 50%;
-    /* Default: 2 cards view */
     flex-shrink: 0;
     margin: 0 16px;
-    /* Spacing between cards */
     width: calc(50% - 32px);
-    /* Adjust width based on margin */
+    scroll-snap-align: center;
 }
 
 .testimonial-card:hover {
@@ -3367,7 +3459,7 @@ input:disabled+.date-display-content {
     }
 
     .nav-menu.active {
-        display: flex;
+        display: flex !important;
     }
 
     .header-actions,
@@ -3393,10 +3485,10 @@ input:disabled+.date-display-content {
 
     .search-box {
         padding: 15px;
-        margin: 0 10px;
-        max-width: calc(100vw - 20px);
+        margin: 0 auto;
         width: 100%;
-        overflow: hidden;
+        box-sizing: border-box;
+        overflow: visible;
     }
 
     .search-form {
@@ -3614,6 +3706,102 @@ input:disabled+.date-display-content {
 
 body {
     animation: pageFadeIn 0.4s ease-out;
+}
+
+/* =====================================================
+   MODAL CSS
+   ===================================================== */
+.reward-modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.reward-modal.show {
+    display: flex;
+    animation: fadeInModal 0.3s ease-out;
+}
+
+@keyframes fadeInModal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.reward-modal-content {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: var(--radius-xl);
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    text-align: center;
+    animation: slideUpModal 0.3s ease-out;
+}
+
+@keyframes slideUpModal {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.reward-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #999;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.reward-modal-close:hover {
+    color: #111;
+}
+
+/* =====================================================
+   RESPONSIVE FEATURES SECTION
+   ===================================================== */
+@media (max-width: 992px) {
+    .featured-promo-card {
+        flex-direction: column;
+    }
+    .promo-image {
+        min-height: 300px;
+    }
+    .promo-image img {
+        border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    }
+    .promo-features-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .promo-features-grid {
+        grid-template-columns: 1fr;
+    }
+    .promo-content {
+        padding: 40px 24px;
+    }
+    .promo-content h2 {
+        font-size: 1.8rem;
+    }
+    .testimonial-card {
+        min-width: 85%;
+        width: 85%;
+        margin: 0 8px;
+    }
 }
 
 /* =====================================================
@@ -4088,4 +4276,23 @@ body {
 /* When calendar is open, increase z-index */
 .date-field-hotel .custom-calendar.open {
     z-index: 10000 !important;
+}
+/* ===== Mobile Responsive Fixes for Theme Updates ===== */
+@media (max-width: 768px) {
+    .hero {
+        padding: 100px 0 40px; /* Reduce padding so search box is visible */
+    }
+    
+    .hero-video-bg, .footer-video-bg {
+        /* display: none !important; Removed to allow videos on mobile */
+        pointer-events: none;
+    }
+    
+    .hero::before {
+        opacity: 0.7; /* Make the fallback background image more visible */
+    }
+    
+    .search-box {
+        padding: 20px;
+    }
 }

@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="My Wishlist - C2C Journeys. Save your favorite hotels and flights for later.">
-    <title>My Wishlist | C2C Journeys</title>
+    <meta name="description" content="My Wishlist - Coast To Coast. Save your favorite hotels and flights for later.">
+    <title>My Wishlist | Coast To Coast</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/jpeg" href="../assets/images/c2c-logo.png">
@@ -341,6 +341,24 @@
             }
         }
     </style>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
 </head>
 
 <body>
@@ -348,9 +366,15 @@
     <header class="header scrolled" id="header">
         <div class="container">
             <div class="header-content">
-                <a href="index.html" class="logo">
-                    <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
-                    <span class="logo-text">C2C Journeys</span>
+                                <!-- Hamburger Menu Button -->
+                <button class="hamburger-menu" id="hamburgerMenu" aria-label="Open navigation menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+<a href="index.html" class="logo">
+                    <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
+                    <span class="logo-text">Coast To Coast</span>
                 </a>
 
                 <nav>
@@ -358,12 +382,16 @@
                         <li><a href="index.html" class="nav-link">Home</a></li>
                         <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
                         <li><a href="hotel-booking.html" class="nav-link">Hotels</a></li>
-                        <li><a href="visa.html" class="nav-link">Visa</a></li>
-                        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                                                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
                     </ul>
                 </nav>
 
                 <div class="header-actions">
+                    
+                    <a href="tel:+18883159768" class="phone-link">
+                        <i class="fas fa-phone"></i>
+                        <span>+1-888-315-9768</span>
+                    </a>
                     <a href="auth.html" class="btn btn-outline">Sign In</a>
                 </div>
             </div>
@@ -426,7 +454,7 @@
         <div class="container">
                         <!-- Trustpilot Review Badge -->
             <div class="trustpilot-badge" style="margin: 20px 0; text-align: center;">
-                <a href="https://www.trustpilot.com/review/coasttocoastjourneys.com" target="_blank"
+                <a href="https://www.trustpilot.com/review/c2cjourneys.com" target="_blank"
                     rel="noopener noreferrer"
                     style="display: inline-flex; align-items: center; gap: 8px; background: #fff; color: #191919; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s;"
                     onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
@@ -439,7 +467,7 @@
             </div>
 
 <div class="footer-bottom">
-                <p>&copy; 2026 C2C Journeys. All Rights Reserved.</p>
+                <p>&copy; 2026 Coast To Coast Journeys. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
@@ -582,7 +610,7 @@
                         </div>
                         <div class="wishlist-footer">
                             <div class="wishlist-price">
-                                ₹${item.price.toLocaleString('en-IN')}
+                                $${item.price.toLocaleString('en-IN')}
                                 <span>/ ${item.type === 'hotel' ? 'night' : 'person'}</span>
                             </div>
                             <button class="btn-book" onclick="bookNow('${item.id}', '${item.type}')">
@@ -672,6 +700,19 @@
             setTimeout(() => notification.remove(), 4000);
         }
     </script>
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6a533a559a72601d480b4624/1jtahno9g';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
 </body>
 
 </html>

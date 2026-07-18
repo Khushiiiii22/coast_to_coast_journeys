@@ -161,7 +161,7 @@ I would like to request production API credentials for our travel booking platfo
 
 Company Information:
 - Company Name: Coast to Coast Journeys
-- Website: https://coasttocoastjourneys.com (or your Render URL)
+- Website: https://c2cjourneys.com (or your Render URL)
 - Business Type: Online Travel Agency
 - Expected Monthly Bookings: [Your estimate, e.g., 50-100]
 

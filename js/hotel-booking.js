@@ -209,54 +209,99 @@ async function handleBookingSubmit(e) {
 }
 
 /**
- * Process real booking via API.
- * 
- * ETG Certification Flow:
- * By this point, prebook has ALREADY been called during rate selection (in hotel-details.js).
- * The book_hash in session is already prebook-validated.
- * This function only calls: /booking/form → /booking/finish → poll /finish/status
+ * Process real booking via API
  */
 async function processRealBooking(guests, email, phone, specialRequests) {
     try {
-        // The book_hash is already prebook-validated from selectRate()
-        const validatedHash = rate.book_hash;
+        // Step 1: Prebook to check availability (price_increase_percent: 5 allows up to 5% price change)
+        updateLoadingMessage('Checking availability...');
+        const prebookResult = await HotelAPI.prebookRate(rate.book_hash, 5, searchParams?.checkin);
 
-        if (!validatedHash) {
-            return { success: false, error: 'No valid booking hash found. Please go back and select a room again.' };
+        if (!prebookResult.success) {
+            return { success: false, error: 'Room is no longer available at this price' };
         }
 
-        const partnerOrderId = rate.partner_order_id;
+        // IMPORTANT: ETG requires that we use the hash returned from the prebook call
+        // for all subsequent booking steps.
+        // Extraction logic matches verified backend test: data.data.hotels[0].rates[0].book_hash
+        const etgData = prebookResult.data?.data || {};
+        let updatedHash = null;
 
-        if (!partnerOrderId) {
-            return { success: false, error: 'No valid order ID found. The room reservation may have expired. Please go back and select the room again.' };
+        if (etgData.hotels && etgData.hotels[0] && etgData.hotels[0].rates && etgData.hotels[0].rates[0]) {
+            updatedHash = etgData.hotels[0].rates[0].book_hash;
         }
 
-        // Step 1: Finish booking — /hotel/order/booking/finish/
-        updateLoadingMessage('Finalizing your booking...');
-        const finishParams = {
-            partner_order_id: partnerOrderId,
+        // Fallbacks
+        updatedHash = updatedHash || etgData.hash || prebookResult.data?.hash || rate.book_hash;
+
+        console.log('🔗 Booking sequence hash update:', {
+            original: rate.book_hash.substring(0, 15) + '...',
+            updated: updatedHash.substring(0, 15) + '...'
+        });
+
+        // FIX F: Handle price_changed during prebook
+        if (prebookResult.price_changed) {
+            hideLoadingOverlay();
+
+            // Keep total in USD (assuming ETG API returns USD by default for this account)
+            const newTotalUSD = prebookResult.new_total || 0;
+
+            // Update the summary UI
+            document.getElementById('totalAmountValue').textContent = `$${newTotalUSD.toLocaleString('en-US')}`;
+            document.getElementById('btnTotalPrice').textContent = newTotalUSD.toLocaleString('en-US');
+
+            showNotification(`The price has changed to $${newTotalUSD.toLocaleString('en-US')}. Please click "Confirm Booking" again to proceed.`, 'warning');
+
+            // Update global state so next click uses new data
+            bookingData.total_amount = newTotalUSD;
+
+            // IMPORTANT: We must update the rate object too so the next attempt uses the NEW hash
+            rate.book_hash = updatedHash;
+
+            return { success: false, error: 'Price updated. Please confirm again.' };
+        }
+
+        // Step 2: Create booking (Order Form)
+        updateLoadingMessage('Creating your reservation...');
+        const bookingParams = {
+            book_hash: updatedHash, // Use the hash returned from prebook!
             guests: guests,
             email: email,
             phone: phone,
             special_requests: specialRequests,
-            rooms: searchParams.rooms
+            hotel_id: hotel.id,
+            hotel_name: hotel.name,
+            hotel_address: hotel.address || 'Not Specified',
+            city: hotel.city || hotel.region_name || 'Not Specified',
+            checkin: searchParams.checkin,
+            checkout: searchParams.checkout,
+            total_amount: bookingData.total_amount,
+            currency: 'USD'
         };
 
-        const finishResult = await HotelAPI.finishBooking(finishParams);
+        const createResult = await HotelAPI.createBooking(bookingParams);
+
+        if (!createResult.success) {
+            return { success: false, error: createResult.error || 'Failed to create booking' };
+        }
+
+        // Step 3: Finish booking
+        updateLoadingMessage('Finalizing your booking...');
+        const finishResult = await HotelAPI.finishBooking(createResult.partner_order_id);
 
         if (!finishResult.success) {
             return { success: false, error: finishResult.error || 'Failed to finalize booking process' };
         }
 
-        // Step 2: Poll for confirmation — /hotel/order/booking/finish/status/
+        // Step 4: Poll for confirmation
         updateLoadingMessage('Confirming with hotel...');
-        const statusResult = await HotelAPI.pollBookingStatus(partnerOrderId);
+        const statusResult = await HotelAPI.pollBookingStatus(createResult.partner_order_id);
 
         if (statusResult.success && (statusResult.status === 'confirmed' || statusResult.data?.status === 'ok')) {
             return {
                 success: true,
-                partner_order_id: partnerOrderId,
-                confirmation_number: statusResult.data?.confirmation_number || partnerOrderId,
+                partner_order_id: createResult.partner_order_id,
+                confirmation_number: statusResult.data?.confirmation_number || createResult.partner_order_id,
                 status: 'confirmed'
             };
         } else {

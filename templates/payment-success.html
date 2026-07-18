@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="../assets/images/c2c-logo.png">
-    <title>Payment Successful | C2C Journeys</title>
+    <title>Payment Successful | Coast To Coast</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -138,6 +138,24 @@
             border: 2px solid #0066cc;
         }
     </style>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
 </head>
 
 <body>
@@ -160,7 +178,7 @@
             </div>
             <div class="detail-row">
                 <span>Amount Paid</span>
-                <strong id="amount">₹0</strong>
+                <strong id="amount">$0</strong>
             </div>
             <div class="detail-row">
                 <span>Status</span>
@@ -276,11 +294,11 @@
                         <span>Amount Paid (Online)</span>
                         <strong style="color: #16a34a;">${(() => {
                             const bookingData = JSON.parse(sessionStorage.getItem('ctc_booking_data') || '{}');
-                            const originalCurrency = bookingData.rate?.currency || bookingData.currency || 'INR';
+                            const originalCurrency = bookingData.rate?.currency || bookingData.currency || 'USD';
                             if (typeof HotelUtils !== 'undefined') {
                                 return HotelUtils.formatPrice(data.amount, originalCurrency);
                             }
-                            const symbols = { 'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'AED': 'AED ' };
+                            const symbols = { 'INR': '$', 'USD': '$', 'EUR': '€', 'GBP': '£', 'AED': 'AED ' };
                             const symbol = symbols[originalCurrency] || originalCurrency + ' ';
                             return `${symbol}${formatNumber(data.amount)}`;
                         })()}</strong>
@@ -362,6 +380,19 @@
         }
     </script>
     <script src="/js/hotel-api.js"></script>
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6a533a559a72601d480b4624/1jtahno9g';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
 </body>
 
 </html>

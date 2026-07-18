@@ -1,7 +1,7 @@
 import os
 
 def main():
-    env_file = 'backend/.env'
+    env_file = '.env'
     output_file = 'env.yaml'
     
     if not os.path.exists(env_file):

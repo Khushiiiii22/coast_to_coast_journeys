@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="../assets/images/c2c-logo.png">
-    <meta name="description" content="Hotel Details - C2C Journeys">
-    <title>Hotel Details | Coast To Coast Journeys</title>
+    <meta name="description" content="Hotel Details - Coast To Coast">
+    <title>Hotel Details | Coast To Coast</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,6 +26,24 @@
     <link rel="stylesheet" href="../css/expedia-design-system.css">
     <link rel="stylesheet" href="../css/expedia-enhancements.css">
     <link rel="stylesheet" href="../css/expedia-polish.css">
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
 </head>
 
 <body class="hotel-details-page">
@@ -35,16 +53,15 @@
             <div class="container">
                 <div class="nav-content">
                     <a href="index.html" class="logo">
-                        <img src="../assets/images/c2c-logo.png" alt="C2C Journeys">
-                        <span class="brand-name">C2C Journeys</span>
+                        <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
+                        <span class="brand-name">Coast To Coast</span>
                     </a>
 
                     <ul class="nav-menu" id="navMenu">
                         <li><a href="index.html" class="nav-link">Home</a></li>
                         <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
                         <li><a href="hotel-booking.html" class="nav-link active">Hotels</a></li>
-                        <li><a href="visa.html" class="nav-link">Visa</a></li>
-                        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                                                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
                     </ul>
 
                     <div class="nav-actions">
@@ -516,7 +533,7 @@
     <div class="sticky-booking-bar" id="stickyBookingBar">
         <div class="container">
             <div class="sticky-price-info">
-                <span class="sticky-price" id="stickyPrice">₹15,717</span>
+                <span class="sticky-price" id="stickyPrice">$15,717</span>
                 <span class="sticky-per-night">per night</span>
             </div>
             <button class="sticky-reserve-btn" id="stickyReserveBtn">
@@ -538,7 +555,7 @@
             </div>
             <!-- Trustpilot Review Badge -->
             <div class="trustpilot-badge" style="margin: 20px 0; text-align: center;">
-                <a href="https://www.trustpilot.com/review/coasttocoastjourneys.com" target="_blank"
+                <a href="https://www.trustpilot.com/review/c2cjourneys.com" target="_blank"
                     rel="noopener noreferrer"
                     style="display: inline-flex; align-items: center; gap: 8px; background: #fff; color: #191919; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s;"
                     onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
@@ -550,8 +567,8 @@
                 </a>
             </div>
             <div class="footer-bottom">
-                <p>C2C Journeys is a customer-facing brand operated by Coast to Coast Journeys</p>
-                <p>&copy; 2026 C2C Journeys. All Rights Reserved.</p>
+                <p>Coast To Coast Journeys is a premium travel brand</p>
+                <p>&copy; 2026 Coast To Coast Journeys. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
@@ -568,7 +585,7 @@
 
             // Currency selector initialization
             const currencySelect = document.getElementById('currencySelect');
-            const savedCurrency = localStorage.getItem('ctc_currency') || 'INR';
+            const savedCurrency = localStorage.getItem('ctc_currency') || 'USD';
             if (currencySelect) {
                 currencySelect.value = savedCurrency;
                 currencySelect.addEventListener('change', function () {
@@ -587,6 +604,19 @@
     <script src="../js/hotel-api.js"></script>
     <script src="../js/expedia-hotel-enhancements.js"></script>
     <script src="../js/hotel-details.js"></script>
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6a533a559a72601d480b4624/1jtahno9g';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
 </body>
 
 </html>

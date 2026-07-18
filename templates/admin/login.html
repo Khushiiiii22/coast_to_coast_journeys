@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login | C2C Journeys</title>
+    <title>Admin Login | Coast To Coast</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -390,6 +390,24 @@
             }
         }
     </style>
+
+    <!-- Google tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-XXXXXXXXXX');
+    </script>
 </head>
 
 <body>
@@ -414,7 +432,7 @@
                     <i class="fas fa-plane"></i>
                 </div>
                 <h1 class="login-title">Admin Portal</h1>
-                <p class="login-subtitle">C2C Journeys</p>
+                <p class="login-subtitle">Coast To Coast</p>
             </div>
 
             <form class="login-form" id="loginForm" onsubmit="handleLogin(event)">
@@ -439,6 +457,14 @@
                         <button type="button" class="password-toggle" onclick="togglePassword()">
                             <i class="fas fa-eye" id="passwordIcon"></i>
                         </button>
+                    </div>
+                </div>
+
+                <div class="form-group" id="mfaGroup" style="display: none;">
+                    <label class="form-label">Authenticator Code</label>
+                    <div class="input-group">
+                        <input type="text" id="mfaCode" placeholder="6-digit code" maxlength="6" pattern="\d{6}">
+                        <i class="fas fa-shield-alt"></i>
                     </div>
                 </div>
 
@@ -484,6 +510,7 @@
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const mfaCode = document.getElementById('mfaCode').value;
             const loginBtn = document.getElementById('loginBtn');
             const errorMessage = document.getElementById('errorMessage');
 
@@ -501,7 +528,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ email, password, mfa_code: mfaCode })
                 });
 
                 const data = await response.json();
@@ -513,6 +540,18 @@
 
                     // Redirect to dashboard
                     window.location.href = 'dashboard.html';
+                } else if (data.mfa_required) {
+                    // Show MFA input
+                    document.getElementById('mfaGroup').style.display = 'block';
+                    document.getElementById('email').parentElement.parentElement.style.display = 'none';
+                    document.getElementById('password').parentElement.parentElement.style.display = 'none';
+                    document.querySelector('.form-options').style.display = 'none';
+                    
+                    errorMessage.querySelector('span').textContent = 'Please enter your Authenticator Code';
+                    errorMessage.classList.add('show');
+                    
+                    loginBtn.classList.remove('loading');
+                    loginBtn.querySelector('span').textContent = 'Verify Code';
                 } else {
                     // Show error
                     errorMessage.querySelector('span').textContent = data.error || 'Invalid email or password';
