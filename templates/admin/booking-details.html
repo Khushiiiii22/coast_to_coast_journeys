@@ -313,6 +313,9 @@
                                     <button class="btn btn-danger" onclick="alert('Cancellation Request logic here')">
                                         <i class="fas fa-times-circle"></i> Submit Cancellation
                                     </button>
+                                    <button class="btn btn-success" id="processRefundBtn" style="display: none;" onclick="processRefundDetails()">
+                                        <i class="fas fa-undo-alt"></i> Process Refund
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -349,6 +352,7 @@
 
                 if (res.success) {
                     const data = res.data;
+                    window.currentBooking = data.booking;
                     renderDetails(data);
                     document.getElementById('loadingState').style.display = 'none';
                     document.getElementById('contentState').style.display = 'block';
@@ -359,10 +363,47 @@
             }
         }
 
+        async function processRefundDetails() {
+            const b = window.currentBooking;
+            if (!b) return;
+            const amount = parseFloat(b.total_amount) || 0;
+            
+            const refundAmt = prompt(`Enter refund amount (Max: $${amount}):`, amount);
+            if (refundAmt === null) return;
+            
+            const parsedAmt = parseFloat(refundAmt);
+            if (isNaN(parsedAmt) || parsedAmt < 0 || parsedAmt > amount) {
+                alert('Invalid refund amount entered.');
+                return;
+            }
+            
+            try {
+                const res = await apiRequest(`/refunds/${b.id}/process`, 'POST', { refund_amount: parsedAmt });
+                if (res.success) {
+                    showNotification('Refund processed successfully', 'success');
+                    await loadBookingDetails();
+                } else {
+                    throw new Error(res.error || 'Failed to process refund');
+                }
+            } catch (err) {
+                console.error(err);
+                showNotification(err.message || 'Error processing refund', 'error');
+            }
+        }
+
         function renderDetails(data) {
             const b = data.booking;
             const p = data.payment;
             const c = data.cancellation;
+
+            const refundBtn = document.getElementById('processRefundBtn');
+            if (refundBtn) {
+                if (b.status === 'cancelled') {
+                    refundBtn.style.display = 'block';
+                } else {
+                    refundBtn.style.display = 'none';
+                }
+            }
 
             // Overview
             document.getElementById('partnerOrderId').textContent = b.partner_order_id || '—';

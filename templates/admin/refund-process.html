@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process Refund | CTC Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="../../admin/css/admin.css">
+    <link rel="icon" href="data:,">
+
+    <style>
+        .rp-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .rp-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            border: 1px solid #f1f5f9;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .rp-card-head {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .rp-card-head h3 {
+            margin: 0;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .rp-card-body {
+            padding: 1.25rem 1.5rem;
+        }
+
+        .rp-row {
+            display: grid;
+            grid-template-columns: 170px 1fr;
+            gap: 0.75rem;
+            padding: 0.55rem 0;
+            border-bottom: 1px solid #f8fafc;
+            align-items: center;
+        }
+
+        .rp-row:last-child { border-bottom: none; }
+
+        .rp-label {
+            font-weight: 600;
+            color: #64748b;
+            font-size: 0.82rem;
+        }
+
+        .rp-value {
+            color: #1e293b;
+            font-size: 0.88rem;
+            word-break: break-word;
+        }
+
+        .rp-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        /* Form elements */
+        .rp-form-group { margin-bottom: 1.1rem; }
+
+        .rp-form-group label {
+            display: block;
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.82rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .rp-form-group label .required { color: #dc2626; }
+
+        .rp-input, .rp-select, .rp-textarea {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            font-family: 'Inter', sans-serif;
+            color: #1e293b;
+            background: #fff;
+            box-sizing: border-box;
+        }
+
+        .rp-input:focus, .rp-select:focus, .rp-textarea:focus {
+            border-color: #ff5e36;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 94, 54, 0.1);
+        }
+
+        .rp-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .rp-input[readonly] {
+            background: #f8fafc;
+            color: #64748b;
+        }
+
+        /* Refund amount input - big & prominent */
+        .refund-amount-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #0f172a;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .refund-amount-input:focus {
+            border-color: #ff5e36;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(255, 94, 54, 0.15);
+        }
+
+        .amount-limit-text {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.4rem;
+        }
+
+        .amount-limit-text strong { color: #059669; }
+
+        .amount-error {
+            text-align: center;
+            font-size: 0.82rem;
+            color: #dc2626;
+            font-weight: 600;
+            margin-top: 0.3rem;
+            display: none;
+        }
+
+        /* Radio group */
+        .rp-radio-group { display: flex; flex-direction: column; gap: 0.6rem; }
+
+        .rp-radio-option {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .rp-radio-option:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+        .rp-radio-option.selected {
+            background: #fff7ed;
+            border-color: #ff5e36;
+            box-shadow: 0 0 0 3px rgba(255, 94, 54, 0.08);
+        }
+
+        .rp-radio-option input[type="radio"] { accent-color: #ff5e36; width: 16px; height: 16px; }
+
+        .rp-radio-option .radio-label { font-weight: 600; font-size: 0.88rem; color: #1e293b; }
+
+        .rp-radio-option .radio-sublabel { font-size: 0.78rem; color: #94a3b8; }
+
+        /* Bank details section */
+        .bank-section {
+            display: none;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-top: 0.75rem;
+        }
+
+        .bank-section.visible { display: block; }
+
+        .bank-section h4 {
+            margin: 0 0 0.75rem 0;
+            color: #92400e;
+            font-size: 0.85rem;
+        }
+
+        /* Summary card */
+        .summary-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            color: #fff;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .summary-row .s-label { color: #94a3b8; }
+        .summary-row .s-value { font-weight: 600; }
+
+        .summary-row.highlight {
+            border-top: 1px solid #334155;
+            margin-top: 0.5rem;
+            padding-top: 0.75rem;
+        }
+
+        .summary-row.highlight .s-value {
+            color: #4ade80;
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+
+        .summary-row.revenue .s-value { color: #fbbf24; }
+
+        /* Buttons */
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-back:hover { background: #e2e8f0; }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 0.85rem;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .btn-cancel:hover { background: #e2e8f0; }
+
+        .btn-process {
+            flex: 2;
+            padding: 0.85rem;
+            background: linear-gradient(135deg, #ff5e36, #e74c3c);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(255, 94, 54, 0.3);
+            transition: all 0.2s;
+        }
+
+        .btn-process:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(255, 94, 54, 0.4);
+        }
+
+        .btn-process:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Confirmation Modal */
+        .confirm-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.55);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .confirm-overlay.active { display: flex; }
+
+        .confirm-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 2.5rem;
+            max-width: 520px;
+            width: 92%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .confirm-box .warn-icon {
+            font-size: 3rem;
+            color: #f59e0b;
+            margin-bottom: 0.75rem;
+        }
+
+        .confirm-box h2 {
+            margin: 0 0 0.5rem;
+            font-size: 1.25rem;
+            color: #1e293b;
+        }
+
+        .confirm-box p { color: #64748b; font-size: 0.9rem; }
+
+        .confirm-summary {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin: 1rem 0;
+            text-align: left;
+        }
+
+        .confirm-summary .cs-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.35rem 0;
+            font-size: 0.88rem;
+        }
+
+        .confirm-summary .cs-row .cs-label { color: #64748b; font-weight: 600; }
+        .confirm-summary .cs-row .cs-val { color: #1e293b; font-weight: 700; }
+        .confirm-summary .cs-row.refund-highlight .cs-val { color: #059669; font-size: 1.05rem; }
+        .confirm-summary .cs-row.revenue-highlight .cs-val { color: #d97706; }
+
+        .confirm-box .caution { color: #dc2626; font-weight: 700; font-size: 0.82rem; margin-top: 0.5rem; }
+
+        .confirm-box .modal-btns { display: flex; gap: 1rem; margin-top: 1.25rem; }
+
+        .confirm-box .btn-modal-cancel {
+            flex: 1; padding: 0.7rem; background: #f1f5f9; color: #475569;
+            border: 1px solid #e2e8f0; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.9rem;
+        }
+
+        .confirm-box .btn-modal-confirm {
+            flex: 1; padding: 0.7rem;
+            background: linear-gradient(135deg, #ff5e36, #e74c3c);
+            color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.9rem;
+        }
+
+        /* Refund History Table */
+        .refund-history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+
+        .refund-history-table th {
+            background: #f8fafc;
+            padding: 0.6rem 0.75rem;
+            text-align: left;
+            font-weight: 700;
+            color: #64748b;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .refund-history-table td {
+            padding: 0.6rem 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1e293b;
+        }
+
+        /* Loading */
+        .loading-state {
+            text-align: center;
+            padding: 4rem;
+            color: #94a3b8;
+        }
+
+        .loading-state i {
+            font-size: 2.5rem;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .rp-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+                    <h1 class="page-title">Process Refund</h1>
+                </div>
+                <div class="header-right">
+                    <div style="font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-right: 1.5rem;">COAST TO COAST JOURNEYS</div>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <button class="btn-back" onclick="window.location.href='refunds.html'">
+                    <i class="fas fa-arrow-left"></i> Back to Refund Management
+                </button>
+
+                <!-- Loading -->
+                <div id="loadingState" class="loading-state">
+                    <i class="fas fa-spinner"></i>
+                    <p>Loading booking details...</p>
+                </div>
+
+                <!-- Content -->
+                <div id="contentState" style="display: none;">
+                    <div class="rp-grid">
+                        <!-- LEFT COLUMN: Booking Summary (read-only) -->
+                        <div>
+                            <!-- Booking Summary -->
+                            <div class="rp-card">
+                                <div class="rp-card-head">
+                                    <i class="fas fa-receipt" style="color:#8b5cf6;"></i>
+                                    <h3>Booking Summary</h3>
+                                </div>
+                                <div class="rp-card-body">
+                                    <div class="rp-row"><div class="rp-label">Booking ID</div><div class="rp-value" id="dBookingId">—</div></div>
+                                    <div class="rp-row"><div class="rp-label">Customer Name</div><div class="rp-value" id="dCustName">—</div></div>
+                                    <div class="rp-row"><div class="rp-label">Email</div><div class="rp-value" id="dCustEmail">—</div></div>
+                                    <div class="rp-row"><div class="rp-label">Phone</div><div class="rp-value" id="dCustPhone">—</div></div>
+                                    <div class="rp-row"><div class="rp-label">Booking Type</div><div class="rp-value" id="dBookingType">—</div></div>
+                                    <div class="rp-row"><div class="rp-label">Original Amount</div><div class="rp-value" id="dOrigAmount" style="font-weight:800; color:#0f172a; font-size:1rem;">—</div></div>
+                                    <div class="rp-row"><div class="rp-label">Amount Paid</div><div class="rp-value" id="dAmountPaid" style="font-weight:800; color:#059669; font-size:1rem;">—</div></div>
+                                    <div class="rp-row"><div class="rp-label">Payment Gateway</div><div class="rp-value" id="dPayGateway">—</div></div>
+                                    <div class="rp-row"><div class="rp-label">Gateway Transaction ID</div><div class="rp-value" id="dGatewayTxId" style="font-family:monospace; font-size:0.82rem;">—</div></div>
+                                    <div class="rp-row"><div class="rp-label">Current Refund Status</div><div class="rp-value" id="dRefundStatus">—</div></div>
+                                </div>
+                            </div>
+
+                            <!-- Previous Refund History -->
+                            <div class="rp-card" id="refundHistoryCard" style="display:none;">
+                                <div class="rp-card-head">
+                                    <i class="fas fa-history" style="color:#6366f1;"></i>
+                                    <h3>Refund History</h3>
+                                </div>
+                                <div class="rp-card-body" style="padding:0;">
+                                    <table class="refund-history-table" id="refundHistoryTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Amount</th>
+                                                <th>Method</th>
+                                                <th>Reason</th>
+                                                <th>Reference</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT COLUMN: Refund Details (editable) -->
+                        <div>
+                            <!-- Refund Amount -->
+                            <div class="rp-card">
+                                <div class="rp-card-head">
+                                    <i class="fas fa-dollar-sign" style="color:#059669;"></i>
+                                    <h3>Refund Amount</h3>
+                                </div>
+                                <div class="rp-card-body" style="text-align:center;">
+                                    <p style="font-size:0.82rem; color:#64748b; margin:0 0 0.75rem;">Enter the amount to refund to the customer</p>
+                                    <input type="number" class="refund-amount-input" id="refundAmountInput" step="0.01" min="0.01" value="0" oninput="validateAmount()">
+                                    <div class="amount-limit-text">Max refundable: <strong id="maxRefundDisplay">$0.00</strong></div>
+                                    <div class="amount-error" id="amountError">Amount exceeds maximum refundable</div>
+                                </div>
+                            </div>
+
+                            <!-- Refund Reason -->
+                            <div class="rp-card">
+                                <div class="rp-card-head">
+                                    <i class="fas fa-clipboard-list" style="color:#f59e0b;"></i>
+                                    <h3>Refund Reason <span style="color:#dc2626;">*</span></h3>
+                                </div>
+                                <div class="rp-card-body">
+                                    <div class="rp-form-group" style="margin-bottom:0.75rem;">
+                                        <select class="rp-select" id="refundReason" onchange="onReasonChange()">
+                                            <option value="">— Select a reason —</option>
+                                            <option value="Customer Cancellation">Customer Cancellation</option>
+                                            <option value="Airline Cancellation">Airline Cancellation</option>
+                                            <option value="Hotel Cancellation">Hotel Cancellation</option>
+                                            <option value="Supplier Refund">Supplier Refund</option>
+                                            <option value="Partial Refund">Partial Refund</option>
+                                            <option value="Duplicate Booking">Duplicate Booking</option>
+                                            <option value="Service Issue">Service Issue</option>
+                                            <option value="Pricing Adjustment">Pricing Adjustment</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="rp-form-group" id="notesGroup">
+                                        <label>Refund Notes <span class="required" id="notesRequired" style="display:none;">*</span></label>
+                                        <textarea class="rp-textarea" id="refundNotes" placeholder="Provide additional details about this refund..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Refund Method -->
+                            <div class="rp-card">
+                                <div class="rp-card-head">
+                                    <i class="fas fa-exchange-alt" style="color:#3b82f6;"></i>
+                                    <h3>Refund Method <span style="color:#dc2626;">*</span></h3>
+                                </div>
+                                <div class="rp-card-body">
+                                    <div class="rp-radio-group" id="methodRadioGroup">
+                                        <label class="rp-radio-option" onclick="selectMethod(this, 'Razorpay Refund')">
+                                            <input type="radio" name="refundMethod" value="Razorpay Refund">
+                                            <div>
+                                                <div class="radio-label"><i class="fas fa-credit-card" style="color:#3b82f6; margin-right:6px;"></i> Refund via Razorpay</div>
+                                                <div class="radio-sublabel">Processed through Razorpay payment gateway</div>
+                                            </div>
+                                        </label>
+                                        <label class="rp-radio-option" onclick="selectMethod(this, 'PayPal Refund')">
+                                            <input type="radio" name="refundMethod" value="PayPal Refund">
+                                            <div>
+                                                <div class="radio-label"><i class="fab fa-paypal" style="color:#003087; margin-right:6px;"></i> Refund via PayPal</div>
+                                                <div class="radio-sublabel">Processed through PayPal payment gateway</div>
+                                            </div>
+                                        </label>
+                                        <label class="rp-radio-option" onclick="selectMethod(this, 'Manual Bank Transfer')">
+                                            <input type="radio" name="refundMethod" value="Manual Bank Transfer">
+                                            <div>
+                                                <div class="radio-label"><i class="fas fa-university" style="color:#d97706; margin-right:6px;"></i> Manual Bank Transfer</div>
+                                                <div class="radio-sublabel">Transfer directly to customer's bank account</div>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <!-- Bank Details (shown for Manual) -->
+                                    <div class="bank-section" id="bankSection">
+                                        <h4><i class="fas fa-info-circle"></i> Bank Details for Manual Transfer</h4>
+                                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+                                            <div class="rp-form-group"><label>Account Holder</label><input class="rp-input" id="bankHolder" placeholder="Name"></div>
+                                            <div class="rp-form-group"><label>Bank Name</label><input class="rp-input" id="bankName" placeholder="Bank"></div>
+                                            <div class="rp-form-group"><label>Account Number</label><input class="rp-input" id="bankAccNum" placeholder="Account #"></div>
+                                            <div class="rp-form-group"><label>IFSC / SWIFT</label><input class="rp-input" id="bankIfsc" placeholder="Code"></div>
+                                        </div>
+                                        <div class="rp-form-group"><label>UTR / Transaction Reference <span class="required">*</span></label><input class="rp-input" id="utrNumber" placeholder="Enter UTR or reference number"></div>
+                                        <div class="rp-form-group"><label>Transfer Date</label><input type="date" class="rp-input" id="transferDate"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Refund Summary -->
+                            <div class="summary-card">
+                                <div class="summary-row">
+                                    <span class="s-label">Customer Paid</span>
+                                    <span class="s-value" id="sPaid">$0.00</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="s-label">Previously Refunded</span>
+                                    <span class="s-value" id="sPrevRefunded" style="color:#fb923c;">$0.00</span>
+                                </div>
+                                <div class="summary-row highlight">
+                                    <span class="s-label" style="color:#fff; font-weight:700;">Refund Amount</span>
+                                    <span class="s-value" id="sRefundAmt">$0.00</span>
+                                </div>
+                                <div class="summary-row revenue">
+                                    <span class="s-label">Remaining Revenue</span>
+                                    <span class="s-value" id="sRevenue">$0.00</span>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="action-buttons">
+                                <button class="btn-cancel" onclick="window.location.href='refunds.html'">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                                <button class="btn-process" id="processBtn" onclick="showConfirmation()">
+                                    <i class="fas fa-undo-alt"></i> Process Refund
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="confirm-overlay" id="confirmOverlay">
+        <div class="confirm-box">
+            <div class="warn-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <h2>Confirm Refund</h2>
+            <p>Please review the refund details below before confirming.</p>
+            <div class="confirm-summary">
+                <div class="cs-row"><span class="cs-label">Customer</span><span class="cs-val" id="cCustomer">—</span></div>
+                <div class="cs-row"><span class="cs-label">Customer Paid</span><span class="cs-val" id="cPaid">$0.00</span></div>
+                <div class="cs-row refund-highlight"><span class="cs-label">Refund Amount</span><span class="cs-val" id="cRefund">$0.00</span></div>
+                <div class="cs-row revenue-highlight"><span class="cs-label">Remaining Revenue</span><span class="cs-val" id="cRevenue">$0.00</span></div>
+                <div class="cs-row"><span class="cs-label">Refund Method</span><span class="cs-val" id="cMethod">—</span></div>
+                <div class="cs-row"><span class="cs-label">Reason</span><span class="cs-val" id="cReason">—</span></div>
+            </div>
+            <p class="caution">⚠ This action cannot be undone.</p>
+            <div class="modal-btns">
+                <button class="btn-modal-cancel" onclick="hideConfirmation()">Cancel</button>
+                <button class="btn-modal-confirm" id="confirmBtn" onclick="executeRefund()">
+                    <i class="fas fa-check"></i> Confirm &amp; Process
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../admin/js/admin.js"></script>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const bookingId = params.get('id');
+        const bookingType = params.get('type') || 'hotel';
+
+        let bookingData = null;
+        let originalAmount = 0;
+        let totalAlreadyRefunded = 0;
+        let maxRefundable = 0;
+        let selectedMethod = '';
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            const token = localStorage.getItem('admin_token');
+            if (!token) { window.location.href = 'login.html'; return; }
+            if (!bookingId) { showNotification('Booking ID not provided', 'error'); return; }
+            await loadBookingDetails();
+        });
+
+        async function loadBookingDetails() {
+            try {
+                document.getElementById('loadingState').style.display = 'block';
+                document.getElementById('contentState').style.display = 'none';
+
+                const res = await apiRequest(`/refund-management/bookings/${bookingType}/${bookingId}`);
+
+                if (res.success) {
+                    bookingData = res.data.booking;
+                    renderBookingData(res.data);
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('contentState').style.display = 'block';
+                } else {
+                    throw new Error(res.error || 'Failed to load booking');
+                }
+            } catch (err) {
+                console.error('Error loading booking:', err);
+                showNotification('Failed to load booking details: ' + err.message, 'error');
+            }
+        }
+
+        function renderBookingData(data) {
+            const b = data.booking;
+
+            // ── Customer Details ──
+            let guestName = '—', guestEmail = '—', guestPhone = '—';
+            if (bookingType === 'hotel') {
+                if (b.guests && Array.isArray(b.guests) && b.guests.length > 0) {
+                    const g = b.guests[0];
+                    guestName = `${g.first_name || ''} ${g.last_name || ''}`.trim() || '—';
+                } else if (b.customer_name) { guestName = b.customer_name; }
+                guestEmail = b.customer_email || '—';
+                guestPhone = b.customer_phone || '—';
+            } else {
+                const passengers = b.passengers;
+                if (passengers) {
+                    try {
+                        let pData = typeof passengers === 'string' ? JSON.parse(passengers) : passengers;
+                        if (Array.isArray(pData) && pData.length > 0) {
+                            guestName = `${pData[0].first_name || ''} ${pData[0].last_name || ''}`.trim() || pData[0].name || '—';
+                        }
+                    } catch (e) {}
+                }
+                if (guestName === '—' && b.passenger_name) guestName = b.passenger_name;
+                guestEmail = b.passenger_email || b.customer_email || '—';
+                guestPhone = b.passenger_phone || b.customer_phone || '—';
+            }
+
+            document.getElementById('dCustName').textContent = guestName;
+            document.getElementById('dCustEmail').textContent = guestEmail;
+            document.getElementById('dCustPhone').textContent = guestPhone;
+
+            // ── Booking Info ──
+            document.getElementById('dBookingId').textContent = b.partner_order_id || b.booking_id || b.id;
+
+            const typeLabel = bookingType === 'hotel' ? 'HOTEL' : 'FLIGHT';
+            const typeColor = bookingType === 'hotel' ? '#2563eb' : '#d97706';
+            const typeBg = bookingType === 'hotel' ? '#dbeafe' : '#fef3c7';
+            document.getElementById('dBookingType').innerHTML = `<span class="rp-badge" style="background:${typeBg}; color:${typeColor};">${typeLabel}</span>`;
+
+            originalAmount = parseFloat(b.total_amount) || 0;
+            document.getElementById('dOrigAmount').textContent = `$${originalAmount.toFixed(2)}`;
+            document.getElementById('dAmountPaid').textContent = `$${originalAmount.toFixed(2)}`;
+
+            const gateway = (b.payment_gateway || b.payment_method || '—').toUpperCase();
+            document.getElementById('dPayGateway').textContent = gateway;
+
+            const gatewayTxId = b.payment_id || b.paypal_order_id || b.razorpay_payment_id || '—';
+            document.getElementById('dGatewayTxId').textContent = gatewayTxId;
+
+            // ── Calculate previous refunds ──
+            totalAlreadyRefunded = 0;
+            const refundHistory = [];
+            if (data.refund_transaction) {
+                // Check if it's an array or single object
+                const txList = Array.isArray(data.refund_transaction) ? data.refund_transaction : [data.refund_transaction];
+                txList.forEach(tx => {
+                    if (tx && tx.status === 'Refunded') {
+                        totalAlreadyRefunded += parseFloat(tx.refund_amount || 0);
+                        refundHistory.push(tx);
+                    }
+                });
+            }
+
+            // Also check from booking field
+            if (totalAlreadyRefunded === 0 && parseFloat(b.refund_amount) > 0) {
+                totalAlreadyRefunded = parseFloat(b.refund_amount);
+            }
+
+            maxRefundable = Math.max(0, originalAmount - totalAlreadyRefunded);
+
+            // ── Refund Status Badge ──
+            const statusVal = (b.refund_status || b.status || 'unknown').toLowerCase();
+            let statusText = b.refund_status || b.status || 'Not Requested';
+            let sBg = '#f1f5f9', sColor = '#475569';
+            if (statusVal.includes('refunded') && !statusVal.includes('partial')) { sBg = '#d1fae5'; sColor = '#059669'; }
+            else if (statusVal.includes('partial')) { sBg = '#dbeafe'; sColor = '#2563eb'; }
+            else if (statusVal.includes('pending')) { sBg = '#fef3c7'; sColor = '#d97706'; }
+            else if (statusVal === 'cancelled') { sBg = '#fee2e2'; sColor = '#dc2626'; statusText = 'Cancelled'; }
+            document.getElementById('dRefundStatus').innerHTML = `<span class="rp-badge" style="background:${sBg}; color:${sColor};">${statusText}</span>`;
+
+            // ── Pre-fill amount ──
+            document.getElementById('refundAmountInput').value = maxRefundable.toFixed(2);
+            document.getElementById('refundAmountInput').max = maxRefundable;
+            document.getElementById('maxRefundDisplay').textContent = `$${maxRefundable.toFixed(2)}`;
+
+            // ── If fully refunded, disable ──
+            if (maxRefundable <= 0) {
+                document.getElementById('processBtn').disabled = true;
+                document.getElementById('processBtn').innerHTML = '<i class="fas fa-check-circle"></i> Fully Refunded';
+                document.getElementById('refundAmountInput').disabled = true;
+            }
+
+            // ── Auto-select refund method based on gateway ──
+            if (gateway.includes('RAZORPAY')) {
+                const el = document.querySelector('input[value="Razorpay Refund"]');
+                if (el) { el.checked = true; selectMethod(el.closest('.rp-radio-option'), 'Razorpay Refund'); }
+            } else if (gateway.includes('PAYPAL')) {
+                const el = document.querySelector('input[value="PayPal Refund"]');
+                if (el) { el.checked = true; selectMethod(el.closest('.rp-radio-option'), 'PayPal Refund'); }
+            }
+
+            // ── Refund History ──
+            if (refundHistory.length > 0) {
+                document.getElementById('refundHistoryCard').style.display = 'block';
+                const tbody = document.querySelector('#refundHistoryTable tbody');
+                tbody.innerHTML = refundHistory.map(tx => {
+                    const dt = tx.processed_at ? new Date(tx.processed_at).toLocaleDateString('en-IN') : '—';
+                    return `<tr>
+                        <td>${dt}</td>
+                        <td style="font-weight:700; color:#059669;">$${parseFloat(tx.refund_amount).toFixed(2)}</td>
+                        <td>${tx.refund_method || '—'}</td>
+                        <td>${tx.refund_reason || '—'}</td>
+                        <td style="font-family:monospace; font-size:0.78rem;">${tx.transaction_reference || '—'}</td>
+                    </tr>`;
+                }).join('');
+            }
+
+            // ── Update summary ──
+            updateSummary();
+        }
+
+        function validateAmount() {
+            const val = parseFloat(document.getElementById('refundAmountInput').value) || 0;
+            const errorEl = document.getElementById('amountError');
+            if (val > maxRefundable) {
+                errorEl.textContent = `Amount exceeds max refundable ($${maxRefundable.toFixed(2)})`;
+                errorEl.style.display = 'block';
+                document.getElementById('refundAmountInput').style.borderColor = '#dc2626';
+            } else if (val <= 0) {
+                errorEl.textContent = 'Amount must be greater than $0';
+                errorEl.style.display = 'block';
+                document.getElementById('refundAmountInput').style.borderColor = '#dc2626';
+            } else {
+                errorEl.style.display = 'none';
+                document.getElementById('refundAmountInput').style.borderColor = '#e2e8f0';
+            }
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const refundAmt = parseFloat(document.getElementById('refundAmountInput').value) || 0;
+            const remaining = originalAmount - totalAlreadyRefunded - refundAmt;
+            document.getElementById('sPaid').textContent = `$${originalAmount.toFixed(2)}`;
+            document.getElementById('sPrevRefunded').textContent = `$${totalAlreadyRefunded.toFixed(2)}`;
+            document.getElementById('sRefundAmt').textContent = `$${refundAmt.toFixed(2)}`;
+            document.getElementById('sRevenue').textContent = `$${Math.max(0, remaining).toFixed(2)}`;
+        }
+
+        function selectMethod(el, method) {
+            selectedMethod = method;
+            document.querySelectorAll('.rp-radio-option').forEach(o => o.classList.remove('selected'));
+            el.classList.add('selected');
+            el.querySelector('input[type="radio"]').checked = true;
+
+            if (method === 'Manual Bank Transfer') {
+                document.getElementById('bankSection').classList.add('visible');
+            } else {
+                document.getElementById('bankSection').classList.remove('visible');
+            }
+        }
+
+        function onReasonChange() {
+            const reason = document.getElementById('refundReason').value;
+            const notesReq = document.getElementById('notesRequired');
+            if (reason === 'Other') {
+                notesReq.style.display = 'inline';
+            } else {
+                notesReq.style.display = 'none';
+            }
+        }
+
+        function showConfirmation() {
+            // Validate
+            const refundAmt = parseFloat(document.getElementById('refundAmountInput').value) || 0;
+            const reason = document.getElementById('refundReason').value;
+            const notes = document.getElementById('refundNotes').value.trim();
+
+            if (refundAmt <= 0) { showNotification('Refund amount must be greater than $0', 'error'); return; }
+            if (refundAmt > maxRefundable) { showNotification(`Refund cannot exceed $${maxRefundable.toFixed(2)}`, 'error'); return; }
+            if (!reason) { showNotification('Please select a refund reason', 'error'); return; }
+            if (reason === 'Other' && !notes) { showNotification('Notes are required when reason is "Other"', 'error'); return; }
+            if (!selectedMethod) { showNotification('Please select a refund method', 'error'); return; }
+
+            if (selectedMethod === 'Manual Bank Transfer') {
+                const utr = document.getElementById('utrNumber').value.trim();
+                if (!utr) { showNotification('UTR / Transaction Reference is required for Manual Bank Transfer', 'error'); return; }
+            }
+
+            // Populate modal
+            const remaining = originalAmount - totalAlreadyRefunded - refundAmt;
+            document.getElementById('cCustomer').textContent = document.getElementById('dCustName').textContent;
+            document.getElementById('cPaid').textContent = `$${originalAmount.toFixed(2)}`;
+            document.getElementById('cRefund').textContent = `$${refundAmt.toFixed(2)}`;
+            document.getElementById('cRevenue').textContent = `$${Math.max(0, remaining).toFixed(2)}`;
+            document.getElementById('cMethod').textContent = selectedMethod;
+            document.getElementById('cReason').textContent = reason;
+
+            document.getElementById('confirmOverlay').classList.add('active');
+        }
+
+        function hideConfirmation() {
+            document.getElementById('confirmOverlay').classList.remove('active');
+        }
+
+        async function executeRefund() {
+            const confirmBtn = document.getElementById('confirmBtn');
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+            try {
+                const refundAmt = parseFloat(document.getElementById('refundAmountInput').value) || 0;
+                const reason = document.getElementById('refundReason').value;
+                const notes = document.getElementById('refundNotes').value.trim();
+                const utr = document.getElementById('utrNumber').value.trim();
+
+                const payload = {
+                    refund_method: selectedMethod,
+                    refund_amount: refundAmt,
+                    refund_reason: reason,
+                    notes: notes,
+                    utr_number: utr || null,
+                    customer_name: document.getElementById('dCustName').textContent,
+                    email: document.getElementById('dCustEmail').textContent,
+                    phone: document.getElementById('dCustPhone').textContent,
+                    bank_details: {
+                        account_holder_name: document.getElementById('bankHolder').value.trim(),
+                        bank_name: document.getElementById('bankName').value.trim(),
+                        account_number: document.getElementById('bankAccNum').value.trim(),
+                        ifsc_code: document.getElementById('bankIfsc').value.trim(),
+                    }
+                };
+
+                const res = await apiRequest(`/refund-management/refunds/${bookingType}/${bookingId}`, 'POST', payload);
+
+                if (res.success) {
+                    hideConfirmation();
+                    showNotification('Refund processed successfully! Email sent to customer.', 'success');
+
+                    document.getElementById('processBtn').disabled = true;
+                    document.getElementById('processBtn').innerHTML = '<i class="fas fa-check-circle"></i> Refund Processed';
+
+                    // Reload to update history & status
+                    setTimeout(() => loadBookingDetails(), 1500);
+                } else {
+                    throw new Error(res.error || 'Refund processing failed');
+                }
+            } catch (err) {
+                console.error('Refund error:', err);
+                showNotification(err.message || 'Error processing refund', 'error');
+            } finally {
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="fas fa-check"></i> Confirm & Process';
+            }
+        }
+    </script>
+</body>
+
+</html>

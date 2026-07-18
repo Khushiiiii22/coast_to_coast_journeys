@@ -236,3 +236,64 @@ class PayPalService:
                 'success': False,
                 'error': str(e)
             }
+
+    def refund_payment(self, capture_id, amount=None, currency='USD', note=None):
+        """
+        Refund a captured payment
+        
+        Args:
+            capture_id: PayPal capture ID to refund
+            amount: Decimal amount to refund (None for full refund)
+            currency: Currency code
+            note: Note to the payer explaining the refund
+            
+        Returns:
+            dict: Refund response
+        """
+        try:
+            access_token = self.get_access_token()
+            if not access_token:
+                return {'success': False, 'error': 'Failed to authenticate with PayPal'}
+                
+            url = f'{self.base_url}/v2/payments/captures/{capture_id}/refund'
+            
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {access_token}',
+                'Prefer': 'return=representation'
+            }
+            
+            refund_data = {}
+            if amount is not None:
+                # Convert INR to USD if needed
+                if currency == 'INR':
+                    amount = round(amount / 83, 2)
+                    currency = 'USD'
+                
+                refund_data['amount'] = {
+                    'value': f'{amount:.2f}',
+                    'currency_code': currency
+                }
+            if note:
+                refund_data['note_to_payer'] = note
+                
+            response = requests.post(url, headers=headers, json=refund_data)
+            
+            if response.status_code not in [200, 201]:
+                return {
+                    'success': False,
+                    'error': f"PayPal API Error: {response.status_code} - {response.text}"
+                }
+                
+            data = response.json()
+            return {
+                'success': True,
+                'refund_id': data.get('id'),
+                'status': data.get('status'),
+                'data': data
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'error': str(e)
+            }

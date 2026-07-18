@@ -107,17 +107,24 @@
         .inv-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
         }
 
         .inv-table th {
             background: #ffffff;
-            padding: 1rem;
+            padding: 12px 16px;
             text-align: left;
             font-weight: 700;
             color: #1e293b;
             border-bottom: 2px solid #e0f2f1;
             white-space: nowrap;
+        }
+
+        .inv-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #475569;
+            vertical-align: middle;
         }
 
         .empty-row {
@@ -170,21 +177,40 @@
 
             <div class="admin-content">
                 <!-- Toolbar -->
-                <div class="refund-toolbar">
-                    <input type="text" class="filter-input-sm" placeholder="From Date" onfocus="(this.type='date')">
-                    <input type="text" class="filter-input-sm" placeholder="To Date" onfocus="(this.type='date')">
-                    <div class="search-input-group">
-                        <input type="text" placeholder="Enter Keyword">
+                <div class="refund-toolbar" style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <input type="text" id="fromDate" class="filter-input-sm" placeholder="From Date" onfocus="(this.type='date')" style="padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+                    <input type="text" id="toDate" class="filter-input-sm" placeholder="To Date" onfocus="(this.type='date')" style="padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+                    
+                    <select id="statusFilter" style="padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; background: white; min-width: 150px;">
+                        <option value="">All Statuses</option>
+                        <option value="Not Requested">Not Requested</option>
+                        <option value="Refund Pending">Refund Pending</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Refunded">Refunded</option>
+                        <option value="Failed">Failed</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+
+                    <select id="paymentFilter" style="padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; background: white; min-width: 150px;">
+                        <option value="">All Payments</option>
+                        <option value="razorpay">Razorpay</option>
+                        <option value="paypal">PayPal</option>
+                        <option value="card">Card</option>
+                        <option value="bank">Bank Transfer</option>
+                    </select>
+
+                    <div class="search-input-group" style="flex: 1; min-width: 200px;">
+                        <input type="text" id="searchKeyword" placeholder="Search by ID, Name or Email" style="width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
                     </div>
-                    <button class="btn-icon-mint"><i class="fas fa-search"></i></button>
-                    <button class="btn-export-mint">Export</button>
+                    <button class="btn-icon-mint" onclick="applyFilters()" style="background:#0f172a; color:white; border:none; padding:0.6rem 1.2rem; border-radius:6px; cursor:pointer;"><i class="fas fa-search"></i> Search</button>
+                    <button class="btn-export-mint" onclick="exportRefunds()" style="background:#10b981; color:white; border:none; padding:0.6rem 1.2rem; border-radius:6px; cursor:pointer;"><i class="fas fa-file-excel"></i> Export</button>
                 </div>
 
                 <!-- Tabs -->
                 <div class="refund-tabs">
-                    <button class="refund-tab active">Online Hotels</button>
-                    <button class="refund-tab">Offline Hotels</button>
-                    <button class="refund-tab">FD Hotels</button>
+                    <button class="refund-tab active" onclick="switchType('all')">All Bookings</button>
+                    <button class="refund-tab" onclick="switchType('hotel')">Hotels</button>
+                    <button class="refund-tab" onclick="switchType('flight')">Flights</button>
                 </div>
 
                 <!-- Table -->
@@ -192,19 +218,24 @@
                     <table class="inv-table">
                         <thead>
                             <tr>
+                                <th>Booking ID</th>
+                                <th>Customer Name</th>
+                                <th>Email</th>
+                                <th>Phone Number</th>
+                                <th>Type</th>
+                                <th>Hotel/Flight Details</th>
+                                <th>Amount</th>
+                                <th>Refund Amount</th>
+                                <th>Payment Method</th>
                                 <th>Booking Date</th>
-                                <th>Hotel / Destination</th>
-                                <th>Check-In Date</th>
-                                <th>Passenger</th>
-                                <th>Agent Details</th>
-                                <th>Ref No</th>
-                                <th>Statement</th>
-                                <th>Action</th>
+                                <th>Refund Status</th>
+                                <th>Refund Method</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td colspan="8" class="empty-row">No Booking Found</td>
+                                <td colspan="13" class="empty-row">No Bookings Found</td>
                             </tr>
                         </tbody>
                     </table>
@@ -215,53 +246,246 @@
 
     <script src="../../admin/js/admin.js"></script>
     <script>
-        let allRefunds = [];
+        let allBookings = [];
+        let filteredBookings = [];
+        let activeType = 'all';
 
         document.addEventListener('DOMContentLoaded', async function () {
             const token = localStorage.getItem('admin_token');
             if (!token) { window.location.href = 'login.html'; return; }
-            await loadRefunds();
+            await loadBookings();
         });
 
-        async function loadRefunds() {
-            const tbody = document.querySelector('.inv-table tbody');
+        async function loadBookings() {
             try {
-                const res = await apiRequest('/refunds?limit=100');
+                const fromDate = document.getElementById('fromDate').value;
+                const toDate = document.getElementById('toDate').value;
+                const status = document.getElementById('statusFilter').value;
+                const payment = document.getElementById('paymentFilter').value;
+                const search = document.getElementById('searchKeyword').value;
+
+                let url = `/refund-management/bookings?1=1`;
+                if (status) url += `&status=${encodeURIComponent(status)}`;
+                if (payment) url += `&payment_method=${encodeURIComponent(payment)}`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+
+                const res = await apiRequest(url);
                 if (!res.success) throw new Error(res.error);
 
-                allRefunds = res.data || [];
+                allBookings = res.data || [];
+                
+                // Client-side date range filter if provided
+                filteredBookings = allBookings.filter(b => {
+                    if (fromDate) {
+                        const bDate = new Date(b.booking_date);
+                        const fDate = new Date(fromDate);
+                        if (bDate < fDate) return false;
+                    }
+                    if (toDate) {
+                        const bDate = new Date(b.booking_date);
+                        const tDate = new Date(toDate);
+                        // set to end of day
+                        tDate.setHours(23, 59, 59, 999);
+                        if (bDate > tDate) return false;
+                    }
+                    return true;
+                });
 
-                if (allRefunds.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="8" class="empty-row">No Refunds Found</td></tr>';
-                    return;
+                renderBookings();
+            } catch (err) {
+                console.error('Failed to load bookings:', err);
+                showNotification('Failed to load bookings', 'error');
+            }
+        }
+
+        function switchType(type) {
+            activeType = type;
+            document.querySelectorAll('.refund-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderBookings();
+        }
+
+        function applyFilters() {
+            loadBookings();
+        }
+
+        function safeFormatDate(dateStr) {
+            if (!dateStr) return '—';
+            try {
+                const normalized = dateStr.replace(' ', 'T');
+                const d = new Date(normalized);
+                if (isNaN(d.getTime())) {
+                    const parts = dateStr.split(' ')[0].split('-');
+                    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                    return '—';
+                }
+                return d.toLocaleDateString('en-IN');
+            } catch (e) {
+                return '—';
+            }
+        }
+
+        function renderBookings() {
+            const tbody = document.querySelector('.inv-table tbody');
+            if (!tbody) return;
+
+            let displayList = filteredBookings;
+            if (activeType !== 'all') {
+                displayList = filteredBookings.filter(b => b.booking_type === activeType);
+            }
+
+            if (displayList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="13" class="empty-row">No Bookings Found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = displayList.map(b => {
+                const bDate = safeFormatDate(b.booking_date);
+                const refundStatusLower = (b.refund_status || 'Not Requested').toLowerCase();
+                const isFullyRefunded = refundStatusLower === 'refunded';
+                const isPartiallyRefunded = refundStatusLower === 'partially refunded';
+                
+                let refundStatusHTML = `<span style="padding:4px 10px; border-radius:6px; font-weight:700; font-size:0.75rem; background:#f1f5f9; color:#475569;">Not Requested</span>`;
+                if (refundStatusLower === 'refund pending') {
+                    refundStatusHTML = `<span style="padding:4px 10px; border-radius:6px; font-weight:700; font-size:0.75rem; background:#fef3c7; color:#d97706;">Refund Pending</span>`;
+                } else if (isFullyRefunded) {
+                    refundStatusHTML = `<span style="padding:4px 10px; border-radius:6px; font-weight:700; font-size:0.75rem; background:#d1fae5; color:#059669;">Refunded</span>`;
+                } else if (isPartiallyRefunded) {
+                    refundStatusHTML = `<span style="padding:4px 10px; border-radius:6px; font-weight:700; font-size:0.75rem; background:#dbeafe; color:#2563eb;">Partially Refunded</span>`;
+                } else if (refundStatusLower === 'processing') {
+                    refundStatusHTML = `<span style="padding:4px 10px; border-radius:6px; font-weight:700; font-size:0.75rem; background:#dbeafe; color:#2563eb;">Processing</span>`;
+                } else if (refundStatusLower === 'failed') {
+                    refundStatusHTML = `<span style="padding:4px 10px; border-radius:6px; font-weight:700; font-size:0.75rem; background:#fee2e2; color:#dc2626;">Failed</span>`;
                 }
 
-                tbody.innerHTML = allRefunds.map(r => {
-                    const bookingDate = r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN') : '—';
-                    const checkIn = r.check_in ? new Date(r.check_in).toLocaleDateString('en-IN') : '—';
-                    const amount = parseFloat(r.total_price) || 0;
-
-                    return `
-                        <tr>
-                            <td>${bookingDate}</td>
-                            <td>${r.hotel_name || '—'}</td>
-                            <td>${checkIn}</td>
-                            <td>${r.guest_name || '—'}</td>
-                            <td>${r.guest_email || '—'}</td>
-                            <td>${r.booking_id || '—'}</td>
-                            <td>$${amount.toLocaleString('en-IN')}</td>
-                            <td>
-                                <button class="btn-icon-mint" onclick="window.location.href='booking-details.html?id=${r.booking_id}'" title="View">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </td>
-                        </tr>
+                let actionsHTML = '';
+                if (isFullyRefunded) {
+                    actionsHTML = `
+                        <button disabled style="background:#94a3b8; color:white; border:none; padding:8px 14px; border-radius:6px; cursor:not-allowed; font-weight:700; font-size:0.8rem; display:inline-flex; align-items:center; gap:5px; opacity:0.7;" title="Fully refunded — no further refunds possible">
+                            <i class="fas fa-check-circle"></i> Refunded
+                        </button>
+                        <button onclick="printReceipt('${b.id}', '${b.booking_type}')" title="Print/Download Refund Receipt" style="background:#10b981; color:white; border:none; padding:8px 10px; border-radius:6px; cursor:pointer; font-weight:700; font-size:0.8rem; margin-left:4px;">
+                            <i class="fas fa-print"></i>
+                        </button>
                     `;
-                }).join('');
-            } catch (err) {
-                console.error('Failed to load refunds:', err);
-                if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="empty-row" style="color:#ef4444;">Failed to load refunds</td></tr>';
-            }
+                } else {
+                    const btnLabel = isPartiallyRefunded ? 'Refund More' : 'Process Refund';
+                    actionsHTML = `
+                        <button onclick="window.location.href='refund-process.html?id=${b.id}&type=${b.booking_type}'" title="Process customer refund" style="background:linear-gradient(135deg, #ff5e36, #e74c3c); color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:700; font-size:0.82rem; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; box-shadow:0 2px 8px rgba(255,94,54,0.35); transition:all 0.2s;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(255,94,54,0.5)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 8px rgba(255,94,54,0.35)'">
+                            <i class="fas fa-undo-alt"></i> ${btnLabel}
+                        </button>
+                    `;
+                }
+
+                return `
+                    <tr>
+                        <td style="font-weight:600; color:#0f172a;">${b.booking_id}</td>
+                        <td>${b.customer_name}</td>
+                        <td>${b.email}</td>
+                        <td>${b.phone}</td>
+                        <td style="text-transform:capitalize;">${b.booking_type}</td>
+                        <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${b.details}">${b.details}</td>
+                        <td>$${b.amount.toFixed(2)}</td>
+                        <td>${b.refund_amount ? '$' + b.refund_amount.toFixed(2) : '—'}</td>
+                        <td style="text-transform:uppercase;">${b.payment_method}</td>
+                        <td>${bDate}</td>
+                        <td>${refundStatusHTML}</td>
+                        <td>${b.refund_method || '—'}</td>
+                        <td style="white-space: nowrap; width: 180px; min-width: 180px;">
+                            ${actionsHTML}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function printReceipt(bookingId, bookingType) {
+            const b = allBookings.find(x => x.id === bookingId);
+            if (!b) return;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Refund Receipt - ${b.booking_id}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
+                        .receipt-container { max-width: 600px; margin: 0 auto; border: 1px solid #ddd; padding: 30px; border-radius: 8px; }
+                        .header { text-align: center; border-bottom: 2px solid #ff5e36; padding-bottom: 20px; margin-bottom: 20px; }
+                        .logo { font-size: 24px; font-weight: bold; color: #ff5e36; }
+                        .title { font-size: 20px; margin-top: 10px; font-weight: bold; color: #475569; }
+                        .details-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        .details-table td { padding: 10px; border-bottom: 1px solid #eee; }
+                        .details-table td.label { font-weight: bold; width: 40%; color: #64748b; }
+                        .amount-row { background: #f8fafc; font-size: 1.1rem; }
+                        .amount-val { color: #2ecc71; font-weight: bold; }
+                        .footer { text-align: center; margin-top: 30px; font-size: 0.9rem; color: #94a3b8; }
+                    </style>
+                </head>
+                <body>
+                    <div class="receipt-container">
+                        <div class="header">
+                            <div class="logo">Coast to Coast Journeys</div>
+                            <div class="title">REFUND RECEIPT</div>
+                        </div>
+                        <table class="details-table">
+                            <tr><td class="label">Booking ID:</td><td>${b.booking_id}</td></tr>
+                            <tr><td class="label">Customer Name:</td><td>${b.customer_name}</td></tr>
+                            <tr><td class="label">Email:</td><td>${b.email}</td></tr>
+                            <tr><td class="label">Phone:</td><td>${b.phone}</td></tr>
+                            <tr><td class="label">Booking Type:</td><td>${b.booking_type.toUpperCase()}</td></tr>
+                            <tr><td class="label">Details:</td><td>${b.details}</td></tr>
+                            <tr><td class="label">Booking Amount:</td><td>$${b.amount.toFixed(2)}</td></tr>
+                            <tr class="amount-row"><td class="label">Refunded Amount:</td><td class="amount-val">$${(b.refund_amount || b.amount).toFixed(2)}</td></tr>
+                            <tr><td class="label">Refund Method:</td><td>${b.refund_method || 'Manual Bank Transfer'}</td></tr>
+                            <tr><td class="label">Refund Date:</td><td>${new Date(b.booking_date).toLocaleDateString('en-IN')}</td></tr>
+                            <tr><td class="label">Status:</td><td>Refunded</td></tr>
+                        </table>
+                        <div class="footer">
+                            Thank you for choosing Coast to Coast Journeys!
+                        </div>
+                    </div>
+                    <script>
+                        window.onload = function() { window.print(); }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        function exportRefunds() {
+            let csv = [
+                ['Booking ID', 'Customer Name', 'Email', 'Phone Number', 'Booking Type', 'Hotel or Flight Details', 'Booking Amount', 'Refund Amount', 'Payment Method', 'Booking Date', 'Refund Status', 'Refund Method']
+            ];
+            
+            filteredBookings.forEach(b => {
+                csv.push([
+                    b.booking_id,
+                    b.customer_name,
+                    b.email,
+                    b.phone,
+                    b.booking_type,
+                    b.details,
+                    b.amount,
+                    b.refund_amount || 0,
+                    b.payment_method,
+                    b.booking_date,
+                    b.refund_status,
+                    b.refund_method
+                ]);
+            });
+            
+            let csvContent = "data:text/csv;charset=utf-8," 
+                + csv.map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(",")).join("\n");
+                
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `refund_history_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 </body>
