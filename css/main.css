@@ -588,7 +588,7 @@ h6 {
 /* === Hero Section === */
 .hero {
     position: relative;
-    z-index: 11;
+    /* z-index removed to prevent stacking context clipping search dropdowns against features-strip */
     padding: 180px 0 80px; /* Pushed content down to help search box cover video text */
     overflow: visible; /* Changed to visible to prevent dropdown from being cut off */
     /* Fallback background in case video doesn't load */
@@ -666,7 +666,7 @@ h6 {
 /* === Search Box === */
 .search-box {
     position: relative;
-    z-index: 2;
+    z-index: 20;
     background: var(--white);
     border-radius: var(--radius-xl);
     padding: 28px;
@@ -826,7 +826,7 @@ h6 {
     margin-top: -40px;
     /* Overlap with hero or adjust spacing */
     position: relative;
-    z-index: 10;
+    z-index: 12;
 }
 
 .features-grid {
