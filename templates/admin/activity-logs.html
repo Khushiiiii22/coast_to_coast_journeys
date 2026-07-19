@@ -585,6 +585,11 @@
                                 <strong>${userName}</strong> ${getActivityVerb(log.action)}
                             </div>
                             <div class="activity-description">${log.details || ''}</div>
+                            ${log.metadata ? `<div class="activity-metadata" style="margin-top: 5px; font-size: 0.85rem; color: #64748b; background: #f8fafc; padding: 6px; border-radius: 4px;">
+                                ${log.metadata.rooms ? `<span style="margin-right: 10px;"><i class="fas fa-door-closed"></i> ${log.metadata.rooms} Room(s)</span>` : ''}
+                                ${log.metadata.adults ? `<span style="margin-right: 10px;"><i class="fas fa-user"></i> ${log.metadata.adults} Adult(s)</span>` : ''}
+                                ${log.metadata.children ? `<span><i class="fas fa-child"></i> ${log.metadata.children} Child(ren)</span>` : ''}
+                            </div>` : ''}
                             <div class="activity-meta">
                                 <span class="activity-meta-item">
                                     <i class="fas fa-user"></i> ${userName}

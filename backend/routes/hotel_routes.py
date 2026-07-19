@@ -15,8 +15,8 @@ import os
 import uuid
 from routes.cancellation_helper import format_cancellation_policies
 
-def log_customer_hotel_search(search_type: str, search_details: str):
-    """Log hotel searches to activity_logs table to track user queries"""
+def log_customer_hotel_search(search_type: str, search_details: str, request_data: dict = None):
+    """Log hotel searches to activity_logs table to track user queries with detailed metadata"""
     try:
         from flask import current_app
         supabase = current_app.config.get('SUPABASE')
@@ -36,12 +36,25 @@ def log_customer_hotel_search(search_type: str, search_details: str):
                 
         ip_address = request.remote_addr or request.headers.get('X-Forwarded-For', 'Unknown IP')
         
+        # Build metadata from request data
+        metadata = {}
+        if request_data:
+            metadata = {
+                'adults': request_data.get('adults', 0),
+                'children': len(request_data.get('children_ages', [])),
+                'children_ages': request_data.get('children_ages', []),
+                'rooms': len(request_data.get('rooms', [])) if request_data.get('rooms') else 1,
+                'checkin': request_data.get('checkin'),
+                'checkout': request_data.get('checkout')
+            }
+        
         # Insert log
         supabase.table('activity_logs').insert({
             'action': 'hotel_search',
             'entity_type': 'hotel',
             'details': f"{user_identity} searched by {search_type}: {search_details}",
-            'ip_address': ip_address
+            'ip_address': ip_address,
+            'metadata': metadata
         }).execute()
     except Exception as e:
         print(f"Failed to log customer hotel search: {e}")
@@ -308,7 +321,7 @@ def search_by_region():
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
                 
-        log_customer_hotel_search('region', f"Region ID {data['region_id']} ({data['checkin']} to {data['checkout']})")
+        log_customer_hotel_search('region', f"Region ID {data['region_id']} ({data['checkin']} to {data['checkout']})", data)
         
         # Format guests (supports multi-room if 'rooms' is provided)
         rooms_data = data.get('rooms')
@@ -368,7 +381,7 @@ def search_by_geo():
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
                 
-        log_customer_hotel_search('geo', f"Lat {data['latitude']}, Lng {data['longitude']} ({data['checkin']} to {data['checkout']})")
+        log_customer_hotel_search('geo', f"Lat {data['latitude']}, Lng {data['longitude']} ({data['checkin']} to {data['checkout']})", data)
         
         # Format guests (supports multi-room if 'rooms' is provided)
         rooms_data = data.get('rooms')
@@ -415,7 +428,7 @@ def search_by_hotel_ids():
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
                 
-        log_customer_hotel_search('hotel_ids', f"{len(data['hotel_ids'])} hotels ({data['checkin']} to {data['checkout']})")
+        log_customer_hotel_search('hotel_ids', f"{len(data['hotel_ids'])} hotels ({data['checkin']} to {data['checkout']})", data)
         
         # Format guests (supports multi-room if 'rooms' is provided)
         rooms_data = data.get('rooms')
@@ -519,7 +532,7 @@ def search_by_destination():
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
                 
-        log_customer_hotel_search('destination', f"Destination '{data['destination']}' ({data['checkin']} to {data['checkout']})")
+        log_customer_hotel_search('destination', f"Destination '{data['destination']}' ({data['checkin']} to {data['checkout']})", data)
         
         destination = data['destination'].lower().strip()
         region_id = data.get('region_id')
