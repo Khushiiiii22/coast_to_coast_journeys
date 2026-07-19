@@ -579,81 +579,8 @@ Thank you for choosing C2C Journeys!
             templates_dir = os.path.join(backend_dir, 'templates')
             pdf_service = PDFService(templates_dir)
             
-            # 1. Generate Invoice HTML for the email body itself to make it highly professional
-            template_path = os.path.join(templates_dir, 'pdf', 'invoice.html')
-            if os.path.exists(template_path):
-                with open(template_path, 'r') as f:
-                    invoice_html = f.read()
-                    
-                from datetime import datetime
-                guest_name = str(booking_details.get('customer_name', booking_details.get('guest_name', 'Valued Customer')))
-                guest_email = str(booking_details.get('customer_email', booking_details.get('guest_email', '')))
-                booking_id = str(booking_details.get('booking_id', 'N/A'))
-                hotel_name = str(booking_details.get('hotel_name', 'N/A'))
-                amount = str(booking_details.get('amount', '0.00'))
-                currency = str(booking_details.get('currency', 'USD'))
-                city = str(booking_details.get('destination', booking_details.get('city', 'Not Specified')))
-                checkin = str(booking_details.get('checkin', 'N/A'))
-                checkout = str(booking_details.get('checkout', 'N/A'))
-                
-                # Calculate nights
-                try:
-                    d1 = datetime.strptime(checkin, "%Y-%m-%d")
-                    d2 = datetime.strptime(checkout, "%Y-%m-%d")
-                    nights = str(max(1, (d2 - d1).days))
-                except:
-                    nights = "1"
-                    
-                room_name = str(booking_details.get('room_name', 'Standard Room'))
-                today = datetime.now().strftime("%d %b %Y")
-                
-                # Use raw Github URL for the logo so it renders correctly in email clients like Gmail
-                logo_uri = "https://raw.githubusercontent.com/Khushiiiii22/coast_to_coast_journeys/main/assets/images/logo.jpg"
-                
-                invoice_html = invoice_html.replace('{{logo_data_uri}}', logo_uri)
-                invoice_html = invoice_html.replace('{{invoice_number}}', f"INV-{booking_id[-8:]}" if len(booking_id)>8 else booking_id)
-                invoice_html = invoice_html.replace('{{issue_date}}', today)
-                invoice_html = invoice_html.replace('{{due_date}}', today)
-                invoice_html = invoice_html.replace('{{booking_id}}', booking_id)
-                invoice_html = invoice_html.replace('{{transaction_id}}', booking_id)
-                invoice_html = invoice_html.replace('{{payment_status}}', "PAID")
-                invoice_html = invoice_html.replace('{{guest_name}}', guest_name)
-                invoice_html = invoice_html.replace('{{customer_name}}', guest_name)
-                invoice_html = invoice_html.replace('{{guest_email}}', guest_email)
-                invoice_html = invoice_html.replace('{{customer_email}}', guest_email)
-                invoice_html = invoice_html.replace('{{billing_address}}', city)
-                invoice_html = invoice_html.replace('{{hotel_name}}', hotel_name)
-                invoice_html = invoice_html.replace('{{hotel_address}}', city)
-                invoice_html = invoice_html.replace('{{checkin}}', checkin)
-                invoice_html = invoice_html.replace('{{check-in}}', checkin)
-                invoice_html = invoice_html.replace('{{checkout}}', checkout)
-                invoice_html = invoice_html.replace('{{check-out}}', checkout)
-                invoice_html = invoice_html.replace('{{nights}}', nights)
-                invoice_html = invoice_html.replace('{{adults}}', str(booking_details.get('adults', '2')))
-                invoice_html = invoice_html.replace('{{children}}', "0")
-                invoice_html = invoice_html.replace('{{room_type}}', room_name)
-                invoice_html = invoice_html.replace('{{meal_plan}}', "Room Only")
-                invoice_html = invoice_html.replace('{{supplier_ref}}', "N/A")
-                invoice_html = invoice_html.replace('{{rate_per_night}}', "See Total")
-                invoice_html = invoice_html.replace('{{room_charges}}', amount)
-                invoice_html = invoice_html.replace('{{taxes_fees}}', "0.00")
-                invoice_html = invoice_html.replace('{{service_fee}}', "0.00")
-                invoice_html = invoice_html.replace('{{discount}}', "0.00")
-                invoice_html = invoice_html.replace('{{total_amount}}', amount)
-                invoice_html = invoice_html.replace('{{currency}}', currency)
-                invoice_html = invoice_html.replace('{{amount}}', amount)
-                invoice_html = invoice_html.replace('{{guest_phone}}', str(booking_details.get('phone', booking_details.get('customer_phone', 'Not Specified'))))
-                invoice_html = invoice_html.replace('{{payment_method}}', "Online Payment")
-                invoice_html = invoice_html.replace('{{card_type}}', "Credit/Debit/Netbanking")
-                invoice_html = invoice_html.replace('{{paid_date}}', today)
-                invoice_html = invoice_html.replace('{{ein}}', "N/A")
-                invoice_html = invoice_html.replace('{{sales_tax}}', "Included")
-                invoice_html = invoice_html.replace('{{qr_code_html}}', "")
-                invoice_html = invoice_html.replace('{{date}}', today)
-                invoice_html = invoice_html.replace('{{city}}', city)
-                invoice_html = invoice_html.replace('{{guest_phone}}', str(booking_details.get('guest_phone', '')))
-            else:
-                invoice_html = self._generate_invoice_html(booking_details) # Fallback to AI gen
+            # 1. Use the "Booking Confirmed" email body template for the actual email
+            invoice_html = self._generate_invoice_html(booking_details)
             
             # 2. Generate PDF attachments
             invoice_pdf = pdf_service.generate_invoice(booking_details)

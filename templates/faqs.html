@@ -20,25 +20,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/main.css?v=3.1">
     <link rel="stylesheet" href="../css/pages.css">
 
     <!-- Google tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-XXXXXXXXXX');
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX');
     </script>
 
     <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'AW-XXXXXXXXXX');
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'AW-XXXXXXXXXX');
     </script>
 </head>
 
@@ -48,8 +48,13 @@
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
-            <span>Coast To Coast</span>
+            <div class="logo" style="display: flex; align-items: center; gap: 12px;">
+                <img src="../assets/images/c2c-logo.png" alt="Coast To Coast" style="height: 48px;">
+                <div class="logo-text-container">
+                    <span class="logo-text-main">Coast To Coast</span>
+                    <span class="logo-text-sub">Journeys</span>
+                </div>
+            </div>
             <button class="sidebar-close" id="sidebarClose">
                 <i class="fas fa-times"></i>
             </button>
@@ -116,14 +121,17 @@
                 <div class="nav-content">
                     <a href="index.html" class="logo">
                         <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
-                        <span class="brand-name">Coast To Coast</span>
+                        <div class="logo-text-container">
+                            <span class="logo-text-main">Coast To Coast</span>
+                            <span class="logo-text-sub">Journeys</span>
+                        </div>
                     </a>
 
                     <ul class="nav-menu" id="navMenu">
                         <li><a href="index.html" class="nav-link">Home</a></li>
                         <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
                         <li><a href="hotel-booking.html" class="nav-link">Hotels</a></li>
-                                                <li><a href="about.html" class="nav-link">About Us</a></li>
+                        <li><a href="about.html" class="nav-link">About Us</a></li>
                         <li><a href="index.html#contact" class="nav-link">Contact</a></li>
                     </ul>
 
@@ -256,7 +264,7 @@
                                 <li>Credit Cards (Visa, Mastercard, American Express)</li>
                                 <li>Debit Cards</li>
                                 <li>Net Banking</li>
-                                <li>UPI (Google Pay, PhonePe, Paytm)</li>
+                                <li>UPI </li>
                                 <li>Wallets</li>
                             </ul>
                             <p>All payments are processed securely via Razorpay.</p>
@@ -308,35 +316,62 @@
 
     <!-- Footer -->
     <footer class="footer">
+        <!-- Footer Video Background -->
+        <video autoplay loop muted playsinline class="footer-video-bg">
+            <source src="../assets/videos/footer-background.mp4" type="video/mp4">
+        </video>
+        <div class="footer-overlay"></div>
+
         <div class="container">
             <div class="footer-grid">
-                <div class="footer-col about-col">
-                    <div class="footer-logo"
-                        style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
-                        <img src="../assets/images/c2c-logo.png" alt="Coast To Coast"
-                            style="height: 70px; width: auto; max-width: 80px; object-fit: contain; background: white; border-radius: 12px; padding: 8px;">
-                        <span style="font-size: 1.5rem; font-weight: 700; color: white;">Coast To Coast</span>
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="../assets/images/c2c-logo.png" alt="Coast To Coast">
+                        <span>Coast To Coast Journeys</span>
                     </div>
                     <p>Your trusted travel partner. We specialize in creating unforgettable travel experiences across
                         the globe with the best prices and exceptional service.</p>
-                    <p class="trust-line"><i class="fas fa-shield-alt"></i> "Your trust is our responsibility."</p>
-                    <div class="payment-partners">
-                        <span>Payment Partners:</span>
-                        <div style="display: flex; gap: 12px; align-items: center;">
-                            <img src="https://razorpay.com/assets/razorpay-logo-white.svg" alt="Razorpay"
-                                style="height: 20px; width: auto; filter: brightness(0) invert(1) opacity(0.8);">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
-                                style="height: 20px; width: auto; background: white; padding: 2px 5px; border-radius: 4px;">
+                    <div class="trust-line">
+                        <i class="fas fa-shield-alt"></i>
+                        "Your trust is our responsibility."
+                    </div>
+                    <div class="payment-partners" style="margin-top: 20px;">
+                        <span
+                            style="display: block; margin-bottom: 12px; font-size: 0.95rem; color: #f8fafc; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">Payment
+                            Partners:</span>
+                        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                            <div
+                                style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay"
+                                    style="height: 18px; width: auto; display: block;">
+                            </div>
+                            <div
+                                style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
+                                    style="height: 18px; width: auto; display: block;">
+                            </div>
                         </div>
                     </div>
+                    <!-- Trustpilot Review Badge -->
+                    <div class="trustpilot-badge" style="margin-top: 15px;">
+                        <a href="https://www.trustpilot.com/review/coasttocoastjourneys.com" target="_blank"
+                            rel="noopener noreferrer"
+                            style="display: inline-flex; align-items: center; gap: 8px; background: #fff; color: #191919; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s;"
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
+                            onmouseout="this.style.transform=''; this.style.boxShadow='';">
+                            Review us on
+                            <img src="https://cdn.trustpilot.net/brand-assets/4.1.0/logo-black.svg" alt="Trustpilot"
+                                style="height: 18px; width: auto;">
+                            <span style="color: #00b67a; font-size: 1rem;">★</span>
+                        </a>
+                    </div>
                 </div>
-
 
                 <div class="footer-col">
                     <h4>Quick Links</h4>
                     <ul>
                         <li><a href="about.html">About Us</a></li>
-                        <li><a href="index.html#contact">Contact Us</a></li>
+                        <li><a href="#contact">Contact Us</a></li>
                         <li><a href="faqs.html">FAQs</a></li>
                     </ul>
                 </div>
@@ -358,31 +393,71 @@
                         <li><a href="hotel-booking.html">Hotel Booking</a></li>
                     </ul>
                 </div>
-
-                
             </div>
 
-            <div class="footer-disclaimer">
-                <p><strong>Disclaimer:</strong> Coast To Coast acts as a facilitator between customers and
-                    service providers. All bookings are subject to supplier terms and conditions.</p>
+            <!-- Footer Partners -->
+            <div class="footer-partners">
+                <div class="partners-row">
+                    <!-- IATA -->
+                    <div class="partner-logo">
+                        <img src="https://www.flightsmojo.in/images/iata_color.png" alt="IATA"
+                            style="height: 40px; width: auto; background: white; padding: 5px; border-radius: 4px;">
+                    </div>
+                    <!-- PCI DSS -->
+                    <div class="partner-logo">
+                        <img src="https://www.flightsmojo.in/images/pci-dss-hor.png" alt="PCI DSS"
+                            style="height: 40px; width: auto; background: white; padding: 5px; border-radius: 4px;">
+                    </div>
+                    <!-- Google -->
+                    <div class="partner-logo">
+                        <img src="https://www.flightsmojo.in/images/Google_Icon.svg" alt="Google"
+                            style="height: 40px; width: auto; background: white; padding: 5px; border-radius: 4px;">
+                    </div>
+                    <!-- Visa -->
+                    <div class="partner-logo">
+                        <img src="https://www.flightsmojo.in/images/visa_footer.png" alt="Visa"
+                            style="height: 40px; width: auto; background: white; padding: 5px; border-radius: 4px;">
+                    </div>
+                    <!-- Mastercard -->
+                    <div class="partner-logo">
+                        <img src="https://www.flightsmojo.in/images/master_card.png" alt="Mastercard"
+                            style="height: 40px; width: auto; background: white; padding: 5px; border-radius: 4px;">
+                    </div>
+                </div>
             </div>
 
-            <!-- Trustpilot Review Badge -->
-            <div class="trustpilot-badge" style="margin: 20px 0; text-align: center;">
-                <a href="https://www.trustpilot.com/review/c2cjourneys.com" target="_blank"
-                    style="display: inline-flex; align-items: center; gap: 10px; background: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.2s;"
-                    onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
-                    onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';">
-                    <span style="color: #1e293b; font-weight: 600; font-size: 0.95rem;">Review us on</span>
-                    <img src="https://cdn.trustpilot.net/brand-assets/4.1.0/logo-black.svg" alt="Trustpilot"
-                        style="height: 24px;">
-                    <span style="color: #00b67a; font-weight: 700; font-size: 1.1rem;">★★★★★</span>
-                </a>
+            <!-- Newsletter Signup -->
+            <div
+                style="background: linear-gradient(135deg, rgba(5,108,185,0.15), rgba(3,75,133,0.1)); border-radius: 16px; padding: 30px; margin: 30px 0; text-align: center;">
+                <h4 style="color: white; font-size: 1.2rem; margin-bottom: 6px;">
+                    <i class="fas fa-envelope-open-text" style="margin-right: 8px; color: #60a5fa;"></i>
+                    Get Exclusive Travel Deals
+                </h4>
+                <p style="color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 16px;">
+                    Subscribe to our newsletter and never miss the best flight & hotel deals!
+                </p>
+                <form id="newsletterForm"
+                    style="display: flex; gap: 10px; max-width: 480px; margin: 0 auto; flex-wrap: wrap; justify-content: center;">
+                    <input type="email" placeholder="Enter your email" required
+                        style="flex: 1; min-width: 220px; padding: 12px 18px; border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; background: rgba(255,255,255,0.1); color: white; font-size: 0.95rem; outline: none; transition: border-color 0.2s;"
+                        onfocus="this.style.borderColor='#60a5fa'"
+                        onblur="this.style.borderColor='rgba(255,255,255,0.2)'">
+                    <button type="submit"
+                        style="padding: 12px 28px; background: linear-gradient(135deg, #056cb9, #034b85); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; white-space: nowrap;"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 15px rgba(5,108,185,0.4)'"
+                        onmouseout="this.style.transform=''; this.style.boxShadow=''">
+                        <i class="fas fa-paper-plane" style="margin-right: 6px;"></i> Subscribe
+                    </button>
+                </form>
+                <p style="color: rgba(255,255,255,0.4); font-size: 0.75rem; margin-top: 10px;">
+                    <i class="fas fa-lock" style="margin-right: 4px;"></i> No spam. Unsubscribe anytime.
+                </p>
             </div>
 
             <div class="footer-bottom">
-                <p>Coast To Coast Journeys is a premium travel brand</p>
-                <p>&copy; 2026 Coast To Coast Journeys. All Rights Reserved.</p>
+                <p>C2C Journeys is the official customer-facing brand operated by Coast to Coast Journeys.</p>
+                <p>Your journey begins with us.</p>
+                <p>&copy; 2026 Coast to Coast Journeys. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
@@ -411,18 +486,18 @@
         });
     </script>
     <!--Start of Tawk.to Script-->
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/6a533a559a72601d480b4624/1jtahno9g';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script>
-<!--End of Tawk.to Script-->
+    <script type="text/javascript">
+        var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+        (function () {
+            var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+            s1.async = true;
+            s1.src = 'https://embed.tawk.to/6a533a559a72601d480b4624/1jtahno9g';
+            s1.charset = 'UTF-8';
+            s1.setAttribute('crossorigin', '*');
+            s0.parentNode.insertBefore(s1, s0);
+        })();
+    </script>
+    <!--End of Tawk.to Script-->
 </body>
 
 </html>

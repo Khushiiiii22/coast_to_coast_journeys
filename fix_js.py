@@ -1,32 +1,22 @@
-import re
-
 with open('js/main.js', 'r', encoding='utf-8') as f:
-    content = f.read()
+    js_content = f.read()
 
-# Fix flatpickr error by checking if it exists
-init_date_pickers_old = "function initDatePickers() {\n    const commonConfig = {"
-init_date_pickers_new = "function initDatePickers() {\n    if (typeof flatpickr === 'undefined') return;\n    const commonConfig = {"
-content = content.replace(init_date_pickers_old, init_date_pickers_new)
+# Replace the specific block of code
+target = """            wrapper.addEventListener('click', (e) => {
+                // Don't trigger if they clicked on the input itself (it handles its own click)
+                if (e.target === dateInput) return;
+                
+                try {"""
 
-with open('js/main.js', 'w', encoding='utf-8') as f:
-    f.write(content)
+replacement = """            wrapper.addEventListener('click', (e) => {
+                // Prevent default so focus doesn't override showPicker
+                e.preventDefault();
+                try {"""
 
-print("Fixed main.js")
-
-# Fix flight-booking.html by removing the undefined function call
-with open('templates/flight-booking.html', 'r', encoding='utf-8') as f:
-    fb_content = f.read()
-
-fb_old = """            // Populate passenger details
-            populatePassengerDetails();
-            populateAddons();"""
-fb_new = """            // Populate passenger details (Moved to appropriate page)
-            // populatePassengerDetails();
-            // populateAddons();"""
-fb_content = fb_content.replace(fb_old, fb_new)
-
-with open('templates/flight-booking.html', 'w', encoding='utf-8') as f:
-    f.write(fb_content)
-
-print("Fixed flight-booking.html")
-
+if target in js_content:
+    js_content = js_content.replace(target, replacement)
+    with open('js/main.js', 'w', encoding='utf-8') as f:
+        f.write(js_content)
+    print("Fixed js/main.js")
+else:
+    print("Target block not found in js/main.js")

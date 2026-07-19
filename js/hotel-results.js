@@ -1026,6 +1026,8 @@ function handleModifySearch(e) {
 
     const params = {
         destination: document.getElementById('modifyDestination').value,
+        region_id: document.getElementById('modifyRegionId')?.value || '',
+        hotel_id: document.getElementById('modifyHotelId')?.value || '',
         checkin: document.getElementById('modifyCheckin').value,
         checkout: document.getElementById('modifyCheckout').value,
         rooms: modifyRooms, // Pass the entire array

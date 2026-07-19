@@ -3462,7 +3462,46 @@ input:disabled+.date-display-content {
         display: flex !important;
     }
 
-    .header-actions,
+    .header-content {
+        justify-content: flex-start;
+        gap: 12px;
+    }
+
+    .logo {
+        margin-right: auto;
+    }
+
+    .header-actions {
+        display: flex !important;
+        gap: 10px;
+    }
+    
+    .header-actions .btn.btn-outline {
+        display: none !important;
+    }
+
+    @media (max-width: 480px) {
+        .header-content {
+            gap: 8px;
+        }
+        .header-actions {
+            gap: 8px;
+        }
+        .header-actions .phone-link span {
+            font-size: 0.85rem;
+        }
+        .currency-selector {
+            margin-right: 0 !important;
+        }
+        .currency-selector select {
+            padding: 6px 8px !important;
+            font-size: 0.8rem !important;
+        }
+        .logo img {
+            max-height: 32px;
+        }
+    }
+
     .mobile-menu-toggle {
         display: none !important;
     }
@@ -4294,5 +4333,76 @@ body {
     
     .search-box {
         padding: 20px;
+    }
+}
+
+/* Fix for Task 5: Prevent sticky flight summary from covering mobile flight enquiry form */
+@media (max-width: 992px) {
+    .flight-summary-card {
+        position: relative !important;
+        top: 0 !important;
+    }
+    /* Ensure form is explicitly visible just in case */
+    #quoteForm, .btn-submit-quote {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+}
+
+/* Date Picker Full Box Clickable Fix */
+.form-field-improved.date-field input[type="date"],
+.search-box-field input[type="date"],
+.form-group input[type="date"] {
+    width: 100%;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+/* Fix for Date Picker: Disable pointer events on labels so wrapper clicks work correctly */
+.form-field-improved.date-field label,
+.search-box-field label {
+    pointer-events: none;
+}
+
+/* Custom Logo Text */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+.logo img {
+    height: 48px;
+    width: auto;
+}
+.logo-text-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.logo-text-main {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--primary);
+    line-height: 1;
+    letter-spacing: -0.5px;
+    text-transform: capitalize;
+}
+.logo-text-sub {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #64748b;
+    letter-spacing: 3px;
+    text-transform: capitalize;
+    margin-top: 3px;
+}
+@media (max-width: 992px) {
+    .logo-text-container {
+        display: none !important;
+    }
+    .logo img {
+        height: 36px; /* slightly smaller on mobile to fit nicely */
     }
 }

@@ -117,17 +117,22 @@ def submit_flight_enquiry():
         except Exception as db_err:
             print(f"⚠️ Flight enquiry DB save error: {db_err}")
         
-        # ── Send Emails ──
+        # ── Send Emails (in background) ──
         try:
             from flask import current_app
             from services.email_service import email_service
+            import threading
+            
             email_service.init_app(current_app)
             
-            # Admin notification
-            email_service.send_flight_enquiry_admin_notification(record)
-            
-            # Customer confirmation
-            email_service.send_flight_enquiry_customer_confirmation(email, record)
+            def send_emails_bg(rcd, usr_email):
+                try:
+                    email_service.send_flight_enquiry_admin_notification(rcd)
+                    email_service.send_flight_enquiry_customer_confirmation(usr_email, rcd)
+                except Exception as e:
+                    print(f"Background email error: {e}")
+                    
+            threading.Thread(target=send_emails_bg, args=(record, email)).start()
             
             print(f"✅ Flight enquiry emails sent for {record['full_name']}")
         except Exception as email_err:

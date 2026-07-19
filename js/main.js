@@ -1542,3 +1542,35 @@ document.addEventListener('DOMContentLoaded', function () {
     init();
     initNewsletter();
 });
+
+// Make date input wrappers clickable to open the date picker
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.form-field-improved, .search-box-field, .date-field, .form-group').forEach(wrapper => {
+        const dateInput = wrapper.querySelector('input[type="date"]');
+        if (dateInput) {
+            wrapper.style.cursor = 'pointer';
+            
+            const openPicker = () => {
+                try {
+                    if (typeof dateInput.showPicker === 'function') {
+                        dateInput.showPicker();
+                    }
+                } catch (err) {
+                    // Ignore DOMException if picker is already shown
+                }
+            };
+
+            // If user clicks the input itself (like the text area in Chrome)
+            dateInput.addEventListener('click', (e) => {
+                openPicker();
+            });
+
+            // If user clicks the wrapper (label, padding, etc.)
+            wrapper.addEventListener('click', (e) => {
+                if (e.target !== dateInput) {
+                    openPicker();
+                }
+            });
+        }
+    });
+});

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <div style="padding: 20px; border: 1px solid black; cursor: pointer; position: relative;" id="wrapper">
+        <label style="pointer-events: none;">Check In</label>
+        <br>
+        <input type="date" id="mydate" style="width: 100%; height: 40px;">
+    </div>
+    <script>
+        const wrapper = document.getElementById('wrapper');
+        const input = document.getElementById('mydate');
+        
+        wrapper.addEventListener('click', (e) => {
+            e.preventDefault();
+            try {
+                input.showPicker();
+                console.log("showPicker succeeded!");
+            } catch (err) {
+                console.error("showPicker failed:", err);
+            }
+        });
+    </script>
+</body>
+</html>

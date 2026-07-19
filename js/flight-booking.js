@@ -103,20 +103,22 @@ function initFlightSearch() {
         applyTripType(initialTripType.value);
     }
 
-    // 4. Custom Calendar Date Pickers
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // 4. Native Date Picker Logic
+    if (departDateInput && returnDateInput) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        
+        departDateInput.min = todayStr;
+        returnDateInput.min = todayStr;
 
-    setupCalendar('departDateDisplay', 'departCalendar', 'departDate', today, null, function(selectedDate) {
-        // When depart date changes, update return calendar min date
-        const retVal = returnDateInput.value;
-        if (retVal && retVal < selectedDate) {
-            returnDateInput.value = '';
-            updateDateDisplay('returnDate', 'returnDateDisplay');
-        }
-    });
-
-    setupCalendar('returnDateDisplay', 'returnCalendar', 'returnDate', today, null, null);
+        departDateInput.addEventListener('change', function() {
+            if (this.value) {
+                returnDateInput.min = this.value;
+                if (returnDateInput.value && returnDateInput.value < this.value) {
+                    returnDateInput.value = this.value;
+                }
+            }
+        });
+    }
 
     // 5. Travelers Popup (New Logic)
     const flightGuestsDropdown = document.getElementById('flightGuestsDropdown');
@@ -204,7 +206,20 @@ function initFlightSearch() {
                 params.append('return', rt);
             }
 
-            window.location.href = `flight-quote.html?${params.toString()}`;
+            const submitBtn = flightSearchForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                if (submitBtn.disabled) return;
+                submitBtn.disabled = true;
+                const originalContent = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                
+                // Allow a tiny delay for visual feedback before redirecting
+                setTimeout(() => {
+                    window.location.href = `flight-quote.html?${params.toString()}`;
+                }, 300);
+            } else {
+                window.location.href = `flight-quote.html?${params.toString()}`;
+            }
         });
     }
 }

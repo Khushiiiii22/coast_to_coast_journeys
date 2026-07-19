@@ -1121,6 +1121,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    flex-wrap: wrap;
     color: var(--gray-400);
     font-size: 0.9rem;
 }
