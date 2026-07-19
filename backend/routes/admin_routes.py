@@ -598,6 +598,52 @@ def create_manual_hotel_booking():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@admin_bp.route('/frontend-users', methods=['GET'])
+@require_auth()
+def get_frontend_users():
+    """Get all frontend sign-in users from Supabase Auth"""
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        if not supabase:
+            return jsonify({'success': True, 'data': [], 'count': 0}), 200
+
+        # Note: listing all users via auth.admin.list_users() requires the service_role key
+        # The supabase client initialized in app.py uses SUPABASE_SERVICE_KEY
+        auth_users_response = supabase.auth.admin.list_users()
+        
+        frontend_users = []
+        for user in auth_users_response:
+            # Check if this user exists in admin_users table to filter them out
+            admin_check = supabase.table('admin_users').select('id').eq('email', user.email).execute()
+            if admin_check.data:
+                continue # Skip admin users
+                
+            frontend_users.append({
+                'id': user.id,
+                'email': user.email,
+                'created_at': user.created_at,
+                'last_sign_in_at': user.last_sign_in_at,
+                'full_name': user.user_metadata.get('full_name', '') if user.user_metadata else '',
+                'phone': user.user_metadata.get('phone', '') if user.user_metadata else ''
+            })
+            
+        # Sort by last sign in (newest first)
+        frontend_users.sort(
+            key=lambda x: x['last_sign_in_at'] if x['last_sign_in_at'] else '',
+            reverse=True
+        )
+
+        return jsonify({
+            'success': True,
+            'data': frontend_users,
+            'count': len(frontend_users)
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @admin_bp.route('/customers', methods=['GET'])
 @require_auth()

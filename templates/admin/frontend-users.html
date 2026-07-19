@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Sign-ins | Coast To Coast Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../admin/libs/all.min.css">
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="../../admin/css/admin.css">
+
+    <style>
+        .filters-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-size: 0.85rem;
+            color: #64748b;
+            white-space: nowrap;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.5rem 1rem 0.5rem 40px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        .customer-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .customer-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0f2fe;
+            color: #0e64a6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .customer-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .customer-name {
+            font-weight: 500;
+        }
+
+        .customer-email {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            font-size: 0.85rem;
+        }
+
+        .contact-info i {
+            width: 14px;
+            color: #94a3b8;
+        }
+
+        .count-badge {
+            background: #f1f5f9;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #475569;
+        }
+
+        .amount-text {
+            font-weight: 600;
+            color: #0e64a6;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .pagination-info {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .pagination-buttons {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .page-btn {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover,
+        .page-btn.active {
+            background: #0e64a6;
+            color: white;
+            border-color: #0e64a6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Frontend Sign-ins</h1>
+                </div>
+
+                <div class="header-right">
+                    <button class="btn btn-secondary" onclick="exportUsers()">
+                        <i class="fas fa-download"></i> Export CSV
+                    </button>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <!-- Filters -->
+                <div class="filters-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search by name, email, phone...">
+                    </div>
+                </div>
+
+                <!-- Users Table -->
+                <div class="admin-card">
+                    <table class="admin-table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>User Profile</th>
+                                <th>Contact Info</th>
+                                <th>Registered On</th>
+                                <th>Last Sign-In</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 2rem;">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading sign-ins...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="pagination-controls">
+                        <div class="pagination-info" id="paginationInfo">Showing 0-0 of 0 users</div>
+                        <div class="pagination-buttons" id="paginationButtons"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Admin JavaScript -->
+    <script src="../../admin/js/admin.js"></script>
+    <script>
+        let currentPage = 0;
+        const PAGE_SIZE = 10;
+        let totalUsers = 0;
+        let allUsers = [];
+        let filteredUsers = [];
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadFrontendUsers();
+
+            // Set up search debouncing
+            const searchInput = document.querySelector('.search-box input');
+            let searchTimeout;
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        currentPage = 0;
+                        applyFilters();
+                    }, 500);
+                });
+            }
+        });
+
+        async function loadFrontendUsers() {
+            const tbody = document.getElementById('usersBody');
+
+            try {
+                const res = await apiRequest(`/frontend-users`);
+
+                if (res.success) {
+                    allUsers = res.data || [];
+                    applyFilters();
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--status-error);">Failed to load users</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--status-error);">Failed to load users</td></tr>';
+            }
+        }
+
+        function applyFilters() {
+            const search = document.querySelector('.search-box input')?.value.toLowerCase() || '';
+            
+            filteredUsers = allUsers.filter(user => {
+                const searchMatch = !search || 
+                    (user.full_name && user.full_name.toLowerCase().includes(search)) ||
+                    (user.email && user.email.toLowerCase().includes(search)) ||
+                    (user.phone && user.phone.includes(search));
+                    
+                return searchMatch;
+            });
+            
+            totalUsers = filteredUsers.length;
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('usersBody');
+            
+            if (filteredUsers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem;">No sign-ins found</td></tr>';
+                renderPagination();
+                return;
+            }
+            
+            const start = currentPage * PAGE_SIZE;
+            const end = start + PAGE_SIZE;
+            const pageUsers = filteredUsers.slice(start, end);
+            
+            tbody.innerHTML = pageUsers.map((u, index) => {
+                const createdDate = u.created_at ? new Date(u.created_at).toLocaleString() : 'N/A';
+                const lastSignInDate = u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString() : 'Never';
+                
+                return `
+                <tr>
+                    <td>${start + index + 1}</td>
+                    <td>
+                        <div class="customer-profile">
+                            <div class="customer-avatar">${u.full_name ? u.full_name.charAt(0).toUpperCase() : (u.email ? u.email.charAt(0).toUpperCase() : 'U')}</div>
+                            <div class="customer-details">
+                                <span class="customer-name">${u.full_name || 'Unnamed User'}</span>
+                                <span class="customer-id" style="font-size: 0.75rem; color: #94a3b8;">${u.id.substring(0, 8)}...</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="contact-info">
+                            <span class="contact-email"><i class="far fa-envelope"></i> ${u.email || 'N/A'}</span>
+                            ${u.phone ? `<span class="contact-phone"><i class="fas fa-phone-alt"></i> ${u.phone}</span>` : ''}
+                        </div>
+                    </td>
+                    <td>${createdDate}</td>
+                    <td><strong>${lastSignInDate}</strong></td>
+                </tr>
+            `}).join('');
+
+            renderPagination();
+        }
+
+        function renderPagination() {
+            const info = document.getElementById('paginationInfo');
+            const buttons = document.getElementById('paginationButtons');
+
+            const start = currentPage * PAGE_SIZE + 1;
+            const end = Math.min(start + PAGE_SIZE - 1, totalUsers);
+
+            info.textContent = `Showing ${totalUsers > 0 ? start : 0}-${end} of ${totalUsers} users`;
+
+            const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
+            let html = '';
+
+            if (totalPages > 1) {
+                html += `<button class="page-btn" ${currentPage === 0 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})"><i class="fas fa-chevron-left"></i></button>`;
+
+                for (let i = 0; i < totalPages; i++) {
+                    if (i === 0 || i === totalPages - 1 || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                        html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i + 1}</button>`;
+                    } else if (i === currentPage - 2 || i === currentPage + 2) {
+                        html += `<button class="page-btn" disabled>...</button>`;
+                    }
+                }
+
+                html += `<button class="page-btn" ${currentPage === totalPages - 1 ? 'disabled' : ''} onclick="changePage(${currentPage + 1})"><i class="fas fa-chevron-right"></i></button>`;
+            }
+
+            buttons.innerHTML = html;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderTable();
+            window.scrollTo(0, 0);
+        }
+
+        function exportUsers() {
+            if (filteredUsers.length === 0) {
+                showNotification('No data to export', 'warning');
+                return;
+            }
+            
+            const exportData = filteredUsers.map(u => ({
+                'ID': u.id,
+                'Full Name': u.full_name,
+                'Email': u.email,
+                'Phone': u.phone || '',
+                'Registered On': u.created_at,
+                'Last Sign-In': u.last_sign_in_at
+            }));
+            
+            exportToCSV(exportData, 'frontend_signins_report');
+        }
+    </script>
+</body>
+</html>

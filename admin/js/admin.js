@@ -419,6 +419,7 @@ function initSidebar() {
                 },
                 { name: 'Suppliers', icon: 'fa-handshake', href: 'suppliers.html' },
                 { name: 'Customers', icon: 'fa-users', href: 'customers.html' },
+                { name: 'Frontend Sign-ins', icon: 'fa-sign-in-alt', href: 'frontend-users.html' },
                 { name: 'Activity Logs', icon: 'fa-history', href: 'activity-logs.html' }
             ]
         },
