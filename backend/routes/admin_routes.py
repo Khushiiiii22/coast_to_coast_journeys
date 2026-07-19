@@ -623,8 +623,8 @@ def get_frontend_users():
             frontend_users.append({
                 'id': user.id,
                 'email': user.email,
-                'created_at': user.created_at,
-                'last_sign_in_at': user.last_sign_in_at,
+                'created_at': user.created_at.isoformat() if user.created_at else None,
+                'last_sign_in_at': user.last_sign_in_at.isoformat() if user.last_sign_in_at else None,
                 'full_name': user.user_metadata.get('full_name', '') if user.user_metadata else '',
                 'phone': user.user_metadata.get('phone', '') if user.user_metadata else ''
             })
@@ -1091,7 +1091,7 @@ def handle_markup_rule(rule_id):
 
 
 @admin_bp.route('/activity-logs', methods=['GET'])
-@require_auth(required_role=['super_admin'])
+@require_auth(required_role=['super_admin', 'staff'])
 def get_activity_logs():
     """Get admin activity logs"""
     try:

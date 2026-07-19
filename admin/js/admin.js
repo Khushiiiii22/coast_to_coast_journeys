@@ -446,10 +446,15 @@ function initSidebar() {
     try {
         const userObj = JSON.parse(localStorage.getItem('admin_user') || '{}');
         userRole = userObj.role || 'admin';
+        
+        // Redirect staff away from dashboard
+        if (userRole === 'staff' && window.location.pathname.endsWith('dashboard.html')) {
+            window.location.replace('bookings.html');
+            return;
+        }
     } catch (e) {}
     
-    // Add Offline Booking Creation dynamically
-    navItems[0].items[1].subItems.push({ name: 'Offline Booking', icon: 'fa-plus-circle', href: 'offline-bookings.html' });
+    // Removed Offline Booking link to prevent blank page
 
     let filteredNavItems = navItems;
 
@@ -457,7 +462,6 @@ function initSidebar() {
         filteredNavItems = [
             {
                 section: 'Main', items: [
-                    { name: 'Dashboard', icon: 'fa-home', href: 'dashboard.html' },
                     { 
                         name: 'Bookings', 
                         icon: 'fa-briefcase', 
@@ -466,8 +470,7 @@ function initSidebar() {
                         isOpen: localStorage.getItem('bookings_submenu_open') === 'true',
                         subItems: [
                             { name: 'Hotel', icon: 'fa-bed', href: 'bookings.html' },
-                            { name: 'Incomplete', icon: 'fa-exclamation-triangle', href: 'bookings.html?status=created' },
-                            { name: 'Offline Booking', icon: 'fa-plus-circle', href: 'offline-bookings.html' }
+                            { name: 'Incomplete', icon: 'fa-exclamation-triangle', href: 'bookings.html?status=created' }
                         ]
                     }
                 ]
@@ -481,10 +484,13 @@ function initSidebar() {
                         hasSub: true,
                         isOpen: localStorage.getItem('queries_submenu_open') === 'true',
                         subItems: [
-                            { name: 'Flight Enquiry', icon: 'fa-plane-departure', href: 'flight-enquiries.html' }
+                            { name: 'Flight Enquiry', icon: 'fa-plane-departure', href: 'flight-enquiries.html' },
+                            { name: 'Hotel Enquiry', icon: 'fa-hotel', href: 'hotel-enquiry.html' },
+                            { name: 'Contact Message', icon: 'fa-envelope', href: 'contact-enquiry.html' }
                         ]
                     },
-                    { name: 'Frontend Sign-ins', icon: 'fa-sign-in-alt', href: 'frontend-users.html' }
+                    { name: 'Frontend Sign-ins', icon: 'fa-sign-in-alt', href: 'frontend-users.html' },
+                    { name: 'Activity Logs', icon: 'fa-history', href: 'activity-logs.html' }
                 ]
             },
             {
