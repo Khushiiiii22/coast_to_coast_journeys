@@ -538,6 +538,11 @@
 
         // Check Session logic
         async function checkExistingSession() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('force') === 'true') {
+                return; // Bypass auto-redirect for testing
+            }
+
             // Check for admin token first (as it's a separate system)
             const adminToken = localStorage.getItem('admin_token');
             if (adminToken) {
@@ -578,40 +583,44 @@
             btn.textContent = 'SIGNING IN...';
 
             try {
-                // SPECIAL CASE: Check for admin credentials to support admin login from this page
-                if (email === 'admin@coasttocoast.com' && password === 'admin123') {
-                    const adminResponse = await fetch('/api/admin/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, password, mfa_code: mfaCode })
-                    });
+                // 1. Try to login via Admin API first (for Super Admin, Admin, and Staff)
+                const adminResponse = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, mfa_code: mfaCode })
+                });
 
-                    const adminData = await adminResponse.json();
-                    if (adminData.success) {
-                        localStorage.setItem('admin_token', adminData.data.token);
-                        localStorage.setItem('admin_user', JSON.stringify(adminData.data.user));
-                        window.location.href = 'admin/dashboard.html';
-                        return;
-                    } else if (adminData.mfa_required) {
-                        // Show MFA input
-                        document.getElementById('mfaGroup').style.display = 'block';
-                        document.getElementById('loginEmail').parentElement.parentElement.style.display = 'none';
-                        document.getElementById('loginPassword').parentElement.parentElement.style.display = 'none';
-                        if (document.getElementById('loginOptionsWrapper')) {
-                            document.getElementById('loginOptionsWrapper').style.display = 'none';
-                        }
-                        
-                        showError('loginError', 'Please enter your Authenticator Code');
-                        btn.disabled = false;
-                        btn.textContent = 'VERIFY CODE';
-                        return;
-                    } else {
-                        showError('loginError', adminData.error || 'Invalid admin credentials');
-                        btn.disabled = false;
-                        btn.textContent = 'SIGN IN';
-                        return;
+                const adminData = await adminResponse.json();
+                
+                if (adminData.success) {
+                    localStorage.setItem('admin_token', adminData.data.token);
+                    localStorage.setItem('admin_user', JSON.stringify(adminData.data.user));
+                    window.location.href = 'admin/dashboard.html';
+                    return;
+                } else if (adminData.mfa_required) {
+                    // Show MFA input
+                    document.getElementById('mfaGroup').style.display = 'block';
+                    document.getElementById('loginEmail').parentElement.parentElement.style.display = 'none';
+                    document.getElementById('loginPassword').parentElement.parentElement.style.display = 'none';
+                    if (document.getElementById('loginOptionsWrapper')) {
+                        document.getElementById('loginOptionsWrapper').style.display = 'none';
                     }
+                    
+                    showError('loginError', 'Please enter your Authenticator Code');
+                    btn.disabled = false;
+                    btn.textContent = 'VERIFY CODE';
+                    return;
                 }
+
+                // If adminData fails due to "Invalid Authenticator code", show error immediately
+                if (adminData.error === 'Invalid Authenticator code') {
+                    showError('loginError', adminData.error);
+                    btn.disabled = false;
+                    btn.textContent = 'SIGN IN';
+                    return;
+                }
+
+                // 2. If it wasn't an admin, it's a customer. Fallback to Customer Supabase login!
 
                 // Try to login via Supabase first
                 let result = await SupabaseDB.signIn(email, password);

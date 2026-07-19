@@ -441,6 +441,60 @@ function initSidebar() {
         }
     ];
 
+    // Filter items based on Role
+    let userRole = 'admin'; // default
+    try {
+        const userObj = JSON.parse(localStorage.getItem('admin_user') || '{}');
+        userRole = userObj.role || 'admin';
+    } catch (e) {}
+    
+    // Add Offline Booking Creation dynamically
+    navItems[0].items[1].subItems.push({ name: 'Offline Booking', icon: 'fa-plus-circle', href: 'offline-bookings.html' });
+
+    let filteredNavItems = navItems;
+
+    if (userRole === 'staff') {
+        filteredNavItems = [
+            {
+                section: 'Main', items: [
+                    { name: 'Dashboard', icon: 'fa-home', href: 'dashboard.html' },
+                    { 
+                        name: 'Bookings', 
+                        icon: 'fa-briefcase', 
+                        href: '#',
+                        hasSub: true,
+                        isOpen: localStorage.getItem('bookings_submenu_open') === 'true',
+                        subItems: [
+                            { name: 'Hotel', icon: 'fa-bed', href: 'bookings.html' },
+                            { name: 'Incomplete', icon: 'fa-exclamation-triangle', href: 'bookings.html?status=created' },
+                            { name: 'Offline Booking', icon: 'fa-plus-circle', href: 'offline-bookings.html' }
+                        ]
+                    }
+                ]
+            },
+            {
+                section: 'Operations', items: [
+                    { 
+                        name: 'Queries', 
+                        icon: 'fa-question-circle', 
+                        href: '#',
+                        hasSub: true,
+                        isOpen: localStorage.getItem('queries_submenu_open') === 'true',
+                        subItems: [
+                            { name: 'Flight Enquiry', icon: 'fa-plane-departure', href: 'flight-enquiries.html' }
+                        ]
+                    },
+                    { name: 'Frontend Sign-ins', icon: 'fa-sign-in-alt', href: 'frontend-users.html' }
+                ]
+            },
+            {
+                section: 'System', items: [
+                    { name: 'Logout', icon: 'fa-sign-out-alt', href: '#', onclick: 'logout(); return false;', style: 'color: #ef4444;' }
+                ]
+            }
+        ];
+    }
+
     let html = `
         <div class="sidebar-header">
             <div class="sidebar-logo">C</div>
@@ -449,7 +503,7 @@ function initSidebar() {
         <nav class="sidebar-nav">
     `;
 
-    navItems.forEach(section => {
+    filteredNavItems.forEach(section => {
         html += `
             <div class="nav-section">
                 <span class="nav-section-title">${section.section}</span>

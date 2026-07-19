@@ -104,6 +104,49 @@ class AdminService:
                 else:
                     return {'success': False, 'error': 'Invalid credentials'}
             
+            # Check Supabase Auth for non-hardcoded users
+            if self.supabase:
+                try:
+                    # Verify password using Supabase Auth
+                    auth_res = self.supabase.auth.sign_in_with_password({
+                        'email': email,
+                        'password': password
+                    })
+                    
+                    if not auth_res.user:
+                        return {'success': False, 'error': 'Invalid credentials'}
+                    
+                    # Look up user in admin_users table
+                    result = self.supabase.table('admin_users').select('*').eq('email', email).eq('is_active', True).execute()
+                    
+                    if result.data and len(result.data) > 0:
+                        user = result.data[0]
+                        user_id = user['id']
+                        full_name = user['full_name']
+                        role = user['role']
+                        
+                        # Generate token
+                        token = self.generate_token(user_id, email, role, auth_user_id=auth_res.user.id)
+                        
+                        return {
+                            'success': True,
+                            'data': {
+                                'token': token,
+                                'user': {
+                                    'id': user_id,
+                                    'auth_user_id': auth_res.user.id,
+                                    'email': email,
+                                    'full_name': full_name,
+                                    'role': role
+                                }
+                            }
+                        }
+                    else:
+                        return {'success': False, 'error': 'Admin account not found or inactive'}
+                        
+                except Exception as auth_e:
+                    return {'success': False, 'error': 'Invalid credentials'}
+
             return {'success': False, 'error': 'Invalid credentials'}
             
         except Exception as e:

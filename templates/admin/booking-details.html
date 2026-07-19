@@ -224,8 +224,12 @@
                                 </div>
                                 <div class="details-body">
                                     <div class="info-row">
-                                        <div class="info-label">Primary Customer</div>
+                                        <div class="info-label">Customer Email</div>
                                         <div class="info-value" id="customerEmail">—</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Customer Phone</div>
+                                        <div class="info-value" id="customerPhone">—</div>
                                     </div>
                                     <div class="info-row">
                                         <div class="info-label">Guests Breakdown</div>
@@ -234,15 +238,6 @@
                                 </div>
                             </div>
 
-                            <!-- Raw API Response -->
-                            <div class="details-card">
-                                <div class="details-header">
-                                    <h3><i class="fas fa-code"></i> Raw API Trace (booking_response)</h3>
-                                </div>
-                                <div class="details-body">
-                                    <pre class="json-viewer" id="rawResponse">{}</pre>
-                                </div>
-                            </div>
                         </div>
 
                         <!-- Right Column: Financials & Logs -->
@@ -426,6 +421,7 @@
 
             // Guests
             document.getElementById('customerEmail').textContent = b.customer_email || '—';
+            document.getElementById('customerPhone').textContent = b.customer_phone || '—';
             
             let guestHtml = '';
             if (b.guests && Array.isArray(b.guests)) {
@@ -458,8 +454,6 @@
                 document.getElementById('refundAmount').textContent = formatCurrency(c.refund_amount || 0, curr);
             }
 
-            // Raw
-            document.getElementById('rawResponse').textContent = JSON.stringify(b.booking_response || {}, null, 2);
         }
 
         function calculateNights(inDate, outDate) {

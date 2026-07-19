@@ -9,6 +9,7 @@ from services.google_maps_service import google_maps_service
 from datetime import datetime
 import time
 import os
+import uuid
 from routes.cancellation_helper import format_cancellation_policies
 
 hotel_bp = Blueprint('hotels', __name__, url_prefix='/api/hotels')
@@ -4144,4 +4145,52 @@ def get_user_bookings(user_id):
         return jsonify(result)
     
     except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@hotel_bp.route('/abandoned-checkout', methods=['POST'])
+def abandoned_checkout():
+    """Save an abandoned checkout record when user goes to payment page"""
+    try:
+        data = request.json
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+
+        # Create a unique ID for this abandoned cart
+        partner_order_id = f"ABANDONED-{uuid.uuid4().hex[:8]}"
+
+        # Extract guest info
+        guest = data.get('guest', {})
+        first_name = guest.get('firstName', '')
+        last_name = guest.get('lastName', '')
+        email = guest.get('email', data.get('email', ''))
+        phone = guest.get('phone', data.get('phone', ''))
+        
+        # Extract hotel info
+        hotel_data = data.get('hotel', {})
+        search_params = data.get('search_params', {})
+        
+        # Build the record
+        booking_record = {
+            'hotel_id': hotel_data.get('id', 'unknown'),
+            'hotel_name': hotel_data.get('name', 'Unknown Hotel'),
+            'check_in': search_params.get('checkin', '2000-01-01'),
+            'check_out': search_params.get('checkout', '2000-01-01'),
+            'rooms': search_params.get('rooms', 1),
+            'guests': data.get('rooms_data', []),
+            'total_amount': data.get('total_price', 0),
+            'currency': data.get('currency', 'USD'),
+            'status': 'abandoned',
+            'customer_email': email,
+            'customer_phone': phone,
+            'booking_source': 'website',
+            'payment_status': 'abandoned',
+            'partner_order_id': partner_order_id
+        }
+
+        # Insert directly into hotel_bookings
+        supabase_service.client.table('hotel_bookings').insert(booking_record).execute()
+
+        return jsonify({'success': True, 'message': 'Abandoned checkout captured'})
+    except Exception as e:
+        print(f"Error capturing abandoned checkout: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500

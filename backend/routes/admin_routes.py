@@ -1687,6 +1687,7 @@ def create_admin_user():
         email = data.get('email')
         full_name = data.get('full_name')
         role = data.get('role', 'staff')
+        password = data.get('password')
         
         if not email or not full_name:
             return jsonify({'success': False, 'error': 'Email and full name required'}), 400
@@ -1694,17 +1695,30 @@ def create_admin_user():
         from flask import current_app
         supabase = current_app.config.get('SUPABASE')
         
-        # Check if already exists
+        # Check if already exists in admin_users
         exists = supabase.table('admin_users').select('id').eq('email', email).execute()
         if exists.data:
             return jsonify({'success': False, 'error': 'Admin user already exists'}), 409
+            
+        auth_user_id = None
+        if password:
+            try:
+                auth_res = supabase.auth.admin.create_user({
+                    'email': email,
+                    'password': password,
+                    'email_confirm': True
+                })
+                auth_user_id = auth_res.user.id
+            except Exception as auth_e:
+                return jsonify({'success': False, 'error': f'Auth creation failed: {str(auth_e)}'}), 400
             
         user_record = {
             'username': email.split('@')[0],
             'email': email,
             'full_name': full_name,
             'role': role,
-            'is_active': True
+            'is_active': True,
+            'user_id': auth_user_id
         }
         
         result = supabase.table('admin_users').insert(user_record).execute()
@@ -1713,6 +1727,54 @@ def create_admin_user():
             'success': True,
             'data': result.data[0] if result.data else None
         }), 201
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@admin_bp.route('/users/<user_id>', methods=['PUT'])
+@require_auth(required_role=['super_admin'])
+def update_admin_user(user_id):
+    """Update an admin user"""
+    try:
+        data = request.get_json()
+        
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        # Get existing user to find auth ID
+        existing = supabase.table('admin_users').select('*').eq('id', user_id).execute()
+        if not existing.data:
+            return jsonify({'success': False, 'error': 'Admin user not found'}), 404
+            
+        existing_user = existing.data[0]
+        
+        updates = {}
+        if 'full_name' in data:
+            updates['full_name'] = data['full_name']
+        if 'role' in data:
+            updates['role'] = data['role']
+        if 'is_active' in data:
+            updates['is_active'] = data['is_active']
+            
+        password = data.get('password')
+        
+        if password and existing_user.get('user_id'):
+            # Update password in Supabase Auth
+            try:
+                supabase.auth.admin.update_user_by_id(
+                    existing_user['user_id'],
+                    {'password': password}
+                )
+            except Exception as auth_e:
+                return jsonify({'success': False, 'error': f'Password too weak: {str(auth_e)}'}), 400
+                
+        # Update admin_users table
+        result = supabase.table('admin_users').update(updates).eq('id', user_id).execute()
+        
+        return jsonify({
+            'success': True,
+            'data': result.data[0] if result.data else None
+        }), 200
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500

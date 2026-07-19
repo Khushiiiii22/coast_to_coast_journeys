@@ -869,6 +869,17 @@
             sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
             localStorage.setItem('ctc_booking_data_backup', JSON.stringify(bookingData));
 
+            // Record as an abandoned checkout in the background (fire and forget)
+            try {
+                fetch('/api/hotels/abandoned-checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bookingData)
+                }).catch(e => console.log('Abandoned checkout log error:', e));
+            } catch (e) {
+                console.log('Abandoned checkout log error:', e);
+            }
+
             // Guest checkout allowed, proceed directly to payment
             window.location.href = 'payment.html';
         }

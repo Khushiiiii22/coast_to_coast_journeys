@@ -241,6 +241,10 @@
                             <option value="super_admin">Super Admin</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="Enter password (for new users)" required>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -284,6 +288,7 @@
 
                 if (res.success) {
                     const users = res.data;
+                    window.adminUsersData = users;
                     if (users.length === 0) {
                         tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem;">No users found</td></tr>';
                         return;
@@ -324,6 +329,8 @@
             }
         }
 
+        let editUserId = null;
+
         async function saveUser() {
             const form = document.getElementById('addUserForm');
             if (!validateForm('addUserForm')) return;
@@ -332,21 +339,62 @@
             const data = Object.fromEntries(formData.entries());
 
             try {
-                const res = await apiRequest('/users', 'POST', data);
+                let res;
+                if (editUserId) {
+                    res = await apiRequest(`/users/${editUserId}`, 'PUT', data);
+                } else {
+                    res = await apiRequest('/users', 'POST', data);
+                }
+                
                 if (res.success) {
-                    showNotification('Admin user added successfully', 'success');
+                    showNotification(editUserId ? 'Admin user updated successfully' : 'Admin user added successfully', 'success');
                     closeModal('addUserModal');
                     form.reset();
+                    editUserId = null;
+                    document.querySelector('#addUserModal .modal-title').innerHTML = '<i class="fas fa-user-plus"></i> Add Admin User';
                     loadUsers();
                 }
             } catch (error) {
-                showNotification(error.message || 'Failed to add user', 'error');
+                showNotification(error.message || 'Failed to save user', 'error');
             }
         }
 
         function editUser(id) {
-            showNotification('Edit functionality coming soon', 'info');
+            const user = window.adminUsersData.find(u => u.id === id);
+            if (!user) return;
+            
+            editUserId = id;
+            document.querySelector('#addUserModal .modal-title').innerHTML = '<i class="fas fa-user-edit"></i> Edit Admin User';
+            
+            const form = document.getElementById('addUserForm');
+            form.elements['full_name'].value = user.full_name || '';
+            form.elements['email'].value = user.email || '';
+            form.elements['role'].value = user.role || 'staff';
+            form.elements['password'].value = '';
+            form.elements['password'].placeholder = 'Leave blank to keep current password';
+            form.elements['password'].required = false;
+            
+            openModal('addUserModal');
         }
+
+        // Reset modal on open if adding new
+        const originalOpenModal = window.openModal;
+        window.openModal = function(id) {
+            if (id === 'addUserModal' && !editUserId) {
+                document.getElementById('addUserForm').reset();
+                document.getElementById('addUserForm').elements['password'].required = true;
+                document.getElementById('addUserForm').elements['password'].placeholder = 'Enter password (for new users)';
+                document.querySelector('#addUserModal .modal-title').innerHTML = '<i class="fas fa-user-plus"></i> Add Admin User';
+            }
+            if (originalOpenModal) originalOpenModal(id);
+        };
+        
+        // Reset editUserId on close
+        const originalCloseModal = window.closeModal;
+        window.closeModal = function(id) {
+            if (id === 'addUserModal') editUserId = null;
+            if (originalCloseModal) originalCloseModal(id);
+        };
 
         async function deleteUser(id) {
             if (!confirm('Are you sure you want to delete this admin user?')) return;
