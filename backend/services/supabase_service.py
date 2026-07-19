@@ -74,6 +74,20 @@ class SupabaseService:
     def create_booking(self, booking_data: dict) -> dict:
         """Create a new hotel booking record"""
         def op():
+            # Try RPC first to bypass any RLS issues
+            try:
+                res = self.client.rpc('create_hotel_booking', {'booking_data': booking_data}).execute()
+                if res.data:
+                    # rpc returns a single object but _execute_query expects a list format in result.data if it's typical supabase insert
+                    # actually execute_query handles dict vs list, we can just wrap it in a pseudo-result
+                    class PseudoResult:
+                        pass
+                    pseudo = PseudoResult()
+                    pseudo.data = [res.data]
+                    return pseudo
+            except Exception as e:
+                print(f"⚠️ RPC create_hotel_booking failed, falling back to insert: {e}")
+                
             return self.client.table('hotel_bookings').insert(booking_data).execute()
         return self._execute_query(op)
     

@@ -1349,20 +1349,6 @@ function initBackToTop() {
         });
     });
 
-    // Also ensure WhatsApp float exists on every page
-    if (!document.querySelector('.whatsapp-float') && !document.querySelector('[class*="whatsapp"]')) {
-        const waBtn = document.createElement('a');
-        waBtn.href = 'https://wa.me/919934547108?text=Hi%20C2C%20Journeys%2C%20I%20need%20help%20with%20my%20booking';
-        waBtn.target = '_blank';
-        waBtn.className = 'whatsapp-float';
-        waBtn.setAttribute('aria-label', 'Chat on WhatsApp');
-        waBtn.setAttribute('title', 'Chat with us on WhatsApp');
-        waBtn.innerHTML = '<i class="fab fa-whatsapp"></i>';
-        waBtn.style.cssText = 'position:fixed;bottom:30px;right:30px;z-index:9997;width:56px;height:56px;border-radius:50%;background:#25D366;color:white;display:flex;align-items:center;justify-content:center;font-size:1.8rem;box-shadow:0 4px 15px rgba(37,211,102,0.4);transition:all 0.3s;text-decoration:none;';
-        waBtn.onmouseover = function () { this.style.transform = 'scale(1.1)'; this.style.boxShadow = '0 6px 20px rgba(37,211,102,0.5)'; };
-        waBtn.onmouseout = function () { this.style.transform = ''; this.style.boxShadow = '0 4px 15px rgba(37,211,102,0.4)'; };
-        document.body.appendChild(waBtn);
-    }
 }
 
 // ========================================

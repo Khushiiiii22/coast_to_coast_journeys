@@ -448,9 +448,7 @@
                 <i class="fas fa-undo"></i> Refund Policy
             </a>
             <div class="sidebar-divider"></div>
-            <a href="https://wa.me/18883159768" class="sidebar-link" target="_blank">
-                <i class="fab fa-whatsapp"></i> WhatsApp
-            </a>
+            
         </nav>
         <div class="sidebar-footer">
             <div class="sidebar-social">
@@ -467,28 +465,7 @@
         </div>
     </aside>
 
-    <!-- Signup Promo Modal -->
-    <div class="modal-overlay" id="signupModal">
-        <div class="promo-modal">
-            <button class="modal-close" id="signupClose"><i class="fas fa-times"></i></button>
-            <div class="promo-image">
-                <img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                    alt="Travel">
-            </div>
-            <div class="promo-content">
-                <div class="promo-badge">Limited Time Offer</div>
-                <h3>Join the Club!</h3>
-                <p>Sign up now to unlock secret deals and save up to <strong>20% off</strong> your first booking.</p>
-                <ul class="promo-features">
-                    <li><i class="fas fa-check-circle"></i> Exclusive Member Rates</li>
-                    <li><i class="fas fa-check-circle"></i> Priority 24/7 Support</li>
-                    <li><i class="fas fa-check-circle"></i> Track Your Trips</li>
-                </ul>
-                <a href="auth.html?force=true&tab=signup" class="btn-promo-action">Create Free Account</a>
-                <button class="btn-promo-secondary" id="signupLater">Maybe Later</button>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Feedback Modal -->
     <div class="feedback-modal" id="feedbackModal">
@@ -2076,55 +2053,7 @@
             window.location.href = `flight-quote.html?${params.toString()}`;
         });
 
-        // ========== Signup Promo Modal Logic ==========
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Delay check to ensure Supabase client is ready
-            setTimeout(async () => {
-                let isLoggedIn = false;
 
-                // Check if SupabaseDB is defined (from supabase-client.js)
-                if (typeof SupabaseDB !== 'undefined') {
-                    try {
-                        const user = await SupabaseDB.getCurrentUser();
-                        if (user) isLoggedIn = true;
-                    } catch (e) {
-                        console.log('User check failed', e);
-                    }
-                }
-
-                // If not logged in, maintainer simple logic
-                if (!isLoggedIn) {
-                    // Check if dismissed recently (24h)
-                    const dismissed = localStorage.getItem('signupModalDismissed');
-                    const now = new Date().getTime();
-
-                    if (!dismissed || (now - parseInt(dismissed) > 24 * 60 * 60 * 1000)) {
-                        // Show after 10 seconds of browsing
-                        setTimeout(() => {
-                            document.getElementById('signupModal').classList.add('active');
-                        }, 10000);
-                    }
-                }
-            }, 1000);
-
-            // Close handlers
-            const closeSignup = () => {
-                document.getElementById('signupModal').classList.remove('active');
-                localStorage.setItem('signupModalDismissed', new Date().getTime().toString());
-            };
-
-            const closeBtn = document.getElementById('signupClose');
-            const laterBtn = document.getElementById('signupLater');
-            const modalOverlay = document.getElementById('signupModal');
-
-            if (closeBtn) closeBtn.addEventListener('click', closeSignup);
-            if (laterBtn) laterBtn.addEventListener('click', closeSignup);
-            if (modalOverlay) {
-                modalOverlay.addEventListener('click', (e) => {
-                    if (e.target === modalOverlay) closeSignup();
-                });
-            }
-        });
 
         // ========== HOTEL SEARCH FORM SUBMIT ==========
         document.getElementById('hotelSearchForm').addEventListener('submit', function (e) {
