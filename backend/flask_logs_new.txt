@@ -1,6 +1,6 @@
 ✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
 ✅ AIR iQ API client initialized
-✅ Supabase successfully connected via Service Role key.
+✅ Supabase successfully connected via Service Role key on attempt 1.
 ✅ Razorpay payment service initialized
 ✅ PayPal payment service initialized (live mode)
 ✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
@@ -20,32 +20,119 @@
 
  * Serving Flask app 'app'
  * Debug mode: on
-[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:5000
- * Running on http://192.168.1.45:5000
-[33mPress CTRL+C to quit[0m
- * Restarting with stat
+ * Running on http://192.168.1.5:5000
+Press CTRL+C to quit
+ * Restarting with watchdog (fsevents)
  * Debugger is active!
- * Debugger PIN: 664-016-237
-127.0.0.1 - - [18/May/2026 18:49:00] "GET /api/health HTTP/1.1" 200 -
-127.0.0.1 - - [18/May/2026 18:49:06] "GET /api/hotels/debug/email-test HTTP/1.1" 200 -
-127.0.0.1 - - [22/May/2026 10:49:04] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
-127.0.0.1 - - [22/May/2026 10:49:04] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
-127.0.0.1 - - [22/May/2026 10:49:04] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
-127.0.0.1 - - [22/May/2026 10:49:04] "GET /hotel-booking.html HTTP/1.1" 200 -
-127.0.0.1 - - [22/May/2026 10:49:05] "GET /assets/images/c2c-logo.png HTTP/1.1" 200 -
-127.0.0.1 - - [22/May/2026 20:05:31] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [22/May/2026 20:05:31] "[33mGET /css/variables.css HTTP/1.1[0m" 404 -
-127.0.0.1 - - [22/May/2026 20:05:31] "GET /js/supabase-client.js HTTP/1.1" 200 -
-127.0.0.1 - - [22/May/2026 20:05:31] "GET /css/main.css HTTP/1.1" 200 -
-127.0.0.1 - - [22/May/2026 20:05:31] "GET /js/main.js?v=3 HTTP/1.1" 200 -
-127.0.0.1 - - [22/May/2026 20:05:31] "GET /js/hotel-search.js?v=3 HTTP/1.1" 200 -
-127.0.0.1 - - [22/May/2026 20:05:31] "GET /assets/images/c2c-logo.png HTTP/1.1" 200 -
- * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
+ * Debugger PIN: 111-764-932
+127.0.0.1 - - [19/Jul/2026 17:38:50] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:38:50] "GET /css/main.css?v=2.1 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:38:50] "GET /js/main.js?v=3.1 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:38:50] "GET /js/hotel-search.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:38:50] "GET /js/supabase-client.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:38:50] "GET /assets/images/c2c-logo.png HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:38:50] "GET /assets/images/hotel-banner.jpg HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:38:50] "GET /assets/videos/hero-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:38:50] "GET /assets/videos/footer-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:38:50] "GET /assets/videos/footer-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:38:50] "GET /assets/videos/hero-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:38:54] "GET /index.html HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:38:54] "GET /css/main.css?v=2.1 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:38:54] "GET /js/hotel-search.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:38:54] "GET /js/main.js?v=3.1 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:38:54] "GET /assets/images/c2c-logo.png HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:38:54] "GET /js/supabase-client.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:38:54] "GET /assets/images/hotel-banner.jpg HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:38:54] "GET /assets/videos/hero-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:38:54] "GET /assets/videos/footer-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:38:54] "GET /assets/videos/hero-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:38:54] "GET /assets/videos/footer-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:38:56] "GET /auth.html?force=true HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:38:56] "GET /js/supabase-client.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:39:08] "POST /api/admin/login HTTP/1.1" 401 -
+127.0.0.1 - - [19/Jul/2026 17:39:46] "POST /api/admin/login HTTP/1.1" 401 -
+127.0.0.1 - - [19/Jul/2026 17:40:03] "POST /api/admin/login HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:40:03] "GET /admin/dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:40:03] "GET /admin/libs/all.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:40:03] "GET /admin/css/admin.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:40:03] "GET /admin/libs/chart.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:40:03] "GET /admin/js/admin.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:40:03] "GET /admin/webfonts/fa-solid-900.woff2 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:40:05] "GET /api/admin/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:40:05] "GET /api/admin/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:40:05] "GET /api/admin/dashboard?period=all HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:40:26] "GET /admin/users.html HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:40:27] "GET /admin/css/admin.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:40:27] "GET /admin/js/admin.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:40:27] "GET /admin/libs/all.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:40:27] "GET /admin/webfonts/fa-solid-900.woff2 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:04] "GET /admin/users.html HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:41:04] "GET /admin/css/admin.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:04] "GET /admin/js/admin.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:04] "GET /admin/libs/all.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:04] "GET /admin/webfonts/fa-solid-900.woff2 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:06] "GET /admin/users.html HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:41:06] "GET /admin/libs/all.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:06] "GET /admin/js/admin.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:06] "GET /admin/css/admin.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:06] "GET /admin/webfonts/fa-solid-900.woff2 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:08] "GET /admin/activity-logs.html HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:41:08] "GET /admin/libs/all.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:08] "GET /admin/css/admin.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:08] "GET /admin/js/admin.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:09] "GET /admin/webfonts/fa-solid-900.woff2 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:12] "GET /admin/dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:12] "GET /admin/js/admin.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:12] "GET /admin/libs/all.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:12] "GET /admin/css/admin.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:12] "GET /admin/libs/chart.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:12] "GET /admin/webfonts/fa-solid-900.woff2 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:41] "GET /admin/dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:41:41] "GET /admin/libs/all.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:41] "GET /admin/css/admin.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:41] "GET /admin/libs/chart.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:41] "GET /admin/js/admin.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:41] "GET /admin/webfonts/fa-solid-900.woff2 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:42] "GET /admin/dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:41:42] "GET /admin/libs/all.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:42] "GET /admin/libs/chart.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:42] "GET /admin/js/admin.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:42] "GET /admin/css/admin.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:42] "GET /admin/webfonts/fa-solid-900.woff2 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:48] "GET /auth.html?force=true HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:41:48] "GET /js/supabase-client.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:42:25] "GET /index.html HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:42:25] "GET /js/supabase-client.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:42:25] "GET /js/hotel-search.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:42:25] "GET /css/main.css?v=2.1 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:42:25] "GET /assets/images/c2c-logo.png HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:42:25] "GET /js/main.js?v=3.1 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:42:25] "GET /assets/images/hotel-banner.jpg HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:42:25] "GET /assets/videos/hero-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:42:25] "GET /assets/videos/footer-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:42:25] "GET /assets/videos/footer-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:42:25] "GET /assets/videos/hero-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:43:03] "GET /api/admin/users HTTP/1.1" 500 -
+127.0.0.1 - - [19/Jul/2026 17:43:04] "GET /api/admin/users HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:43:04] "GET /api/admin/activity-logs?limit=100 HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:43:04] "GET /api/admin/users HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:43:05] "GET /api/admin/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:43:05] "GET /api/admin/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:43:05] "GET /api/admin/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:43:05] "GET /api/admin/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:43:05] "GET /api/admin/dashboard?period=all HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:43:05] "GET /api/admin/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:43:05] "GET /api/admin/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:43:05] "GET /api/admin/dashboard?period=all HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:43:05] "GET /api/admin/dashboard?period=all HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:43:16] "GET /index.html HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:43:16] "GET /css/main.css?v=2.1 HTTP/1.1" 304 -
 ✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
 ✅ AIR iQ API client initialized
-✅ Supabase successfully connected via Service Role key.
+✅ Supabase successfully connected via Service Role key on attempt 1.
 ✅ Razorpay payment service initialized
 ✅ PayPal payment service initialized (live mode)
 ✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
@@ -63,262 +150,211 @@
    POST /api/hotels/...   - Hotel endpoints
    POST /api/maps/...     - Maps endpoints
 
-🔍 Requesting: hotel-booking.html
-📄 Trying to serve HTML: hotel-booking.html
+🔍 Requesting: index.html
+📄 Trying to serve HTML: index.html
 📁 From directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
-🔎 Full path: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates/hotel-booking.html
-🔍 Requesting: apple-touch-icon.png
-🔍 Requesting: apple-touch-icon-precomposed.png
+🔎 Full path: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates/index.html
 ✓ Exists: True
-🔍 Requesting: favicon.ico
 ✅ Successfully served from templates
-🔍 Requesting: assets/images/c2c-logo.png
-🔍 Requesting: css/variables.css
 🔍 Requesting: css/main.css
-🔍 Requesting: js/supabase-client.js
 🔍 Requesting: js/main.js
 🔍 Requesting: js/hotel-search.js
+🔍 Requesting: js/supabase-client.js
 🔍 Requesting: assets/images/c2c-logo.png
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 664-016-237
- * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/services/etg_service.py', reloading
-✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
-✅ AIR iQ API client initialized
-✅ Supabase successfully connected via Service Role key.
-✅ Razorpay payment service initialized
-✅ PayPal payment service initialized (live mode)
-✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
-   📧 Sender: info@coasttocoastjourneys.com
-🔑 Resend API Key loaded: True
-📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
-📁 Templates exists: True
-🚀 Starting C2C Journeys API Server...
-📍 Running on http://0.0.0.0:5000
-🔧 Debug mode: True
-
-📚 API Documentation:
-   GET  /api              - API info and endpoints
-   GET  /api/health       - Health check
-   POST /api/hotels/...   - Hotel endpoints
-   POST /api/maps/...     - Maps endpoints
-
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 664-016-237
- * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
-✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
-✅ AIR iQ API client initialized
-✅ Supabase successfully connected via Service Role key.
-✅ Razorpay payment service initialized
-✅ PayPal payment service initialized (live mode)
-✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
-   📧 Sender: info@coasttocoastjourneys.com
-🔑 Resend API Key loaded: True
-📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
-📁 Templates exists: True
-🚀 Starting C2C Journeys API Server...
-📍 Running on http://0.0.0.0:5000
-🔧 Debug mode: True
-
-📚 API Documentation:
-   GET  /api              - API info and endpoints
-   GET  /api/health       - Health check
-   POST /api/hotels/...   - Hotel endpoints
-   POST /api/maps/...     - Maps endpoints
-
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 664-016-237
- * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
-✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
-✅ AIR iQ API client initialized
-✅ Supabase successfully connected via Service Role key.
-✅ Razorpay payment service initialized
-✅ PayPal payment service initialized (live mode)
-✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
-   📧 Sender: info@coasttocoastjourneys.com
-🔑 Resend API Key loaded: True
-📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
-📁 Templates exists: True
-🚀 Starting C2C Journeys API Server...
-📍 Running on http://0.0.0.0:5000
-🔧 Debug mode: True
-
-📚 API Documentation:
-   GET  /api              - API info and endpoints
-   GET  /api/health       - Health check
-   POST /api/hotels/...   - Hotel endpoints
-   POST /api/maps/...     - Maps endpoints
-
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 664-016-237
- * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
-✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
-✅ AIR iQ API client initialized
-✅ Supabase successfully connected via Service Role key.
-✅ Razorpay payment service initialized
-✅ PayPal payment service initialized (live mode)
-✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
-   📧 Sender: info@coasttocoastjourneys.com
-🔑 Resend API Key loaded: True
-📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
-📁 Templates exists: True
-🚀 Starting C2C Journeys API Server...
-📍 Running on http://0.0.0.0:5000
-🔧 Debug mode: True
-
-📚 API Documentation:
-   GET  /api              - API info and endpoints
-   GET  /api/health       - Health check
-   POST /api/hotels/...   - Hotel endpoints
-   POST /api/maps/...     - Maps endpoints
-
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 664-016-237
- * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
-✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
-✅ AIR iQ API client initialized
-✅ Supabase successfully connected via Service Role key.
-✅ Razorpay payment service initialized
-✅ PayPal payment service initialized (live mode)
-✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
-   📧 Sender: info@coasttocoastjourneys.com
-🔑 Resend API Key loaded: True
-📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
-📁 Templates exists: True
-🚀 Starting C2C Journeys API Server...
-📍 Running on http://0.0.0.0:5000
-🔧 Debug mode: True
-
-📚 API Documentation:
-   GET  /api              - API info and endpoints
-   GET  /api/health       - Health check
-   POST /api/hotels/...   - Hotel endpoints
-   POST /api/maps/...     - Maps endpoints
-
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 664-016-237
- * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
-✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
-✅ AIR iQ API client initialized
-✅ Supabase successfully connected via Service Role key.
-✅ Razorpay payment service initialized
-✅ PayPal payment service initialized (live mode)
-✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
-   📧 Sender: info@coasttocoastjourneys.com
-🔑 Resend API Key loaded: True
-📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
-📁 Templates exists: True
-🚀 Starting C2C Journeys API Server...
-📍 Running on http://0.0.0.0:5000
-🔧 Debug mode: True
-
-📚 API Documentation:
-   GET  /api              - API info and endpoints
-   GET  /api/health       - Health check
-   POST /api/hotels/...   - Hotel endpoints
-   POST /api/maps/...     - Maps endpoints
-
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 664-016-237
- * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
-✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
-✅ AIR iQ API client initialized
-✅ Supabase successfully connected via Service Role key.
-✅ Razorpay payment service initialized
-✅ PayPal payment service initialized (live mode)
-✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
-   📧 Sender: info@coasttocoastjourneys.com
-🔑 Resend API Key loaded: True
-📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
-📁 Templates exists: True
-🚀 Starting C2C Journeys API Server...
-📍 Running on http://0.0.0.0:5000
-🔧 Debug mode: True
-
-📚 API Documentation:
-   GET  /api              - API info and endpoints
-   GET  /api/health       - Health check
-   POST /api/hotels/...   - Hotel endpoints
-   POST /api/maps/...     - Maps endpoints
-
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 664-016-237
- * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
-✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
-✅ AIR iQ API client initialized
-✅ Supabase successfully connected via Service Role key.
-✅ Razorpay payment service initialized
-✅ PayPal payment service initialized (live mode)
-✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
-   📧 Sender: info@coasttocoastjourneys.com
-🔑 Resend API Key loaded: True
-📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
-📁 Templates exists: True
-🚀 Starting C2C Journeys API Server...
-📍 Running on http://0.0.0.0:5000
-🔧 Debug mode: True
-
-📚 API Documentation:
-   GET  /api              - API info and endpoints
-   GET  /api/health       - Health check
-   POST /api/hotels/...   - Hotel endpoints
-   POST /api/maps/...     - Maps endpoints
-
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 664-016-237
- * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
-✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
-✅ AIR iQ API client initialized
-✅ Supabase successfully connected via Service Role key.
-✅ Razorpay payment service initialized
-✅ PayPal payment service initialized (live mode)
-✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
-   📧 Sender: info@coasttocoastjourneys.com
-🔑 Resend API Key loaded: True
-📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
-📁 Templates exists: True
-🚀 Starting C2C Journeys API Server...
-📍 Running on http://0.0.0.0:5000
-🔧 Debug mode: True
-
-📚 API Documentation:
-   GET  /api              - API info and endpoints
-   GET  /api/health       - Health check
-   POST /api/hotels/...   - Hotel endpoints
-   POST /api/maps/...     - Maps endpoints
-
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 664-016-237
- * Detected change in '/Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/backend/routes/hotel_routes.py', reloading
-✅ ETG API configured: https://api-sandbox.worldota.net/api/b2b/v3
-✅ AIR iQ API client initialized
-✅ Supabase successfully connected via Service Role key.
-✅ Razorpay payment service initialized
-✅ PayPal payment service initialized (live mode)
-✅ Email service configured: SMTP (smtpout.secureserver.net) → Brevo API → Resend API
-   📧 Sender: info@coasttocoastjourneys.com
-🔑 Resend API Key loaded: True
-📁 Templates directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
-📁 Templates exists: True
-🚀 Starting C2C Journeys API Server...
-📍 Running on http://0.0.0.0:5000
-🔧 Debug mode: True
-
-📚 API Documentation:
-   GET  /api              - API info and endpoints
-   GET  /api/health       - Health check
-   POST /api/hotels/...   - Hotel endpoints
-   POST /api/maps/...     - Maps endpoints
-
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 664-016-237
+🔍 Requesting: assets/images/hotel-banner.jpg
+🔍 Requesting: assets/videos/hero-background.mp4
+🔍 Requesting: assets/videos/footer-background.mp4
+🔍 Requesting: assets/videos/footer-background.mp4
+🔍 Requesting: assets/videos/hero-background.mp4
+🔍 Requesting: index.html
+📄 Trying to serve HTML: index.html
+📁 From directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+🔎 Full path: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates/index.html
+✓ Exists: True
+✅ Successfully served from templates
+🔍 Requesting: css/main.css
+🔍 Requesting: js/main.js
+🔍 Requesting: js/hotel-search.js
+🔍 Requesting: assets/images/hotel-banner.jpg
+🔍 Requesting: js/supabase-client.js
+🔍 Requesting: assets/images/c2c-logo.png
+🔍 Requesting: assets/videos/hero-background.mp4
+🔍 Requesting: assets/videos/footer-background.mp4
+🔍 Requesting: assets/videos/hero-background.mp4
+🔍 Requesting: assets/videos/footer-background.mp4
+🔍 Requesting: auth.html
+📄 Trying to serve HTML: auth.html
+📁 From directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+🔎 Full path: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates/auth.html
+✓ Exists: True
+✅ Successfully served from templates
+🔍 Requesting: js/supabase-client.js
+🔍 Requesting: admin/dashboard.html
+📄 Trying to serve HTML: admin/dashboard.html
+📁 From directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+🔎 Full path: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates/admin/dashboard.html
+✓ Exists: True
+🔍 Requesting: admin/libs/all.min.css
+🔍 Requesting: admin/css/admin.css
+🔍 Requesting: admin/libs/chart.min.js
+🔍 Requesting: admin/js/admin.js
+🔍 Requesting: admin/webfonts/fa-solid-900.woff2
+🔍 Requesting: admin/users.html
+📄 Trying to serve HTML: admin/users.html
+📁 From directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+🔎 Full path: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates/admin/users.html
+✓ Exists: True
+🔍 Requesting: admin/css/admin.css
+🔍 Requesting: admin/js/admin.js
+🔍 Requesting: admin/libs/all.min.css
+🔍 Requesting: admin/webfonts/fa-solid-900.woff2
+🔍 Requesting: admin/users.html
+📄 Trying to serve HTML: admin/users.html
+📁 From directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+🔎 Full path: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates/admin/users.html
+✓ Exists: True
+🔍 Requesting: admin/css/admin.css
+🔍 Requesting: admin/js/admin.js
+🔍 Requesting: admin/libs/all.min.css
+🔍 Requesting: admin/webfonts/fa-solid-900.woff2
+🔍 Requesting: admin/users.html
+📄 Trying to serve HTML: admin/users.html
+📁 From directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+🔎 Full path: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates/admin/users.html
+✓ Exists: True
+🔍 Requesting: admin/libs/all.min.css
+🔍 Requesting: admin/css/admin.css
+🔍 Requesting: admin/js/admin.js
+🔍 Requesting: admin/webfonts/fa-solid-900.woff2
+🔍 Requesting: admin/activity-logs.html
+📄 Trying to serve HTML: admin/activity-logs.html
+📁 From directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+🔎 Full path: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates/admin/activity-logs.html
+✓ Exists: True
+🔍 Requesting: admin/libs/all.min.css
+🔍 Requesting: admin/css/admin.css
+🔍 Requesting: admin/js/admin.js
+🔍 Requesting: admin/webfonts/fa-solid-900.woff2
+🔍 Requesting: admin/dashboard.html
+📄 Trying to serve HTML: admin/dashboard.html
+📁 From directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+🔎 Full path: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates/admin/dashboard.html
+✓ Exists: True
+🔍 Requesting: admin/libs/all.min.css
+🔍 Requesting: admin/css/admin.css
+🔍 Requesting: admin/libs/chart.min.js
+🔍 Requesting: admin/js/admin.js
+🔍 Requesting: admin/webfonts/fa-solid-900.woff2
+🔍 Requesting: admin/dashboard.html
+📄 Trying to serve HTML: admin/dashboard.html
+📁 From directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+🔎 Full path: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates/admin/dashboard.html
+✓ Exists: True
+🔍 Requesting: admin/libs/all.min.css
+🔍 Requesting: admin/css/admin.css
+🔍 Requesting: admin/js/admin.js
+🔍 Requesting: admin/libs/chart.min.js
+🔍 Requesting: admin/webfonts/fa-solid-900.woff2
+🔍 Requesting: admin/dashboard.html
+📄 Trying to serve HTML: admin/dashboard.html
+📁 From directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+🔎 Full path: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates/admin/dashboard.html
+✓ Exists: True
+🔍 Requesting: admin/libs/all.min.css
+🔍 Requesting: admin/libs/chart.min.js
+🔍 Requesting: admin/css/admin.css
+🔍 Requesting: admin/js/admin.js
+🔍 Requesting: admin/webfonts/fa-solid-900.woff2
+🔍 Requesting: auth.html
+📄 Trying to serve HTML: auth.html
+📁 From directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+🔎 Full path: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates/auth.html
+✓ Exists: True
+✅ Successfully served from templates
+🔍 Requesting: js/supabase-client.js
+🔍 Requesting: index.html
+📄 Trying to serve HTML: index.html
+📁 From directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+🔎 Full path: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates/index.html
+✓ Exists: True
+✅ Successfully served from templates
+🔍 Requesting: css/main.css
+🔍 Requesting: js/supabase-client.js
+🔍 Requesting: js/hotel-search.js
+🔍 Requesting: assets/images/c2c-logo.png
+🔍 Requesting: js/main.js
+🔍 Requesting: assets/images/hotel-banner.jpg
+🔍 Requesting: assets/videos/hero-background.mp4
+🔍 Requesting: assets/videos/footer-background.mp4
+🔍 Requesting: assets/videos/footer-background.mp4
+🔍 Requesting: assets/videos/hero-background.mp4
+🔍 Requesting: index.html
+📄 Trying to serve HTML: index.html
+📁 From directory: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates
+🔎 Full path: /Users/priyeshsrivastava/Travel production/coast_to_coast_journeys/templates/index.html
+✓ Exists: True
+✅ Successfully served from templates
+🔍 Requesting: css/main.css
+127.0.0.1 - - [19/Jul/2026 17:43:16] "GET /js/hotel-search.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:43:16] "GET /js/main.js?v=3.1 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:43:16] "GET /assets/images/c2c-logo.png HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:43:16] "GET /js/supabase-client.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:43:16] "GET /assets/images/hotel-banner.jpg HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:43:17] "GET /assets/videos/footer-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:43:17] "GET /assets/videos/hero-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:43:17] "GET /assets/videos/footer-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:43:17] "GET /assets/videos/hero-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:43:26] "GET /assets/videos/hero-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:43:26] "GET /assets/videos/footer-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:43:27] "GET /assets/videos/footer-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:43:27] "GET /assets/videos/hero-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:46:04] "GET /auth.html?force=true HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:46:05] "GET /js/supabase-client.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:46:35] "POST /api/admin/login HTTP/1.1" 401 -
+127.0.0.1 - - [19/Jul/2026 17:46:42] "POST /api/admin/login HTTP/1.1" 401 -
+127.0.0.1 - - [19/Jul/2026 17:46:56] "POST /api/admin/login HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:46:56] "GET /admin/dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:46:56] "GET /admin/libs/all.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:46:56] "GET /admin/css/admin.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:46:56] "GET /admin/js/admin.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:46:56] "GET /admin/libs/chart.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:46:56] "GET /admin/webfonts/fa-solid-900.woff2 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:46:57] "GET /api/admin/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:46:57] "GET /api/admin/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:46:57] "GET /api/admin/dashboard?period=all HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:47:00] "GET /admin/users.html HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:47:01] "GET /admin/libs/all.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:47:01] "GET /admin/js/admin.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:47:01] "GET /admin/css/admin.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:47:01] "GET /admin/webfonts/fa-solid-900.woff2 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:47:01] "GET /api/admin/users HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:47:25] "PUT /api/admin/users/c1bbfb64-8d94-4697-b9a2-3e170a8ff8bd HTTP/1.1" 400 -
+127.0.0.1 - - [19/Jul/2026 17:47:35] "GET /index.html HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:47:35] "GET /css/main.css?v=2.1 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:47:35] "GET /js/supabase-client.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:47:35] "GET /assets/images/c2c-logo.png HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:47:35] "GET /js/hotel-search.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:47:35] "GET /js/main.js?v=3.1 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:47:35] "GET /assets/images/hotel-banner.jpg HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:47:35] "GET /assets/videos/hero-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:47:35] "GET /assets/videos/footer-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:47:35] "GET /assets/videos/footer-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:47:35] "GET /assets/videos/hero-background.mp4 HTTP/1.1" 206 -
+127.0.0.1 - - [19/Jul/2026 17:47:37] "GET /auth.html?force=true HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:47:37] "GET /js/supabase-client.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:47:49] "POST /api/admin/login HTTP/1.1" 401 -
+127.0.0.1 - - [19/Jul/2026 17:52:13] "GET /auth.html?force=true HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 17:52:14] "GET /js/supabase-client.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 17:52:28] "POST /api/admin/login HTTP/1.1" 401 -
+127.0.0.1 - - [19/Jul/2026 17:58:50] "POST /api/admin/login HTTP/1.1" 401 -
+127.0.0.1 - - [19/Jul/2026 18:01:46] "POST /api/admin/login HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 18:03:13] "POST /api/admin/login HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 18:03:13] "GET /admin/dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 18:03:14] "GET /admin/libs/all.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 18:03:14] "GET /admin/css/admin.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 18:03:14] "GET /admin/libs/chart.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 18:03:14] "GET /admin/js/admin.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 18:03:14] "GET /admin/webfonts/fa-solid-900.woff2 HTTP/1.1" 304 -
+127.0.0.1 - - [19/Jul/2026 18:03:15] "GET /api/admin/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 18:03:15] "GET /api/admin/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [19/Jul/2026 18:03:15] "GET /api/admin/dashboard?period=all HTTP/1.1" 200 -
