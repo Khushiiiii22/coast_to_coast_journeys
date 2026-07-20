@@ -4,100 +4,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Activity Logs | Coast To Coast Admin</title>
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="../../admin/libs/all.min.css">
-
-    <!-- Admin Styles -->
-    <link rel="stylesheet" href="../../admin/css/admin.css">
+    <title>Hotel Search Logs - Coast to Coast</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Base Styles -->
+    <link rel="stylesheet" href="../../admin/css/admin-vars.css">
+    <link rel="stylesheet" href="../../admin/css/admin-base.css">
+    <link rel="stylesheet" href="../../admin/css/admin-layout.css">
+    <link rel="stylesheet" href="../../admin/css/admin-components.css">
 
     <style>
-        /* Activity Logs Specific Styles */
-        .logs-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .logs-stats {
+        .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
 
-        .log-stat {
+        .stat-card {
             background: white;
-            padding: 1.25rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             display: flex;
             align-items: center;
-            gap: 1rem;
+            border-bottom: 4px solid #0e64a6;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        .log-stat-icon {
+        .stat-icon {
             width: 48px;
             height: 48px;
-            border-radius: 10px;
+            border-radius: 8px;
+            background: #f0f7ff;
+            color: #0e64a6;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
+            font-size: 1.5rem;
+            margin-right: 1rem;
         }
 
-        .log-stat-icon.blue {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            color: white;
+        .stat-info h3 {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
-        .log-stat-icon.green {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
-
-        .log-stat-icon.orange {
-            background: linear-gradient(135deg, #f97316, #ea580c);
-            color: white;
-        }
-
-        .log-stat-icon.red {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-        }
-
-        .log-stat-value {
+        .stat-info p {
+            margin: 0.25rem 0 0 0;
             font-size: 1.5rem;
             font-weight: 700;
-            color: #1e293b;
+            color: #0f172a;
+        }
+        
+        .stat-info small {
+            color: #22c55e;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
 
-        .log-stat-label {
-            font-size: 0.8rem;
-            color: #64748b;
+        .table-responsive {
+            overflow-x: auto;
+            width: 100%;
         }
 
-        /* Filters */
+        .admin-table th, .admin-table td {
+            white-space: nowrap;
+            padding: 0.75rem 1rem;
+        }
+        
+        .admin-table td {
+            font-size: 0.875rem;
+        }
+
         .filters-bar {
             display: flex;
+            flex-wrap: wrap;
             gap: 1rem;
             margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            align-items: center;
             background: white;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         .filter-group {
@@ -105,272 +101,33 @@
             align-items: center;
             gap: 0.5rem;
         }
-
-        .filter-group label {
-            font-size: 0.85rem;
-            color: #64748b;
-            white-space: nowrap;
-        }
-
-        .filter-group select,
-        .filter-group input {
-            padding: 0.5rem 1rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 0.9rem;
-        }
-
-        .search-box {
-            flex: 1;
-            min-width: 250px;
-            position: relative;
-        }
-
-        .search-box i {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 0.5rem 1rem 0.5rem 40px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-        }
-
-        /* Activity Timeline */
-        .activity-timeline {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-            overflow: hidden;
-        }
-
-        .activity-timeline-header {
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .activity-timeline-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #1e293b;
-        }
-
-        .activity-list {
-            padding: 0;
-            margin: 0;
-            list-style: none;
-        }
-
-        .activity-item {
-            display: flex;
-            gap: 1rem;
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid #f1f5f9;
-            transition: background 0.2s;
-        }
-
-        .activity-item:hover {
-            background: #f8fafc;
-        }
-
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-
-        .activity-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .activity-icon.login {
-            background: rgba(16, 185, 129, 0.1);
-            color: #10b981;
-        }
-
-        .activity-icon.logout {
-            background: rgba(100, 116, 139, 0.1);
-            color: #64748b;
-        }
-
-        .activity-icon.create {
-            background: rgba(14, 100, 166, 0.1);
-            color: #0e64a6;
-        }
-
-        .activity-icon.update {
-            background: rgba(245, 158, 11, 0.1);
-            color: #f59e0b;
-        }
-
-        .activity-icon.delete {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-        }
-
-        .activity-icon.view {
-            background: rgba(139, 92, 246, 0.1);
-            color: #8b5cf6;
-        }
-
-        .activity-icon.settings {
-            background: rgba(6, 182, 212, 0.1);
-            color: #06b6d4;
-        }
-
-        .activity-icon.error {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-        }
-
-        .activity-content {
-            flex: 1;
-        }
-
-        .activity-title {
-            font-weight: 500;
-            color: #1e293b;
-            margin-bottom: 0.25rem;
-        }
-
-        .activity-title strong {
-            color: #0e64a6;
-        }
-
-        .activity-description {
-            font-size: 0.85rem;
-            color: #64748b;
-            margin-bottom: 0.5rem;
-        }
-
-        .activity-meta {
-            display: flex;
-            gap: 1.5rem;
-            font-size: 0.75rem;
-            color: #94a3b8;
-        }
-
-        .activity-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 0.375rem;
-        }
-
-        .activity-time {
-            text-align: right;
-            white-space: nowrap;
-        }
-
-        .activity-time-relative {
-            font-size: 0.85rem;
-            color: #64748b;
-            margin-bottom: 0.125rem;
-        }
-
-        .activity-time-absolute {
-            font-size: 0.75rem;
-            color: #94a3b8;
-        }
-
-        /* Failed Login Attempts */
-        .failed-attempts {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            border-radius: 12px;
-            margin-bottom: 1.5rem;
-        }
-
-        .failed-attempts-header {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid #fecaca;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            color: #dc2626;
-            font-weight: 600;
-        }
-
-        .failed-attempts-body {
-            padding: 1rem 1.5rem;
-        }
-
-        .failed-attempt-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid #fecaca;
-        }
-
-        .failed-attempt-item:last-child {
-            border-bottom: none;
-        }
-
-        /* Pagination */
-        .pagination {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 1.5rem;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .pagination-info {
-            font-size: 0.9rem;
-            color: #64748b;
-        }
-
-        .pagination-buttons {
-            display: flex;
-            gap: 0.25rem;
-        }
-
-        .page-btn {
-            padding: 0.5rem 0.75rem;
-            border: 1px solid #e2e8f0;
-            background: white;
+        
+        .filter-group select, .filter-group input {
+            padding: 0.5rem;
+            border: 1px solid #cbd5e1;
             border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
+            outline: none;
         }
 
-        .page-btn:hover,
-        .page-btn.active {
-            background: #0e64a6;
-            color: white;
-            border-color: #0e64a6;
+        .badge-desktop { background: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;}
+        .badge-mobile { background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;}
+        .badge-tablet { background: #f3e8ff; color: #9333ea; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;}
+
+        .top-cities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .city-badge {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: #475569;
         }
     </style>
-
-    <!-- Google tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-XXXXXXXXXX');
-    </script>
-
-    <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'AW-XXXXXXXXXX');
-    </script>
 </head>
 
 <body>
@@ -384,128 +141,129 @@
                     <button class="sidebar-toggle" id="sidebarToggle">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h1 class="page-title">Activity Logs</h1>
+                    <h1 class="page-title">B2C Hotel Searches Logs</h1>
                 </div>
 
                 <div class="header-right">
-                    <button class="btn btn-secondary" onclick="exportLogs()">
-                        <i class="fas fa-download"></i> Export
-                    </button>
-                    <button class="btn btn-secondary" onclick="refreshLogs()">
-                        <i class="fas fa-sync"></i> Refresh
+                    <button class="btn btn-secondary" onclick="exportCSV()">
+                        <i class="fas fa-download"></i> Export CSV
                     </button>
                 </div>
             </header>
 
             <div class="admin-content">
-                <!-- Stats -->
-                <div class="logs-stats">
-                    <div class="log-stat">
-                        <div class="log-stat-icon blue">
-                            <i class="fas fa-list"></i>
-                        </div>
-                        <div>
-                            <div class="log-stat-value" id="totalActions">0</div>
-                            <div class="log-stat-label">Total Actions Today</div>
-                        </div>
-                    </div>
-                    <div class="log-stat">
-                        <div class="log-stat-icon green">
-                            <i class="fas fa-sign-in-alt"></i>
-                        </div>
-                        <div>
-                            <div class="log-stat-value" id="loginCount">0</div>
-                            <div class="log-stat-label">Successful Logins</div>
+                
+                <!-- Dashboard Cards -->
+                <div class="dashboard-grid">
+                    <div class="stat-card" style="border-bottom-color: #3b82f6;">
+                        <div class="stat-icon"><i class="fas fa-search"></i></div>
+                        <div class="stat-info">
+                            <h3>Total Searches Today</h3>
+                            <p id="statToday">0</p>
                         </div>
                     </div>
-                    <div class="log-stat">
-                        <div class="log-stat-icon red">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div>
-                            <div class="log-stat-value" id="failedLogins">0</div>
-                            <div class="log-stat-label">Failed Login Attempts</div>
+                    <div class="stat-card" style="border-bottom-color: #8b5cf6;">
+                        <div class="stat-icon" style="color: #8b5cf6; background: #f3e8ff;"><i class="fas fa-calendar-alt"></i></div>
+                        <div class="stat-info">
+                            <h3>Searches This Month</h3>
+                            <p id="statMonth">0</p>
                         </div>
                     </div>
-                    <div class="log-stat">
-                        <div class="log-stat-icon orange">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div>
-                            <div class="log-stat-value" id="activeUsers">1</div>
-                            <div class="log-stat-label">Active Users</div>
+                    <div class="stat-card" style="border-bottom-color: #f59e0b;">
+                        <div class="stat-icon" style="color: #f59e0b; background: #fef3c7;"><i class="fas fa-mobile-alt"></i></div>
+                        <div class="stat-info">
+                            <h3>Mobile Searches</h3>
+                            <p id="statMobile">0</p>
                         </div>
                     </div>
-                </div>
-
-                <!-- Failed Login Attempts Alert -->
-                <div class="failed-attempts" id="failedAttemptsSection" style="display: none;">
-                    <div class="failed-attempts-header">
-                        <i class="fas fa-shield-alt"></i>
-                        Recent Failed Login Attempts
+                    <div class="stat-card" style="border-bottom-color: #10b981;">
+                        <div class="stat-icon" style="color: #10b981; background: #d1fae5;"><i class="fas fa-desktop"></i></div>
+                        <div class="stat-info">
+                            <h3>Desktop Searches</h3>
+                            <p id="statDesktop">0</p>
+                        </div>
                     </div>
-                    <div class="failed-attempts-body" id="failedAttemptsList">
-                        <!-- Dynamic content -->
+                    <div class="stat-card" style="border-bottom-color: #ef4444; grid-column: span 2;">
+                        <div class="stat-info" style="width: 100%;">
+                            <h3>Top 10 Searched Cities</h3>
+                            <div class="top-cities" id="topCities">
+                                <span class="city-badge">Loading...</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Filters -->
                 <div class="filters-bar">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="logSearch" placeholder="Search activities...">
-                    </div>
-
                     <div class="filter-group">
-                        <label>Action:</label>
-                        <select id="actionFilter">
-                            <option value="">All Actions</option>
-                            <option value="login">Login</option>
-                            <option value="logout">Logout</option>
-                            <option value="create">Create</option>
-                            <option value="update">Update</option>
-                            <option value="delete">Delete</option>
-                            <option value="view">View</option>
+                        <label>From Date:</label>
+                        <input type="date" id="filterFromDate">
+                    </div>
+                    <div class="filter-group">
+                        <label>To Date:</label>
+                        <input type="date" id="filterToDate">
+                    </div>
+                    <div class="filter-group">
+                        <label>Destination:</label>
+                        <input type="text" id="filterDest" placeholder="e.g. Dubai">
+                    </div>
+                    <div class="filter-group">
+                        <label>Device:</label>
+                        <select id="filterDevice">
+                            <option value="">All Devices</option>
+                            <option value="Desktop">Desktop</option>
+                            <option value="Mobile">Mobile</option>
+                            <option value="Tablet">Tablet</option>
                         </select>
                     </div>
-
                     <div class="filter-group">
-                        <label>User:</label>
-                        <select id="userFilter">
+                        <label>User Type:</label>
+                        <select id="filterUserType">
                             <option value="">All Users</option>
-                            <option value="admin">Super Admin</option>
+                            <option value="Guest">Guest</option>
+                            <option value="Registered User">Logged-in User</option>
                         </select>
                     </div>
-
-                    <div class="filter-group">
-                        <label>Date:</label>
-                        <input type="date" id="fromDate">
-                        <span>to</span>
-                        <input type="date" id="toDate">
-                    </div>
-
-                    <button class="btn btn-secondary" onclick="applyFilters()">
-                        <i class="fas fa-filter"></i> Apply
-                    </button>
+                    <button class="btn btn-primary" onclick="loadSearchLogs()">Apply Filters</button>
+                    <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
                 </div>
 
-                <!-- Activity Timeline -->
-                <div class="activity-timeline">
-                    <div class="activity-timeline-header">
-                        <h2 class="activity-timeline-title">Activity History</h2>
-                        <span style="font-size: 0.85rem; color: #64748b;">Last 100 activities</span>
+                <!-- Table -->
+                <div class="admin-card">
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Search Date</th>
+                                    <th>Origin / Destination</th>
+                                    <th>Check-In</th>
+                                    <th>Check-Out</th>
+                                    <th>Nights</th>
+                                    <th>Rooms</th>
+                                    <th>Adults</th>
+                                    <th>Children</th>
+                                    <th>Device</th>
+                                    <th>Browser / OS</th>
+                                    <th>IP Address</th>
+                                    <th>User Type</th>
+                                    <th>User Email</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsBody">
+                                <tr>
+                                    <td colspan="13" style="text-align: center; padding: 2rem;">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading search logs...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <ul class="activity-list" id="activityList">
-                        <!-- Dynamic activities will be inserted here -->
-                    </ul>
-                    <div class="pagination">
-                        <div class="pagination-info" id="paginationInfo">
-                            Showing activities
-                        </div>
-                        <div class="pagination-buttons">
-                            <button class="page-btn"><i class="fas fa-chevron-left"></i></button>
-                            <button class="page-btn active">1</button>
-                            <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
+                    
+                    <div class="pagination-controls" style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div class="pagination-info" id="paginationInfo">Showing 0-0 of 0 logs</div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-secondary" onclick="prevPage()" id="btnPrev">Previous</button>
+                            <button class="btn btn-secondary" onclick="nextPage()" id="btnNext">Next</button>
                         </div>
                     </div>
                 </div>
@@ -515,265 +273,147 @@
 
     <!-- Admin JavaScript -->
     <script src="../../admin/js/admin.js?v=2.0"></script>
+    
     <script>
-        // Check authentication and load logs
-        document.addEventListener('DOMContentLoaded', function () {
-            const token = localStorage.getItem('admin_token');
-            if (!token) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            loadActivityLogs();
-            loadFailedAttempts();
-            initSearch();
+        let logsData = [];
+        let currentPage = 0;
+        const limit = 100;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default date range to last 7 days
+            const today = new Date();
+            const lastWeek = new Date(today);
+            lastWeek.setDate(lastWeek.getDate() - 7);
+            
+            document.getElementById('filterToDate').value = today.toISOString().split('T')[0];
+            document.getElementById('filterFromDate').value = lastWeek.toISOString().split('T')[0];
+            
+            loadSearchLogs();
         });
 
-        let allLogs = [];
-
-        // Load activity logs from backend API
-        async function loadActivityLogs() {
-            const activityList = document.getElementById('activityList');
-            
+        async function loadSearchLogs() {
             try {
-                const res = await apiRequest('/activity-logs?limit=100');
-                if (!res.success) throw new Error('Failed to load logs');
+                const tbody = document.getElementById('logsBody');
+                tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Loading data...</td></tr>`;
                 
-                const activityLog = res.data || [];
-                allLogs = activityLog;
+                const fromDate = document.getElementById('filterFromDate').value;
+                const toDate = document.getElementById('filterToDate').value;
+                const device = document.getElementById('filterDevice').value;
+                const userType = document.getElementById('filterUserType').value;
+                const destination = document.getElementById('filterDest').value;
+                
+                const offset = currentPage * limit;
+                
+                let url = `/api/admin/reports/hotel-searches?limit=${limit}&offset=${offset}`;
+                if (fromDate) url += `&from_date=${fromDate}`;
+                if (toDate) url += `&to_date=${toDate}`;
+                if (device) url += `&device=${device}`;
+                if (userType) url += `&user_type=${userType}`;
+                if (destination) url += `&destination=${destination}`;
 
-            // Update stats
-            const todayStart = new Date();
-            todayStart.setHours(0, 0, 0, 0);
+                const response = await apiRequest(url);
+                
+                if (response.success) {
+                    logsData = response.data;
+                    renderTable();
+                    renderDashboard(response.dashboard);
+                    
+                    document.getElementById('paginationInfo').textContent = `Showing ${offset + 1}-${offset + logsData.length} logs`;
+                    document.getElementById('btnPrev').disabled = currentPage === 0;
+                    document.getElementById('btnNext').disabled = logsData.length < limit;
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="13" class="error-state">Failed to load logs: ${response.error}</td></tr>`;
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('logsBody').innerHTML = `<tr><td colspan="13" class="error-state">Server error occurred</td></tr>`;
+            }
+        }
 
-            const todayActions = activityLog.filter(log => new Date(log.created_at) >= todayStart);
-            const loginCount = activityLog.filter(log => log.action === 'login').length;
-
-            document.getElementById('totalActions').textContent = todayActions.length;
-            document.getElementById('loginCount').textContent = loginCount;
-
-            if (activityLog.length === 0) {
-                activityList.innerHTML = `
-                    <li class="activity-item" style="text-align: center; padding: 3rem;">
-                        <div style="color: #94a3b8;">
-                            <i class="fas fa-history" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
-                            <p>No activity logs yet. Activities will appear here as you use the admin panel.</p>
-                        </div>
-                    </li>
-                `;
-                document.getElementById('paginationInfo').textContent = 'No activities to show';
+        function renderTable() {
+            const tbody = document.getElementById('logsBody');
+            
+            if (logsData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; padding: 2rem;">No search logs found for the selected criteria.</td></tr>`;
                 return;
             }
-
-            // Sort by newest first
-            const sortedLogs = [...activityLog].reverse();
-
-            activityList.innerHTML = sortedLogs.map(log => {
-                const iconClass = getActivityIconClass(log.action);
-                const iconName = getActivityIcon(log.action);
-                const timeAgo = getTimeAgo(log.created_at);
-                const formattedDate = formatDateTime(log.created_at);
-                const userName = log.admin_users?.full_name || log.admin_users?.email || 'Unknown User';
-
+            
+            tbody.innerHTML = logsData.map(log => {
+                const dt = new Date(log.created_at).toLocaleString();
+                const badgeClass = log.device_type === 'Desktop' ? 'badge-desktop' : (log.device_type === 'Tablet' ? 'badge-tablet' : 'badge-mobile');
+                
                 return `
-                    <li class="activity-item">
-                        <div class="activity-icon ${iconClass}">
-                            <i class="fas ${iconName}"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-title">
-                                <strong>${userName}</strong> ${getActivityVerb(log.action)}
-                            </div>
-                            <div class="activity-description">${log.details || ''}</div>
-                            ${log.metadata ? `<div class="activity-metadata" style="margin-top: 5px; font-size: 0.85rem; color: #64748b; background: #f8fafc; padding: 6px; border-radius: 4px;">
-                                ${log.metadata.rooms ? `<span style="margin-right: 10px;"><i class="fas fa-door-closed"></i> ${log.metadata.rooms} Room(s)</span>` : ''}
-                                ${log.metadata.adults ? `<span style="margin-right: 10px;"><i class="fas fa-user"></i> ${log.metadata.adults} Adult(s)</span>` : ''}
-                                ${log.metadata.children ? `<span><i class="fas fa-child"></i> ${log.metadata.children} Child(ren)</span>` : ''}
-                            </div>` : ''}
-                            <div class="activity-meta">
-                                <span class="activity-meta-item">
-                                    <i class="fas fa-user"></i> ${userName}
-                                </span>
-                                <span class="activity-meta-item">
-                                    <i class="fas fa-${getActionIcon(log.action)}"></i> ${capitalizeFirst(log.action)}
-                                </span>
-                            </div>
-                        </div>
-                        <div class="activity-time">
-                            <div class="activity-time-relative">${timeAgo}</div>
-                            <div class="activity-time-absolute">${formattedDate}</div>
-                        </div>
-                    </li>
+                    <tr>
+                        <td>${dt}</td>
+                        <td><strong>${log.destination || 'Unknown'}</strong></td>
+                        <td>${log.checkin || '-'}</td>
+                        <td>${log.checkout || '-'}</td>
+                        <td>${log.nights || '-'}</td>
+                        <td>${log.rooms || 1}</td>
+                        <td>${log.adults || 0}</td>
+                        <td>${log.children || 0}</td>
+                        <td><span class="${badgeClass}">${log.device_type || 'Unknown'}</span></td>
+                        <td>${log.browser || ''} / ${log.operating_system || ''}</td>
+                        <td>${log.ip_address || ''} <small>(${log.country || 'Unknown'})</small></td>
+                        <td>${log.user_type || 'Guest'}</td>
+                        <td>${log.email || '-'}</td>
+                    </tr>
                 `;
             }).join('');
-
-            document.getElementById('paginationInfo').textContent = `Showing ${sortedLogs.length} activities`;
-            } catch (error) {
-                console.error('Error loading logs:', error);
-                activityList.innerHTML = `<li class="activity-item" style="text-align: center; color: #ef4444; padding: 2rem;">Failed to load activity logs</li>`;
-            }
         }
-
-        // Load failed login attempts
-        function loadFailedAttempts() {
-            const failedAttempts = JSON.parse(localStorage.getItem('failed_login_attempts') || '[]');
-            const section = document.getElementById('failedAttemptsSection');
-            const list = document.getElementById('failedAttemptsList');
-
-            document.getElementById('failedLogins').textContent = failedAttempts.length;
-
-            if (failedAttempts.length === 0) {
-                section.style.display = 'none';
-                return;
-            }
-
-            section.style.display = 'block';
-
-            // Show last 5 failed attempts
-            const recentAttempts = [...failedAttempts].reverse().slice(0, 5);
-
-            list.innerHTML = recentAttempts.map(attempt => `
-                <div class="failed-attempt-item">
-                    <div>
-                        <div style="font-weight: 500; color: #dc2626;">Failed login: "${attempt.username}"</div>
-                        <div style="font-size: 0.8rem; color: #64748b;">IP: Unknown (client-side demo)</div>
-                    </div>
-                    <div style="font-size: 0.85rem; color: #64748b;">
-                        ${getTimeAgo(attempt.timestamp)}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Initialize search
-        function initSearch() {
-            const searchInput = document.getElementById('logSearch');
-            searchInput.addEventListener('input', function () {
-                const filter = this.value.toLowerCase();
-                const items = document.querySelectorAll('.activity-item');
-
-                items.forEach(item => {
-                    const text = item.textContent.toLowerCase();
-                    item.style.display = text.includes(filter) ? '' : 'none';
-                });
-            });
-        }
-
-        // Helper functions
-        function getActivityIconClass(action) {
-            const classes = {
-                login: 'login',
-                logout: 'logout',
-                create: 'create',
-                update: 'update',
-                delete: 'delete',
-                view: 'view',
-                update_settings: 'settings',
-                create_flight_booking: 'create',
-                create_hotel_booking: 'create'
-            };
-            return classes[action] || 'view';
-        }
-
-        function getActivityIcon(action) {
-            const icons = {
-                login: 'fa-sign-in-alt',
-                logout: 'fa-sign-out-alt',
-                create: 'fa-plus-circle',
-                update: 'fa-edit',
-                delete: 'fa-trash',
-                view: 'fa-eye',
-                update_settings: 'fa-cog',
-                create_flight_booking: 'fa-plane',
-                create_hotel_booking: 'fa-hotel'
-            };
-            return icons[action] || 'fa-circle';
-        }
-
-        function getActionIcon(action) {
-            const icons = {
-                login: 'sign-in-alt',
-                logout: 'sign-out-alt',
-                create: 'plus',
-                update: 'edit',
-                delete: 'trash',
-                view: 'eye'
-            };
-            return icons[action] || 'code';
-        }
-
-        function getActivityVerb(action) {
-            const verbs = {
-                login: 'logged in to the admin panel',
-                logout: 'logged out from the admin panel',
-                create: 'created a new record',
-                update: 'updated a record',
-                delete: 'deleted a record',
-                view: 'viewed a page',
-                update_settings: 'updated system settings',
-                create_flight_booking: 'created a manual flight booking',
-                create_hotel_booking: 'created a manual hotel booking'
-            };
-            return verbs[action] || 'performed an action';
-        }
-
-        function getTimeAgo(timestamp) {
-            const now = new Date();
-            const then = new Date(timestamp);
-            const seconds = Math.floor((now - then) / 1000);
-
-            if (seconds < 60) return 'Just now';
-            if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
-            if (seconds < 86400) return `${Math.floor(seconds / 3600)} hr ago`;
-            if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
-            return then.toLocaleDateString();
-        }
-
-        function formatDateTime(timestamp) {
-            const date = new Date(timestamp);
-            return date.toLocaleString('en-IN', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-
-        function capitalizeFirst(str) {
-            return str.charAt(0).toUpperCase() + str.slice(1).replace(/_/g, ' ');
-        }
-
-        // Refresh logs
-        function refreshLogs() {
-            loadActivityLogs();
-            loadFailedAttempts();
-            showNotification('Activity logs refreshed', 'success');
-        }
-
-        // Export logs
-        function exportLogs() {
-            if (allLogs.length === 0) {
-                showNotification('No logs to export', 'warning');
-                return;
-            }
-
-            exportToCSV(allLogs.map(log => ({
-                'Timestamp': formatDateTime(log.created_at),
-                'User': log.admin_users?.full_name || log.admin_users?.email || 'Unknown',
-                'Action': log.action,
-                'Details': log.details || ''
-            })), 'activity_logs_report');
+        
+        function renderDashboard(dash) {
+            document.getElementById('statToday').textContent = dash.total_today || 0;
+            document.getElementById('statMonth').textContent = dash.total_month || 0;
+            document.getElementById('statMobile').textContent = dash.mobile_count || 0;
+            document.getElementById('statDesktop').textContent = dash.desktop_count || 0;
             
-            showNotification('Logs exported successfully', 'success');
+            const citiesBox = document.getElementById('topCities');
+            if (dash.top_cities && dash.top_cities.length > 0) {
+                citiesBox.innerHTML = dash.top_cities.map(c => `<span class="city-badge">${c.city} (${c.count})</span>`).join('');
+            } else {
+                citiesBox.innerHTML = `<span class="city-badge">No data</span>`;
+            }
         }
 
-        // Apply filters
-        function applyFilters() {
-            showNotification('Filters applied', 'info');
-            // In a real implementation, this would filter the displayed logs
+        function resetFilters() {
+            document.getElementById('filterDest').value = '';
+            document.getElementById('filterDevice').value = '';
+            document.getElementById('filterUserType').value = '';
+            currentPage = 0;
+            loadSearchLogs();
+        }
+
+        function prevPage() {
+            if (currentPage > 0) {
+                currentPage--;
+                loadSearchLogs();
+            }
+        }
+
+        function nextPage() {
+            currentPage++;
+            loadSearchLogs();
+        }
+        
+        function exportCSV() {
+            if (logsData.length === 0) return alert("No data to export");
+            
+            let csv = "Search Date,Destination,Check-in,Check-out,Nights,Rooms,Adults,Children,Device,Browser,OS,IP,User Type,Email\n";
+            logsData.forEach(l => {
+                csv += `"${l.created_at}","${l.destination}","${l.checkin}","${l.checkout}","${l.nights}","${l.rooms}","${l.adults}","${l.children}","${l.device_type}","${l.browser}","${l.operating_system}","${l.ip_address}","${l.user_type}","${l.email}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'hotel_search_logs.csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
     </script>
 </body>
-
 </html>

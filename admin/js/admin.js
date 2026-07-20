@@ -424,11 +424,6 @@ function initSidebar() {
             ]
         },
         {
-            section: 'Reports', items: [
-                { name: 'Hotel Search Logs', icon: 'fa-search-location', href: 'hotel-search-logs.html' }
-            ]
-        },
-        {
             section: 'System', items: [
                 { name: 'Admin Users', icon: 'fa-user-shield', href: 'users.html' },
                 { 
@@ -496,11 +491,6 @@ function initSidebar() {
                     },
                     { name: 'Frontend Sign-ins', icon: 'fa-sign-in-alt', href: 'frontend-users.html' },
                     { name: 'Activity Logs', icon: 'fa-history', href: 'activity-logs.html' }
-                ]
-            },
-            {
-                section: 'Reports', items: [
-                    { name: 'Hotel Search Logs', icon: 'fa-search-location', href: 'hotel-search-logs.html' }
                 ]
             },
             {
