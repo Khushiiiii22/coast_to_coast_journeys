@@ -41,7 +41,7 @@ def create_order():
         # Create order
         result = razorpay_service.create_order(
             amount=float(data['amount']),
-            currency=data.get('currency', 'INR'),
+            currency=data.get('currency', 'USD'),
             notes=data.get('booking_details', {})
         )
         
@@ -164,7 +164,7 @@ def verify_payment():
                         guests=booking.get('guests', []), # Legacy fallback
                         rooms=booking.get('rooms'),       # Essential structured room guests
                         amount=booking.get('total_amount', 0),
-                        currency=booking.get('currency', 'INR')
+                        currency=booking.get('currency', 'USD')
                     )
 
                     finish_ok = finish_result.get('success', False)
@@ -238,7 +238,7 @@ def verify_payment():
                         'checkin': booking.get('check_in'),
                         'checkout': booking.get('check_out'),
                         'amount': booking.get('total_amount'),
-                        'currency': booking.get('currency', 'INR')
+                        'currency': booking.get('currency', 'USD')
                     }
                     from services.email_service import email_service
                     email_service.init_app(current_app)
@@ -424,7 +424,7 @@ def _create_flight_booking_record(flight, passenger, amount, payment_method, pay
         'flight_class': flight.get('flightClass', 'economy'),
         'travelers': flight.get('travelers', 1),
         'total_amount': amount,
-        'currency': flight.get('currency', 'INR'),
+        'currency': flight.get('currency', 'USD'),
         'passenger_name': f"{passenger.get('firstName', '')} {passenger.get('lastName', '')}".strip(),
         'passenger_email': passenger.get('email', ''),
         'passenger_phone': passenger.get('phone', ''),
@@ -461,7 +461,7 @@ def _save_and_email_flight_booking(booking_ref, booking_record, flight, passenge
             'customer_email': passenger.get('email', ''),
             'customer_phone': passenger.get('phone', ''),
             'amount': amount,
-            'currency': flight.get('currency', 'INR'),
+            'currency': flight.get('currency', 'USD'),
             'depart_time': flight.get('departTime', ''),
             'arrive_time': flight.get('arriveTime', ''),
             'duration': flight.get('duration', ''),
@@ -620,7 +620,7 @@ def capture_paypal_order(order_id):
                                 guests=booking.get('guests', []),
                                 rooms=booking.get('rooms'),
                                 amount=booking.get('total_amount', 0),
-                                currency=booking.get('currency', 'INR')
+                                currency=booking.get('currency', 'USD')
                             )
 
                             finish_ok = finish_result.get('success', False)
@@ -690,7 +690,7 @@ def capture_paypal_order(order_id):
                                 'checkin': booking.get('check_in') or booking.get('checkin'),
                                 'checkout': booking.get('check_out') or booking.get('checkout'),
                                 'amount': booking.get('total_amount'),
-                                'currency': booking.get('currency', 'INR')
+                                'currency': booking.get('currency', 'USD')
                             }
                             from services.email_service import email_service
                             email_service.init_app(current_app)
@@ -724,5 +724,219 @@ def get_paypal_order_details(order_id):
         
         return jsonify(result), 200 if result['success'] else 500
         
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# ========================================
+# Stripe Payment Routes
+# ========================================
+
+@payment_bp.route('/stripe/create-session', methods=['POST'])
+def create_stripe_session():
+    """
+    Create Stripe checkout session for hotel/general booking
+    """
+    try:
+        data = request.get_json()
+        
+        if 'amount' not in data or 'booking_id' not in data:
+            return jsonify({'success': False, 'error': 'Amount and booking_id are required'}), 400
+            
+        stripe_service = current_app.config.get('STRIPE_SERVICE')
+        if not stripe_service:
+            return jsonify({'success': False, 'error': 'Stripe service not configured'}), 500
+            
+        result = stripe_service.create_checkout_session(
+            amount=data['amount'],
+            currency=data.get('currency', 'USD'),
+            reference_id=data['booking_id'],
+            success_url=data.get('success_url'),
+            cancel_url=data.get('cancel_url')
+        )
+        
+        return jsonify(result), 200 if result['status'] == 'success' else 500
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@payment_bp.route('/stripe/verify', methods=['POST'])
+def verify_stripe_payment():
+    """
+    Verify Stripe payment after redirect (Hotels)
+    """
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
+        
+        if not session_id:
+            return jsonify({'success': False, 'error': 'session_id is required'}), 400
+            
+        stripe_service = current_app.config.get('STRIPE_SERVICE')
+        if not stripe_service:
+            return jsonify({'success': False, 'error': 'Stripe service not configured'}), 500
+            
+        result = stripe_service.verify_session(session_id)
+        
+        if result['status'] == 'success' and result.get('payment_status') == 'paid':
+            booking_id = result.get('booking_id')
+            
+            # --- Hotel Booking Finalization Logic ---
+            supabase = current_app.config.get('SUPABASE')
+            if booking_id and supabase:
+                try:
+                    # Create payment record
+                    supabase.table('payments').insert({
+                        'booking_id': booking_id,
+                        'stripe_session_id': session_id,
+                        'status': 'paid',
+                        'payment_method': 'stripe'
+                    }).execute()
+
+                    # Mark as processing
+                    supabase.table('hotel_bookings').update({
+                        'status': 'processing',
+                        'updated_at': datetime.utcnow().isoformat() + 'Z'
+                    }).eq('id', booking_id).execute()
+
+                    # Fetch booking
+                    booking_response = supabase.table('hotel_bookings').select('*').eq('id', booking_id).execute()
+                    
+                    if booking_response.data:
+                        booking = booking_response.data[0]
+                        partner_order_id = booking.get('partner_order_id')
+                        
+                        if partner_order_id:
+                            import time
+                            from services.etg_service import etg_service
+                            
+                            print(f"📋 Calling /booking/finish for Stripe order {partner_order_id}...")
+                            # Since we don't pass frontend data here, we just use what's saved in DB
+                            finish_result = etg_service.finish_booking(
+                                partner_order_id=partner_order_id,
+                                email=booking.get('customer_email') or booking.get('email', 'info@coasttocoastjourneys.com'),
+                                phone=booking.get('customer_phone') or booking.get('phone', '0000000000'),
+                                guests=booking.get('guests', []),
+                                rooms=booking.get('rooms'),
+                                amount=booking.get('total_amount', 0),
+                                currency=booking.get('currency', 'USD')
+                            )
+
+                            finish_ok = finish_result.get('success', False)
+                            finish_error = str(finish_result.get('error', '')).lower()
+                            should_poll = finish_ok or 'timeout' in finish_error or 'unknown' in finish_error
+
+                            if not should_poll:
+                                supabase.table('hotel_bookings').update({
+                                    'status': 'payment_received_booking_failed',
+                                    'updated_at': datetime.utcnow().isoformat() + 'Z'
+                                }).eq('id', booking_id).execute()
+                            else:
+                                print(f"🔄 Polling /finish/status for Stripe order {partner_order_id}...")
+                                etg_confirmed = False
+                                max_polls = 10
+                                poll_interval = 6
+                                for attempt in range(max_polls):
+                                    time.sleep(poll_interval)
+                                    status_result = etg_service.check_booking_status(partner_order_id)
+                                    status_data = status_result.get('data', {})
+                                    etg_status = status_data.get('status') or status_data.get('data', {}).get('status') or ''
+                                    
+                                    if etg_status == 'ok':
+                                        etg_confirmed = True
+                                        break
+                                    elif etg_status in ('error', 'not_available', 'unknown_error'):
+                                        break
+
+                                if etg_confirmed:
+                                    supabase.table('hotel_bookings').update({
+                                        'status': 'confirmed',
+                                        'updated_at': datetime.utcnow().isoformat() + 'Z'
+                                    }).eq('id', booking_id).execute()
+                                else:
+                                    supabase.table('hotel_bookings').update({
+                                        'status': 'pending_etg_confirmation',
+                                        'updated_at': datetime.utcnow().isoformat() + 'Z'
+                                    }).eq('id', booking_id).execute()
+                        else:
+                            supabase.table('hotel_bookings').update({
+                                'status': 'confirmed',
+                                'updated_at': datetime.utcnow().isoformat() + 'Z'
+                            }).eq('id', booking_id).execute()
+
+                        # Send confirmation email
+                        try:
+                            email_details = {
+                                'booking_id': booking.get('id'),
+                                'hotel_name': booking.get('hotel_name', 'Hotel'),
+                                'customer_name': f"{booking.get('first_name', '')} {booking.get('last_name', '')}",
+                                'customer_email': booking.get('customer_email') or booking.get('email'),
+                                'checkin': booking.get('check_in') or booking.get('checkin'),
+                                'checkout': booking.get('check_out') or booking.get('checkout'),
+                                'amount': booking.get('total_amount'),
+                                'currency': booking.get('currency', 'USD')
+                            }
+                            from services.email_service import email_service
+                            email_service.init_app(current_app)
+                            email_service.send_booking_confirmation(email_details['customer_email'], email_details)
+                        except Exception as e:
+                            pass
+                except Exception as e:
+                    print(f"DB/ETG error in Stripe verify: {e}")
+            
+            return jsonify({
+                'success': True,
+                'booking_id': booking_id,
+                'message': 'Stripe payment verified and booking confirmed'
+            }), 200
+        else:
+            return jsonify({'success': False, 'error': 'Payment not completed or invalid'}), 400
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@payment_bp.route('/stripe/flight/verify', methods=['POST'])
+def verify_stripe_flight_payment():
+    """
+    Verify Stripe payment for flight booking and save record
+    """
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
+        
+        if not session_id:
+            return jsonify({'success': False, 'error': 'session_id is required'}), 400
+            
+        stripe_service = current_app.config.get('STRIPE_SERVICE')
+        if not stripe_service:
+            return jsonify({'success': False, 'error': 'Stripe service not configured'}), 500
+            
+        result = stripe_service.verify_session(session_id)
+        
+        if result['status'] == 'success' and result.get('payment_status') == 'paid':
+            # Create flight booking record
+            flight = data.get('flight', {})
+            passenger = data.get('passenger', {})
+            amount = data.get('amount', 0)
+            
+            # The reference_id was passed when creating session
+            ref_id = result.get('booking_id')
+            
+            booking_ref, booking_record = _create_flight_booking_record(
+                flight, passenger, amount, 'stripe', session_id
+            )
+            # Use the original ref_id if it exists, otherwise generated one
+            final_ref = ref_id if ref_id and ref_id.startswith('C2C-') else booking_ref
+            booking_record['reference_id'] = final_ref
+            
+            _save_and_email_flight_booking(final_ref, booking_record, flight, passenger, amount)
+            
+            return jsonify({
+                'success': True,
+                'booking_id': final_ref,
+                'message': 'Stripe flight payment verified and booking confirmed'
+            }), 200
+        else:
+            return jsonify({'success': False, 'error': 'Payment not completed or invalid'}), 400
+            
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500

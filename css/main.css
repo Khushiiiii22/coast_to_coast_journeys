@@ -1199,6 +1199,7 @@ h6 {
 }
 
 .footer-logo span {
+    font-family: 'Broadway', sans-serif;
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--primary-dark);
@@ -2007,7 +2008,10 @@ h6 {
 /* === Responsive === */
 @media (max-width: 1024px) {
 
-    .search-form,
+    .search-form {
+        grid-template-columns: 1fr 1fr;
+    }
+
     .search-form-grid {
         grid-template-columns: 1fr 1fr;
     }
@@ -2213,10 +2217,7 @@ h6 {
 }
 
 .sidebar-social {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    margin-bottom: 12px;
+    display: none !important;
 }
 
 .sidebar-social a {
@@ -2458,6 +2459,7 @@ h6 {
 .form-field-improved input[type="text"],
 .form-field-improved input[type="date"],
 .form-field-improved select {
+    width: 100%;
     padding: 14px 16px;
     border: 2px solid var(--gray-200);
     border-radius: var(--radius);
@@ -2717,6 +2719,7 @@ h6 {
 }
 
 .travelers-dropdown {
+    width: 100%;
     padding: 14px 16px;
     border: 2px solid var(--gray-200);
     border-radius: var(--radius);
@@ -3433,6 +3436,11 @@ input:disabled+.date-display-content {
    MOBILE RESPONSIVENESS (CONSOLIDATED)
    ===================================================== */
 @media (max-width: 768px) {
+    .social-links,
+    .sidebar-social {
+        display: none !important;
+    }
+    
     :root {
         --header-height: 64px;
     }
@@ -3531,6 +3539,11 @@ input:disabled+.date-display-content {
     }
 
     .search-form {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .search-form-grid {
         grid-template-columns: 1fr;
         gap: 10px;
     }
@@ -4302,6 +4315,11 @@ body {
     isolation: isolate;
 }
 
+.date-field-hotel.calendar-active,
+.date-field.calendar-active {
+    z-index: 9999 !important;
+}
+
 .date-field-hotel .custom-calendar {
     /* Position relative to .date-field-hotel parent */
     position: absolute !important;
@@ -4315,6 +4333,15 @@ body {
 /* When calendar is open, increase z-index */
 .date-field-hotel .custom-calendar.open {
     z-index: 10000 !important;
+}
+
+@media (max-width: 768px) {
+    .date-field-hotel .custom-calendar,
+    .date-field .custom-calendar {
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        right: auto !important;
+    }
 }
 /* ===== Mobile Responsive Fixes for Theme Updates ===== */
 @media (max-width: 768px) {
@@ -4383,6 +4410,7 @@ body {
     align-items: center;
 }
 .logo-text-main {
+    font-family: 'Broadway', sans-serif;
     font-size: 1.25rem;
     font-weight: 800;
     color: var(--primary);
@@ -4391,6 +4419,7 @@ body {
     text-transform: capitalize;
 }
 .logo-text-sub {
+    font-family: 'Broadway', sans-serif;
     font-size: 0.7rem;
     font-weight: 600;
     color: #64748b;
@@ -4399,10 +4428,15 @@ body {
     margin-top: 3px;
 }
 @media (max-width: 992px) {
-    .logo-text-container {
-        display: none !important;
-    }
     .logo img {
         height: 36px; /* slightly smaller on mobile to fit nicely */
+    }
+    
+    .logo-text-main {
+        font-size: 1rem;
+    }
+    
+    .logo-text-sub {
+        font-size: 0.55rem;
     }
 }

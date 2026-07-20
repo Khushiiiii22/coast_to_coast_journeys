@@ -759,6 +759,8 @@ function smoothScroll(e) {
 // Date Picker Init (Flatpickr)
 // ========================================
 function initDatePickers() {
+    // Disabled Flatpickr to restore native browser date picker behavior (dd/mm/yyyy with side calendar icon)
+    /*
     if (typeof flatpickr === 'undefined') return;
     const commonConfig = {
         dateFormat: "Y-m-d",
@@ -809,6 +811,7 @@ function initDatePickers() {
         if (checkInInput) flatpickr("#checkInDate", commonConfig);
         if (checkOutInput) flatpickr("#checkOutDate", commonConfig);
     }
+    */
 }
 
 // ========================================

@@ -244,7 +244,7 @@ def send_flight_confirmation_email():
         passenger = data.get('passenger', {})
         booking_id = data.get('booking_id', '')
         amount = data.get('amount', 0)
-        currency = data.get('currency', 'INR')
+        currency = data.get('currency', 'USD')
 
         if not passenger.get('email'):
             return jsonify({'success': False, 'error': 'Passenger email required'}), 400
@@ -411,7 +411,7 @@ def create_flight_booking():
             'total_passengers': int(data.get('travelers', 1)),
             'base_fare': data.get('total_amount', 0),
             'total_amount': data.get('total_amount', 0),
-            'currency': data.get('currency', 'INR'),
+            'currency': data.get('currency', 'USD'),
             'status': 'confirmed',
             'payment_status': 'pending',
             'booking_source': 'website'

@@ -95,6 +95,19 @@ def create_app():
         print(f"✅ PayPal payment service initialized ({paypal_mode} mode)")
     else:
         print("⚠️  Warning: PayPal credentials not found in .env")
+        
+    # Initialize Stripe service
+    from services.stripe_service import init_stripe
+    stripe_secret = app.config.get('STRIPE_SECRET_KEY')
+    stripe_publishable = app.config.get('STRIPE_PUBLISHABLE_KEY')
+    
+    if stripe_secret:
+        stripe_service = init_stripe(stripe_secret)
+        app.config['STRIPE_SERVICE'] = stripe_service
+        app.config['STRIPE_PUBLISHABLE_KEY'] = stripe_publishable
+        print("✅ Stripe payment service initialized")
+    else:
+        print("⚠️  Warning: Stripe credentials not found in .env")
     
     # Initialize Email service
     from services.email_service import email_service

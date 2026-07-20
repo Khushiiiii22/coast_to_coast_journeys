@@ -601,7 +601,7 @@ def search_by_destination():
         destination = data['destination'].lower().strip()
         region_id = data.get('region_id')
         location_name = data['destination']
-        target_currency = data.get('currency', 'INR')
+        target_currency = data.get('currency', 'USD')
         rooms_data = data.get('rooms')  # multi-room array if available
 
         
@@ -632,7 +632,7 @@ def search_by_destination():
             print(f"🏨 Searching RateHawk for destination: {location_name}")
             
             # RateHawk Sandbox often rejects INR. We force USD for the API call and convert locally.
-            user_currency = data.get('currency', 'INR')
+            user_currency = data.get('currency', 'USD')
             api_currency = 'USD' if user_currency == 'INR' else user_currency
             
             guests = etg_service.format_guests_for_search(
@@ -1731,7 +1731,7 @@ def get_hotel_details():
             )
         
         # ETG Sandbox often rejects INR. We force USD for the API call and convert locally.
-        user_currency = data.get('currency', 'INR')
+        user_currency = data.get('currency', 'USD')
         api_currency = 'USD' if user_currency == 'INR' else user_currency
         
         result = etg_service.get_hotel_page(
@@ -2457,7 +2457,7 @@ def get_enriched_hotel_details():
             )
         
         # ETG Sandbox often rejects INR. We force USD for the API call and convert locally.
-        user_currency = data.get('currency', 'INR')
+        user_currency = data.get('currency', 'USD')
         api_currency = 'USD' if user_currency == 'INR' else user_currency
         
         # 1. Fetch hotel rates
@@ -3251,7 +3251,7 @@ def create_booking():
                     guests_for_hp = [{'adults': 2, 'children': []}]
                 
                 # ETG sandbox rejects INR — force USD for API call
-                req_currency = data.get('currency', 'INR')
+                req_currency = data.get('currency', 'USD')
                 api_currency = 'USD' if req_currency == 'INR' else req_currency
                 
                 hp_result = etg_service.get_hotel_page(
@@ -3556,9 +3556,11 @@ def finish_booking():
         # MOCK SANDBOX SUCCESS for all hotels
         import os
         is_sandbox = 'sandbox' in os.getenv('ETG_API_BASE_URL', '')
-        if is_sandbox and not result.get('success'):
-            print(f"🧪 Mocking SUCCESS on /finish/ for sandbox booking: {partner_order_id}")
-            return jsonify({'success': True, 'data': {'status': 'ok'}})
+        if is_sandbox:
+            status = result.get('data', {}).get('status') if result.get('success') else None
+            if status not in ('ok', 'processing'):
+                print(f"🧪 Mocking SUCCESS on /finish/ for sandbox booking: {partner_order_id}")
+                return jsonify({'success': True, 'data': {'status': 'ok'}})
             
         if result.get('success'):
             return jsonify(result)
@@ -3701,10 +3703,10 @@ def check_booking_status():
         # MOCK SANDBOX SUCCESS for all hotels
         import os
         is_sandbox = 'sandbox' in os.getenv('ETG_API_BASE_URL', '')
-        if is_sandbox and not result.get('success'):
-            result = {'success': True, 'data': {'status': 'ok', 'data': {'status': 'confirmed'}}}
-        elif is_sandbox and result.get('success') and result.get('data', {}).get('status') == 'failed':
-            result = {'success': True, 'data': {'status': 'ok', 'data': {'status': 'confirmed'}}}
+        if is_sandbox:
+            status = result.get('data', {}).get('status') if result.get('success') else None
+            if status not in ('ok', 'processing'):
+                result = {'success': True, 'data': {'status': 'ok', 'data': {'status': 'confirmed'}}}
             
         if not result.get('success'):
             return jsonify({
@@ -3818,10 +3820,10 @@ def poll_booking_status():
             # MOCK SANDBOX SUCCESS for all hotels
             import os
             is_sandbox = 'sandbox' in os.getenv('ETG_API_BASE_URL', '')
-            if is_sandbox and not result.get('success'):
-                result = {'success': True, 'data': {'status': 'ok'}}
-            elif is_sandbox and result.get('success') and result.get('data', {}).get('status') == 'failed':
-                result = {'success': True, 'data': {'status': 'ok'}}
+            if is_sandbox:
+                status = result.get('data', {}).get('status') if result.get('success') else None
+                if status not in ('ok', 'processing'):
+                    result = {'success': True, 'data': {'status': 'ok'}}
                 
             if result.get('success') and result.get('data'):
                 status = result['data'].get('status', '')
@@ -4110,7 +4112,7 @@ def resend_booking_email():
             'checkin': booking_data.get('check_in'),
             'checkout': booking_data.get('check_out'),
             'amount': booking_data.get('total_amount', 0),
-            'currency': booking_data.get('currency', 'INR')
+            'currency': booking_data.get('currency', 'USD')
         }
         
         email_sent = email_service.send_booking_confirmation(customer_email, email_details)
@@ -4176,7 +4178,7 @@ def send_booking_confirmation():
                 if db_booking.get('success') and db_booking.get('data'):
                     db_data = db_booking['data']
                     amount = db_data.get('total_amount', 0) or 0
-                    booking_currency = db_data.get('currency', 'INR')
+                    booking_currency = db_data.get('currency', 'USD')
                     # Also fill in any missing fields from DB
                     if not hotel_name or hotel_name == 'Hotel':
                         hotel_name = db_data.get('hotel_name', hotel_name)
@@ -4198,7 +4200,7 @@ def send_booking_confirmation():
                 print(f"⚠️ Could not fetch booking from DB: {db_err}")
                 booking_currency = 'INR'
         else:
-            booking_currency = data.get('currency', 'INR')
+            booking_currency = data.get('currency', 'USD')
         
         email_details = {
             'booking_id': data.get('partner_order_id'),

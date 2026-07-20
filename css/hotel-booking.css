@@ -42,6 +42,7 @@
 .nav-content .logo .brand-name {
     font-size: 1.25rem;
     font-weight: 700;
+    font-family: 'Broadway', sans-serif;
     color: var(--primary-blue);
 }
 
@@ -2082,15 +2083,15 @@
     left: 0 !important;
     width: 100% !important;
     height: 100% !important;
-    padding: 0 !important;
+    padding: 0 16px 0 44px !important;
     border: none !important;
     font-size: 0.95rem !important;
     font-weight: 500 !important;
     color: #1a365d !important;
     display: flex !important;
     align-items: center !important;
-    justify-content: center !important;
-    /* Perfect centering */
+    justify-content: flex-start !important;
+    /* Left alignment */
     white-space: nowrap !important;
     pointer-events: auto !important;
     background: transparent !important;

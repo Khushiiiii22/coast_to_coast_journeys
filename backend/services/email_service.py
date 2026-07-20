@@ -295,7 +295,7 @@ class EmailService:
         invoice_html = self._generate_flight_invoice_html(booking_details)
 
         amount = booking_details.get('amount', 0)
-        currency = booking_details.get('currency', 'INR')
+        currency = booking_details.get('currency', 'USD')
         body = f"""
 Dear {booking_details.get('customer_name', 'Passenger')},
 
@@ -323,7 +323,7 @@ Thank you for choosing C2C Journeys!
         owner_email = self._get_verified_owner_email()
         subject = f"✈️ New Flight Booking — {booking_details.get('airline')} {booking_details.get('flight_number', '')} | {booking_details.get('booking_id', 'N/A')}"
         amount = booking_details.get('amount', 0)
-        currency = booking_details.get('currency', 'INR')
+        currency = booking_details.get('currency', 'USD')
         body = f"""
 New Flight Booking Confirmed!
 
@@ -372,7 +372,7 @@ This is an automated notification from C2C Journeys.
         travelers = booking.get('travelers', 1)
         flight_date = self._format_date(booking.get('date', ''))
         amount = booking.get('amount', 0)
-        currency = booking.get('currency', 'INR')
+        currency = booking.get('currency', 'USD')
         formatted_amount = self._format_amount(amount, currency)
 
         return f"""
@@ -555,7 +555,7 @@ This is an automated notification from C2C Journeys.
         
         # Plain text fallback
         amount = booking_details.get('amount', 0)
-        currency = booking_details.get('currency', 'INR')
+        currency = booking_details.get('currency', 'USD')
         body = f"""
 Dear {booking_details.get('customer_name', 'Guest')},
 
@@ -643,7 +643,7 @@ Thank you for choosing C2C Journeys!
         except (ValueError, TypeError):
             return str(date_str)
 
-    def _format_amount(self, amount, currency='INR'):
+    def _format_amount(self, amount, currency='USD'):
         """Format amount with currency symbol"""
         try:
             num = float(amount or 0)
@@ -675,7 +675,7 @@ Thank you for choosing C2C Journeys!
         nights = booking.get('nights', '')
         guests_info = booking.get('guests_info', '')
         amount = booking.get('amount', 0)
-        currency = booking.get('currency', 'INR')
+        currency = booking.get('currency', 'USD')
         formatted_amount = self._format_amount(amount, currency)
         
         # Calculate nights if not provided

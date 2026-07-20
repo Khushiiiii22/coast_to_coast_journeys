@@ -50,6 +50,10 @@ class Config:
     PAYPAL_CLIENT_SECRET = os.getenv('PAYPAL_CLIENT_SECRET')
     PAYPAL_MODE = os.getenv('PAYPAL_MODE', 'sandbox')
     
+    # Stripe Payment Gateway Configuration
+    STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
+    STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
+    
     # Email/SMTP Configuration (GoDaddy)
     CORPORATE_EMAIL = os.getenv('CORPORATE_EMAIL', 'info@coasttocoastjourneys.com')
     MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtpout.secureserver.net')

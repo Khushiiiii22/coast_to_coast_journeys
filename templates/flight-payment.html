@@ -359,12 +359,17 @@
                         <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                             <div
                                 style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-                                <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay"
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe"
                                     style="height: 18px; width: auto; display: block;">
                             </div>
                             <div
                                 style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
+                                    style="height: 18px; width: auto; display: block;">
+                            </div>
+                            <div
+                                style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay"
                                     style="height: 18px; width: auto; display: block;">
                             </div>
                         </div>
@@ -579,12 +584,14 @@
 
             try {
                 const flight = flightBooking.outbound || flightBooking;
+                const displayCurrency = flight.currency || 'USD';
+
                 const response = await fetch('/api/payment/create-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         amount: flightBooking.total,
-                        currency: 'INR',
+                        currency: displayCurrency,
                         booking_details: {
                             flight: `${flight.airline?.name || flight.airline || ''} ${flight.flight_number || flight.flightNumber || ''}`,
                             route: `${flight.origin || ''} → ${flight.destination || ''}`,
@@ -702,13 +709,15 @@
             try {
                 const returnUrl = `${window.location.origin}/templates/flight-payment.html?paypal_return=1`;
                 const cancelUrl = `${window.location.origin}/templates/flight-payment.html?paypal_cancel=1`;
+                const flight = flightBooking.outbound || flightBooking;
+                const displayCurrency = flight.currency || 'USD';
 
                 const response = await fetch('/api/payment/paypal/create-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         amount: flightBooking.total,
-                        currency: 'USD',
+                        currency: displayCurrency,
                         description: `Flight: ${flightBooking.airline} ${flightBooking.origin}→${flightBooking.destination}`,
                         return_url: returnUrl,
                         cancel_url: cancelUrl

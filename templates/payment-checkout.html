@@ -386,15 +386,21 @@
 
                 <h3 style="margin: 25px 0 15px 0;">Select Payment Method</h3>
 
-                <button class="pay-button" style="background: linear-gradient(135deg, #0066cc, #00509e);"
-                    onclick="initiateRazorpayPayment()">
-                    <i class="fas fa-credit-card"></i> Pay with Razorpay (UPI/Cards)
+                <button class="pay-button" id="stripePayBtn"
+                    style="background: linear-gradient(135deg, #635bff, #4238ca);"
+                    onclick="initiateStripePayment()">
+                    <i class="fab fa-stripe-s"></i> Pay with Stripe
                 </button>
 
                 <button class="pay-button"
                     style="background: linear-gradient(135deg, #0070ba, #005ea6); margin-top: 15px;"
                     onclick="initiatePayPalPayment()">
                     <i class="fab fa-paypal"></i> Pay with PayPal
+                </button>
+
+                <button class="pay-button" style="background: linear-gradient(135deg, #0066cc, #00509e); margin-top: 15px;"
+                    onclick="initiateRazorpayPayment()">
+                    <i class="fas fa-credit-card"></i> Pay with Razorpay (UPI/Cards)
                 </button>
 
                 <div class="secure-badge">
@@ -404,9 +410,11 @@
 
                 <div
                     style="margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 20px; align-items: center;">
-                    <img src="https://razorpay.com/assets/razorpay-glyph.svg" alt="Razorpay"
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe"
                         style="height: 24px; opacity: 0.6;">
                     <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg" alt="PayPal"
+                        style="height: 24px; opacity: 0.6;">
+                    <img src="https://razorpay.com/assets/razorpay-glyph.svg" alt="Razorpay"
                         style="height: 24px; opacity: 0.6;">
                 </div>
             </div>
@@ -1029,7 +1037,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         amount: bookingData.total,
-                        currency: 'INR',
+                        currency: 'USD',
                         booking_details: {
                             hotel_name: bookingData.hotel.name,
                             checkin: bookingData.search_params.checkin,
@@ -1130,6 +1138,68 @@
             }
         }
 
+        async function initiateStripePayment() {
+            if (!validateForm()) return;
+
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+
+            const roomsToBook = [];
+            const isMultiRoom = document.querySelectorAll('.room-details').length > 1;
+
+            if (isMultiRoom) {
+                document.querySelectorAll('.room-details').forEach(el => {
+                    roomsToBook.push({
+                        guests: [{ first_name: el.querySelector('.room-first-name').value, last_name: el.querySelector('.room-last-name').value }]
+                    });
+                });
+            } else {
+                roomsToBook.push({ guests: [{ first_name: firstName, last_name: lastName }] });
+            }
+
+            sessionStorage.setItem('pending_rooms', JSON.stringify(roomsToBook));
+            sessionStorage.setItem('pending_customer', JSON.stringify({ email, phone, first_name: firstName, last_name: lastName }));
+
+            let processingOverlay;
+            try {
+                processingOverlay = showProcessingOverlay('Redirecting to Stripe...');
+                
+                // We create a temporary booking_id here or the backend create-session handles it
+                // Actually the backend stripe/create-session needs an amount and booking_id.
+                // We can just generate a temporary one or pass "pending"
+                const tempBookingId = 'temp_' + Date.now();
+                sessionStorage.setItem('stripe_booking_id', tempBookingId);
+
+                const rateCurrency = bookingData.rate?.currency || bookingData.currency || 'USD';
+                const displayCurrency = typeof HotelUtils !== 'undefined' ? HotelUtils.getSelectedCurrency() : rateCurrency;
+
+                const response = await fetch('/api/payment/stripe/create-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: bookingData.total,
+                        currency: displayCurrency,
+                        booking_id: tempBookingId,
+                        success_url: window.location.href.split('?')[0],
+                        cancel_url: window.location.href.split('?')[0]
+                    })
+                });
+
+                const data = await response.json();
+                if (data.status === 'success' && data.url) {
+                    window.location.href = data.url;
+                } else {
+                    throw new Error(data.message || data.error || 'Failed to create Stripe Checkout');
+                }
+            } catch (err) {
+                console.error(err);
+                if (processingOverlay) document.body.removeChild(processingOverlay);
+                alert(err.message || 'Payment initialization failed');
+            }
+        }
+
         async function initiatePayPalPayment() {
             // Analogous logic for PayPal (collecting guest names)
             const firstName = document.getElementById('firstName').value;
@@ -1169,12 +1239,15 @@
             try {
                 processingOverlay = showProcessingOverlay('Redirecting to PayPal...');
                 
+                const rateCurrency = bookingData.rate?.currency || bookingData.currency || 'USD';
+                const displayCurrency = typeof HotelUtils !== 'undefined' ? HotelUtils.getSelectedCurrency() : rateCurrency;
+                
                 const response = await fetch('/api/payment/paypal/create-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         amount: bookingData.total,
-                        currency: 'INR',
+                        currency: displayCurrency,
                         description: `Hotel Booking: ${bookingData.hotel.name}`
                     })
                 });

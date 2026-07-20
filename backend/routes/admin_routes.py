@@ -550,7 +550,7 @@ def create_manual_hotel_booking():
             'customer_email': data.get('customer_email'),
             'customer_phone': data.get('customer_phone'),
             'total_amount': float(data.get('total_amount', 0)),
-            'currency': data.get('currency', 'INR'),
+            'currency': data.get('currency', 'USD'),
             'status': data.get('status', 'confirmed'),
             'payment_status': data.get('payment_status', 'paid'),
             'booking_source': 'admin_manual',
@@ -1705,7 +1705,7 @@ def create_manual_flight_booking():
             'taxes_fees': float(data.get('taxes_fees', 0)),
             'markup_amount': float(data.get('markup_amount', 0)),
             'total_amount': float(data.get('base_fare', 0)) + float(data.get('taxes_fees', 0)) + float(data.get('markup_amount', 0)),
-            'currency': data.get('currency', 'INR'),
+            'currency': data.get('currency', 'USD'),
             'status': data.get('status', 'confirmed'),
             'payment_status': data.get('payment_status', 'paid'),
             'booking_source': 'admin_manual'

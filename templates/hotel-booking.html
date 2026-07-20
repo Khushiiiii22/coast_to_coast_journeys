@@ -18,6 +18,8 @@
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="../css/main.css?v=2.1">
@@ -1019,12 +1021,17 @@
                         <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                             <div
                                 style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-                                <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay"
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe"
                                     style="height: 18px; width: auto; display: block;">
                             </div>
                             <div
                                 style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal"
+                                    style="height: 18px; width: auto; display: block;">
+                            </div>
+                            <div
+                                style="background: white; padding: 8px 12px; border-radius: 6px; display: inline-flex; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay"
                                     style="height: 18px; width: auto; display: block;">
                             </div>
                         </div>
@@ -1532,6 +1539,8 @@
                 document.querySelectorAll('.custom-calendar.open').forEach(c => {
                     if (c !== calendarEl) {
                         c.classList.remove('open');
+                        const p = c.closest('.date-field-hotel') || c.closest('.form-field');
+                        if (p) p.classList.remove('calendar-active');
                     }
                 });
                 // Close guests popup if open
@@ -1550,10 +1559,12 @@
                 }
                 renderCalendar();
                 calendarEl.classList.add('open');
+                if (wrapper) wrapper.classList.add('calendar-active');
             }
 
             function closeCalendar() {
                 calendarEl.classList.remove('open');
+                if (wrapper) wrapper.classList.remove('calendar-active');
             }
 
             // Click on the wrapper to open/close
@@ -1823,6 +1834,7 @@
         });
     </script>
     <script src="../js/auth-guard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="../js/main.js"></script>
     
 </body>
