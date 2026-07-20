@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Search Logs - Coast to Coast</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Base Styles -->
+    <link rel="stylesheet" href="../../admin/css/admin-vars.css">
+    <link rel="stylesheet" href="../../admin/css/admin-base.css">
+    <link rel="stylesheet" href="../../admin/css/admin-layout.css">
+    <link rel="stylesheet" href="../../admin/css/admin-components.css">
+
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            border-bottom: 4px solid #0e64a6;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            background: #f0f7ff;
+            color: #0e64a6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+
+        .stat-info h3 {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-info p {
+            margin: 0.25rem 0 0 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        
+        .stat-info small {
+            color: #22c55e;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        .admin-table th, .admin-table td {
+            white-space: nowrap;
+            padding: 0.75rem 1rem;
+        }
+        
+        .admin-table td {
+            font-size: 0.875rem;
+        }
+
+        .filters-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .filter-group select, .filter-group input {
+            padding: 0.5rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .badge-desktop { background: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;}
+        .badge-mobile { background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;}
+        .badge-tablet { background: #f3e8ff; color: #9333ea; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;}
+
+        .top-cities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .city-badge {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: #475569;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">B2C Hotel Searches Logs</h1>
+                </div>
+
+                <div class="header-right">
+                    <button class="btn btn-secondary" onclick="exportCSV()">
+                        <i class="fas fa-download"></i> Export CSV
+                    </button>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                
+                <!-- Dashboard Cards -->
+                <div class="dashboard-grid">
+                    <div class="stat-card" style="border-bottom-color: #3b82f6;">
+                        <div class="stat-icon"><i class="fas fa-search"></i></div>
+                        <div class="stat-info">
+                            <h3>Total Searches Today</h3>
+                            <p id="statToday">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="border-bottom-color: #8b5cf6;">
+                        <div class="stat-icon" style="color: #8b5cf6; background: #f3e8ff;"><i class="fas fa-calendar-alt"></i></div>
+                        <div class="stat-info">
+                            <h3>Searches This Month</h3>
+                            <p id="statMonth">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="border-bottom-color: #f59e0b;">
+                        <div class="stat-icon" style="color: #f59e0b; background: #fef3c7;"><i class="fas fa-mobile-alt"></i></div>
+                        <div class="stat-info">
+                            <h3>Mobile Searches</h3>
+                            <p id="statMobile">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="border-bottom-color: #10b981;">
+                        <div class="stat-icon" style="color: #10b981; background: #d1fae5;"><i class="fas fa-desktop"></i></div>
+                        <div class="stat-info">
+                            <h3>Desktop Searches</h3>
+                            <p id="statDesktop">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="border-bottom-color: #ef4444; grid-column: span 2;">
+                        <div class="stat-info" style="width: 100%;">
+                            <h3>Top 10 Searched Cities</h3>
+                            <div class="top-cities" id="topCities">
+                                <span class="city-badge">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="filters-bar">
+                    <div class="filter-group">
+                        <label>From Date:</label>
+                        <input type="date" id="filterFromDate">
+                    </div>
+                    <div class="filter-group">
+                        <label>To Date:</label>
+                        <input type="date" id="filterToDate">
+                    </div>
+                    <div class="filter-group">
+                        <label>Destination:</label>
+                        <input type="text" id="filterDest" placeholder="e.g. Dubai">
+                    </div>
+                    <div class="filter-group">
+                        <label>Device:</label>
+                        <select id="filterDevice">
+                            <option value="">All Devices</option>
+                            <option value="Desktop">Desktop</option>
+                            <option value="Mobile">Mobile</option>
+                            <option value="Tablet">Tablet</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>User Type:</label>
+                        <select id="filterUserType">
+                            <option value="">All Users</option>
+                            <option value="Guest">Guest</option>
+                            <option value="Registered User">Logged-in User</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="loadSearchLogs()">Apply Filters</button>
+                    <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
+                </div>
+
+                <!-- Table -->
+                <div class="admin-card">
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Search Date</th>
+                                    <th>Origin / Destination</th>
+                                    <th>Check-In</th>
+                                    <th>Check-Out</th>
+                                    <th>Nights</th>
+                                    <th>Rooms</th>
+                                    <th>Adults</th>
+                                    <th>Children</th>
+                                    <th>Device</th>
+                                    <th>Browser / OS</th>
+                                    <th>IP Address</th>
+                                    <th>User Type</th>
+                                    <th>User Email</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsBody">
+                                <tr>
+                                    <td colspan="13" style="text-align: center; padding: 2rem;">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading search logs...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="pagination-controls" style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div class="pagination-info" id="paginationInfo">Showing 0-0 of 0 logs</div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-secondary" onclick="prevPage()" id="btnPrev">Previous</button>
+                            <button class="btn btn-secondary" onclick="nextPage()" id="btnNext">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Admin JavaScript -->
+    <script src="../../admin/js/admin.js?v=2.0"></script>
+    
+    <script>
+        let logsData = [];
+        let currentPage = 0;
+        const limit = 100;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default date range to last 7 days
+            const today = new Date();
+            const lastWeek = new Date(today);
+            lastWeek.setDate(lastWeek.getDate() - 7);
+            
+            document.getElementById('filterToDate').value = today.toISOString().split('T')[0];
+            document.getElementById('filterFromDate').value = lastWeek.toISOString().split('T')[0];
+            
+            loadSearchLogs();
+        });
+
+        async function loadSearchLogs() {
+            try {
+                const tbody = document.getElementById('logsBody');
+                tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Loading data...</td></tr>`;
+                
+                const fromDate = document.getElementById('filterFromDate').value;
+                const toDate = document.getElementById('filterToDate').value;
+                const device = document.getElementById('filterDevice').value;
+                const userType = document.getElementById('filterUserType').value;
+                const destination = document.getElementById('filterDest').value;
+                
+                const offset = currentPage * limit;
+                
+                let url = `/api/admin/reports/hotel-searches?limit=${limit}&offset=${offset}`;
+                if (fromDate) url += `&from_date=${fromDate}`;
+                if (toDate) url += `&to_date=${toDate}`;
+                if (device) url += `&device=${device}`;
+                if (userType) url += `&user_type=${userType}`;
+                if (destination) url += `&destination=${destination}`;
+
+                const response = await apiRequest(url);
+                
+                if (response.success) {
+                    logsData = response.data;
+                    renderTable();
+                    renderDashboard(response.dashboard);
+                    
+                    document.getElementById('paginationInfo').textContent = `Showing ${offset + 1}-${offset + logsData.length} logs`;
+                    document.getElementById('btnPrev').disabled = currentPage === 0;
+                    document.getElementById('btnNext').disabled = logsData.length < limit;
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="13" class="error-state">Failed to load logs: ${response.error}</td></tr>`;
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('logsBody').innerHTML = `<tr><td colspan="13" class="error-state">Server error occurred</td></tr>`;
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('logsBody');
+            
+            if (logsData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; padding: 2rem;">No search logs found for the selected criteria.</td></tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = logsData.map(log => {
+                const dt = new Date(log.created_at).toLocaleString();
+                const badgeClass = log.device_type === 'Desktop' ? 'badge-desktop' : (log.device_type === 'Tablet' ? 'badge-tablet' : 'badge-mobile');
+                
+                return `
+                    <tr>
+                        <td>${dt}</td>
+                        <td><strong>${log.destination || 'Unknown'}</strong></td>
+                        <td>${log.checkin || '-'}</td>
+                        <td>${log.checkout || '-'}</td>
+                        <td>${log.nights || '-'}</td>
+                        <td>${log.rooms || 1}</td>
+                        <td>${log.adults || 0}</td>
+                        <td>${log.children || 0}</td>
+                        <td><span class="${badgeClass}">${log.device_type || 'Unknown'}</span></td>
+                        <td>${log.browser || ''} / ${log.operating_system || ''}</td>
+                        <td>${log.ip_address || ''} <small>(${log.country || 'Unknown'})</small></td>
+                        <td>${log.user_type || 'Guest'}</td>
+                        <td>${log.email || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function renderDashboard(dash) {
+            document.getElementById('statToday').textContent = dash.total_today || 0;
+            document.getElementById('statMonth').textContent = dash.total_month || 0;
+            document.getElementById('statMobile').textContent = dash.mobile_count || 0;
+            document.getElementById('statDesktop').textContent = dash.desktop_count || 0;
+            
+            const citiesBox = document.getElementById('topCities');
+            if (dash.top_cities && dash.top_cities.length > 0) {
+                citiesBox.innerHTML = dash.top_cities.map(c => `<span class="city-badge">${c.city} (${c.count})</span>`).join('');
+            } else {
+                citiesBox.innerHTML = `<span class="city-badge">No data</span>`;
+            }
+        }
+
+        function resetFilters() {
+            document.getElementById('filterDest').value = '';
+            document.getElementById('filterDevice').value = '';
+            document.getElementById('filterUserType').value = '';
+            currentPage = 0;
+            loadSearchLogs();
+        }
+
+        function prevPage() {
+            if (currentPage > 0) {
+                currentPage--;
+                loadSearchLogs();
+            }
+        }
+
+        function nextPage() {
+            currentPage++;
+            loadSearchLogs();
+        }
+        
+        function exportCSV() {
+            if (logsData.length === 0) return alert("No data to export");
+            
+            let csv = "Search Date,Destination,Check-in,Check-out,Nights,Rooms,Adults,Children,Device,Browser,OS,IP,User Type,Email\n";
+            logsData.forEach(l => {
+                csv += `"${l.created_at}","${l.destination}","${l.checkin}","${l.checkout}","${l.nights}","${l.rooms}","${l.adults}","${l.children}","${l.device_type}","${l.browser}","${l.operating_system}","${l.ip_address}","${l.user_type}","${l.email}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'hotel_search_logs.csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+</body>
+</html>

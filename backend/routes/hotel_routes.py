@@ -16,46 +16,110 @@ import uuid
 from routes.cancellation_helper import format_cancellation_policies
 
 def log_customer_hotel_search(search_type: str, search_details: str, request_data: dict = None):
-    """Log hotel searches to activity_logs table to track user queries with detailed metadata"""
+    """Log comprehensive hotel search analytics to hotel_search_logs table"""
     try:
-        from flask import current_app
+        from flask import current_app, request
+        import re
+        
         supabase = current_app.config.get('SUPABASE')
         if not supabase:
             return
 
-        # Attempt to get user identity from token if provided
+        # 1. Identity extraction
         token = request.headers.get('Authorization', '').replace('Bearer ', '')
-        user_identity = "Guest User"
+        user_identity = "Guest"
+        user_email = None
+        user_id = None
+        
         if token:
             try:
                 user_res = supabase.auth.get_user(token)
                 if user_res and user_res.user:
-                    user_identity = user_res.user.email
+                    user_id = user_res.user.id
+                    user_email = user_res.user.email
+                    user_identity = "Registered User"
+            except:
+                pass
+
+        # 2. Network & Location
+        ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+        if ip_address and ',' in ip_address:
+            ip_address = ip_address.split(',')[0].strip()
+            
+        country = request.headers.get('CF-IPCountry', 'Unknown')
+        
+        # 3. Device & Browser (Using Werkzeug UserAgent parsing if available, or basic regex)
+        ua_string = request.headers.get('User-Agent', '')
+        
+        # Simple Device Inference
+        device_type = 'Desktop'
+        ua_lower = ua_string.lower()
+        if any(keyword in ua_lower for keyword in ['mobi', 'android', 'iphone', 'ipad', 'ipod']):
+            device_type = 'Mobile'
+        if 'ipad' in ua_lower or 'tablet' in ua_lower:
+            device_type = 'Tablet'
+            
+        # Parse OS
+        operating_system = 'Unknown'
+        if 'windows' in ua_lower: operating_system = 'Windows'
+        elif 'mac os' in ua_lower or 'macos' in ua_lower: operating_system = 'macOS'
+        elif 'android' in ua_lower: operating_system = 'Android'
+        elif 'iphone' in ua_lower or 'ipad' in ua_lower: operating_system = 'iOS'
+        elif 'linux' in ua_lower: operating_system = 'Linux'
+        
+        # Parse Browser
+        browser = 'Unknown'
+        if 'edg/' in ua_lower: browser = 'Edge'
+        elif 'chrome/' in ua_lower and 'edg/' not in ua_lower: browser = 'Chrome'
+        elif 'safari/' in ua_lower and 'chrome/' not in ua_lower: browser = 'Safari'
+        elif 'firefox/' in ua_lower: browser = 'Firefox'
+        
+        # 4. Search Data Extraction
+        req = request_data or {}
+        
+        destination = req.get('destination') or str(req.get('region_id')) or str(req.get('latitude')) or 'Unknown'
+        checkin = req.get('checkin')
+        checkout = req.get('checkout')
+        
+        # Calculate nights if dates present
+        nights = 0
+        if checkin and checkout:
+            try:
+                from datetime import datetime
+                d1 = datetime.strptime(checkin, "%Y-%m-%d")
+                d2 = datetime.strptime(checkout, "%Y-%m-%d")
+                nights = (d2 - d1).days
             except:
                 pass
                 
-        ip_address = request.remote_addr or request.headers.get('X-Forwarded-For', 'Unknown IP')
+        rooms = len(req.get('rooms', [])) if req.get('rooms') else 1
+        adults = req.get('adults', 0)
+        children_ages = req.get('children_ages', [])
+        children_count = len(children_ages)
         
-        # Build metadata from request data
-        metadata = {}
-        if request_data:
-            metadata = {
-                'adults': request_data.get('adults', 0),
-                'children': len(request_data.get('children_ages', [])),
-                'children_ages': request_data.get('children_ages', []),
-                'rooms': len(request_data.get('rooms', [])) if request_data.get('rooms') else 1,
-                'checkin': request_data.get('checkin'),
-                'checkout': request_data.get('checkout')
-            }
-        
-        # Insert log
-        supabase.table('activity_logs').insert({
-            'action': 'hotel_search',
-            'entity_type': 'hotel',
-            'details': f"{user_identity} searched by {search_type}: {search_details}",
+        # 5. Insert Log
+        log_entry = {
+            'destination': destination,
+            'checkin': checkin,
+            'checkout': checkout,
+            'nights': nights,
+            'rooms': rooms,
+            'adults': adults,
+            'children': children_count,
+            'child_ages': children_ages,
+            'device_type': device_type,
+            'browser': browser,
+            'operating_system': operating_system,
             'ip_address': ip_address,
-            'metadata': metadata
-        }).execute()
+            'country': country,
+            'user_id': user_id,
+            'user_type': user_identity,
+            'email': user_email,
+            'search_type': search_type
+        }
+        
+        supabase.table('hotel_search_logs').insert(log_entry).execute()
+        
     except Exception as e:
         print(f"Failed to log customer hotel search: {e}")
 

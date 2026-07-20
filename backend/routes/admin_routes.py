@@ -1111,6 +1111,101 @@ def get_activity_logs():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@admin_bp.route('/reports/hotel-searches', methods=['GET'])
+@require_auth(required_role=['super_admin', 'staff', 'admin'])
+def get_hotel_search_reports():
+    """
+    Get hotel search analytics
+    GET /api/admin/reports/hotel-searches
+    """
+    try:
+        from flask import current_app
+        supabase = current_app.config.get('SUPABASE')
+        
+        if not supabase:
+            return jsonify({'success': True, 'data': [], 'dashboard': {}, 'message': 'Database not initialized'}), 200
+
+        # Base query for table data
+        query = supabase.table('hotel_search_logs').select('*')
+        
+        # Filters
+        from_date = request.args.get('from_date')
+        if from_date: query = query.gte('created_at', f"{from_date}T00:00:00")
+        
+        to_date = request.args.get('to_date')
+        if to_date: query = query.lte('created_at', f"{to_date}T23:59:59")
+            
+        device = request.args.get('device')
+        if device: query = query.eq('device_type', device)
+            
+        user_type = request.args.get('user_type')
+        if user_type: query = query.eq('user_type', user_type)
+            
+        destination = request.args.get('destination')
+        if destination: query = query.ilike('destination', f"%{destination}%")
+            
+        # Pagination
+        limit = int(request.args.get('limit', 100))
+        offset = int(request.args.get('offset', 0))
+        query = query.order('created_at', desc=True).limit(limit).offset(offset)
+        
+        # Execute query for data
+        result = query.execute()
+        logs = result.data or []
+        
+        # Build Dashboard Statistics
+        # We need to query overall stats. For a small dataset, we can fetch all or a large chunk, 
+        # but optimally we do a separate query or aggregation. 
+        # Since Supabase python client doesn't support complex count aggregations well, 
+        # we will fetch the last 1000 logs for dashboard generation.
+        dash_query = supabase.table('hotel_search_logs').select('*').order('created_at', desc=True).limit(1000).execute()
+        all_logs = dash_query.data or []
+        
+        from datetime import datetime
+        today_str = datetime.utcnow().strftime('%Y-%m-%d')
+        month_str = datetime.utcnow().strftime('%Y-%m')
+        
+        total_today = sum(1 for log in all_logs if str(log.get('created_at', '')).startswith(today_str))
+        total_month = sum(1 for log in all_logs if str(log.get('created_at', '')).startswith(month_str))
+        mobile_count = sum(1 for log in all_logs if log.get('device_type') == 'Mobile')
+        desktop_count = sum(1 for log in all_logs if log.get('device_type') == 'Desktop')
+        
+        # Top Cities
+        cities = {}
+        for log in all_logs:
+            city = log.get('destination', 'Unknown')
+            cities[city] = cities.get(city, 0) + 1
+        top_cities = sorted(cities.items(), key=lambda x: x[1], reverse=True)[:10]
+        
+        # Conversion (Mock for now until checkout integration)
+        booked_count = sum(1 for log in all_logs if log.get('booking_status') == 'Booked')
+        conversion_rate = round((booked_count / len(all_logs)) * 100, 1) if all_logs else 0
+        
+        dashboard = {
+            'total_today': total_today,
+            'total_month': total_month,
+            'mobile_count': mobile_count,
+            'desktop_count': desktop_count,
+            'top_cities': [{'city': k, 'count': v} for k, v in top_cities],
+            'conversion_rate': conversion_rate,
+            'total_scanned': len(all_logs)
+        }
+        
+        return jsonify({
+            'success': True,
+            'data': logs,
+            'dashboard': dashboard,
+            'count': len(logs)
+        }), 200
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+
+
 # ─── Flight Enquiries Admin Endpoints ─────────────────────────────────────────
 
 @admin_bp.route('/flight-enquiries', methods=['GET'])
