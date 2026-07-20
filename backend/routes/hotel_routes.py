@@ -621,11 +621,33 @@ def search_by_destination():
                     print(f"📍 Matched destination: {location_name}, Region ID: {region_id}")
                 break
         
+        # Step 1.5: If no region_id found from hardcoded list, or to validate it,
+        # dynamically resolve via ETG multicomplete API (live API has different IDs than sandbox)
+        if not region_id and not hotel_ids_to_search:
+            print(f"🔍 No hardcoded match for '{destination}', resolving via ETG multicomplete...")
+            try:
+                suggest_result = etg_service.suggest(data['destination'], 'en')
+                if suggest_result.get('success') and suggest_result.get('data'):
+                    suggest_data = suggest_result['data'].get('data', suggest_result['data'])
+                    regions = suggest_data.get('regions', [])
+                    if regions:
+                        # Use the first matching region
+                        best_region = regions[0]
+                        region_id = best_region.get('id')
+                        location_name = best_region.get('name', data['destination'])
+                        print(f"✅ Resolved region via multicomplete: {location_name}, Region ID: {region_id}")
+                    else:
+                        # Check for hotels in results
+                        hotels = suggest_data.get('hotels', [])
+                        if hotels:
+                            hotel_ids_to_search = [h.get('id') for h in hotels[:10] if h.get('id')]
+                            location_name = data['destination']
+                            print(f"✅ Resolved hotels via multicomplete: {hotel_ids_to_search[:5]}...")
+            except Exception as e:
+                print(f"⚠️ Multicomplete fallback failed: {e}")
+        
         # Step 2: ALWAYS call ETG/RateHawk API for every search when we have a region_id.
         # ETG certification requires a live /search/serp/region/ call for EVERY search action.
-        # Previously this step was bypassing ETG for non-sandbox Indian cities — that prevented
-        # Mikhail's team from seeing our API calls and blocked certification progress.
-        # Now ETG is always called first; Google Places is only used as a fallback if ETG returns 0.
         
         # Step 3: Try ETG/RateHawk for ALL destinations with a known region_id or hotel_ids
         if region_id or hotel_ids_to_search:
@@ -647,7 +669,7 @@ def search_by_destination():
                     checkin=data['checkin'],
                     checkout=data['checkout'],
                     rooms=guests,
-                    currency=api_currency, # Force USD for sandbox compatibility
+                    currency=api_currency,
                     residency=data.get('residency', 'gb')
                 )
             else:
@@ -657,11 +679,11 @@ def search_by_destination():
                     checkin=data['checkin'],
                     checkout=data['checkout'],
                     rooms=guests,
-                    currency=api_currency, # Force USD for sandbox compatibility
+                    currency=api_currency,
                     residency=data.get('residency', 'gb')
                 )
             
-            # Check if RateHawk returned an error
+            # Check if RateHawk returned an error (e.g. invalid region_id)
             if result.get('status') == 'error' or not result.get('success', True):
                 error_msg = result.get('error', 'Unknown API error')
                 # Check for validation errors in debug data
@@ -671,6 +693,37 @@ def search_by_destination():
                         error_msg = debug['validation_error']
                 
                 print(f"❌ RateHawk search error: {error_msg}")
+                
+                # If region_id was invalid, try resolving dynamically via multicomplete
+                if 'region' in str(error_msg).lower() or 'invalid' in str(error_msg).lower():
+                    print(f"🔄 Retrying with dynamic region_id from multicomplete API...")
+                    try:
+                        suggest_result = etg_service.suggest(data['destination'], 'en')
+                        if suggest_result.get('success') and suggest_result.get('data'):
+                            suggest_data = suggest_result['data'].get('data', suggest_result['data'])
+                            regions = suggest_data.get('regions', [])
+                            if regions:
+                                new_region_id = regions[0].get('id')
+                                if new_region_id and new_region_id != region_id:
+                                    print(f"✅ Got new region_id {new_region_id} (old was {region_id}), retrying search...")
+                                    region_id = new_region_id
+                                    result = etg_service.search_by_region(
+                                        region_id=region_id,
+                                        checkin=data['checkin'],
+                                        checkout=data['checkout'],
+                                        rooms=guests,
+                                        currency=api_currency,
+                                        residency=data.get('residency', 'gb')
+                                    )
+                                    # Re-check for errors after retry
+                                    if result.get('status') == 'error' or not result.get('success', True):
+                                        error_msg = result.get('error', 'Unknown')
+                                        print(f"❌ Retry also failed: {error_msg}")
+                                    else:
+                                        print(f"✅ Retry succeeded with new region_id {new_region_id}")
+                    except Exception as e:
+                        print(f"⚠️ Dynamic region resolution failed: {e}")
+                
                 # If it's a critical validation error (like dates), return early
                 if any(kw in str(error_msg).lower() for kw in ['checkin', 'checkout', 'date']):
                     return jsonify({
