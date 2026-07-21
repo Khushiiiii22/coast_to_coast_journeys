@@ -6,7 +6,7 @@
 // API Configuration
 const API_CONFIG = {
     BASE_URL: '/api',  // Relative URL for deployment flexibility
-    TIMEOUT: 30000
+    TIMEOUT: 60000
 };
 
 /**

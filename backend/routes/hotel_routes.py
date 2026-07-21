@@ -615,14 +615,6 @@ def search_by_destination():
         # ──────────────────────────────────────────────────────────
         hotel_ids_to_search = None
         
-        # 1a. Quick match from popular destinations (speed optimization only)
-        for key, loc_data in POPULAR_DESTINATIONS.items():
-            if key in destination or destination in key:
-                region_id = loc_data.get('region_id')
-                location_name = loc_data.get('name', data['destination'])
-                print(f"📍 Fast-path match: {location_name}, Region ID: {region_id}")
-                break
-        
         # 1b. PRIMARY: Resolve ANY destination via RateHawk multicomplete API
         #     This handles ALL destinations worldwide — not just the hardcoded list.
         if not region_id:
