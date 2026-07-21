@@ -644,12 +644,22 @@ def search_by_destination():
         # ──────────────────────────────────────────────────────────
         if not region_id and not hotel_ids_to_search:
             print(f"🛑 Could not resolve destination: '{data['destination']}'")
+            # If RateHawk multicomplete actually returned an API error (like 403), surface it!
+            error_msg = "Could not find destination. Please check the spelling."
+            if 'suggest_result' in locals() and not suggest_result.get('success'):
+                error_msg = f"RateHawk Multicomplete API Error: {suggest_result.get('error', 'Unknown Error')}"
+                print(f"⚠️ {error_msg}")
+                return jsonify({
+                    'success': False,
+                    'error': error_msg
+                }), 502
+
             return jsonify({
                 'success': False,
-                'error': f"Could not find destination '{data['destination']}'. Please check the spelling or try a different search term.",
+                'error': error_msg,
                 'hotels': [],
                 'source': 'none'
-            })
+            }), 404
         
         # Prepare search parameters
         user_currency = data.get('currency', 'USD')
@@ -728,6 +738,14 @@ def search_by_destination():
                     'success': False, 
                     'error': f"Search failed: {error_msg}. Please check your dates and try again."
                 }), 400
+                
+            # For all other RateHawk API errors (like 403 Forbidden, 401 Unauthorized, etc.)
+            # we MUST return an HTTP error so the frontend can display the actual reason
+            # it failed, rather than silently pretending there are 0 hotels.
+            return jsonify({
+                'success': False,
+                'error': f"RateHawk API Error: {error_msg}"
+            }), 502  # 502 Bad Gateway (upstream error)
 
         # ──────────────────────────────────────────────────────────
         # STEP 4: Process and return results
