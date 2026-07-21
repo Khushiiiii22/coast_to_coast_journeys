@@ -592,9 +592,9 @@ function displayMapPreview(lat, lng, hotelData = {}) {
         ></iframe>
     `;
 
-    // Process surroundings from static_data if available
+    // Process surroundings from static_data or root hotelData
     const staticData = hotelData.static_data || {};
-    const surroundings = staticData.surroundings || [];
+    const surroundings = staticData.surroundings || hotelData.surroundings || [];
 
     // Categorization logic
     const categories = {
@@ -618,22 +618,15 @@ function displayMapPreview(lat, lng, hotelData = {}) {
             else if (type.includes('sight') || type.includes('museum') || type.includes('landmark')) categories.categoryInterest.push(item);
             else categories.categoryNearby.push(item);
         });
-    } else {
-        // Fallback demo data if no surroundings from API
-        categories.categoryNearby = [
-            { name: 'City Center', distance: '1.2 km', icon: 'fa-city' },
-            { name: 'Shopping Mall', distance: '800 m', icon: 'fa-shopping-bag' }
-        ];
-        categories.categoryInterest = [
-            { name: 'Famous Landmark', distance: '2.5 km', icon: 'fa-monument' },
-            { name: 'City Museum', distance: '3.1 km', icon: 'fa-university' }
-        ];
-        categories.categoryAirports = [
-            { name: 'International Airport', distance: '15 km', icon: 'fa-plane' }
-        ];
-        categories.categorySubway = [
-            { name: 'Central Station', distance: '1.1 km', icon: 'fa-subway' }
-        ];
+    }
+
+    // Check if we have any real surroundings data at all
+    const hasAnySurroundings = Object.values(categories).some(arr => arr.length > 0);
+    const surroundingsContainer = document.getElementById('surroundingsContainer');
+
+    if (!hasAnySurroundings && surroundingsContainer) {
+        // Hide the entire surroundings section when no real data is available
+        surroundingsContainer.style.display = 'none';
     }
 
     // Populate the UI

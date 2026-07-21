@@ -1,7 +1,6 @@
 """
 C2C Journeys - ETG API Service
 Handles all ETG/RateHawk API v3 operations for hotel bookings
-Updated to match ETG Sandbox API documentation (23 endpoints)
 """
 import requests
 import base64
@@ -64,7 +63,7 @@ class ETGApiService:
             print(f"✅ Static IP Proxy configured")
             
             
-        # Sandbox Quota Workaround (Cache for 10 minutes)
+        # Search result cache (10-minute TTL to reduce duplicate API calls)
         self.search_cache = TTLCache(maxsize=100, ttl=600)
         
         # Local Static Data Cache (Persist to disk to survive restarts)
@@ -132,13 +131,13 @@ class ETGApiService:
     def _make_request(self, endpoint: str, data: dict = None, method: str = "POST", timeout: int = 30, retry_count: int = 0) -> dict:
         """Make a request to ETG API with detailed logging"""
         
-        # ⚡ Cache Interception for strict ETG Sandbox quotas
+        # ⚡ Search result cache to reduce duplicate API calls
         cache_key = None
         if method == "POST" and any(ep in endpoint for ep in ["/search/serp/region/", "/search/serp/hotels/", "/search/hp/", "/search/serp/geo/"]):
             # Normalize and stringify data
             cache_key = hashlib.md5(f"{endpoint}_{json.dumps(data or {}, sort_keys=True)}".encode('utf-8')).hexdigest()
             if cache_key in self.search_cache:
-                print(f"⚡ CACHE HIT: Returning cached API result for {endpoint} (Bypassing Sandbox Quota)")
+                print(f"⚡ CACHE HIT: Returning cached API result for {endpoint}")
                 return self.search_cache[cache_key]
 
         url = f"{self.base_url}{endpoint}"
@@ -186,14 +185,14 @@ class ETGApiService:
             
             response.raise_for_status()
             
-            # --- Transparent Quota Retry Logic (Sandbox Only) ---
+            # --- Rate Limit Retry Logic ---
             if response_json.get("status") == "error" and response_json.get("error") == "too_many_requests":
                 if retry_count < 2:
                     sleep_sec = 20
-                    print(f"⚠️ Sandbox Quota Exceeded! Sleeping for {sleep_sec}s to automatically bypass this for QA...")
+                    print(f"⚠️ Rate Limited! Sleeping for {sleep_sec}s before retry...")
                     import time
                     time.sleep(sleep_sec)
-                    print(f"🔄 Retrying {endpoint} after quota reset wait...")
+                    print(f"🔄 Retrying {endpoint} after rate limit wait...")
                     return self._make_request(endpoint, data, method, timeout, retry_count + 1)
             # ----------------------------------------------------
             

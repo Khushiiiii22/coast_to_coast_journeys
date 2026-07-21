@@ -23,7 +23,7 @@ class Config:
     # ETG/RateHawk API Configuration
     ETG_API_KEY_ID = os.getenv('ETG_API_KEY_ID')
     ETG_API_KEY_SECRET = os.getenv('ETG_API_KEY_SECRET')
-    ETG_API_BASE_URL = os.getenv('ETG_API_BASE_URL', 'https://api.worldota.net/api/b2b/v3')
+    ETG_API_BASE_URL = os.getenv('ETG_API_BASE_URL', 'https://api.ratehawk.com/api/b2b/v3')
     
     # AIR iQ Flight API Configuration
     # AIR iQ Flight API Configuration

@@ -531,9 +531,7 @@ def search_by_destination():
         "radius": 10000
     }
     """
-    # Destinations with ETG region IDs
-    # ALL destinations use ETG/RateHawk API — no sandbox/production distinction
-    # For certification, Mikhail's team will test with supported destinations
+    # Destinations with ETG region IDs (universal across sandbox & production)
     POPULAR_DESTINATIONS = {
         # WELL-KNOWN DESTINATIONS
         'paris': {'latitude': 48.8566, 'longitude': 2.3522, 'region_id': 2734, 'name': 'Paris'},
@@ -563,19 +561,22 @@ def search_by_destination():
         'darjeeling': {'latitude': 27.0410, 'longitude': 88.2663, 'region_id': 6308837, 'name': 'Darjeeling'},
         'ooty': {'latitude': 11.4102, 'longitude': 76.6950, 'region_id': 6308866, 'name': 'Ooty'},
         
-        # MIKHAIL'S REQUIRED SANDBOX HOTELS (ETG Certification)
+        # INTERNATIONAL DESTINATIONS
         'los angeles': {
             'latitude': 34.0522, 
             'longitude': -118.2437, 
             'name': 'Los Angeles', 
-            'region_id': 2011,  # Verified Sandbox Region ID for LA
-            'hotel_ids': [
-                'conrad_los_angeles', 
-                '10004834',  # Mikhail's Conrad HID
-                '6362880',   # Mikhail's Westin HID
-                '10595223'   # Mikhail's The LINE HID
-            ]
+            'region_id': 2011
         },
+        'london': {'latitude': 51.5074, 'longitude': -0.1278, 'region_id': 2114, 'name': 'London'},
+        'new york': {'latitude': 40.7128, 'longitude': -74.0060, 'region_id': 2621, 'name': 'New York'},
+        'singapore': {'latitude': 1.3521, 'longitude': 103.8198, 'region_id': 6054984, 'name': 'Singapore'},
+        'bangkok': {'latitude': 13.7563, 'longitude': 100.5018, 'region_id': 6055058, 'name': 'Bangkok'},
+        'tokyo': {'latitude': 35.6762, 'longitude': 139.6503, 'region_id': 6055073, 'name': 'Tokyo'},
+        'bali': {'latitude': -8.3405, 'longitude': 115.0920, 'region_id': 6046530, 'name': 'Bali'},
+        'maldives': {'latitude': 3.2028, 'longitude': 73.2207, 'region_id': 6308902, 'name': 'Maldives'},
+        'rome': {'latitude': 41.9028, 'longitude': 12.4964, 'region_id': 2622, 'name': 'Rome'},
+        'istanbul': {'latitude': 41.0082, 'longitude': 28.9784, 'region_id': 6055085, 'name': 'Istanbul'},
     }
     
     # Standard conversion rates (updated)
@@ -607,284 +608,196 @@ def search_by_destination():
         
         print(f"🔍 Hotel Search Request: {data['destination']} | Guests: Rooms={data.get('rooms')} Adults={data.get('adults')} ChildrenAges={data.get('children_ages')}")
         
-        # Step 1: Check if destination matches a known location
+        # ──────────────────────────────────────────────────────────
+        # STEP 1: Resolve destination → region_id
+        # Strategy: Try hardcoded fast-path first, then ALWAYS
+        # fall back to RateHawk multicomplete API for ANY destination.
+        # ──────────────────────────────────────────────────────────
         hotel_ids_to_search = None
+        
+        # 1a. Quick match from popular destinations (speed optimization only)
         for key, loc_data in POPULAR_DESTINATIONS.items():
             if key in destination or destination in key:
-                if 'hotel_ids' in loc_data:
-                    hotel_ids_to_search = loc_data['hotel_ids']
-                    location_name = loc_data['name']
-                    print(f"📍 Matched destination with specific hotels: {location_name}, Hotel IDs: {hotel_ids_to_search}")
-                else:
-                    region_id = loc_data.get('region_id')
-                    location_name = loc_data['name']
-                    print(f"📍 Matched destination: {location_name}, Region ID: {region_id}")
+                region_id = loc_data.get('region_id')
+                location_name = loc_data.get('name', data['destination'])
+                print(f"📍 Fast-path match: {location_name}, Region ID: {region_id}")
                 break
         
-        # Step 1.5: If no region_id found from hardcoded list, or to validate it,
-        # dynamically resolve via ETG multicomplete API (live API has different IDs than sandbox)
-        if not region_id and not hotel_ids_to_search:
-            print(f"🔍 No hardcoded match for '{destination}', resolving via ETG multicomplete...")
+        # 1b. PRIMARY: Resolve ANY destination via RateHawk multicomplete API
+        #     This handles ALL destinations worldwide — not just the hardcoded list.
+        if not region_id:
+            print(f"🌍 Resolving '{data['destination']}' via RateHawk multicomplete API...")
             try:
                 suggest_result = etg_service.suggest(data['destination'], 'en')
                 if suggest_result.get('success') and suggest_result.get('data'):
                     suggest_data = suggest_result['data'].get('data', suggest_result['data'])
                     regions = suggest_data.get('regions', [])
+                    hotels = suggest_data.get('hotels', [])
+                    
                     if regions:
-                        # Use the first matching region
                         best_region = regions[0]
                         region_id = best_region.get('id')
                         location_name = best_region.get('name', data['destination'])
-                        print(f"✅ Resolved region via multicomplete: {location_name}, Region ID: {region_id}")
-                    else:
-                        # Check for hotels in results
-                        hotels = suggest_data.get('hotels', [])
-                        if hotels:
-                            hotel_ids_to_search = [h.get('id') for h in hotels[:10] if h.get('id')]
-                            location_name = data['destination']
-                            print(f"✅ Resolved hotels via multicomplete: {hotel_ids_to_search[:5]}...")
+                        print(f"✅ Resolved via multicomplete: {location_name}, Region ID: {region_id}")
+                    elif hotels:
+                        # User typed a hotel name directly
+                        hotel_ids_to_search = [h.get('id') for h in hotels[:10] if h.get('id')]
+                        location_name = hotels[0].get('name', data['destination'])
+                        print(f"✅ Resolved as hotel name: {location_name}, Hotel IDs: {hotel_ids_to_search[:3]}...")
             except Exception as e:
-                print(f"⚠️ Multicomplete fallback failed: {e}")
+                print(f"⚠️ Multicomplete resolution failed: {e}")
         
-        # Step 2: ALWAYS call ETG/RateHawk API for every search when we have a region_id.
-        # ETG certification requires a live /search/serp/region/ call for EVERY search action.
-        
-        # Step 3: Try ETG/RateHawk for ALL destinations with a known region_id or hotel_ids
-        if region_id or hotel_ids_to_search:
-            print(f"🏨 Searching RateHawk for destination: {location_name}")
-            
-            # RateHawk Sandbox often rejects INR. We force USD for the API call and convert locally.
-            user_currency = data.get('currency', 'USD')
-            api_currency = 'USD' if user_currency == 'INR' else user_currency
-            
-            guests = etg_service.format_guests_for_search(
-                adults=data['adults'],
-                children_ages=data.get('children_ages', []),
-                rooms=rooms_data
-            )
-            
-            if hotel_ids_to_search:
-                result = etg_service.search_by_hotels(
-                    hotel_ids=hotel_ids_to_search,
-                    checkin=data['checkin'],
-                    checkout=data['checkout'],
-                    rooms=guests,
-                    currency=api_currency,
-                    residency=data.get('residency', 'gb')
-                )
-            else:
-                # Search using region API
-                result = etg_service.search_by_region(
-                    region_id=region_id,
-                    checkin=data['checkin'],
-                    checkout=data['checkout'],
-                    rooms=guests,
-                    currency=api_currency,
-                    residency=data.get('residency', 'gb')
-                )
-            
-            # Check if RateHawk returned an error (e.g. invalid region_id)
-            if result.get('status') == 'error' or not result.get('success', True):
-                error_msg = result.get('error', 'Unknown API error')
-                # Check for validation errors in debug data
-                if 'data' in result and isinstance(result['data'], dict):
-                    debug = result['data'].get('debug', {})
-                    if debug.get('validation_error'):
-                        error_msg = debug['validation_error']
-                
-                print(f"❌ RateHawk search error: {error_msg}")
-                
-                # If region_id was invalid, try resolving dynamically via multicomplete
-                if 'region' in str(error_msg).lower() or 'invalid' in str(error_msg).lower():
-                    print(f"🔄 Retrying with dynamic region_id from multicomplete API...")
-                    try:
-                        suggest_result = etg_service.suggest(data['destination'], 'en')
-                        if suggest_result.get('success') and suggest_result.get('data'):
-                            suggest_data = suggest_result['data'].get('data', suggest_result['data'])
-                            regions = suggest_data.get('regions', [])
-                            if regions:
-                                new_region_id = regions[0].get('id')
-                                if new_region_id and new_region_id != region_id:
-                                    print(f"✅ Got new region_id {new_region_id} (old was {region_id}), retrying search...")
-                                    region_id = new_region_id
-                                    result = etg_service.search_by_region(
-                                        region_id=region_id,
-                                        checkin=data['checkin'],
-                                        checkout=data['checkout'],
-                                        rooms=guests,
-                                        currency=api_currency,
-                                        residency=data.get('residency', 'gb')
-                                    )
-                                    # Re-check for errors after retry
-                                    if result.get('status') == 'error' or not result.get('success', True):
-                                        error_msg = result.get('error', 'Unknown')
-                                        print(f"❌ Retry also failed: {error_msg}")
-                                    else:
-                                        print(f"✅ Retry succeeded with new region_id {new_region_id}")
-                    except Exception as e:
-                        print(f"⚠️ Dynamic region resolution failed: {e}")
-                
-                # If it's a critical validation error (like dates), return early
-                if any(kw in str(error_msg).lower() for kw in ['checkin', 'checkout', 'date']):
-                    return jsonify({
-                        'success': False, 
-                        'error': f"Search failed: {error_msg}. Please check your dates and try again."
-                    }), 400
-
-            # Check if RateHawk returned hotels
-            if result.get('success') and result.get('data'):
-                inner_data = result['data'].get('data', result['data'])
-                etg_hotels = inner_data.get('hotels', [])
-                
-                if etg_hotels and len(etg_hotels) > 0:
-                    print(f"✅ Found {len(etg_hotels)} hotels via RateHawk for {location_name}")
-
-                if etg_hotels and len(etg_hotels) > 0:
-                    # Proceed with transformation...
-                    # --- PERFORMANCE FIX: Bulk Static Data Enrichment ---
-                    # Instead of an empty map or sequential lookups, we now use parallel fetching.
-                    hotel_ids = [h.get('hotel_id') or h.get('id') for h in etg_hotels if h.get('hotel_id') or h.get('id')]
-                    
-                    if hotel_ids:
-                        print(f"📦 Fetching static info for {len(hotel_ids)} hotels in parallel...")
-                        static_res = etg_service.get_hotels_static(hotel_ids, language='en')
-                        if static_res.get('success'):
-                            static_hotel_map = static_res['data'].get('data', {})
-                            print(f"✅ Successfully enriched {len(static_hotel_map)} hotels with static data")
-
-                    # Calculate nights for correct inclusive price display
-                    from datetime import datetime
-                    try:
-                        d1 = datetime.strptime(data['checkin'], '%Y-%m-%d')
-                        d2 = datetime.strptime(data['checkout'], '%Y-%m-%d')
-                        nights = (d2 - d1).days
-                    except:
-                        nights = 1
-
-                    # Enrich hotels with static data from cache (if available)
-                    for h in etg_hotels:
-                        hid = h.get('hotel_id') or h.get('id')
-                        if hid and hid in static_hotel_map:
-                            h['static_data'] = static_hotel_map[hid]
-
-                    transformed_hotels = transform_etg_hotels(
-                        hotels_data=etg_hotels, 
-                        target_currency=user_currency,
-                        conversion_rates=CONVERSION_RATES,
-                        nights=nights,
-                        use_block_markup=str(data.get('is_block_booking', '')).lower() == 'true'
-                    )
-                    
-                    return jsonify({
-                        'success': True,
-                        'data': {'hotels': transformed_hotels},
-                        'location': {'name': location_name, 'region_id': region_id},
-                        'hotels_count': len(transformed_hotels),
-                        'real_data': True,
-                        'source': 'ratehawk'
-                    })
-                else:
-                    print(f"⚠️ RateHawk returned 0 hotels for {location_name}")
-        
-        # Step 4: If not in predefined list, try ETG suggest API
+        # ──────────────────────────────────────────────────────────
+        # STEP 2: Search for hotels using resolved region_id or hotel_ids
+        # ──────────────────────────────────────────────────────────
         if not region_id and not hotel_ids_to_search:
-            print(f"🔎 Trying RateHawk suggest API for: {data['destination']}")
-            suggest_result = etg_service.suggest(data['destination'])
-            if suggest_result.get('success') and suggest_result.get('data'):
-                inner_data = suggest_result['data'].get('data', suggest_result['data'])
-                regions = inner_data.get('regions', [])
-                hotels = inner_data.get('hotels', [])
+            print(f"🛑 Could not resolve destination: '{data['destination']}'")
+            return jsonify({
+                'success': False,
+                'error': f"Could not find destination '{data['destination']}'. Please check the spelling or try a different search term.",
+                'hotels': [],
+                'source': 'none'
+            })
+        
+        # Prepare search parameters
+        user_currency = data.get('currency', 'USD')
+        api_currency = 'USD' if user_currency == 'INR' else user_currency
+        
+        guests = etg_service.format_guests_for_search(
+            adults=data['adults'],
+            children_ages=data.get('children_ages', []),
+            rooms=rooms_data
+        )
+        
+        print(f"🏨 Searching RateHawk for: {location_name}")
+        
+        if hotel_ids_to_search:
+            result = etg_service.search_by_hotels(
+                hotel_ids=hotel_ids_to_search,
+                checkin=data['checkin'],
+                checkout=data['checkout'],
+                rooms=guests,
+                currency=api_currency,
+                residency=data.get('residency', 'gb')
+            )
+        else:
+            result = etg_service.search_by_region(
+                region_id=region_id,
+                checkin=data['checkin'],
+                checkout=data['checkout'],
+                rooms=guests,
+                currency=api_currency,
+                residency=data.get('residency', 'gb')
+            )
+        
+        # ──────────────────────────────────────────────────────────
+        # STEP 3: Handle errors with smart retry
+        # ──────────────────────────────────────────────────────────
+        if result.get('status') == 'error' or not result.get('success', True):
+            error_msg = result.get('error', 'Unknown API error')
+            if 'data' in result and isinstance(result['data'], dict):
+                debug = result['data'].get('debug', {})
+                if debug.get('validation_error'):
+                    error_msg = debug['validation_error']
+            
+            print(f"❌ RateHawk search error: {error_msg}")
+            
+            # If region_id was invalid, try re-resolving via multicomplete
+            if 'region' in str(error_msg).lower() or 'invalid' in str(error_msg).lower():
+                print(f"🔄 Retrying with dynamic region_id from multicomplete API...")
+                try:
+                    suggest_result = etg_service.suggest(data['destination'], 'en')
+                    if suggest_result.get('success') and suggest_result.get('data'):
+                        suggest_data = suggest_result['data'].get('data', suggest_result['data'])
+                        regions = suggest_data.get('regions', [])
+                        if regions:
+                            new_region_id = regions[0].get('id')
+                            if new_region_id and new_region_id != region_id:
+                                print(f"✅ Got new region_id {new_region_id} (old was {region_id}), retrying search...")
+                                region_id = new_region_id
+                                result = etg_service.search_by_region(
+                                    region_id=region_id,
+                                    checkin=data['checkin'],
+                                    checkout=data['checkout'],
+                                    rooms=guests,
+                                    currency=api_currency,
+                                    residency=data.get('residency', 'gb')
+                                )
+                                if result.get('status') == 'error' or not result.get('success', True):
+                                    print(f"❌ Retry also failed: {result.get('error', 'Unknown')}")
+                                else:
+                                    print(f"✅ Retry succeeded with new region_id {new_region_id}")
+                except Exception as e:
+                    print(f"⚠️ Dynamic region resolution failed: {e}")
+            
+            # If it's a date validation error, return early with helpful message
+            if any(kw in str(error_msg).lower() for kw in ['checkin', 'checkout', 'date']):
+                return jsonify({
+                    'success': False, 
+                    'error': f"Search failed: {error_msg}. Please check your dates and try again."
+                }), 400
+
+        # ──────────────────────────────────────────────────────────
+        # STEP 4: Process and return results
+        # ──────────────────────────────────────────────────────────
+        if result.get('success') and result.get('data'):
+            inner_data = result['data'].get('data', result['data'])
+            etg_hotels = inner_data.get('hotels', [])
+            
+            if etg_hotels and len(etg_hotels) > 0:
+                print(f"✅ Found {len(etg_hotels)} hotels via RateHawk for {location_name}")
+
+                # Bulk static data enrichment (parallel fetch)
+                hotel_ids = [h.get('hotel_id') or h.get('id') for h in etg_hotels if h.get('hotel_id') or h.get('id')]
+                static_hotel_map = {}
                 
-                guests = etg_service.format_guests_for_search(
-                    adults=data['adults'],
-                    children_ages=data.get('children_ages', []),
-                    rooms=rooms_data
+                if hotel_ids:
+                    print(f"📦 Fetching static info for {len(hotel_ids)} hotels in parallel...")
+                    static_res = etg_service.get_hotels_static(hotel_ids, language='en')
+                    if static_res.get('success'):
+                        static_hotel_map = static_res['data'].get('data', {})
+                        print(f"✅ Successfully enriched {len(static_hotel_map)} hotels with static data")
+
+                # Calculate nights
+                from datetime import datetime
+                try:
+                    d1 = datetime.strptime(data['checkin'], '%Y-%m-%d')
+                    d2 = datetime.strptime(data['checkout'], '%Y-%m-%d')
+                    nights = (d2 - d1).days
+                except:
+                    nights = 1
+
+                # Enrich hotels with static data
+                for h in etg_hotels:
+                    hid = h.get('hotel_id') or h.get('id')
+                    if hid and hid in static_hotel_map:
+                        h['static_data'] = static_hotel_map[hid]
+
+                transformed_hotels = transform_etg_hotels(
+                    hotels_data=etg_hotels, 
+                    target_currency=user_currency,
+                    conversion_rates=CONVERSION_RATES,
+                    nights=nights,
+                    use_block_markup=str(data.get('is_block_booking', '')).lower() == 'true'
                 )
                 
-                if regions:
-                    # Search by suggested region
-                    region_id = regions[0].get('id')
-                    location_name = regions[0].get('name', data['destination'])
-                    print(f"✅ Found region via suggest API: {location_name} (ID: {region_id})")
-                    
-                    result = etg_service.search_by_region(
-                        region_id=region_id,
-                        checkin=data['checkin'],
-                        checkout=data['checkout'],
-                        rooms=guests,
-                        currency=target_currency,
-                        residency=data.get('residency', 'gb')
-                    )
-                elif hotels:
-                    # Search by suggested specific hotels (e.g. user typed a hotel name)
-                    hotel_ids = [h.get('id') for h in hotels if h.get('id')][:10]  # Take up to 10 hotels
-                    location_name = hotels[0].get('name', data['destination'])
-                    print(f"✅ Found specific hotels via suggest API: {location_name}...")
-                    
-                    result = etg_service.search_by_hotels(
-                        hotel_ids=hotel_ids,
-                        checkin=data['checkin'],
-                        checkout=data['checkout'],
-                        rooms=guests,
-                        currency=target_currency,
-                        residency=data.get('residency', 'gb')
-                    )
-                else:
-                    result = {}
-                
-                # Process results from Step 4 suggest-based search
-                if result.get('status') == 'error' or not result.get('success', True):
-                    error_msg = result.get('error', 'Unknown API error')
-                    if 'data' in result and isinstance(result['data'], dict):
-                        debug = result['data'].get('debug', {})
-                        if debug.get('validation_error'):
-                            error_msg = debug['validation_error']
-                    
-                    print(f"❌ RateHawk suggest-search error: {error_msg}")
-                    if any(kw in str(error_msg).lower() for kw in ['checkin', 'checkout', 'date']):
-                        return jsonify({
-                            'success': False, 
-                            'error': f"Search failed: {error_msg}. Please check your dates and try again."
-                        }), 400
-
-                if result.get('success') and result.get('data'):
-                    search_data = result['data'].get('data', result['data'])
-                    etg_hotels = search_data.get('hotels', [])
-                    
-                    if etg_hotels and len(etg_hotels) > 0:
-                        print(f"✅ Found {len(etg_hotels)} hotels via RateHawk suggest")
-                        
-                        from datetime import datetime
-                        try:
-                            d1 = datetime.strptime(data['checkin'], '%Y-%m-%d')
-                            d2 = datetime.strptime(data['checkout'], '%Y-%m-%d')
-                            nights = (d2 - d1).days
-                        except:
-                            nights = 1
-
-                        transformed_hotels = transform_etg_hotels(
-                            hotels_data=etg_hotels, 
-                            target_currency=target_currency,
-                            conversion_rates=CONVERSION_RATES,
-                            nights=nights,
-                            use_block_markup=str(data.get('is_block_booking', '')).lower() == 'true'
-                        )
-                        return jsonify({
-                            'success': True,
-                            'data': {'hotels': transformed_hotels},
-                            'location': {'name': location_name, 'region_id': region_id},
-                            'hotels_count': len(transformed_hotels),
-                            'real_data': True,
-                            'source': 'ratehawk'
-                        })
+                return jsonify({
+                    'success': True,
+                    'data': {'hotels': transformed_hotels},
+                    'location': {'name': location_name, 'region_id': region_id},
+                    'hotels_count': len(transformed_hotels),
+                    'real_data': True,
+                    'source': 'ratehawk'
+                })
+            else:
+                print(f"⚠️ RateHawk returned 0 hotels for {location_name}")
         
-        # Step 5: Final fallback - NO hotels found
+        # No hotels found after all attempts
         print(f"🛑 No hotels found for {location_name} after all attempts")
         
-        # Improvement: Better error message for the user
         return jsonify({
             'success': False,
-            'error': f"No availability found for '{location_name}' on these dates. Please try different dates or search for a nearby popular destination like Dubai or London.",
+            'error': f"No availability found for '{location_name}' on these dates. Please try different dates or a different destination.",
             'hotels': [],
             'source': 'none'
         })
@@ -1898,11 +1811,24 @@ def get_hotel_policies(hotel_id):
             except Exception as e:
                 print(f"⚠️ Supabase cache check failed for hotel policies: {e}")
 
-        # ── Strategy 1 & 2 (DISABLED for RateHawk compliance: ZERO real-time /hotel/info or /hotel/static calls) ──
-        # To comply with the strict separation of static data, we serve only from offline cached DB.
-        # if not hotel_data:
-        #     # Live calls are disabled during customer page loads.
-        #     print(f"⚠️ Policies cache miss for {hotel_id} - serving fallback/mock policies only")
+        # ── Strategy 1: Live /hotel/info/ call (production fallback when cache misses) ──
+        if not hotel_data:
+            try:
+                print(f"🔄 Policies cache miss for {hotel_id} — fetching live from /hotel/info/")
+                result = etg_service.get_hotel_info(hotel_id)
+                if result.get('success') and result.get('data'):
+                    resp_data = result['data']
+                    h_info = resp_data.get('data', resp_data)
+                    if isinstance(h_info, dict) and (h_info.get('metapolicy_struct') or h_info.get('metapolicy_extra_info')):
+                        hotel_data = h_info
+                        print(f"✅ Policies for {hotel_id}: fetched live from /hotel/info/")
+                        # Cache for future requests
+                        try:
+                            supabase_service.cache_hotel(hotel_id, h_info)
+                        except Exception:
+                            pass
+            except Exception as e:
+                print(f"⚠️ Live /hotel/info/ call failed for {hotel_id}: {e}")
 
         # Extract policy information
         # NOTE: policy_struct is deprecated - we only use metapolicy_struct and metapolicy_extra_info
@@ -2559,10 +2485,31 @@ def get_enriched_hotel_details():
                 traceback.print_exc()
                 print(f"⚠️ Failed to load from local JSON cache: {e}")
 
-        # If cache miss, DO NOT make a live API call to /hotel/static/ (RateHawk compliance)
-        # Instead, mock a successful empty response to prevent frontend breaking
+        # If cache miss, try live /hotel/info/ call (production mode)
         if not static_result.get('success'):
-            print(f"⚠️ Static cache miss for {data['hotel_id']} - serving mock/empty room groups to avoid live /hotel/static/")
+            try:
+                print(f"🔄 Static cache miss for {data['hotel_id']} — fetching live from /hotel/info/")
+                live_result = etg_service.get_hotel_info(data['hotel_id'])
+                if live_result.get('success') and live_result.get('data'):
+                    resp_data = live_result['data']
+                    h_info = resp_data.get('data', resp_data)
+                    if isinstance(h_info, dict):
+                        static_result = {
+                            'success': True,
+                            'data': h_info
+                        }
+                        print(f"✅ Static data for {data['hotel_id']}: fetched live from /hotel/info/")
+                        # Cache for future requests
+                        try:
+                            supabase_service.cache_hotel(data['hotel_id'], h_info)
+                        except Exception:
+                            pass
+            except Exception as e:
+                print(f"⚠️ Live /hotel/info/ call failed for {data['hotel_id']}: {e}")
+
+        # Final fallback: empty response to prevent frontend breaking
+        if not static_result.get('success'):
+            print(f"⚠️ All data sources exhausted for {data['hotel_id']} — serving empty room groups")
             static_result = {
                 'success': True,
                 'data': {'room_groups': []}

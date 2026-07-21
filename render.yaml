@@ -35,7 +35,7 @@ services:
       - key: ETG_API_KEY_SECRET
         sync: false
       - key: ETG_API_BASE_URL
-        value: https://api.worldota.net/api/b2b/v3  # Production URL
+        value: https://api.ratehawk.com/api/b2b/v3  # Production URL
       
       # Static IP Proxy for RateHawk Whitelisting
       - key: QUOTAGUARDSTATIC_URL
