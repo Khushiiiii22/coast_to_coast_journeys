@@ -343,26 +343,28 @@ def debug_ip_check():
 # SUGGEST/AUTOCOMPLETE ENDPOINT
 # ==========================================
 
-@hotel_bp.route('/suggest', methods=['POST'])
+@hotel_bp.route('/suggest', methods=['GET', 'POST'])
 def suggest():
     """
-    Search suggestions for hotels and regions
+    Search suggestions for hotels and regions (autocomplete)
     
-    Request Body:
-    {
-        "query": "Paris",
-        "language": "en"
-    }
+    Can handle GET (query params) or POST (JSON body)
     """
     try:
-        data = request.get_json()
-        
-        if 'query' not in data or len(data['query']) < 2:
+        if request.method == 'GET':
+            query = request.args.get('query', '')
+            language = request.args.get('language', 'en')
+        else:
+            data = request.get_json() or {}
+            query = data.get('query', '')
+            language = data.get('language', 'en')
+            
+        if len(query) < 2:
             return jsonify({'success': False, 'error': 'Query must be at least 2 characters'}), 400
         
         result = etg_service.suggest(
-            query=data['query'],
-            language=data.get('language', 'en')
+            query=query,
+            language=language
         )
         
         return jsonify(result)

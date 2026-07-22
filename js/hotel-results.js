@@ -1042,15 +1042,36 @@ function handleModifySearch(e) {
     performSearch(params);
 }
 
+let loadingInterval;
+const loadingMessages = [
+    "Searching for the best available hotels...",
+    "Checking live availability with our partners...",
+    "Comparing prices across hundreds of properties...",
+    "Almost there, finalizing your results...",
+    "Just a few more seconds to get the best deals..."
+];
+
 // UI helper functions
 function showLoading() {
     document.getElementById('loadingState').classList.remove('hidden');
     document.getElementById('hotelsList').classList.add('hidden');
     document.getElementById('errorState').classList.add('hidden');
     document.getElementById('noResultsState').classList.add('hidden');
+    
+    const msgEl = document.getElementById('loadingMessage');
+    if (msgEl) {
+        let msgIdx = 0;
+        msgEl.textContent = loadingMessages[0];
+        clearInterval(loadingInterval);
+        loadingInterval = setInterval(() => {
+            msgIdx = (msgIdx + 1) % loadingMessages.length;
+            msgEl.textContent = loadingMessages[msgIdx];
+        }, 5000); // Change message every 5 seconds
+    }
 }
 
 function hideLoading() {
+    clearInterval(loadingInterval);
     document.getElementById('loadingState').classList.add('hidden');
 }
 
@@ -1217,43 +1238,68 @@ function setupModifyDestAutocomplete() {
             dropdown.innerHTML = '<div style="padding: 10px 15px; color: #64748b; font-size: 0.9rem;"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
             dropdown.style.display = 'block';
 
-            const response = await HotelAPI.autocompleteLocation(query);
+            const response = await fetch(`/api/hotels/suggest?query=${encodeURIComponent(query)}&language=en`);
+            const result = await response.json();
 
-            if (response.success && response.predictions && response.predictions.length > 0) {
-                let html = '<div style="padding: 8px 15px; font-size: 0.8rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Search Results</div>';
+            if (result.success && result.data) {
+                const inner = result.data.data || result.data;
+                const regions = inner.regions || [];
+                const hotels = inner.hotels || [];
+                
+                if (regions.length > 0 || hotels.length > 0) {
+                    let html = '<div style="padding: 8px 15px; font-size: 0.8rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Search Results</div>';
 
-                response.predictions.forEach(pred => {
-                    const name = pred.structured_formatting?.main_text || pred.description.split(',')[0];
-                    const country = pred.structured_formatting?.secondary_text || pred.description.split(',').slice(1).join(',').trim();
-                    const location = {
-                        name,
-                        country,
-                        type: 'city',
-                        full: pred.description,
-                        region_id: pred.place_id // Assuming place_id can be used as region_id or similar
-                    };
-                    html += createLocationItemHtml(location);
-                });
+                    regions.forEach(region => {
+                        const name = region.name || 'Unknown';
+                        const country = region.country || '';
+                        const type = region.type || 'Region';
+                        
+                        let iconClass = 'fa-map-marker-alt';
+                        if (type.toLowerCase() === 'airport') iconClass = 'fa-plane';
+                        else if (type.toLowerCase() === 'city') iconClass = 'fa-city';
+                        else if (type.toLowerCase() === 'country') iconClass = 'fa-globe';
 
-                dropdown.innerHTML = html;
-                addClickListeners();
+                        const location = {
+                            name,
+                            country,
+                            type: type.toLowerCase(),
+                            full: `${name}${country ? ', ' + country : ''}`,
+                            region_id: region.id,
+                            iconClass: iconClass
+                        };
+                        html += createLocationItemHtml(location);
+                    });
+
+                    hotels.forEach(hotel => {
+                        const location = {
+                            name: hotel.name || 'Hotel',
+                            country: hotel.region?.name || '',
+                            type: 'hotel',
+                            full: hotel.name,
+                            hotel_id: hotel.id,
+                            iconClass: 'fa-bed'
+                        };
+                        html += createLocationItemHtml(location);
+                    });
+
+                    dropdown.innerHTML = html;
+                    addClickListeners();
+                } else {
+                    dropdown.innerHTML = '<div style="padding: 10px 15px; color: #64748b; font-size: 0.9rem;">No results found</div>';
+                }
             } else {
                 dropdown.innerHTML = '<div style="padding: 10px 15px; color: #64748b; font-size: 0.9rem;">No results found</div>';
             }
+            
         } catch (error) {
             console.error('Autocomplete error:', error);
-            dropdown.style.display = 'none';
+            dropdown.innerHTML = '<div style="padding: 10px 15px; color: #64748b; font-size: 0.9rem;">No results found</div>';
         }
     }, 300);
 
     // Input listener
     input.addEventListener('input', function () {
-        const query = this.value.trim();
-        if (query.length === 0) {
-            showPopular();
-        } else {
-            performSearch(query);
-        }
+        performSearch(this.value.trim());
     });
 
     // Focus listener

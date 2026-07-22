@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Show popular destinations on focus if empty
     input.addEventListener('focus', function () {
-        if (this.value.trim().length === 0) {
-            showPopularDestinations();
+        if (this.value.trim().length >= 2) {
+            fetchSuggestions(this.value.trim());
         }
     });
 
@@ -56,11 +56,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         clearTimeout(debounceTimer);
 
-        if (query.length === 0) {
-            showPopularDestinations();
-            return;
-        }
-
         if (query.length < 2) {
             hideDropdown();
             return;
@@ -77,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
             input.value = '';
             if (regionIdInput) regionIdInput.value = '';
             clearBtn.style.display = 'none';
-            showPopularDestinations();
+            hideDropdown();
             input.focus();
         });
     }
@@ -89,47 +84,20 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    function showPopularDestinations() {
-        if (resultsContainer) resultsContainer.innerHTML = '';
-        hideLoading();
-        if (empty) empty.style.display = 'none';
-
-        const header = document.createElement('div');
-        header.className = 'dropdown-header-home';
-        header.textContent = 'Popular Destinations';
-        resultsContainer.appendChild(header);
-
-        popularDestinations.forEach(loc => {
-            const item = document.createElement('div');
-            item.className = 'location-item-home';
-            item.innerHTML = `
-                <div class="location-icon-home">
-                    <i class="fas fa-map-marker-alt"></i>
-                </div>
-                <div class="location-details-home">
-                    <div class="location-name-home">${loc.name}</div>
-                    <div class="location-country-home">${loc.country}</div>
-                </div>
-            `;
-            item.addEventListener('click', () => {
-                selectLocation(`${loc.name}, ${loc.country}`, null, 'region');
-            });
-            resultsContainer.appendChild(item);
-        });
-
-        resultsContainer.style.display = 'block';
-        dropdown.classList.add('active');
-    }
-
-    // Focus listener to show dropdown again if value exists? 
-    // Maybe not needed for now.
+    // Focus listener to show dropdown again if value exists
+    input.addEventListener('focus', function () {
+        if (input.value.trim().length >= 2) {
+            fetchSuggestions(input.value.trim());
+        }
+    });
 
     // Fetch suggestions from ETG multicomplete API
     async function fetchSuggestions(query) {
         showLoading();
+        dropdown.style.display = 'block';
 
         try {
-            // Use ETG /search/multicomplete/ endpoint for live API calls (required for certification)
+            // Use ETG /search/multicomplete/ endpoint via backend
             const response = await fetch(`/api/hotels/suggest?query=${encodeURIComponent(query)}&language=en`);
             const result = await response.json();
 
@@ -143,64 +111,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
             }
-            // ETG returned nothing — try Google Places fallback
-            await fetchGoogleFallback(query);
+            
+            showEmpty();
         } catch (error) {
-            console.error('❌ ETG Autocomplete error:', error);
-            // Fall back to Google Places
-            await fetchGoogleFallback(query);
-        }
-    }
-
-    // Fallback: Google Places autocomplete via /api/hotels/autocomplete
-    async function fetchGoogleFallback(query) {
-        try {
-            const response = await fetch(`/api/hotels/autocomplete?query=${encodeURIComponent(query)}`);
-            const data = await response.json();
-
-            if (data.success && data.predictions && data.predictions.length > 0) {
-                displayResults(data.predictions);
-                return;
-            }
-        } catch (e) {
-            // ignore
-        }
-
-        // Final fallback: filter popular destinations locally
-        const filtered = popularDestinations.filter(loc =>
-            loc.name.toLowerCase().includes(query.toLowerCase()) ||
-            loc.country.toLowerCase().includes(query.toLowerCase())
-        );
-
-        if (filtered.length > 0) {
-            if (resultsContainer) resultsContainer.innerHTML = '';
-            hideLoading();
-            if (empty) empty.style.display = 'none';
-
-            const header = document.createElement('div');
-            header.className = 'dropdown-header-home';
-            header.textContent = 'Matching Destinations';
-            resultsContainer.appendChild(header);
-
-            filtered.forEach(loc => {
-                const item = document.createElement('div');
-                item.className = 'location-item-home';
-                item.innerHTML = `
-                    <div class="location-icon-home"><i class="fas fa-map-marker-alt"></i></div>
-                    <div class="location-details-home">
-                        <div class="location-name-home">${loc.name}</div>
-                        <div class="location-country-home">${loc.country}</div>
-                    </div>
-                `;
-                item.addEventListener('click', () => {
-                    selectLocation(`${loc.name}, ${loc.country}`, null, 'region');
-                });
-                resultsContainer.appendChild(item);
-            });
-
-            resultsContainer.style.display = 'block';
-            dropdown.classList.add('active');
-        } else {
+            console.error('❌ Autocomplete error:', error);
             showEmpty();
         }
     }
@@ -225,14 +139,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 item.className = 'location-item-home';
                 const name = region.name || 'Unknown';
                 const country = region.country || '';
+                const type = region.type || 'Region';
+
+                // Use different icons based on type
+                let iconClass = 'fa-map-marker-alt';
+                if (type.toLowerCase() === 'airport') iconClass = 'fa-plane';
+                else if (type.toLowerCase() === 'city') iconClass = 'fa-city';
+                else if (type.toLowerCase() === 'country') iconClass = 'fa-globe';
 
                 item.innerHTML = `
                     <div class="location-icon-home">
-                        <i class="fas fa-map-marker-alt"></i>
+                        <i class="fas ${iconClass}"></i>
                     </div>
                     <div class="location-details-home">
                         <div class="location-name-home">${name}</div>
-                        <div class="location-country-home">${country}</div>
+                        <div class="location-country-home">${country ? country + (region.state ? ', ' + region.state : '') : ''}</div>
                     </div>
                 `;
                 item.addEventListener('click', () => {

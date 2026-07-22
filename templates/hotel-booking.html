@@ -1180,12 +1180,10 @@
 
         // Show dropdown on focus
         destinationInput.addEventListener('focus', function () {
-            if (this.value.length === 0) {
-                showPopularDestinations();
-            } else if (this.value.length >= 2) {
+            if (this.value.length >= 2) {
                 searchLocations(this.value);
+                locationDropdown.classList.add('active');
             }
-            locationDropdown.classList.add('active');
         });
 
         // Search as user types (debounced)
@@ -1200,14 +1198,10 @@
                 clearTimeout(searchTimeout);
             }
 
-            if (query.length === 0) {
-                showPopularDestinations();
-                return;
-            }
-
             if (query.length < 2) {
                 dropdownResults.innerHTML = '';
                 dropdownEmpty.style.display = 'none';
+                locationDropdown.classList.remove('active');
                 return;
             }
 
@@ -1224,7 +1218,9 @@
             destinationInput.value = '';
             this.style.display = 'none';
             selectedLocationData = null;
-            showPopularDestinations();
+            dropdownResults.innerHTML = '';
+            dropdownEmpty.style.display = 'none';
+            locationDropdown.classList.remove('active');
             destinationInput.focus();
         });
 
@@ -1264,19 +1260,7 @@
             }
         }
 
-        function showPopularDestinations() {
-            highlightedIndex = -1;
-            dropdownEmpty.style.display = 'none';
-            dropdownLoading.classList.remove('active');
 
-            let html = '<div class="dropdown-header">Popular Destinations</div>';
-            popularDestinations.forEach(loc => {
-                html += createLocationItemHtml(loc);
-            });
-            dropdownResults.innerHTML = html;
-            attachLocationListeners();
-            locationDropdown.classList.add('active');
-        }
 
                 async function searchLocations(query) {
             highlightedIndex = -1;
@@ -1326,31 +1310,11 @@
                     }
                 }
                 
-                // Fallback to old behavior (Google places) if ETG empty
-                const fallbackResponse = await fetch(`/api/hotels/autocomplete?query=${encodeURIComponent(query)}`);
-                const fallbackData = await fallbackResponse.json();
-                
-                if (fallbackData.success && fallbackData.predictions && fallbackData.predictions.length > 0) {
-                    let html = '<div class="dropdown-header">Search Results</div>';
-                    fallbackData.predictions.forEach(pred => {
-                        const location = {
-                            name: pred.structured_formatting?.main_text || pred.description.split(',')[0],
-                            country: pred.structured_formatting?.secondary_text || pred.description.split(',').slice(1).join(',').trim(),
-                            type: getLocationType(pred.types || []),
-                            place_id: pred.place_id,
-                            full_description: pred.description
-                        };
-                        html += createLocationItemHtml(location);
-                    });
-                    dropdownResults.innerHTML = html;
-                    attachLocationListeners();
-                } else {
-                    dropdownEmpty.style.display = 'block';
-                }
+                // If ETG is empty or fails, just show empty
+                dropdownEmpty.style.display = 'block';
             } catch (error) {
                 console.error('Autocomplete error:', error);
-                dropdownLoading.classList.remove('active');
-                showPopularDestinations();
+                dropdownEmpty.style.display = 'block';
             }
         }
 
