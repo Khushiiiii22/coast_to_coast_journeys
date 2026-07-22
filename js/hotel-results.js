@@ -106,8 +106,8 @@ function updateSearchBar(params) {
     if (travelersEl) {
         let roomCount = Array.isArray(params.rooms) ? params.rooms.length : (params.rooms || 1);
         let adultCount = Array.isArray(params.rooms)
-            ? params.rooms.reduce((sum, r) => sum + (r.adults || 0), 0)
-            : (params.adults || 2);
+            ? params.rooms.reduce((sum, r) => sum + (r.adults || 0) + (r.children || r.childAges?.length || 0), 0)
+            : ((params.adults || 2) + (params.children_ages ? params.children_ages.length : 0));
         travelersEl.textContent = `${adultCount} traveler${adultCount > 1 ? 's' : ''}, ${roomCount} room${roomCount > 1 ? 's' : ''}`;
     }
 }

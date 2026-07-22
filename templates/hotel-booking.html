@@ -1168,14 +1168,14 @@
 
         // Popular destinations (fallback when no search)
         const popularDestinations = [
-            { name: 'Mumbai', country: 'Maharashtra, India', type: 'city' },
-            { name: 'Delhi', country: 'Delhi, India', type: 'city' },
-            { name: 'Dubai', country: 'Dubai, UAE', type: 'city' },
-            { name: 'Paris', country: 'Ile-de-France, France', type: 'city' },
-            { name: 'London', country: 'Greater London, United Kingdom', type: 'city' },
             { name: 'Singapore', country: 'Singapore', type: 'city' },
-            { name: 'New York', country: 'NY, United States', type: 'city' },
-            { name: 'Bangkok', country: 'Bangkok, Thailand', type: 'city' }
+            { name: 'London', country: 'England, United Kingdom', type: 'city' },
+            { name: 'Tokyo', country: 'Tokyo Prefecture, Japan', type: 'city' },
+            { name: 'Paris', country: 'Ile-de-France, France', type: 'city' },
+            { name: 'Dubai', country: 'Dubai, UAE', type: 'city' },
+            { name: 'New York', country: 'New York, United States', type: 'city' },
+            { name: 'Bangkok', country: 'Bangkok, Thailand', type: 'city' },
+            { name: 'Mumbai', country: 'Maharashtra, India', type: 'city' }
         ];
 
         // Show dropdown on focus
@@ -1285,12 +1285,21 @@
                         let html = '<div class="dropdown-header">Search Results</div>';
                         
                         regions.forEach(region => {
+                            let displayName = region.name;
+                            if (region.type === 'airport' && region.iata) {
+                                displayName = `${region.name} (${region.iata})`;
+                            }
+                            let subtextArray = [];
+                            if (region.state) subtextArray.push(region.state);
+                            if (region.country) subtextArray.push(region.country);
+                            let subtext = subtextArray.join(', ');
+
                             html += createLocationItemHtml({
-                                name: region.name,
-                                country: region.country || '',
-                                type: 'city',
+                                name: displayName,
+                                country: subtext,
+                                type: region.type || 'city',
                                 place_id: region.id,
-                                full_description: region.name + ', ' + (region.country || '')
+                                full_description: `${displayName}${subtext ? ', ' + subtext : ''}`
                             });
                         });
                         
@@ -1300,7 +1309,7 @@
                                 country: hotel.region?.name || '',
                                 type: 'hotel',
                                 place_id: hotel.id,
-                                full_description: hotel.name + ', ' + (hotel.region?.name || '')
+                                full_description: `${hotel.name}, ${hotel.region?.name || ''}`
                             });
                         });
                         

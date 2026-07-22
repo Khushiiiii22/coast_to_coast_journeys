@@ -14,18 +14,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Popular destinations (sync with other pages)
     const popularDestinations = [
-        { name: 'Mumbai', country: 'Maharashtra, India', type: 'city' },
-        { name: 'Delhi', country: 'Delhi, India', type: 'city' },
-        { name: 'Goa', country: 'Goa, India', type: 'city' },
-        { name: 'Bangalore', country: 'Karnataka, India', type: 'city' },
-        { name: 'Chennai', country: 'Tamil Nadu, India', type: 'city' },
-        { name: 'Kolkata', country: 'West Bengal, India', type: 'city' },
-        { name: 'Jaipur', country: 'Rajasthan, India', type: 'city' },
-        { name: 'Hyderabad', country: 'Telangana, India', type: 'city' },
-        { name: 'Pune', country: 'Maharashtra, India', type: 'city' },
-        { name: 'Dubai', country: 'Dubai, UAE', type: 'city' },
+        { name: 'Singapore', country: 'Singapore', type: 'city' },
+        { name: 'London', country: 'England, United Kingdom', type: 'city' },
+        { name: 'Tokyo', country: 'Tokyo Prefecture, Japan', type: 'city' },
         { name: 'Paris', country: 'Ile-de-France, France', type: 'city' },
-        { name: 'Singapore', country: 'Singapore', type: 'city' }
+        { name: 'Dubai', country: 'Dubai, UAE', type: 'city' },
+        { name: 'New York', country: 'New York, United States', type: 'city' },
+        { name: 'Bangkok', country: 'Bangkok, Thailand', type: 'city' },
+        { name: 'Mumbai', country: 'Maharashtra, India', type: 'city' }
     ];
 
     // If elements are missing (e.g. on other pages), stop
@@ -147,17 +143,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 else if (type.toLowerCase() === 'city') iconClass = 'fa-city';
                 else if (type.toLowerCase() === 'country') iconClass = 'fa-globe';
 
+                let displayName = name;
+                if (type.toLowerCase() === 'airport' && region.iata) {
+                    displayName = `${name} (${region.iata})`;
+                }
+
+                let subtextArray = [];
+                if (region.state) subtextArray.push(region.state);
+                if (region.country) subtextArray.push(region.country);
+                let subtext = subtextArray.join(', ');
+
                 item.innerHTML = `
                     <div class="location-icon-home">
                         <i class="fas ${iconClass}"></i>
                     </div>
                     <div class="location-details-home">
-                        <div class="location-name-home">${name}</div>
-                        <div class="location-country-home">${country ? country + (region.state ? ', ' + region.state : '') : ''}</div>
+                        <div class="location-name-home">${displayName}</div>
+                        <div class="location-country-home">${subtext}</div>
                     </div>
                 `;
                 item.addEventListener('click', () => {
-                    selectLocation(`${name}${country ? ', ' + country : ''}`, region.id, 'region');
+                    selectLocation(`${displayName}${subtext ? ', ' + subtext : ''}`, region.id, 'region');
                 });
                 resultsContainer.appendChild(item);
             });

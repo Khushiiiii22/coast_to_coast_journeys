@@ -618,7 +618,14 @@
             document.getElementById('checkin').textContent = formatDate(searchParams.checkin) || '-';
             document.getElementById('checkout').textContent = formatDate(searchParams.checkout) || '-';
             document.getElementById('nights').textContent = rate.nights || calculateNights(searchParams.checkin, searchParams.checkout);
-            document.getElementById('guests').textContent = `${searchParams.adults} Adults`;
+            let childrenCount = 0;
+            if (searchParams.rooms && Array.isArray(searchParams.rooms)) {
+                childrenCount = searchParams.rooms.reduce((sum, r) => sum + (r.children || r.childAges?.length || 0), 0);
+            } else if (searchParams.children_ages) {
+                childrenCount = searchParams.children_ages.length;
+            }
+            const childrenText = childrenCount > 0 ? `, ${childrenCount} Child${childrenCount > 1 ? 'ren' : ''}` : '';
+            document.getElementById('guests').textContent = `${searchParams.adults} Adult${searchParams.adults > 1 ? 's' : ''}${childrenText}`;
             // roomType is set below (after meal info is computed)
 
             // Price - total amount (includes commission, taxes, and any extras like breakfast)
