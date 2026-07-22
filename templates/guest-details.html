@@ -972,6 +972,10 @@
             // Save contact info & guests
             bookingData.contact = {
                 email: email.value.trim(),
+                phone: phone.value.trim(),
+                special_requests: specialRequests,
+                guests: guests
+            };
 
             sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
             localStorage.setItem('ctc_booking_data_backup', JSON.stringify(bookingData));
