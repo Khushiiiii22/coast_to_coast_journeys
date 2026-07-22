@@ -1183,6 +1183,7 @@
             if (this.value.length >= 2) {
                 searchLocations(this.value);
                 locationDropdown.classList.add('active');
+                locationDropdown.style.display = 'block';
             }
         });
 
@@ -1202,6 +1203,7 @@
                 dropdownResults.innerHTML = '';
                 dropdownEmpty.style.display = 'none';
                 locationDropdown.classList.remove('active');
+                locationDropdown.style.display = 'none';
                 return;
             }
 
@@ -1211,7 +1213,6 @@
             }, 300);
         });
 
-        // Clear button
         clearBtn.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
@@ -1221,6 +1222,7 @@
             dropdownResults.innerHTML = '';
             dropdownEmpty.style.display = 'none';
             locationDropdown.classList.remove('active');
+            locationDropdown.style.display = 'none';
             destinationInput.focus();
         });
 
@@ -1248,6 +1250,7 @@
         document.addEventListener('click', function (e) {
             if (!destinationInput.contains(e.target) && !locationDropdown.contains(e.target)) {
                 locationDropdown.classList.remove('active');
+                locationDropdown.style.display = 'none';
             }
         });
 
@@ -1268,6 +1271,7 @@
             dropdownLoading.classList.add('active');
             dropdownResults.innerHTML = '';
             locationDropdown.classList.add('active');
+            locationDropdown.style.display = 'block';
 
             try {
                 // Try ETG / RateHawk suggest API first (works on home page)
@@ -1381,6 +1385,7 @@
 
                     clearBtn.style.display = 'flex';
                     locationDropdown.classList.remove('active');
+                    locationDropdown.style.display = 'none';
                 });
             });
         }

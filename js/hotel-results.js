@@ -1351,6 +1351,7 @@ function setupModifyDestAutocomplete() {
             item.addEventListener('click', function () {
                 input.value = this.dataset.full;
                 dropdown.style.display = 'none';
+                input.blur();
             });
 
             // Prevent blur event from closing dropdown before click registers

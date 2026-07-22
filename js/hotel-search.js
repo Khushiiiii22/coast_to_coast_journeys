@@ -284,5 +284,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function hideDropdown() {
         dropdown.classList.remove('active');
+        dropdown.style.display = 'none';
     }
 });
