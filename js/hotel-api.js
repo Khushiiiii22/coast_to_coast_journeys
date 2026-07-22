@@ -6,7 +6,7 @@
 // API Configuration
 const API_CONFIG = {
     BASE_URL: '/api',  // Relative URL for deployment flexibility
-    TIMEOUT: 60000
+    TIMEOUT: 120000, // Increased to 120 seconds for large cities like Los Angeles
 };
 
 /**
