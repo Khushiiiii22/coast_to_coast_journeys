@@ -35,18 +35,41 @@ const HotelAPI = {
                 signal: controller.signal
             });
 
-            clearTimeout(timeoutId);
+            const contentType = response.headers.get('content-type') || '';
+            let data = null;
 
-            const data = await response.json();
+            if (contentType.includes('application/json')) {
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    console.error('Failed to parse JSON response:', e);
+                }
+            }
 
             if (!response.ok) {
-                throw new Error(data.error || 'Request failed');
+                if (response.status === 502) {
+                    throw new Error('The hotel search service is temporarily busy (502 Bad Gateway). Please try again in a few moments.');
+                }
+                if (response.status === 504) {
+                    throw new Error('The search request timed out on the server (504 Gateway Timeout). Please try again.');
+                }
+                const errorMessage = data?.error || (typeof data === 'string' ? data : null) || `Search service error (${response.status})`;
+                throw new Error(errorMessage);
+            }
+
+            if (!data) {
+                const text = await response.text();
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    throw new Error('Received invalid response from server. Please try again.');
+                }
             }
 
             return data;
         } catch (error) {
             if (error.name === 'AbortError') {
-                throw new Error('Request timed out');
+                throw new Error('Request timed out while waiting for rate updates. Please try again.');
             }
             throw error;
         }

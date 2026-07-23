@@ -128,7 +128,7 @@ class ETGApiService:
         except Exception as e:
             print(f"⚠️ Failed to save static cache: {e}")
     
-    def _make_request(self, endpoint: str, data: dict = None, method: str = "POST", timeout: int = 60, retry_count: int = 0) -> dict:
+    def _make_request(self, endpoint: str, data: dict = None, method: str = "POST", timeout: int = 35, retry_count: int = 0) -> dict:
         """Make a request to ETG API with detailed logging"""
         
         # ⚡ Search result cache to reduce duplicate API calls

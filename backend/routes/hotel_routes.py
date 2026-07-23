@@ -675,7 +675,7 @@ def search_by_destination():
                 return jsonify({
                     'success': False,
                     'error': error_msg
-                }), 502
+                }), 400
 
             return jsonify({
                 'success': False,
@@ -768,7 +768,7 @@ def search_by_destination():
             return jsonify({
                 'success': False,
                 'error': f"RateHawk API Error: {error_msg}"
-            }), 502  # 502 Bad Gateway (upstream error)
+            }), 400
 
         # ──────────────────────────────────────────────────────────
         # STEP 4: Process and return results
