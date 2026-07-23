@@ -40,8 +40,38 @@ console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.INFO)
 console_formatter = logging.Formatter('%(asctime)s - ETG API - %(levelname)s - %(message)s')
 console_handler.setFormatter(console_formatter)
-etg_logger.addHandler(console_handler)
+COUNTRY_NAME_TO_ISO = {
+    'united states': 'us', 'united states of america': 'us', 'usa': 'us', 'us': 'us',
+    'india': 'in', 'in': 'in',
+    'united kingdom': 'gb', 'great britain': 'gb', 'uk': 'gb', 'gb': 'gb',
+    'united arab emirates': 'ae', 'uae': 'ae', 'ae': 'ae',
+    'canada': 'ca', 'ca': 'ca',
+    'australia': 'au', 'au': 'au',
+    'germany': 'de', 'de': 'de',
+    'france': 'fr', 'fr': 'fr',
+    'singapore': 'sg', 'sg': 'sg',
+    'japan': 'jp', 'jp': 'jp',
+    'thailand': 'th', 'th': 'th',
+    'italy': 'it', 'it': 'it',
+    'spain': 'es', 'es': 'es',
+    'mexico': 'mx', 'mx': 'mx',
+    'brazil': 'br', 'br': 'br',
+    'china': 'cn', 'cn': 'cn',
+    'russia': 'ru', 'ru': 'ru',
+    'switzerland': 'ch', 'ch': 'ch',
+    'netherlands': 'nl', 'nl': 'nl',
+    'saudi arabia': 'sa', 'sa': 'sa',
+    'qatar': 'qa', 'qa': 'qa',
+    'turkey': 'tr', 'tr': 'tr',
+}
 
+def normalize_residency(residency_str: str) -> str:
+    if not residency_str:
+        return 'us'
+    clean = str(residency_str).strip().lower()
+    if len(clean) == 2:
+        return clean
+    return COUNTRY_NAME_TO_ISO.get(clean, 'us')
 
 class ETGApiService:
     """Service class for ETG/RateHawk API v3 operations"""
@@ -413,11 +443,11 @@ class ETGApiService:
         data = {
             "checkin": checkin,
             "checkout": checkout,
-            "residency": residency,
+            "residency": normalize_residency(residency),
             "language": language,
             "guests": guest_data,
             "ids": hotel_ids,
-            "currency": currency
+            "currency": currency.upper() if currency else "USD"
         }
         return self._make_request("/search/serp/hotels/", data)
     
@@ -443,16 +473,14 @@ class ETGApiService:
         data = {
             "checkin": checkin,
             "checkout": checkout,
-            "residency": residency,
+            "residency": normalize_residency(residency),
             "language": language,
             "guests": guest_data,
             "latitude": latitude,
             "longitude": longitude,
             "radius": radius,
-            "currency": currency,
-            "limit": limit,
-            "page_size": limit,
-            "rows": limit
+            "currency": currency.upper() if currency else "USD",
+            "limit": limit
         }
         return self._make_request("/search/serp/geo/", data)
     
@@ -476,14 +504,12 @@ class ETGApiService:
         data = {
             "checkin": checkin,
             "checkout": checkout,
-            "residency": residency,
+            "residency": normalize_residency(residency),
             "language": language,
             "guests": guest_data,
-            "region_id": region_id,
-            "currency": currency,
-            "limit": limit,
-            "page_size": limit,
-            "rows": limit
+            "region_id": int(region_id),
+            "currency": currency.upper() if currency else "USD",
+            "limit": limit
         }
         return self._make_request("/search/serp/region/", data)
     
