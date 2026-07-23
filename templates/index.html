@@ -2066,17 +2066,21 @@
             e.preventDefault();
 
             const destination = document.getElementById('hotelDestination').value;
+            const regionId = document.getElementById('hotelRegionId')?.value || '';
             const checkIn = document.getElementById('checkInDate').value;
             const checkOut = document.getElementById('checkOutDate').value;
             const nationality = document.getElementById('hotelNationality').value;
 
-            const params = new URLSearchParams({
+            const searchObj = {
                 destination: destination,
                 checkin: checkIn,
                 checkout: checkOut,
                 rooms: JSON.stringify(rooms),
                 residency: nationality  // ETG/RateHawk residency parameter
-            });
+            };
+            if (regionId) searchObj.region_id = regionId;
+
+            const params = new URLSearchParams(searchObj);
 
             window.location.href = `hotel-results.html?${params.toString()}`;
         });

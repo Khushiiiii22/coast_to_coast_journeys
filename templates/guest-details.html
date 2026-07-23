@@ -862,16 +862,31 @@
             });
         }
 
+        function parseSafeDate(dateStr) {
+            if (!dateStr) return new Date();
+            if (typeof HotelUtils !== 'undefined' && HotelUtils.parseSafeDate) {
+                return HotelUtils.parseSafeDate(dateStr);
+            }
+            const str = String(dateStr).trim();
+            if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+                const [y, m, d] = str.split('-').map(Number);
+                return new Date(y, m - 1, d);
+            }
+            const d = new Date(str);
+            return isNaN(d.getTime()) ? new Date() : d;
+        }
+
         function formatDate(dateStr) {
             if (!dateStr) return '';
-            const d = new Date(dateStr);
+            const d = parseSafeDate(dateStr);
             return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
         }
 
         function calculateNights(inDate, outDate) {
-            const start = new Date(inDate);
-            const end = new Date(outDate);
-            return Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24));
+            const start = parseSafeDate(inDate);
+            const end = parseSafeDate(outDate);
+            const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+            return isNaN(nights) || nights < 1 ? 1 : nights;
         }
 
         // Clear field error on input

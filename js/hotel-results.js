@@ -45,6 +45,8 @@ async function initHotelResults() {
 
         const params = {
             destination: urlParams.get('destination'),
+            region_id: urlParams.get('region_id') || undefined,
+            hotel_id: urlParams.get('hotel_id') || undefined,
             checkin: urlParams.get('checkin'),
             checkout: urlParams.get('checkout'),
             rooms: parsedRooms,
@@ -87,6 +89,34 @@ async function initHotelResults() {
 /**
  * Update the Expedia-style search bar
  */
+function normalizeDateStr(dateStr) {
+    if (!dateStr) return '';
+    const str = String(dateStr).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+    const ddmmyyyy = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+    if (ddmmyyyy) {
+        return `${ddmmyyyy[3]}-${ddmmyyyy[2].padStart(2, '0')}-${ddmmyyyy[1].padStart(2, '0')}`;
+    }
+    try {
+        const d = new Date(str);
+        if (!isNaN(d.getTime())) {
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+    } catch (e) {}
+    return '';
+}
+
+function parseSafeDate(dateStr) {
+    const norm = normalizeDateStr(dateStr);
+    if (norm) {
+        const [y, m, d] = norm.split('-').map(Number);
+        if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+            return new Date(y, m - 1, d);
+        }
+    }
+    return new Date();
+}
+
 function updateSearchBar(params) {
     const destinationEl = document.getElementById('searchDestination');
     const datesEl = document.getElementById('searchDates');
@@ -97,10 +127,14 @@ function updateSearchBar(params) {
     }
 
     if (datesEl && params.checkin && params.checkout) {
-        const checkinDate = new Date(params.checkin);
-        const checkoutDate = new Date(params.checkout);
-        const options = { weekday: 'short', month: 'short', day: 'numeric' };
-        datesEl.textContent = `${checkinDate.toLocaleDateString('en-US', options)} - ${checkoutDate.toLocaleDateString('en-US', options)}`;
+        try {
+            const checkinDate = parseSafeDate(params.checkin);
+            const checkoutDate = parseSafeDate(params.checkout);
+            const options = { weekday: 'short', month: 'short', day: 'numeric' };
+            datesEl.textContent = `${checkinDate.toLocaleDateString('en-US', options)} - ${checkoutDate.toLocaleDateString('en-US', options)}`;
+        } catch (e) {
+            datesEl.textContent = `${params.checkin} - ${params.checkout}`;
+        }
     }
 
     if (travelersEl) {
@@ -667,13 +701,16 @@ function setupEventListeners() {
     const modifyCheckout = document.getElementById('modifyCheckout');
     if (modifyCheckin && modifyCheckout) {
         modifyCheckin.addEventListener('change', (e) => {
-            if (e.target.value) {
-                const [y, m, d] = e.target.value.split('-');
+            const normCheckin = normalizeDateStr(e.target.value);
+            if (normCheckin) {
+                const [y, m, d] = normCheckin.split('-').map(Number);
                 const minCheckout = new Date(y, m - 1, d);
                 minCheckout.setDate(minCheckout.getDate() + 1);
                 
                 const minCheckoutStr = minCheckout.getFullYear() + '-' + String(minCheckout.getMonth() + 1).padStart(2, '0') + '-' + String(minCheckout.getDate()).padStart(2, '0');
-                modifyCheckout.min = minCheckoutStr;
+                if (/^\d{4}-\d{2}-\d{2}$/.test(minCheckoutStr)) {
+                    modifyCheckout.min = minCheckoutStr;
+                }
                 
                 if (modifyCheckout.value && modifyCheckout.value < minCheckoutStr) {
                     modifyCheckout.value = minCheckoutStr;
@@ -811,8 +848,14 @@ function openModifyModal() {
         const checkoutInput = document.getElementById('modifyCheckout');
         
         document.getElementById('modifyDestination').value = params.destination || '';
-        checkinInput.value = params.checkin || '';
-        checkoutInput.value = params.checkout || '';
+        const regionInput = document.getElementById('modifyRegionId');
+        const hotelInput = document.getElementById('modifyHotelId');
+        if (regionInput) regionInput.value = params.region_id || '';
+        if (hotelInput) hotelInput.value = params.hotel_id || '';
+        const normCheckin = normalizeDateStr(params.checkin);
+        const normCheckout = normalizeDateStr(params.checkout);
+        checkinInput.value = normCheckin;
+        checkoutInput.value = normCheckout;
 
         // Set min date constraints
         const today = new Date();
@@ -820,15 +863,19 @@ function openModifyModal() {
         checkinInput.min = todayStr;
         
         if (checkinInput.value) {
-            const [y, m, d] = checkinInput.value.split('-');
-            const minCheckout = new Date(y, m - 1, d);
-            minCheckout.setDate(minCheckout.getDate() + 1);
-            
-            const minCheckoutStr = minCheckout.getFullYear() + '-' + String(minCheckout.getMonth() + 1).padStart(2, '0') + '-' + String(minCheckout.getDate()).padStart(2, '0');
-            checkoutInput.min = minCheckoutStr;
-            
-            if (checkoutInput.value && checkoutInput.value < minCheckoutStr) {
-                checkoutInput.value = minCheckoutStr;
+            const [y, m, d] = checkinInput.value.split('-').map(Number);
+            if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+                const minCheckout = new Date(y, m - 1, d);
+                minCheckout.setDate(minCheckout.getDate() + 1);
+                
+                const minCheckoutStr = minCheckout.getFullYear() + '-' + String(minCheckout.getMonth() + 1).padStart(2, '0') + '-' + String(minCheckout.getDate()).padStart(2, '0');
+                if (/^\d{4}-\d{2}-\d{2}$/.test(minCheckoutStr)) {
+                    checkoutInput.min = minCheckoutStr;
+                }
+                
+                if (checkoutInput.value && checkoutInput.value < minCheckoutStr) {
+                    checkoutInput.value = minCheckoutStr;
+                }
             }
         } else {
             const minCheckout = new Date();
@@ -1302,6 +1349,10 @@ function setupModifyDestAutocomplete() {
 
     // Input listener
     input.addEventListener('input', function () {
+        const regionInput = document.getElementById('modifyRegionId');
+        const hotelInput = document.getElementById('modifyHotelId');
+        if (regionInput) regionInput.value = '';
+        if (hotelInput) hotelInput.value = '';
         performSearch(this.value.trim());
     });
 
@@ -1333,10 +1384,10 @@ function setupModifyDestAutocomplete() {
         const fullDesc = location.full || (location.country ? `${location.name}, ${location.country}` : location.name);
         return `
             <div class="location-item" data-name="${location.name}" data-country="${location.country}" 
-                data-full="${fullDesc}"
+                data-full="${fullDesc}" data-region-id="${location.region_id || ''}" data-hotel-id="${location.hotel_id || ''}"
                 style="padding: 10px 15px; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; transition: background 0.2s;">
                 <div style="background: #f1f5f9; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #3b82f6;">
-                    <i class="fas fa-map-marker-alt"></i>
+                    <i class="fas ${location.iconClass || 'fa-map-marker-alt'}"></i>
                 </div>
                 <div>
                     <div style="font-weight: 500; color: #1e293b;">${location.name}</div>
@@ -1353,6 +1404,10 @@ function setupModifyDestAutocomplete() {
 
             item.addEventListener('click', function () {
                 input.value = this.dataset.full;
+                const regionInput = document.getElementById('modifyRegionId');
+                const hotelInput = document.getElementById('modifyHotelId');
+                if (regionInput) regionInput.value = this.dataset.regionId || '';
+                if (hotelInput) hotelInput.value = this.dataset.hotelId || '';
                 dropdown.style.display = 'none';
                 input.blur();
             });

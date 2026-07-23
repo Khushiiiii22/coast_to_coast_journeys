@@ -462,10 +462,29 @@ const HotelUtils = {
     },
 
     /**
+     * Helper to safely parse date strings across all browser engines (Safari, Chrome, Firefox)
+     */
+    parseSafeDate(dateStr) {
+        if (!dateStr) return new Date();
+        if (dateStr instanceof Date) return dateStr;
+        const str = String(dateStr).trim();
+        if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+            const [y, m, d] = str.split('-').map(Number);
+            return new Date(y, m - 1, d);
+        }
+        const ddmmyyyy = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+        if (ddmmyyyy) {
+            return new Date(Number(ddmmyyyy[3]), Number(ddmmyyyy[2]) - 1, Number(ddmmyyyy[1]));
+        }
+        const parsed = new Date(str);
+        return isNaN(parsed.getTime()) ? new Date() : parsed;
+    },
+
+    /**
      * Format date for display
      */
     formatDate(dateStr) {
-        const date = new Date(dateStr);
+        const date = this.parseSafeDate(dateStr);
         return date.toLocaleDateString('en-IN', {
             weekday: 'short',
             day: 'numeric',
@@ -478,10 +497,11 @@ const HotelUtils = {
      * Calculate number of nights
      */
     calculateNights(checkin, checkout) {
-        const start = new Date(checkin);
-        const end = new Date(checkout);
-        const diffTime = Math.abs(end - start);
-        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const start = this.parseSafeDate(checkin);
+        const end = this.parseSafeDate(checkout);
+        const diffTime = end - start;
+        const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return isNaN(nights) || nights < 1 ? 1 : nights;
     },
 
     /**
