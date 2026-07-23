@@ -631,8 +631,14 @@ def search_by_destination():
         # ──────────────────────────────────────────────────────────
         hotel_ids_to_search = None
         
-        # 1b. PRIMARY: Resolve ANY destination via RateHawk multicomplete API
-        #     This handles ALL destinations worldwide — not just the hardcoded list.
+        # 1a. Fast-path lookup for popular destinations
+        if not region_id and destination in POPULAR_DESTINATIONS:
+            pop = POPULAR_DESTINATIONS[destination]
+            region_id = pop.get('region_id')
+            location_name = pop.get('name', location_name)
+            print(f"⚡ Fast-path resolved popular destination '{destination}' -> region_id {region_id}")
+
+        # 1b. PRIMARY: Resolve ANY destination worldwide via RateHawk multicomplete API
         if not region_id:
             print(f"🌍 Resolving '{data['destination']}' via RateHawk multicomplete API...")
             try:
