@@ -1,11 +1,16 @@
-import stripe
+try:
+    import stripe
+except ImportError:
+    stripe = None
+
 import logging
 
 class StripeService:
     def __init__(self, secret_key):
         self.secret_key = secret_key
-        stripe.api_key = secret_key
-        logging.info("Stripe API configured")
+        if stripe and secret_key:
+            stripe.api_key = secret_key
+            logging.info("Stripe API configured")
         
     def create_checkout_session(self, amount, currency, reference_id, success_url, cancel_url):
         """Create a Stripe checkout session for a payment"""
