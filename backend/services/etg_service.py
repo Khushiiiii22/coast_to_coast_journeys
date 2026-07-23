@@ -333,10 +333,10 @@ class ETGApiService:
         if not ids_to_fetch:
             return {'success': True, 'data': {'data': all_hotel_data}}
             
-        # Cap static fetching for missing/uncached hotels to 100 per request batch
-        if len(ids_to_fetch) > 100:
-            print(f"📦 Fetching static info for top 100 uncached hotels out of {len(ids_to_fetch)} missing...")
-            ids_to_fetch = ids_to_fetch[:100]
+        # Cap static fetching for missing/uncached hotels to 25 per request batch to ensure fast response times
+        if len(ids_to_fetch) > 25:
+            print(f"📦 Fetching static info for top 25 uncached hotels out of {len(ids_to_fetch)} missing...")
+            ids_to_fetch = ids_to_fetch[:25]
 
         print(f"🚀 Parallel Fetching {len(ids_to_fetch)} hotels from RateHawk...")
         

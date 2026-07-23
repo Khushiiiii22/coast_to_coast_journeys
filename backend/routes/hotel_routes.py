@@ -779,13 +779,14 @@ def search_by_destination():
             if etg_hotels and len(etg_hotels) > 0:
                 print(f"✅ Found {len(etg_hotels)} hotels via RateHawk for {location_name}")
 
-                # Bulk static data enrichment for all returned hotels
+                # Fast static data enrichment: enrich top 25 visible hotel IDs in parallel (rest use SERP static attributes)
                 hotel_ids = [h.get('hotel_id') or h.get('id') for h in etg_hotels if h.get('hotel_id') or h.get('id')]
                 static_hotel_map = {}
                 
                 if hotel_ids:
-                    print(f"📦 Fetching static info for {len(hotel_ids)} hotels in parallel...")
-                    static_res = etg_service.get_hotels_static(hotel_ids, language='en')
+                    ids_to_enrich = hotel_ids[:25]
+                    print(f"📦 Fast-enriching static info for top {len(ids_to_enrich)} of {len(hotel_ids)} total hotels...")
+                    static_res = etg_service.get_hotels_static(ids_to_enrich, language='en')
                     if static_res.get('success'):
                         static_hotel_map = static_res['data'].get('data', {})
                         print(f"✅ Successfully enriched {len(static_hotel_map)} hotels with static data")
