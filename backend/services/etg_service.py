@@ -128,7 +128,7 @@ class ETGApiService:
         except Exception as e:
             print(f"⚠️ Failed to save static cache: {e}")
     
-    def _make_request(self, endpoint: str, data: dict = None, method: str = "POST", timeout: int = 120, retry_count: int = 0) -> dict:
+    def _make_request(self, endpoint: str, data: dict = None, method: str = "POST", timeout: int = 60, retry_count: int = 0) -> dict:
         """Make a request to ETG API with detailed logging"""
         
         # ⚡ Search result cache to reduce duplicate API calls
@@ -187,8 +187,8 @@ class ETGApiService:
             
             # --- Rate Limit Retry Logic ---
             if response_json.get("status") == "error" and response_json.get("error") == "too_many_requests":
-                if retry_count < 2:
-                    sleep_sec = 20
+                if retry_count < 1:
+                    sleep_sec = 2
                     print(f"⚠️ Rate Limited! Sleeping for {sleep_sec}s before retry...")
                     import time
                     time.sleep(sleep_sec)
@@ -333,6 +333,11 @@ class ETGApiService:
         if not ids_to_fetch:
             return {'success': True, 'data': {'data': all_hotel_data}}
             
+        # Cap static fetching for missing/uncached hotels to 100 per request batch
+        if len(ids_to_fetch) > 100:
+            print(f"📦 Fetching static info for top 100 uncached hotels out of {len(ids_to_fetch)} missing...")
+            ids_to_fetch = ids_to_fetch[:100]
+
         print(f"🚀 Parallel Fetching {len(ids_to_fetch)} hotels from RateHawk...")
         
         def fetch_single_hotel(hotel_id):
@@ -364,8 +369,8 @@ class ETGApiService:
                 print(f"⚠️ Worker Error for {hotel_id}: {e}")
                 return hotel_id, None
 
-        # 2. Fetch missing IDs in parallel (Max 10 workers to stay safe)
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        # 2. Fetch missing IDs in parallel (Max 20 workers for high throughput)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
             future_to_id = {executor.submit(fetch_single_hotel, hid): hid for hid in ids_to_fetch}
             for future in concurrent.futures.as_completed(future_to_id):
                 hid, h_info = future.result()

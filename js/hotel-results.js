@@ -164,8 +164,11 @@ async function performSearch(params) {
         }
     } catch (error) {
         console.error('Search error:', error);
-        showNoResults();
-        showNotification('Search failed: ' + error.message, 'error');
+        const errorMsg = error.message?.includes('timed out')
+            ? 'The search request timed out while fetching partner rates. Please try again.'
+            : (error.message || 'Unable to load hotels. Please try again.');
+        showError(errorMsg);
+        showNotification(errorMsg, 'error');
     }
 }
 

@@ -773,7 +773,7 @@ def search_by_destination():
             if etg_hotels and len(etg_hotels) > 0:
                 print(f"✅ Found {len(etg_hotels)} hotels via RateHawk for {location_name}")
 
-                # Bulk static data enrichment (parallel fetch)
+                # Bulk static data enrichment for all returned hotels
                 hotel_ids = [h.get('hotel_id') or h.get('id') for h in etg_hotels if h.get('hotel_id') or h.get('id')]
                 static_hotel_map = {}
                 

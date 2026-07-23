@@ -79,6 +79,8 @@ const HotelAPI = {
             method: 'POST',
             body: JSON.stringify({
                 destination: params.destination,
+                region_id: params.region_id || undefined,
+                hotel_id: params.hotel_id || undefined,
                 checkin: params.checkin,
                 checkout: params.checkout,
                 adults: params.adults || 2,
