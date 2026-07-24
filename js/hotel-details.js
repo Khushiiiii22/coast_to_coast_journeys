@@ -524,20 +524,29 @@ function setupTabNavigation() {
         });
     });
 
+    function scrollToRooms() {
+        const roomsSection = document.getElementById('rooms') || document.getElementById('roomsSection');
+        if (roomsSection) {
+            const headerOffset = 140;
+            const elementPosition = roomsSection.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+    }
+
     // Reserve button
     const reserveBtn = document.getElementById('quickReserveBtn');
     if (reserveBtn) {
-        reserveBtn.addEventListener('click', () => {
-            document.getElementById('roomsSection')?.scrollIntoView({ behavior: 'smooth' });
-        });
+        reserveBtn.addEventListener('click', scrollToRooms);
     }
 
     // Sticky reserve button
     const stickyReserveBtn = document.getElementById('stickyReserveBtn');
     if (stickyReserveBtn) {
-        stickyReserveBtn.addEventListener('click', () => {
-            document.getElementById('roomsSection')?.scrollIntoView({ behavior: 'smooth' });
-        });
+        stickyReserveBtn.addEventListener('click', scrollToRooms);
     }
 }
 
@@ -1435,6 +1444,24 @@ function createRateCard(rate, index, customBadge = null) {
         selectRate(rate, index);
     });
 
+    const carouselEl = card.querySelector('.room-image-carousel');
+    if (carouselEl) {
+        carouselEl.style.cursor = 'pointer';
+        carouselEl.addEventListener('click', (e) => {
+            if (e.target.closest('.carousel-nav')) return;
+            showRoomDetails(index);
+        });
+    }
+
+    const roomNameEl = card.querySelector('.rate-room-name');
+    if (roomNameEl) {
+        roomNameEl.style.cursor = 'pointer';
+        roomNameEl.title = 'Click to view room photos and details';
+        roomNameEl.addEventListener('click', () => {
+            showRoomDetails(index);
+        });
+    }
+
     return card;
 }
 
@@ -1478,144 +1505,182 @@ function navigateRoomImage(btn, direction) {
 
 // updateExtras function removed per ETG auditor request
 
-// Show room details modal / overlay panel
+let currentRoomModalImages = [];
+let currentRoomModalImageIndex = 0;
+
+function navigateExpediaRoomModalImage(direction) {
+    if (!currentRoomModalImages || currentRoomModalImages.length <= 1) return;
+    currentRoomModalImageIndex = (currentRoomModalImageIndex + direction + currentRoomModalImages.length) % currentRoomModalImages.length;
+
+    const imgEl = document.getElementById('expediaRoomModalImg');
+    const counterEl = document.getElementById('expediaRoomImgCounter');
+
+    if (imgEl) imgEl.src = currentRoomModalImages[currentRoomModalImageIndex];
+    if (counterEl) counterEl.textContent = `${currentRoomModalImageIndex + 1} / ${currentRoomModalImages.length}`;
+}
+
+// Show Expedia Room Information Modal (matching Expedia layout)
 function showRoomDetails(rateIndex) {
-    // Retrieve rate from the card's stored data attribute
     const card = document.querySelector(`.rate-card[data-rate-index="${rateIndex}"]`);
     if (!card) return;
 
-    // We reconstruct the rate from data tags on the card
-    // (the full rate object is encoded as JSON in a data attribute by createRateCard)
-    let rate;
+    let rate = {};
     try {
         rate = JSON.parse(card.dataset.rateJson || '{}');
     } catch (e) {
         rate = {};
     }
 
+    const roomName = rate.room_name || 'Room';
+    const roomStatic = rate.room_static || {};
+    let roomImages = roomStatic.images || [];
+
+    if (!roomImages || roomImages.length === 0) {
+        if (hotelImages && hotelImages.length > 0) {
+            roomImages = hotelImages;
+        } else {
+            roomImages = ['https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800'];
+        }
+    }
+
+    currentRoomModalImages = roomImages;
+    currentRoomModalImageIndex = 0;
+
     const cancelInfo = rate.cancellation_info || {};
     const isFreeCancellation = cancelInfo.is_free_cancellation;
     const deadline = cancelInfo.free_cancellation_formatted?.datetime || cancelInfo.free_cancellation_formatted || '';
-    const mealDisplay = rate.meal_info?.display_name || 'Room Only';
-    const roomName = rate.room_name || 'Room';
+    const mealDisplay = rate.meal_info?.display_name || 'Room Only (No Meals)';
+    const priceFormatted = HotelUtils.formatPrice(rate.price, rate.currency || currentHotel?.currency || 'USD');
 
-    // Build policy HTML
-    let policyHtml;
-    if (isFreeCancellation) {
-        policyHtml = `
-            <div style="display:flex;align-items:flex-start;gap:12px;padding:16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;margin-bottom:16px;">
-                <i class="fas fa-check-circle" style="color:#059669;font-size:1.4rem;margin-top:2px;"></i>
-                <div>
-                    <strong style="color:#065f46;font-size:1rem;">Free Cancellation</strong>
-                    <p style="margin:4px 0 0;color:#047857;font-size:0.9rem;">
-                        Cancel for free before <b>${deadline}</b>.<br>
-                        After this deadline, the full room charge applies.
-                    </p>
-                </div>
-            </div>`;
-    } else {
-        policyHtml = `
-            <div style="display:flex;align-items:flex-start;gap:12px;padding:16px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;margin-bottom:16px;">
-                <i class="fas fa-exclamation-circle" style="color:#dc2626;font-size:1.4rem;margin-top:2px;"></i>
-                <div>
-                    <strong style="color:#7f1d1d;font-size:1rem;">Non-refundable rate</strong>
-                    <p style="margin:4px 0 0;color:#991b1b;font-size:0.9rem;">
-                        ${cancelInfo.description || 'This rate cannot be cancelled or refunded once booked. No-shows will be charged the full amount.'}
-                    </p>
-                </div>
-            </div>`;
-    }
+    const roomTypeConfig = rate._roomTypeConfig || {};
+    const roomSize = roomTypeConfig.size || roomStatic.room_size || rate.room_size || 320;
+    const sleepsCount = roomTypeConfig.sleeps || roomStatic.max_occupancy || rate.max_occupancy || 2;
+    const bedType = roomTypeConfig.bedType || roomStatic.bed_type || rate.bed_type || getBedType(roomName);
 
-    // Build cancellation schedule if available
-    let scheduleHtml = '';
-    const policies = cancelInfo.policies || [];
-    if (policies.length > 0) {
-        scheduleHtml = `
-            <div style="margin-bottom:16px;">
-                <h4 style="font-size:0.9rem;color:#374151;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
-                    <i class="fas fa-calendar-alt" style="color:#6366f1;"></i> Cancellation Schedule
-                </h4>
-                <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
-                    <thead>
-                        <tr style="background:#f9fafb;">
-                            <th style="text-align:left;padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;">Period</th>
-                            <th style="text-align:right;padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;">Penalty</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${policies.map(p => {
-            const isFree = p.type === 'free' || p.penalty_amount === '0' || p.penalty_amount === 0;
-            const startStr = p.start_formatted || 'Now';
-            const penaltyStr = isFree ? '<span style="color:#059669">No charge</span>' : `<span style="color:#dc2626">${p.penalty_amount}</span>`;
-            return `<tr>
-                                <td style="padding:8px;border-bottom:1px solid #f3f4f6;">${isFree ? 'Until ' + (p.end_formatted || deadline) : 'From ' + startStr}</td>
-                                <td style="padding:8px;border-bottom:1px solid #f3f4f6;text-align:right;">${penaltyStr}</td>
-                            </tr>`;
-        }).join('')}
-                    </tbody>
-                </table>
-            </div>`;
-    }
+    // Remove existing modal if open
+    const existing = document.getElementById('expediaRoomInfoModal');
+    if (existing) existing.remove();
 
-    // Inject overlay into page if not already present
-    let overlay = document.getElementById('rateDetailsOverlay');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'rateDetailsOverlay';
-        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
-        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-        document.body.appendChild(overlay);
-    } else {
-        overlay.style.display = 'flex';
-    }
+    const modal = document.createElement('div');
+    modal.id = 'expediaRoomInfoModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px);';
 
-    overlay.innerHTML = `
-        <div style="background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+
+    modal.innerHTML = `
+        <div style="background:#ffffff;border-radius:20px;max-width:640px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.35);position:relative;animation:expediaModalPop 0.2s ease-out;">
             <!-- Header -->
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid #e5e7eb;position:sticky;top:0;background:#fff;border-radius:16px 16px 0 0;">
-                <div>
-                    <h3 style="margin:0;font-size:1.1rem;color:#111827;">${roomName}</h3>
-                    <p style="margin:4px 0 0;font-size:0.85rem;color:#6b7280;"><i class="fas fa-utensils" style="margin-right:5px;"></i>${mealDisplay}</p>
-                </div>
-                <button onclick="document.getElementById('rateDetailsOverlay').remove()"
-                    style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#9ca3af;line-height:1;padding:4px 8px;">&times;</button>
-            </div>
-
-            <!-- Body -->
-            <div style="padding:24px;">
-                <h4 style="font-size:1rem;color:#111827;margin-bottom:12px;"><i class="fas fa-undo" style="margin-right:8px;color:#6366f1;"></i>Cancellation Policy</h4>
-                ${policyHtml}
-                ${scheduleHtml}
-
-                <div style="padding:14px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;margin-bottom:16px;font-size:0.85rem;color:#92400e;">
-                    <i class="fas fa-info-circle" style="margin-right:6px;"></i>
-                    <strong>Important:</strong> Cancellation times are based on the property's local time zone. We recommend cancelling well before the deadline to avoid charges.
-                </div>
-
-                <div style="padding:14px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;font-size:0.85rem;color:#0369a1;">
-                    <i class="fas fa-shield-alt" style="margin-right:6px;"></i>
-                    <strong>Price Guarantee:</strong> The price includes taxes and service fees. Non-included property fees, if any, are shown separately.
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #e2e8f0;position:sticky;top:0;background:#ffffff;z-index:10;border-radius:20px 20px 0 0;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <button onclick="document.getElementById('expediaRoomInfoModal').remove()" style="width:36px;height:36px;border-radius:50%;border:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#334155;transition:all 0.2s;">
+                        <i class="fas fa-times" style="font-size:1.1rem;"></i>
+                    </button>
+                    <span style="font-weight:700;font-size:1.1rem;color:#0f172a;">Room information</span>
                 </div>
             </div>
 
-            <!-- Footer -->
-            <div style="padding:16px 24px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
-                <div>
-                    <div style="font-size:1.3rem;font-weight:700;color:#111827;">${HotelUtils.formatPrice(rate.price, rate.currency || currentHotel?.currency || 'USD')}</div>
-                    <div style="font-size:0.8rem;color:#6b7280;">per night · incl. taxes & fees</div>
+            <div style="padding:20px;">
+                <!-- Main Image Carousel (Expedia Style) -->
+                <div style="position:relative;width:100%;height:320px;border-radius:16px;overflow:hidden;background:#0f172a;margin-bottom:20px;box-shadow:0 8px 24px rgba(0,0,0,0.12);">
+                    <img id="expediaRoomModalImg" src="${roomImages[0]}" alt="${roomName}" style="width:100%;height:100%;object-fit:cover;transition:opacity 0.2s ease-in-out;" />
+                    
+                    ${roomImages.length > 1 ? `
+                        <button onclick="navigateExpediaRoomModalImage(-1)" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.92);border:none;box-shadow:0 4px 12px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#0f172a;">
+                            <i class="fas fa-chevron-left" style="font-size:1.1rem;"></i>
+                        </button>
+                        <button onclick="navigateExpediaRoomModalImage(1)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.92);border:none;box-shadow:0 4px 12px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#0f172a;">
+                            <i class="fas fa-chevron-right" style="font-size:1.1rem;"></i>
+                        </button>
+                        <div id="expediaRoomImgCounter" style="position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,0.75);color:#ffffff;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:600;backdrop-filter:blur(4px);">
+                            1 / ${roomImages.length}
+                        </div>
+                    ` : ''}
                 </div>
-                <button onclick="document.getElementById('rateDetailsOverlay').remove(); selectRate(${JSON.stringify({}).replace ? 'window.__rateForModal' : 'null'}, ${rateIndex});"
-                    style="padding:12px 24px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:10px;font-weight:600;cursor:pointer;font-size:0.95rem;">
-                    Select This Room
+
+                <!-- Room Title -->
+                <h2 style="font-size:1.35rem;font-weight:700;color:#0f172a;margin:0 0 16px;line-height:1.3;">${roomName}</h2>
+
+                <!-- Expedia Amenities Grid Box -->
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:20px;margin-bottom:20px;">
+                    <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:16px;">
+                        <div style="display:flex;align-items:center;gap:12px;color:#334155;font-size:0.9rem;">
+                            <i class="fas fa-snowflake" style="font-size:1.2rem;color:#2563eb;width:24px;text-align:center;"></i>
+                            <span>Air conditioning</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;color:#334155;font-size:0.9rem;">
+                            <i class="fas fa-door-open" style="font-size:1.2rem;color:#2563eb;width:24px;text-align:center;"></i>
+                            <span>Connecting rooms available</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;color:#334155;font-size:0.9rem;">
+                            <i class="fas fa-baby" style="font-size:1.2rem;color:#2563eb;width:24px;text-align:center;"></i>
+                            <span>Free cribs / infant beds</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;color:#334155;font-size:0.9rem;">
+                            <i class="fas fa-bed" style="font-size:1.2rem;color:#2563eb;width:24px;text-align:center;"></i>
+                            <span>${bedType}</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;color:#334155;font-size:0.9rem;">
+                            <i class="fas fa-blinds" style="font-size:1.2rem;color:#2563eb;width:24px;text-align:center;"></i>
+                            <span>Blackout drapes / curtains</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;color:#334155;font-size:0.9rem;">
+                            <i class="fas fa-wind" style="font-size:1.2rem;color:#2563eb;width:24px;text-align:center;"></i>
+                            <span>Hair dryer</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;color:#334155;font-size:0.9rem;">
+                            <i class="fas fa-ruler-combined" style="font-size:1.2rem;color:#2563eb;width:24px;text-align:center;"></i>
+                            <span>${roomSize} sq ft</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;color:#334155;font-size:0.9rem;">
+                            <i class="fas fa-users" style="font-size:1.2rem;color:#2563eb;width:24px;text-align:center;"></i>
+                            <span>Sleeps ${sleepsCount}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Policies & Inclusions -->
+                <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+                    <div style="display:flex;align-items:center;gap:10px;color:#059669;font-weight:600;font-size:0.95rem;">
+                        <i class="fas fa-utensils"></i>
+                        <span>${mealDisplay}</span>
+                    </div>
+                    ${isFreeCancellation ? `
+                        <div style="display:flex;align-items:center;gap:10px;color:#059669;font-weight:600;font-size:0.95rem;">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Free cancellation before ${deadline}</span>
+                        </div>
+                    ` : `
+                        <div style="display:flex;align-items:center;gap:10px;color:#dc2626;font-weight:600;font-size:0.95rem;">
+                            <i class="fas fa-times-circle"></i>
+                            <span>Non-refundable rate</span>
+                        </div>
+                    `}
+                    <div style="display:flex;align-items:center;gap:10px;color:#2563eb;font-weight:600;font-size:0.95rem;">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Reserve now, pay later</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Action Bar -->
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-top:1px solid #e2e8f0;background:#ffffff;border-radius:0 0 20px 20px;">
+                <div>
+                    <div style="font-size:1.4rem;font-weight:700;color:#0f172a;">${priceFormatted}</div>
+                    <div style="font-size:0.8rem;color:#64748b;">per night · incl. taxes & fees</div>
+                </div>
+                <button id="expediaModalReserveBtn" style="padding:14px 32px;background:#2563eb;color:#ffffff;border:none;border-radius:12px;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,0.35);transition:all 0.2s;">
+                    Reserve
                 </button>
             </div>
-        </div>`;
+        </div>
+    `;
 
-    // Store rate for the "Select This Room" button in the modal footer
-    window.__rateForModal = rate;
-    // Patch the select button now that we know the rate
-    overlay.querySelector('button[onclick*="selectRate"]').onclick = () => {
-        overlay.remove();
+    document.body.appendChild(modal);
+
+    document.getElementById('expediaModalReserveBtn').onclick = () => {
+        modal.remove();
         selectRate(rate, rateIndex);
     };
 }
