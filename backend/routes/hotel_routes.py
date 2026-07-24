@@ -869,9 +869,9 @@ def suggest_locations():
 
 # RateHawk CDN base URL for images
 CDN_BASE = 'https://cdn.worldota.net/t/'
-# RateHawk size format: WIDTHxHEIGHT (the CDN rejects 'crop/' prefix with HTTP 400)
-IMG_SIZE = '640x400'
-IMG_SIZE_THUMB = '240x240'
+# RateHawk size format: WIDTHxHEIGHT (1024x768 for high resolution real RateHawk photos)
+IMG_SIZE = '1024x768'
+IMG_SIZE_THUMB = '640x400'
 
 def process_etg_image_url(raw_url):
     """Process a RateHawk image URL, replacing {size} placeholder"""

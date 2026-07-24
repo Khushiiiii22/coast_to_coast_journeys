@@ -1272,11 +1272,11 @@ function createRateCard(rate, index, customBadge = null) {
 
     // Room image HTML with carousel
     let roomImageHtml = '';
-    const imageCount = roomImages.length || Math.floor(Math.random() * 10 + 5);
-    const mainImage = roomImages[0] || `https://images.unsplash.com/photo-${1566073771259 + (Math.abs(nameHash) % 10)}-6a8506099945?w=600`;
+    const imageCount = roomImages.length || (hotelImages ? hotelImages.length : 1);
+    const mainImage = roomImages[0] || (hotelImages && hotelImages[0]) || '';
 
     roomImageHtml = `
-        <div class="room-image-carousel" data-index="0" data-images='${JSON.stringify(roomImages.slice(0, 5))}'>
+        <div class="room-image-carousel" data-index="0" data-images='${JSON.stringify(roomImages.slice(0, 8))}'>
             ${popularityBadge ? `<div class="room-popularity-badge ${badgeClass}">${popularityBadge}</div>` : ''}
             <button class="carousel-nav prev" onclick="navigateRoomImage(this, -1)"><i class="fas fa-chevron-left"></i></button>
             <div class="room-carousel-image" style="background-image: url('${mainImage}');"></div>
