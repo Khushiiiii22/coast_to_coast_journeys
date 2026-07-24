@@ -115,7 +115,44 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Display ETG multicomplete results
+    // Helper to format Expedia-style location hierarchy
+    function formatExpediaRegion(region) {
+        const rawType = (region.type || 'region').toLowerCase();
+        const name = region.name || 'Unknown';
+        let mainTitle = name;
+        let subtextParts = [];
+        let iconClass = 'fa-location-dot';
+
+        if (rawType.includes('airport')) {
+            iconClass = 'fa-plane';
+            if (region.iata) {
+                mainTitle = `${name} (${region.iata} - ${name} Intl.)`;
+            } else {
+                mainTitle = `${name} Airport`;
+            }
+            if (region.country) subtextParts.push(region.country);
+        } else if (rawType.includes('city')) {
+            iconClass = 'fa-city';
+            if (region.state) subtextParts.push(region.state);
+            if (region.country) subtextParts.push(region.country);
+        } else if (rawType.includes('neighborhood') || rawType.includes('district') || rawType.includes('point of interest') || rawType.includes('subway') || rawType.includes('landmark')) {
+            iconClass = 'fa-building';
+            if (region.city) subtextParts.push(region.city);
+            if (region.state && region.state !== region.city) subtextParts.push(region.state);
+            if (region.country) subtextParts.push(region.country);
+        } else {
+            iconClass = 'fa-location-dot';
+            if (region.state) subtextParts.push(region.state);
+            if (region.country) subtextParts.push(region.country);
+        }
+
+        const subtext = subtextParts.join(', ');
+        const fullText = mainTitle + (subtext ? `, ${subtext}` : '');
+
+        return { mainTitle, subtext, fullText, iconClass, id: region.id };
+    }
+
+    // Display ETG multicomplete results (Expedia-Style)
     function displayETGResults(regions, hotels) {
         if (resultsContainer) resultsContainer.innerHTML = '';
         hideLoading();
@@ -123,47 +160,24 @@ document.addEventListener('DOMContentLoaded', function () {
         if (resultsContainer) resultsContainer.style.display = 'block';
         dropdown.classList.add('active');
 
-        // Regions section
+        // Regions section (Airports, Cities, Neighborhoods, Regions)
         if (regions.length > 0) {
-            const header = document.createElement('div');
-            header.className = 'dropdown-header-home';
-            header.textContent = 'Destinations';
-            resultsContainer.appendChild(header);
-
             regions.forEach(region => {
+                const itemData = formatExpediaRegion(region);
                 const item = document.createElement('div');
-                item.className = 'location-item-home';
-                const name = region.name || 'Unknown';
-                const country = region.country || '';
-                const type = region.type || 'Region';
-
-                // Use different icons based on type
-                let iconClass = 'fa-map-marker-alt';
-                if (type.toLowerCase() === 'airport') iconClass = 'fa-plane';
-                else if (type.toLowerCase() === 'city') iconClass = 'fa-city';
-                else if (type.toLowerCase() === 'country') iconClass = 'fa-globe';
-
-                let displayName = name;
-                if (type.toLowerCase() === 'airport' && region.iata) {
-                    displayName = `${name} (${region.iata})`;
-                }
-
-                let subtextArray = [];
-                if (region.state) subtextArray.push(region.state);
-                if (region.country) subtextArray.push(region.country);
-                let subtext = subtextArray.join(', ');
+                item.className = 'location-item-home expedia-style-item';
 
                 item.innerHTML = `
-                    <div class="location-icon-home">
-                        <i class="fas ${iconClass}"></i>
+                    <div class="location-icon-home expedia-icon-wrapper">
+                        <i class="fas ${itemData.iconClass}"></i>
                     </div>
                     <div class="location-details-home">
-                        <div class="location-name-home">${displayName}</div>
-                        <div class="location-country-home">${subtext}</div>
+                        <div class="location-name-home">${itemData.mainTitle}</div>
+                        <div class="location-country-home">${itemData.subtext}</div>
                     </div>
                 `;
                 item.addEventListener('click', () => {
-                    selectLocation(`${displayName}${subtext ? ', ' + subtext : ''}`, region.id, 'region');
+                    selectLocation(itemData.fullText, itemData.id, 'region');
                 });
                 resultsContainer.appendChild(item);
             });
@@ -171,28 +185,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Hotels section
         if (hotels.length > 0) {
-            const header = document.createElement('div');
-            header.className = 'dropdown-header-home';
-            header.textContent = 'Hotels';
-            resultsContainer.appendChild(header);
-
-            hotels.slice(0, 5).forEach(hotel => {
+            hotels.slice(0, 6).forEach(hotel => {
                 const item = document.createElement('div');
-                item.className = 'location-item-home';
-                const name = hotel.name || hotel.label || 'Hotel';
-                const regionName = hotel.region_name || '';
+                item.className = 'location-item-home expedia-style-item';
+                const mainTitle = hotel.name || hotel.label || 'Hotel';
+                let subtextParts = [];
+                if (hotel.region_name) subtextParts.push(hotel.region_name);
+                if (hotel.country) subtextParts.push(hotel.country);
+                const subtext = subtextParts.join(', ') || 'Hotel';
 
                 item.innerHTML = `
-                    <div class="location-icon-home">
+                    <div class="location-icon-home expedia-icon-wrapper">
                         <i class="fas fa-hotel"></i>
                     </div>
                     <div class="location-details-home">
-                        <div class="location-name-home">${name}</div>
-                        <div class="location-country-home">${regionName}</div>
+                        <div class="location-name-home">${mainTitle}</div>
+                        <div class="location-country-home">${subtext}</div>
                     </div>
                 `;
                 item.addEventListener('click', () => {
-                    selectLocation(name, hotel.id, 'hotel');
+                    selectLocation(mainTitle, hotel.id, 'hotel');
                 });
                 resultsContainer.appendChild(item);
             });

@@ -1265,17 +1265,54 @@ function setupModifyDestAutocomplete() {
     dropdown.className = 'autocomplete-dropdown';
     dropdown.style.display = 'none';
     dropdown.style.position = 'absolute';
-    dropdown.style.top = '100%';
+    dropdown.style.top = 'calc(100% + 6px)';
     dropdown.style.left = '0';
     dropdown.style.right = '0';
-    dropdown.style.background = 'white';
-    dropdown.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)';
-    dropdown.style.borderRadius = '0 0 12px 12px';
-    dropdown.style.zIndex = '1000';
-    dropdown.style.maxHeight = '300px';
+    dropdown.style.background = '#ffffff';
+    dropdown.style.boxShadow = '0 16px 40px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.04)';
+    dropdown.style.borderRadius = '16px';
+    dropdown.style.border = '1px solid #e2e8f0';
+    dropdown.style.zIndex = '10000';
+    dropdown.style.maxHeight = '380px';
     dropdown.style.overflowY = 'auto';
-    dropdown.style.padding = '8px 0';
+    dropdown.style.padding = '8px';
     wrapper.appendChild(dropdown);
+
+    function formatExpediaRegionItem(region) {
+        const rawType = (region.type || 'region').toLowerCase();
+        const name = region.name || 'Unknown';
+        let mainTitle = name;
+        let subtextParts = [];
+        let iconClass = 'fa-location-dot';
+
+        if (rawType.includes('airport')) {
+            iconClass = 'fa-plane';
+            if (region.iata) {
+                mainTitle = `${name} (${region.iata} - ${name} Intl.)`;
+            } else {
+                mainTitle = `${name} Airport`;
+            }
+            if (region.country) subtextParts.push(region.country);
+        } else if (rawType.includes('city')) {
+            iconClass = 'fa-city';
+            if (region.state) subtextParts.push(region.state);
+            if (region.country) subtextParts.push(region.country);
+        } else if (rawType.includes('neighborhood') || rawType.includes('district') || rawType.includes('point of interest') || rawType.includes('subway') || rawType.includes('landmark')) {
+            iconClass = 'fa-building';
+            if (region.city) subtextParts.push(region.city);
+            if (region.state && region.state !== region.city) subtextParts.push(region.state);
+            if (region.country) subtextParts.push(region.country);
+        } else {
+            iconClass = 'fa-location-dot';
+            if (region.state) subtextParts.push(region.state);
+            if (region.country) subtextParts.push(region.country);
+        }
+
+        const subtext = subtextParts.join(', ');
+        const fullText = mainTitle + (subtext ? `, ${subtext}` : '');
+
+        return { mainTitle, subtext, fullText, iconClass, region_id: region.id };
+    }
 
     // Debounced search
     const performSearch = debounce(async (query) => {
@@ -1285,7 +1322,7 @@ function setupModifyDestAutocomplete() {
         }
 
         try {
-            dropdown.innerHTML = '<div style="padding: 10px 15px; color: #64748b; font-size: 0.9rem;"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+            dropdown.innerHTML = '<div style="padding: 14px; color: #64748b; font-size: 0.9rem;"><i class="fas fa-spinner fa-spin"></i> Searching locations...</div>';
             dropdown.style.display = 'block';
 
             const response = await fetch(`/api/hotels/suggest?query=${encodeURIComponent(query)}&language=en`);
@@ -1297,53 +1334,47 @@ function setupModifyDestAutocomplete() {
                 const hotels = inner.hotels || [];
                 
                 if (regions.length > 0 || hotels.length > 0) {
-                    let html = '<div style="padding: 8px 15px; font-size: 0.8rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Search Results</div>';
+                    let html = '';
 
                     regions.forEach(region => {
-                        const name = region.name || 'Unknown';
-                        const country = region.country || '';
-                        const type = region.type || 'Region';
-                        
-                        let iconClass = 'fa-map-marker-alt';
-                        if (type.toLowerCase() === 'airport') iconClass = 'fa-plane';
-                        else if (type.toLowerCase() === 'city') iconClass = 'fa-city';
-                        else if (type.toLowerCase() === 'country') iconClass = 'fa-globe';
-
-                        const location = {
-                            name,
-                            country,
-                            type: type.toLowerCase(),
-                            full: `${name}${country ? ', ' + country : ''}`,
-                            region_id: region.id,
-                            iconClass: iconClass
-                        };
-                        html += createLocationItemHtml(location);
+                        const itemData = formatExpediaRegionItem(region);
+                        html += createLocationItemHtml({
+                            name: itemData.mainTitle,
+                            country: itemData.subtext,
+                            full: itemData.fullText,
+                            region_id: itemData.region_id,
+                            iconClass: itemData.iconClass
+                        });
                     });
 
-                    hotels.forEach(hotel => {
-                        const location = {
-                            name: hotel.name || 'Hotel',
-                            country: hotel.region?.name || '',
-                            type: 'hotel',
-                            full: hotel.name,
+                    hotels.slice(0, 5).forEach(hotel => {
+                        const mainTitle = hotel.name || hotel.label || 'Hotel';
+                        let subtextParts = [];
+                        if (hotel.region_name) subtextParts.push(hotel.region_name);
+                        if (hotel.country) subtextParts.push(hotel.country);
+                        const subtext = subtextParts.join(', ') || 'Hotel';
+
+                        html += createLocationItemHtml({
+                            name: mainTitle,
+                            country: subtext,
+                            full: mainTitle,
                             hotel_id: hotel.id,
-                            iconClass: 'fa-bed'
-                        };
-                        html += createLocationItemHtml(location);
+                            iconClass: 'fa-hotel'
+                        });
                     });
 
                     dropdown.innerHTML = html;
                     addClickListeners();
                 } else {
-                    dropdown.innerHTML = '<div style="padding: 10px 15px; color: #64748b; font-size: 0.9rem;">No results found</div>';
+                    dropdown.innerHTML = '<div style="padding: 14px; color: #64748b; font-size: 0.9rem;">No locations found</div>';
                 }
             } else {
-                dropdown.innerHTML = '<div style="padding: 10px 15px; color: #64748b; font-size: 0.9rem;">No results found</div>';
+                dropdown.innerHTML = '<div style="padding: 14px; color: #64748b; font-size: 0.9rem;">No locations found</div>';
             }
             
         } catch (error) {
             console.error('Autocomplete error:', error);
-            dropdown.innerHTML = '<div style="padding: 10px 15px; color: #64748b; font-size: 0.9rem;">No results found</div>';
+            dropdown.innerHTML = '<div style="padding: 14px; color: #64748b; font-size: 0.9rem;">No locations found</div>';
         }
     }, 300);
 
@@ -1371,7 +1402,7 @@ function setupModifyDestAutocomplete() {
     });
 
     function showPopular() {
-        let html = '<div style="padding: 8px 15px; font-size: 0.8rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Popular Destinations</div>';
+        let html = '';
         popularHotelDestinationsResults.forEach(loc => {
             html += createLocationItemHtml(loc);
         });
@@ -1383,15 +1414,15 @@ function setupModifyDestAutocomplete() {
     function createLocationItemHtml(location) {
         const fullDesc = location.full || (location.country ? `${location.name}, ${location.country}` : location.name);
         return `
-            <div class="location-item" data-name="${location.name}" data-country="${location.country}" 
+            <div class="location-item expedia-style-item" data-name="${location.name}" data-country="${location.country}" 
                 data-full="${fullDesc}" data-region-id="${location.region_id || ''}" data-hotel-id="${location.hotel_id || ''}"
-                style="padding: 10px 15px; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; transition: background 0.2s;">
-                <div style="background: #f1f5f9; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #3b82f6;">
-                    <i class="fas ${location.iconClass || 'fa-map-marker-alt'}"></i>
+                style="padding: 10px 14px; cursor: pointer; display: flex; align-items: flex-start; gap: 14px; border-radius: 10px; transition: background 0.15s ease-in-out;">
+                <div style="width: 24px; display: flex; justify-content: center; align-items: center; color: #1e293b; font-size: 1.15rem; margin-top: 2px;">
+                    <i class="fas ${location.iconClass || 'fa-location-dot'}"></i>
                 </div>
-                <div>
-                    <div style="font-weight: 500; color: #1e293b;">${location.name}</div>
-                    <div style="font-size: 0.85rem; color: #64748b;">${location.country || ''}</div>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-weight: 600; font-size: 0.92rem; color: #0f172a; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${location.name}</div>
+                    <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${location.country || ''}</div>
                 </div>
             </div>
         `;
@@ -1399,7 +1430,7 @@ function setupModifyDestAutocomplete() {
 
     function addClickListeners() {
         dropdown.querySelectorAll('.location-item').forEach(item => {
-            item.addEventListener('mouseenter', () => item.style.background = '#f8fafc');
+            item.addEventListener('mouseenter', () => item.style.background = '#f1f5f9');
             item.addEventListener('mouseleave', () => item.style.background = 'transparent');
 
             item.addEventListener('click', function () {
