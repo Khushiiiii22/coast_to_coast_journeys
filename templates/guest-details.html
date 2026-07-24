@@ -935,9 +935,12 @@
             // Room type line — show meal plan if breakfast was added
             const mealLabel = (rate.meal_info && rate.meal_info.display_name) || '';
             const roomLabel = rate.room_name || 'Standard Room';
-            document.getElementById('roomType').textContent = mealLabel
-                ? `${roomLabel} · ${mealLabel}`
-                : roomLabel;
+            const roomTypeEl = document.getElementById('roomType');
+            if (roomTypeEl) {
+                roomTypeEl.textContent = mealLabel
+                    ? `${roomLabel} · ${mealLabel}`
+                    : roomLabel;
+            }
 
             // Format with correct currency symbol using HotelUtils
             const originalCurrency = rate.currency || bookingData.currency || 'USD';
