@@ -580,6 +580,214 @@ function displayAmenities(amenities) {
     });
 }
 
+function getAttractionsForHotel(hotelData = {}, lat = null, lng = null, address = '') {
+    const staticData = hotelData.static_data || {};
+    const rawSurroundings = staticData.surroundings || hotelData.surroundings || [];
+    
+    const categories = {
+        'categoryNearby': [],
+        'categoryInterest': [],
+        'categoryAirports': [],
+        'categorySubway': []
+    };
+
+    function formatDistanceText(distVal, distUnit = 'km') {
+        if (!distVal) return 'Nearby';
+        let num = parseFloat(distVal);
+        if (isNaN(num)) return distVal;
+        if (distUnit.toLowerCase() === 'm') num = num / 1000;
+        
+        if (num <= 1.2) {
+            const walkMins = Math.max(2, Math.round(num * 12));
+            return `${walkMins} min walk`;
+        } else if (num <= 30) {
+            const driveMins = Math.max(3, Math.round(num * 2));
+            return `${driveMins} min drive`;
+        } else {
+            const miles = (num * 0.621371).toFixed(1);
+            return `${miles} mi / ${num.toFixed(1)} km`;
+        }
+    }
+
+    // 1. Process explicit surroundings from API
+    if (Array.isArray(rawSurroundings) && rawSurroundings.length > 0) {
+        rawSurroundings.forEach(place => {
+            const name = place.name || place.title || 'Landmark';
+            const dist = formatDistanceText(place.distance_value || place.distance, place.distance_unit || 'km');
+            const type = (place.type || '').toLowerCase();
+            const item = { name, distance: dist, icon: 'fa-map-marker-alt' };
+
+            if (type.includes('airport')) {
+                item.icon = 'fa-plane';
+                categories.categoryAirports.push(item);
+            } else if (type.includes('metro') || type.includes('subway') || type.includes('station') || type.includes('rail')) {
+                item.icon = 'fa-subway';
+                categories.categorySubway.push(item);
+            } else if (type.includes('sight') || type.includes('museum') || type.includes('monument') || type.includes('landmark')) {
+                item.icon = 'fa-landmark';
+                categories.categoryInterest.push(item);
+            } else {
+                item.icon = 'fa-walking';
+                categories.categoryNearby.push(item);
+            }
+        });
+    }
+
+    // 2. Parse from description_struct if available
+    const descStruct = staticData.description_struct || hotelData.description_struct || [];
+    if (Array.isArray(descStruct)) {
+        descStruct.forEach(block => {
+            const title = (block.title || '').toLowerCase();
+            if (title.includes('location') || title.includes('nearby') || title.includes('attractions')) {
+                (block.paragraphs || []).forEach(p => {
+                    if (p.includes('nearby:') || p.includes('Nearby:')) {
+                        const parts = p.split(/nearby:|\:/i);
+                        if (parts[1]) {
+                            parts[1].split(',').forEach(spotName => {
+                                const clean = spotName.trim().replace(/\.$/, '');
+                                if (clean.length > 2 && clean.length < 50) {
+                                    categories.categoryNearby.push({
+                                        name: clean,
+                                        distance: 'Nearby',
+                                        icon: 'fa-walking'
+                                    });
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    // 3. Fallback Landmark Engine based on Coordinates & Destination
+    const fullText = `${hotelData.name || ''} ${address || ''} ${hotelData.city || ''} ${hotelData.address || ''}`.toLowerCase();
+    const curLat = parseFloat(lat || hotelData.latitude);
+    const curLng = parseFloat(lng || hotelData.longitude);
+
+    function getDistanceKm(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    }
+
+    const cityLandmarks = {
+        'los angeles': [
+            { name: 'Beverly Center', lat: 34.0752, lng: -118.3773, cat: 'categoryNearby', icon: 'fa-shopping-bag' },
+            { name: 'The Farmers Market & The Grove', lat: 34.0722, lng: -118.3581, cat: 'categoryNearby', icon: 'fa-walking' },
+            { name: 'LACMA (Museum of Art)', lat: 34.0639, lng: -118.3592, cat: 'categoryInterest', icon: 'fa-landmark' },
+            { name: 'Sunset Strip', lat: 34.0909, lng: -118.3847, cat: 'categoryInterest', icon: 'fa-glass-cheers' },
+            { name: 'Hollywood Walk of Fame', lat: 34.1016, lng: -118.3268, cat: 'categoryInterest', icon: 'fa-star' },
+            { name: 'Los Angeles Intl. Airport (LAX)', lat: 33.9416, lng: -118.4085, cat: 'categoryAirports', icon: 'fa-plane' },
+            { name: 'Hollywood Burbank Airport (BUR)', lat: 34.2007, lng: -118.3587, cat: 'categoryAirports', icon: 'fa-plane' },
+            { name: 'Wilshire / Western Metro Station', lat: 34.0617, lng: -118.3086, cat: 'categorySubway', icon: 'fa-subway' }
+        ],
+        'new york': [
+            { name: 'Times Square', lat: 40.7580, lng: -73.9855, cat: 'categoryNearby', icon: 'fa-city' },
+            { name: 'Central Park', lat: 40.7829, lng: -73.9654, cat: 'categoryNearby', icon: 'fa-tree' },
+            { name: 'Rockefeller Center', lat: 40.7587, lng: -73.9787, cat: 'categoryInterest', icon: 'fa-building' },
+            { name: 'Empire State Building', lat: 40.7484, lng: -73.9857, cat: 'categoryInterest', icon: 'fa-landmark' },
+            { name: 'John F. Kennedy Intl Airport (JFK)', lat: 40.6413, lng: -73.7781, cat: 'categoryAirports', icon: 'fa-plane' },
+            { name: 'LaGuardia Airport (LGA)', lat: 40.7769, lng: -73.8740, cat: 'categoryAirports', icon: 'fa-plane' },
+            { name: '42 St - Port Authority Bus Terminal', lat: 40.7570, lng: -73.9897, cat: 'categorySubway', icon: 'fa-subway' }
+        ],
+        'paris': [
+            { name: 'Eiffel Tower', lat: 48.8584, lng: 2.2945, cat: 'categoryInterest', icon: 'fa-landmark' },
+            { name: 'Louvre Museum', lat: 48.8606, lng: 2.3376, cat: 'categoryInterest', icon: 'fa-palette' },
+            { name: 'Champs-Élysées', lat: 48.8698, lng: 2.3075, cat: 'categoryNearby', icon: 'fa-shopping-bag' },
+            { name: 'Arc de Triomphe', lat: 48.8738, lng: 2.2950, cat: 'categoryInterest', icon: 'fa-monument' },
+            { name: 'Paris Charles de Gaulle Airport (CDG)', lat: 49.0097, lng: 2.5479, cat: 'categoryAirports', icon: 'fa-plane' },
+            { name: 'Paris Orly Airport (ORY)', lat: 48.7262, lng: 2.3652, cat: 'categoryAirports', icon: 'fa-plane' },
+            { name: 'Franklin D. Roosevelt Metro Station', lat: 48.8692, lng: 2.3099, cat: 'categorySubway', icon: 'fa-subway' }
+        ],
+        'london': [
+            { name: 'Big Ben & Parliament', lat: 51.5007, lng: -0.1246, cat: 'categoryInterest', icon: 'fa-clock' },
+            { name: 'London Eye', lat: 51.5033, lng: -0.1195, cat: 'categoryInterest', icon: 'fa-landmark' },
+            { name: 'Hyde Park', lat: 51.5073, lng: -0.1657, cat: 'categoryNearby', icon: 'fa-tree' },
+            { name: 'British Museum', lat: 51.5194, lng: -0.1270, cat: 'categoryInterest', icon: 'fa-university' },
+            { name: 'London Heathrow Airport (LHR)', lat: 51.4700, lng: -0.4543, cat: 'categoryAirports', icon: 'fa-plane' },
+            { name: 'Victoria Underground Station', lat: 51.4965, lng: -0.1447, cat: 'categorySubway', icon: 'fa-subway' }
+        ],
+        'dubai': [
+            { name: 'Burj Khalifa', lat: 25.1972, lng: 55.2744, cat: 'categoryInterest', icon: 'fa-building' },
+            { name: 'The Dubai Mall', lat: 25.1985, lng: 55.2796, cat: 'categoryNearby', icon: 'fa-shopping-cart' },
+            { name: 'Dubai Fountain', lat: 25.1959, lng: 55.2764, cat: 'categoryNearby', icon: 'fa-water' },
+            { name: 'Dubai International Airport (DXB)', lat: 25.2532, lng: 55.3657, cat: 'categoryAirports', icon: 'fa-plane' },
+            { name: 'Burjuman Metro Station', lat: 25.2536, lng: 55.3023, cat: 'categorySubway', icon: 'fa-subway' }
+        ],
+        'las vegas': [
+            { name: 'Bellagio Fountains', lat: 36.1126, lng: -115.1767, cat: 'categoryNearby', icon: 'fa-water' },
+            { name: 'High Roller Observation Wheel', lat: 36.1176, lng: -115.1681, cat: 'categoryInterest', icon: 'fa-bullseye' },
+            { name: 'Grand Canal Shoppes', lat: 36.1212, lng: -115.1697, cat: 'categoryNearby', icon: 'fa-shopping-bag' },
+            { name: 'Harry Reid International Airport (LAS)', lat: 36.0840, lng: -115.1537, cat: 'categoryAirports', icon: 'fa-plane' }
+        ],
+        'singapore': [
+            { name: 'Marina Bay Sands', lat: 1.2834, lng: 103.8607, cat: 'categoryInterest', icon: 'fa-hotel' },
+            { name: 'Gardens by the Bay', lat: 1.2816, lng: 103.8636, cat: 'categoryNearby', icon: 'fa-tree' },
+            { name: 'Orchard Road Shopping Belt', lat: 1.3048, lng: 103.8318, cat: 'categoryNearby', icon: 'fa-shopping-bag' },
+            { name: 'Singapore Changi Airport (SIN)', lat: 1.3644, lng: 103.9915, cat: 'categoryAirports', icon: 'fa-plane' },
+            { name: 'Bayfront MRT Station', lat: 1.2818, lng: 103.8591, cat: 'categorySubway', icon: 'fa-subway' }
+        ]
+    };
+
+    let matchedSpots = [];
+    for (const [cityName, spots] of Object.entries(cityLandmarks)) {
+        if (fullText.includes(cityName)) {
+            matchedSpots = spots;
+            break;
+        }
+    }
+
+    if (matchedSpots.length > 0 && !isNaN(curLat) && !isNaN(curLng) && curLat !== 0) {
+        matchedSpots.forEach(spot => {
+            const distKm = getDistanceKm(curLat, curLng, spot.lat, spot.lng);
+            const formattedDist = formatDistanceText(distKm, 'km');
+            categories[spot.cat].push({
+                name: spot.name,
+                distance: formattedDist,
+                icon: spot.icon
+            });
+        });
+    }
+
+    // Universal fallback if fewer than 3 total attractions exist
+    const totalFound = Object.values(categories).reduce((acc, arr) => acc + arr.length, 0);
+    if (totalFound < 3) {
+        const cityDisp = hotelData.city || (address ? address.split(',')[0] : 'City Center');
+        categories.categoryNearby.push({
+            name: `${cityDisp} City Center`,
+            distance: '0.8 km / 10 min walk',
+            icon: 'fa-walking'
+        });
+        categories.categoryNearby.push({
+            name: `${cityDisp} Shopping Promenade`,
+            distance: '1.2 km / 15 min walk',
+            icon: 'fa-shopping-bag'
+        });
+        categories.categoryInterest.push({
+            name: `${cityDisp} Historic District & Museums`,
+            distance: '2.5 km / 6 min drive',
+            icon: 'fa-landmark'
+        });
+        categories.categoryAirports.push({
+            name: `${cityDisp} International Airport`,
+            distance: '18 km / 25 min drive',
+            icon: 'fa-plane'
+        });
+        categories.categorySubway.push({
+            name: `${cityDisp} Central Metro Station`,
+            distance: '0.9 km / 11 min walk',
+            icon: 'fa-subway'
+        });
+    }
+
+    return categories;
+}
+
 /**
  * Display map preview using Google Maps embed (works with lat/lng)
  * No API key required for embed URL
@@ -601,41 +809,12 @@ function displayMapPreview(lat, lng, hotelData = {}) {
         ></iframe>
     `;
 
-    // Process surroundings from static_data or root hotelData
-    const staticData = hotelData.static_data || {};
-    const surroundings = staticData.surroundings || hotelData.surroundings || [];
+    // Process attractions for hotel
+    const categories = getAttractionsForHotel(hotelData, lat, lng, hotelData.address || '');
 
-    // Categorization logic
-    const categories = {
-        'categoryNearby': [],
-        'categoryInterest': [],
-        'categoryAirports': [],
-        'categorySubway': []
-    };
-
-    if (surroundings.length > 0) {
-        surroundings.forEach(place => {
-            const item = {
-                name: place.name,
-                distance: place.distance_value ? `${place.distance_value} ${place.distance_unit || 'm'}` : 'Nearby',
-                icon: 'fa-map-marker-alt'
-            };
-
-            const type = (place.type || '').toLowerCase();
-            if (type.includes('airport')) categories.categoryAirports.push(item);
-            else if (type.includes('metro') || type.includes('subway') || type.includes('station')) categories.categorySubway.push(item);
-            else if (type.includes('sight') || type.includes('museum') || type.includes('landmark')) categories.categoryInterest.push(item);
-            else categories.categoryNearby.push(item);
-        });
-    }
-
-    // Check if we have any real surroundings data at all
-    const hasAnySurroundings = Object.values(categories).some(arr => arr.length > 0);
     const surroundingsContainer = document.getElementById('surroundingsContainer');
-
-    if (!hasAnySurroundings && surroundingsContainer) {
-        // Hide the entire surroundings section when no real data is available
-        surroundingsContainer.style.display = 'none';
+    if (surroundingsContainer) {
+        surroundingsContainer.style.display = 'grid';
     }
 
     // Populate the UI
@@ -663,9 +842,8 @@ function displayMapPreview(lat, lng, hotelData = {}) {
 
 /**
  * Display map preview by address/name search (fallback when no lat/lng)
- * Uses Google Maps embed search — no API key, no CORS issues
  */
-function displayMapPreviewByAddress(address) {
+function displayMapPreviewByAddress(address, hotelData = {}) {
     const mapPreview = document.getElementById('mapPreview');
     if (!mapPreview) return;
 
@@ -681,6 +859,34 @@ function displayMapPreviewByAddress(address) {
             src="https://maps.google.com/maps?q=${encodedQuery}&output=embed"
         ></iframe>
     `;
+
+    // Process attractions
+    const categories = getAttractionsForHotel(hotelData, null, null, address);
+    const surroundingsContainer = document.getElementById('surroundingsContainer');
+    if (surroundingsContainer) {
+        surroundingsContainer.style.display = 'grid';
+    }
+
+    for (const [id, items] of Object.entries(categories)) {
+        const container = document.getElementById(id);
+        const listEl = container?.querySelector('.surroundings-list');
+        if (listEl) {
+            if (items.length > 0) {
+                container.style.display = 'block';
+                listEl.innerHTML = items.slice(0, 5).map(item => `
+                    <div class="surroundings-item">
+                        <div class="place-info">
+                            <i class="fas ${item.icon}"></i>
+                            <span>${item.name}</span>
+                        </div>
+                        <span class="place-distance">${item.distance}</span>
+                    </div>
+                `).join('');
+            } else {
+                container.style.display = 'none';
+            }
+        }
+    }
 }
 
 /**
@@ -721,24 +927,48 @@ async function fetchGooglePlacePhotos(hotelId) {
     console.log('Google Places photo fetching is completely disabled. Relying only on RateHawk/ETG.');
 }
 
+function formatTimeAmPm(timeStr) {
+    if (!timeStr) return '';
+    if (timeStr.includes('AM') || timeStr.includes('PM') || timeStr.includes('noon') || timeStr.includes('midnight')) {
+        return timeStr;
+    }
+    const parts = timeStr.trim().split(':');
+    if (parts.length >= 2) {
+        let h = parseInt(parts[0], 10);
+        let m = parseInt(parts[1], 10);
+        if (isNaN(h)) return timeStr;
+        if (h === 12 && m === 0) return '12:00 PM (noon)';
+        if (h === 0 && m === 0) return '12:00 AM (midnight)';
+        const period = h < 12 ? 'AM' : 'PM';
+        let h12 = h % 12;
+        if (h12 === 0) h12 = 12;
+        return m === 0 ? `${h12}:00 ${period}` : `${h12}:${m < 10 ? '0' + m : m} ${period}`;
+    }
+    return timeStr;
+}
+
 /**
  * Display default policies
  */
 function displayDefaultPolicies() {
     const policies = {
+        check_in_time: '15:00',
+        check_out_time: '11:00',
+        check_in_time_formatted: '3:00 PM',
+        check_out_time_formatted: '11:00 AM',
         check_in_out: [
-            { icon: 'fa-sign-in-alt', label: 'Check-in', value: 'From 3:00 PM' },
-            { icon: 'fa-sign-out-alt', label: 'Check-out', value: 'Until 11:00 AM' }
+            { icon: 'fa-sign-in-alt', label: 'Check-in', value: 'Check-in start time: 3:00 PM; Check-in end time: anytime' },
+            { icon: 'fa-sign-out-alt', label: 'Check-out', value: 'Check-out before 11:00 AM' }
         ],
         early_late: [
-            { icon: 'fa-clock', label: 'Early Check-in', value: 'Subject to availability — Contact hotel directly' },
-            { icon: 'fa-clock', label: 'Late Check-out', value: 'Subject to availability — Contact hotel directly' }
+            { icon: 'fa-clock', label: 'Early Check-in', value: 'Standard check-in starts at 3:00 PM. Early check-in before 3:00 PM is subject to room availability on arrival.' },
+            { icon: 'fa-clock', label: 'Late Check-out', value: 'Standard check-out is before 11:00 AM. Late check-out beyond 11:00 AM is subject to availability upon request.' }
         ],
         children: [
             { icon: 'fa-child', label: 'Children', value: 'Children of all ages welcome' }
         ],
         pets: [
-            { icon: 'fa-paw', label: 'Pets', value: 'Pet policy varies by property — some hotels allow pets with a fee, others do not' }
+            { icon: 'fa-paw', label: 'Pets', value: 'Pet policy varies by property — check property details or request at check-in' }
         ],
         payments: [
             { icon: 'fa-credit-card', label: 'Payment', value: 'Credit/Debit cards accepted' }
@@ -747,7 +977,7 @@ function displayDefaultPolicies() {
             { icon: 'fa-wifi', label: 'WiFi', value: 'Free WiFi available' }
         ],
         parking: [
-            { icon: 'fa-parking', label: 'Parking', value: 'Parking available' }
+            { icon: 'fa-parking', label: 'Parking', value: 'Parking available on site' }
         ],
         mandatory_fees: [],
         optional_fees: [],
@@ -763,16 +993,18 @@ function displayDefaultPolicies() {
  */
 function displayHotelPolicies(policies) {
     // 1. Check-in/Check-out with Progress Bars
-    const checkinTime = policies.check_in_time || '14:00';
-    const checkoutTime = policies.check_out_time || '11:00';
+    const ciFmt = policies.check_in_time_formatted || formatTimeAmPm(policies.check_in_time) || '3:00 PM';
+    const coFmt = policies.check_out_time_formatted || formatTimeAmPm(policies.check_out_time) || '11:00 AM';
+    const rawCi = policies.check_in_time || '15:00';
+    const rawCo = policies.check_out_time || '11:00';
 
     const checkinEl = document.getElementById('checkinValue');
     const checkoutEl = document.getElementById('checkoutValue');
     const checkinProgress = document.getElementById('checkinProgress');
     const checkoutProgress = document.getElementById('checkoutProgress');
 
-    if (checkinEl) checkinEl.textContent = `After ${checkinTime}`;
-    if (checkoutEl) checkoutEl.textContent = `Until ${checkoutTime}`;
+    if (checkinEl) checkinEl.textContent = `After ${ciFmt}`;
+    if (checkoutEl) checkoutEl.textContent = `Until ${coFmt}`;
 
     // Calculate progress (00:00 to 24:00)
     const timeToPercent = (timeStr) => {
@@ -781,8 +1013,8 @@ function displayHotelPolicies(policies) {
         return ((hours + (minutes || 0) / 60) / 24) * 100;
     };
 
-    if (checkinProgress) checkinProgress.style.width = `${timeToPercent(checkinTime)}%`;
-    if (checkoutProgress) checkoutProgress.style.width = `${timeToPercent(checkoutTime)}%`;
+    if (checkinProgress) checkinProgress.style.width = `${timeToPercent(rawCi)}%`;
+    if (checkoutProgress) checkoutProgress.style.width = `${timeToPercent(rawCo)}%`;
 
     // 2. Paid on the Spot (Pets, Extra Beds, Parking)
     const petsPolicy = policies.pets || [];

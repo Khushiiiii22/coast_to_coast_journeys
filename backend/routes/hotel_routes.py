@@ -1937,22 +1937,62 @@ def get_hotel_policies(hotel_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+def format_time_am_pm(time_str):
+    """
+    Converts 24-hour time strings like '15:00:00' or '14:00' to 12-hour AM/PM format.
+    e.g. '15:00:00' -> '3:00 PM', '12:00:00' -> '12:00 PM (noon)', '11:00:00' -> '11:00 AM'
+    """
+    if not time_str or not isinstance(time_str, str):
+        return None
+    time_str = time_str.strip()
+    if not time_str:
+        return None
+    if 'AM' in time_str.upper() or 'PM' in time_str.upper() or 'NOON' in time_str.lower():
+        return time_str
+    parts = time_str.split(':')
+    if len(parts) >= 2:
+        try:
+            h = int(parts[0])
+            m = int(parts[1])
+            if h == 12 and m == 0:
+                return "12:00 PM (noon)"
+            elif h == 0 and m == 0:
+                return "12:00 AM (midnight)"
+            period = "AM" if h < 12 else "PM"
+            h_12 = h % 12
+            if h_12 == 0:
+                h_12 = 12
+            if m == 0:
+                return f"{h_12}:00 {period}"
+            else:
+                return f"{h_12}:{m:02d} {period}"
+        except ValueError:
+            return time_str
+    return time_str
+
+
 def format_hotel_policies(policies):
     """
     Format raw policy data into user-friendly display format.
 
     Exhaustively parses metapolicy_struct (all known ETG keys) and
     metapolicy_extra_info (all categories passed through).
-
-    MANDATORY PER RATEHAWK CHECKLIST:
-    - metapolicy_extra_info values MUST be displayed (they mirror the
-      "Extra info" section on RateHawk hotel pages and may include taxes/fees
-      not included in the booking price).
-    - metapolicy_struct provides structured policy data.
     """
+    ci_raw = policies.get('check_in_time')
+    co_raw = policies.get('check_out_time')
+    ci_end_raw = policies.get('check_in_time_end')
+
+    ci_time_fmt = format_time_am_pm(ci_raw) or '3:00 PM'
+    co_time_fmt = format_time_am_pm(co_raw) or '11:00 AM'
+    ci_end_fmt = format_time_am_pm(ci_end_raw) if ci_end_raw else 'anytime'
+
     formatted = {
-        'check_in_time': policies.get('check_in_time'),
-        'check_out_time': policies.get('check_out_time'),
+        'check_in_time': ci_raw or '14:00',
+        'check_out_time': co_raw or '11:00',
+        'check_in_time_end': ci_end_raw or '',
+        'check_in_time_formatted': ci_time_fmt,
+        'check_out_time_formatted': co_time_fmt,
+        'check_in_time_end_formatted': ci_end_fmt,
         'check_in_out': [],
         'early_late': [],
         'children': [],
@@ -1976,22 +2016,17 @@ def format_hotel_policies(policies):
     metapolicy = policies.get('metapolicy_struct', {})
     extra_info = policies.get('metapolicy_extra_info', {})
 
-    # ── Helper ────────────────────────────────────────────────────────────────
     def _parse_policy_list(items, icon, label, target):
         """Append a list or dict policy block to the target category list."""
         if isinstance(items, list):
             for item in items:
                 if isinstance(item, dict):
-                    # 1. Primary descriptive text
                     text = item.get('text') or item.get('description') or ''
-                    
-                    # 2. Enrich with ALL possible structured sub-fields
                     parts = []
-                    # Broadened key matching for price/fee/amounts and currencies
                     p_val = item.get('price') or item.get('fee') or item.get('amount')
                     p_cur = item.get('currency') or item.get('currency_code') or item.get('currency_symbol', '')
                     
-                    if p_val and p_val != '0':
+                    if p_val and str(p_val) != '0':
                         parts.append(f'Price: {p_val} {p_cur}'.strip())
                     
                     for k in ('inclusion', 'type', 'availability', 'price_unit', 'work_area', 'from', 'until', 'max_age'):
@@ -1999,7 +2034,6 @@ def format_hotel_policies(policies):
                         if v is not None and v != '':
                             parts.append(f'{k.replace("_"," ").title()}: {v}')
                     
-                    # Combine text and parts
                     val_str = text
                     if parts:
                         if val_str:
@@ -2025,44 +2059,68 @@ def format_hotel_policies(policies):
                                       'value': 'Yes' if items else 'No'})
 
     # ── Check-in / Check-out times ────────────────────────────────────────────
-    if policies.get('check_in_time'):
-        formatted['check_in_out'].append({'icon': 'fa-sign-in-alt', 'label': 'Check-in Time',
-                                          'value': policies['check_in_time']})
-    if policies.get('check_out_time'):
-        formatted['check_in_out'].append({'icon': 'fa-sign-out-alt', 'label': 'Check-out Time',
-                                          'value': policies['check_out_time']})
+    formatted['check_in_out'].append({
+        'icon': 'fa-sign-in-alt',
+        'label': 'Check-in',
+        'value': f"Check-in start time: {ci_time_fmt}; Check-in end time: {ci_end_fmt}"
+    })
+    formatted['check_in_out'].append({
+        'icon': 'fa-sign-out-alt',
+        'label': 'Check-out',
+        'value': f"Check-out before {co_time_fmt}"
+    })
 
     # ── metapolicy_struct ─────────────────────────────────────────────────────
     if metapolicy:
 
         # 1. Early check-in
+        early_ci_found = False
         for key in ('check_in', 'early_check_in'):
             ec = metapolicy.get(key)
             if ec:
                 if isinstance(ec, dict):
                     parts = []
-                    if ec.get('time') or ec.get('from'):
-                        parts.append(f'From {ec.get("time") or ec.get("from")}')
+                    ec_t = format_time_am_pm(ec.get('time') or ec.get('from'))
+                    if ec_t:
+                        parts.append(f"Available from {ec_t}")
+                    elif ec.get('time') or ec.get('from'):
+                        parts.append(f"From {ec.get('time') or ec.get('from')}")
                     avail = ec.get('available', ec.get('possibility'))
                     if avail is True:
                         parts.append('Available upon request')
                     elif avail is False:
                         parts.append('Not available')
                     if ec.get('fee') or ec.get('price'):
-                        parts.append(f'Fee: {ec.get("fee") or ec.get("price")}')
-                    formatted['early_late'].append({'icon': 'fa-clock', 'label': 'Early Check-in',
-                                                    'value': ' — '.join(parts) or 'Subject to availability'})
+                        parts.append(f"Fee: {ec.get('fee') or ec.get('price')}")
+                    formatted['early_late'].append({
+                        'icon': 'fa-clock',
+                        'label': 'Early Check-in',
+                        'value': ' — '.join(parts) or f"Available prior to standard {ci_time_fmt} check-in"
+                    })
+                    early_ci_found = True
                 elif isinstance(ec, str):
                     formatted['early_late'].append({'icon': 'fa-clock', 'label': 'Early Check-in', 'value': ec})
+                    early_ci_found = True
+
+        if not early_ci_found:
+            formatted['early_late'].append({
+                'icon': 'fa-clock',
+                'label': 'Early Check-in',
+                'value': f"Standard check-in starts at {ci_time_fmt}. Early check-in before {ci_time_fmt} is subject to room availability on arrival."
+            })
 
         # 2. Late check-out
+        late_co_found = False
         for key in ('check_out', 'late_check_out'):
             lc = metapolicy.get(key)
             if lc:
                 if isinstance(lc, dict):
                     parts = []
-                    if lc.get('time') or lc.get('until'):
-                        parts.append(f'Until {lc.get("time") or lc.get("until")}')
+                    lc_t = format_time_am_pm(lc.get('time') or lc.get('until'))
+                    if lc_t:
+                        parts.append(f"Available until {lc_t}")
+                    elif lc.get('time') or lc.get('until'):
+                        parts.append(f"Until {lc.get('time') or lc.get('until')}")
                     avail = lc.get('available', lc.get('possibility'))
                     if avail is True:
                         parts.append('Available upon request')
@@ -2272,11 +2330,11 @@ def format_hotel_policies(policies):
         if no_show:
             _parse_policy_list(no_show, 'fa-calendar-times', 'No-show Policy', 'no_show')
 
-    # ── If no early/late found, add defaults ────────────────────────────────
+    # ── If no early/late found, add defaults with actual hotel timings ──────
     if not formatted['early_late']:
         formatted['early_late'] = [
-            {'icon': 'fa-clock', 'label': 'Early Check-in', 'value': 'Subject to availability — Contact hotel directly'},
-            {'icon': 'fa-clock', 'label': 'Late Check-out', 'value': 'Subject to availability — Contact hotel directly'}
+            {'icon': 'fa-clock', 'label': 'Early Check-in', 'value': f"Standard check-in starts at {ci_time_fmt}. Early check-in before {ci_time_fmt} is subject to room availability on arrival."},
+            {'icon': 'fa-clock', 'label': 'Late Check-out', 'value': f"Standard check-out is before {co_time_fmt}. Late check-out beyond {co_time_fmt} is subject to availability upon request."}
         ]
 
     # ── metapolicy_extra_info (MANDATORY to display per RateHawk checklist) ──

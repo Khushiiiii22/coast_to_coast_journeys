@@ -1984,66 +1984,67 @@
    RateHawk Style Enhancements
    ============================================ */
 
-/* Surroundings Grid (Image 3) */
 .surroundings-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 32px;
-    margin-top: 24px;
-}
-
-@media (max-width: 768px) {
-    .surroundings-grid {
-        grid-template-columns: 1fr;
-    }
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-top: 16px;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 16px;
 }
 
 .surroundings-category h4 {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: #111827;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .surroundings-category h4 i {
     color: #1e40af;
-    width: 20px;
+    width: 18px;
     text-align: center;
 }
 
 .surroundings-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
 }
 
 .surroundings-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
+    padding: 3px 0;
 }
 
 .place-info {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     color: #374151;
+    font-weight: 500;
 }
 
 .place-info i {
-    color: #9ca3af;
+    color: #6b7280;
     width: 16px;
     text-align: center;
 }
 
 .place-distance {
-    color: #1e40af;
-    font-weight: 600;
-    font-size: 0.85rem;
+    color: #4b5563;
+    font-weight: 500;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    background: #f3f4f6;
+    padding: 2px 8px;
+    border-radius: 12px;
 }
 
 /* Policies - Check-in progress bars (Image 2) */
