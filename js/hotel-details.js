@@ -293,12 +293,32 @@ function displayHotelDetails(hotel) {
     // Rates
     displayRates(hotel.rates || []);
 
-    // Map preview
+    // Map preview & Attractions
     if (hotel.latitude && hotel.longitude) {
         displayMapPreview(hotel.latitude, hotel.longitude, hotel);
     } else {
-        // Fallback: show map with search query for the hotel address/name
-        displayMapPreviewByAddress(hotel.address || hotel.name || 'Hotel');
+        displayMapPreviewByAddress(hotel.address || hotel.name || 'Hotel', hotel);
+    }
+
+    // Async static info fetch to enrich surroundings if missing
+    if ((!hotel.surroundings || hotel.surroundings.length === 0) && (hotel.id || hotel.hid) && !String(hotel.id || hotel.hid).startsWith('demo_')) {
+        const hId = hotel.id || hotel.hid;
+        HotelAPI.getHotelInfo(hId).then(res => {
+            if (res?.success && res.data) {
+                const fetched = res.data;
+                hotel.surroundings = fetched.surroundings || fetched.static_data?.surroundings || hotel.surroundings || [];
+                hotel.description_struct = fetched.description_struct || fetched.static_data?.description_struct || hotel.description_struct || [];
+                if (fetched.latitude && fetched.longitude && (!hotel.latitude || !hotel.longitude)) {
+                    hotel.latitude = fetched.latitude;
+                    hotel.longitude = fetched.longitude;
+                }
+                if (hotel.latitude && hotel.longitude) {
+                    displayMapPreview(hotel.latitude, hotel.longitude, hotel);
+                } else {
+                    displayMapPreviewByAddress(hotel.address || hotel.name || 'Hotel', hotel);
+                }
+            }
+        }).catch(err => console.log('Static info fetch for attractions notice:', err));
     }
 
     // Update rooms section info
@@ -676,6 +696,53 @@ function getAttractionsForHotel(hotelData = {}, lat = null, lng = null, address 
     }
 
     const cityLandmarks = {
+        'bengaluru': [
+            { name: 'UB City Mall & Brigade Road', lat: 12.9716, lng: 77.5946, cat: 'categoryNearby', icon: 'fa-shopping-bag' },
+            { name: 'Commercial Street Shopping', lat: 12.9822, lng: 77.6083, cat: 'categoryNearby', icon: 'fa-walking' },
+            { name: 'Cubbon Park & Vidhana Soudha', lat: 12.9763, lng: 77.5929, cat: 'categoryInterest', icon: 'fa-landmark' },
+            { name: 'Bengaluru Palace', lat: 12.9988, lng: 77.5921, cat: 'categoryInterest', icon: 'fa-archway' },
+            { name: 'Kempegowda International Airport (BLR)', lat: 13.1986, lng: 77.7066, cat: 'categoryAirports', icon: 'fa-plane' },
+            { name: 'Indiranagar / MG Road Metro Station', lat: 12.9784, lng: 77.6408, cat: 'categorySubway', icon: 'fa-subway' }
+        ],
+        'bangalore': [
+            { name: 'UB City Mall & Brigade Road', lat: 12.9716, lng: 77.5946, cat: 'categoryNearby', icon: 'fa-shopping-bag' },
+            { name: 'Commercial Street Shopping', lat: 12.9822, lng: 77.6083, cat: 'categoryNearby', icon: 'fa-walking' },
+            { name: 'Cubbon Park & Vidhana Soudha', lat: 12.9763, lng: 77.5929, cat: 'categoryInterest', icon: 'fa-landmark' },
+            { name: 'Bengaluru Palace', lat: 12.9988, lng: 77.5921, cat: 'categoryInterest', icon: 'fa-archway' },
+            { name: 'Kempegowda International Airport (BLR)', lat: 13.1986, lng: 77.7066, cat: 'categoryAirports', icon: 'fa-plane' },
+            { name: 'Indiranagar / MG Road Metro Station', lat: 12.9784, lng: 77.6408, cat: 'categorySubway', icon: 'fa-subway' }
+        ],
+        'mumbai': [
+            { name: 'Gateway of India & Taj Palace', lat: 18.9220, lng: 72.8347, cat: 'categoryInterest', icon: 'fa-landmark' },
+            { name: 'Marine Drive Promenade', lat: 18.9438, lng: 72.8234, cat: 'categoryNearby', icon: 'fa-walking' },
+            { name: 'Colaba Causeway Market', lat: 18.9222, lng: 72.8315, cat: 'categoryNearby', icon: 'fa-shopping-bag' },
+            { name: 'Chhatrapati Shivaji Maharaj Terminus (CSMT)', lat: 18.9400, lng: 72.8353, cat: 'categorySubway', icon: 'fa-subway' },
+            { name: 'Chhatrapati Shivaji Intl Airport (BOM)', lat: 19.0896, lng: 72.8656, cat: 'categoryAirports', icon: 'fa-plane' }
+        ],
+        'delhi': [
+            { name: 'Connaught Place Shopping Belt', lat: 28.6315, lng: 77.2167, cat: 'categoryNearby', icon: 'fa-shopping-bag' },
+            { name: 'India Gate & Central Vista', lat: 28.6129, lng: 77.2295, cat: 'categoryInterest', icon: 'fa-landmark' },
+            { name: 'Qutub Minar Complex', lat: 28.5245, lng: 77.1855, cat: 'categoryInterest', icon: 'fa-archway' },
+            { name: 'Indira Gandhi International Airport (DEL)', lat: 28.5562, lng: 77.1000, cat: 'categoryAirports', icon: 'fa-plane' },
+            { name: 'Rajiv Chowk Metro Station', lat: 28.6328, lng: 77.2197, cat: 'categorySubway', icon: 'fa-subway' }
+        ],
+        'goa': [
+            { name: 'Calangute & Baga Beach', lat: 15.5494, lng: 73.7535, cat: 'categoryNearby', icon: 'fa-umbrella-beach' },
+            { name: 'Panaji City Promenade', lat: 15.4989, lng: 73.8278, cat: 'categoryNearby', icon: 'fa-walking' },
+            { name: 'Basilica of Bom Jesus (Old Goa)', lat: 15.5009, lng: 73.9116, cat: 'categoryInterest', icon: 'fa-church' },
+            { name: 'Goa Dabolim Airport (GOI)', lat: 15.3808, lng: 73.8314, cat: 'categoryAirports', icon: 'fa-plane' }
+        ],
+        'jaipur': [
+            { name: 'Hawa Mahal (Palace of Winds)', lat: 26.9239, lng: 75.8267, cat: 'categoryInterest', icon: 'fa-monument' },
+            { name: 'City Palace & Jantar Mantar', lat: 26.9258, lng: 75.8237, cat: 'categoryInterest', icon: 'fa-landmark' },
+            { name: 'Johari Bazaar Shopping', lat: 26.9197, lng: 75.8274, cat: 'categoryNearby', icon: 'fa-shopping-bag' },
+            { name: 'Jaipur International Airport (JAI)', lat: 26.8242, lng: 75.8122, cat: 'categoryAirports', icon: 'fa-plane' }
+        ],
+        'agra': [
+            { name: 'Taj Mahal', lat: 27.1751, lng: 78.0421, cat: 'categoryInterest', icon: 'fa-gopuram' },
+            { name: 'Agra Fort', lat: 27.1795, lng: 78.0211, cat: 'categoryInterest', icon: 'fa-landmark' },
+            { name: 'Sadar Bazaar Shopping', lat: 27.1610, lng: 78.0100, cat: 'categoryNearby', icon: 'fa-shopping-bag' }
+        ],
         'los angeles': [
             { name: 'Beverly Center', lat: 34.0752, lng: -118.3773, cat: 'categoryNearby', icon: 'fa-shopping-bag' },
             { name: 'The Farmers Market & The Grove', lat: 34.0722, lng: -118.3581, cat: 'categoryNearby', icon: 'fa-walking' },
@@ -757,16 +824,36 @@ function getAttractionsForHotel(hotelData = {}, lat = null, lng = null, address 
     // Universal fallback if fewer than 3 total attractions exist
     const totalFound = Object.values(categories).reduce((acc, arr) => acc + arr.length, 0);
     if (totalFound < 3) {
-        const cityDisp = hotelData.city || (address ? address.split(',')[0] : 'City Center');
-        categories.categoryNearby.push({
-            name: `${cityDisp} City Center`,
-            distance: '0.8 km / 10 min walk',
-            icon: 'fa-walking'
-        });
+        const extractCityName = (hData, addrStr) => {
+            if (hData.city && hData.city.length > 2) return hData.city;
+            const full = `${hData.name || ''} ${addrStr || ''}`.toLowerCase();
+            const known = ['bengaluru', 'bangalore', 'mumbai', 'delhi', 'goa', 'jaipur', 'agra', 'hyderabad', 'chennai', 'kolkata', 'pune', 'los angeles', 'new york', 'paris', 'london', 'dubai', 'las vegas', 'singapore'];
+            for (const k of known) {
+                if (full.includes(k)) return k.charAt(0).toUpperCase() + k.slice(1);
+            }
+            if (addrStr && addrStr.includes(',')) {
+                const parts = addrStr.split(',').map(s => s.trim()).filter(Boolean);
+                for (let i = parts.length - 1; i >= 0; i--) {
+                    const p = parts[i];
+                    if (!/^\d+$/.test(p) && p.length > 2 && !/india|usa|uk|france|uae|germany|spain|italy|japan|australia/i.test(p)) {
+                        return p;
+                    }
+                }
+            }
+            return 'City Center';
+        };
+
+        const cityDisp = extractCityName(hotelData, address);
+
         categories.categoryNearby.push({
             name: `${cityDisp} Shopping Promenade`,
             distance: '1.2 km / 15 min walk',
             icon: 'fa-shopping-bag'
+        });
+        categories.categoryNearby.push({
+            name: `${cityDisp} Central Park & Gardens`,
+            distance: '0.8 km / 10 min walk',
+            icon: 'fa-walking'
         });
         categories.categoryInterest.push({
             name: `${cityDisp} Historic District & Museums`,
