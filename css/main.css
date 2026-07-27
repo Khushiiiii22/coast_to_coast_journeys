@@ -1139,22 +1139,14 @@ h6 {
 .footer {
     position: relative;
     overflow: hidden;
-    background: var(--white); /* Fallback */
-    color: var(--text-primary);
+    background: #0f172a; /* Sleek dark premium background */
+    color: #f8fafc; /* Light text for dark background */
     padding: 64px 0 24px;
 }
 
 .footer-video-bg,
 .footer-img-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center; /* Ensures it covers completely without stretching */
-    z-index: 0;
-    opacity: 1; /* Fully visible */
+    display: none;
 }
 
 .footer-overlay {
@@ -1202,14 +1194,14 @@ h6 {
     font-family: 'Broadway', sans-serif;
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--primary-dark);
+    color: #ffffff;
 }
 
 .footer-brand p {
     font-size: 0.95rem; /* Slightly larger */
     line-height: 1.7;
-    color: #000; /* Made black for visibility */
-    font-weight: 600; /* Bolder */
+    color: #94a3b8; /* Light gray for visibility */
+    font-weight: 400; 
 }
 
 .trust-line {
@@ -1217,15 +1209,15 @@ h6 {
     align-items: center;
     gap: 8px;
     font-size: 0.95rem; /* Slightly larger */
-    color: var(--primary-dark); /* Darker for better contrast */
+    color: #cbd5e1; /* Lighter for better contrast */
     font-style: italic;
-    font-weight: 700; /* Bolder */
+    font-weight: 500; 
 }
 
 .footer-col h4 {
     font-size: 1rem;
-    font-weight: 700;
-    color: #000; /* Bold in black */
+    font-weight: 600;
+    color: #ffffff; /* White */
     margin-bottom: 20px;
 }
 
@@ -1237,9 +1229,9 @@ h6 {
 
 .footer-col a {
     font-size: 0.95rem;
-    color: #000; /* Bold in black */
+    color: #94a3b8; /* Light gray */
     transition: var(--transition);
-    font-weight: 600; /* bolder */
+    font-weight: 400;
 }
 
 .footer-col a:hover {
@@ -1249,11 +1241,11 @@ h6 {
 
 .footer-bottom {
     padding-top: 24px;
-    border-top: 1px solid rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     text-align: center;
     font-size: 0.9rem; /* Slightly larger */
-    color: #000; /* Made black for visibility */
-    font-weight: 600; /* Bolder */
+    color: #64748b; /* Muted gray */
+    font-weight: 400;
 }
 
 /* === Page Hero (for inner pages) === */

@@ -825,7 +825,8 @@ function getAttractionsForHotel(hotelData = {}, lat = null, lng = null, address 
     const totalFound = Object.values(categories).reduce((acc, arr) => acc + arr.length, 0);
     if (totalFound < 3) {
         const extractCityName = (hData, addrStr) => {
-            if (hData.city && hData.city.length > 2) return hData.city;
+            if (hData.city && hData.city.length > 2 && hData.city.toLowerCase() !== 'unknown location') return hData.city;
+            if (hData.region_name && hData.region_name.length > 2 && hData.region_name.toLowerCase() !== 'unknown location') return hData.region_name;
             const full = `${hData.name || ''} ${addrStr || ''}`.toLowerCase();
             const known = ['bengaluru', 'bangalore', 'mumbai', 'delhi', 'goa', 'jaipur', 'agra', 'hyderabad', 'chennai', 'kolkata', 'pune', 'los angeles', 'new york', 'paris', 'london', 'dubai', 'las vegas', 'singapore'];
             for (const k of known) {

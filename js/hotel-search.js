@@ -130,20 +130,20 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 mainTitle = `${name} Airport`;
             }
-            if (region.country) subtextParts.push(region.country);
+            if (region.country || region.country_name || region.country_code) subtextParts.push(region.country || region.country_name || region.country_code);
         } else if (rawType.includes('city')) {
             iconClass = 'fa-city';
             if (region.state) subtextParts.push(region.state);
-            if (region.country) subtextParts.push(region.country);
+            if (region.country || region.country_name || region.country_code) subtextParts.push(region.country || region.country_name || region.country_code);
         } else if (rawType.includes('neighborhood') || rawType.includes('district') || rawType.includes('point of interest') || rawType.includes('subway') || rawType.includes('landmark')) {
             iconClass = 'fa-building';
             if (region.city) subtextParts.push(region.city);
             if (region.state && region.state !== region.city) subtextParts.push(region.state);
-            if (region.country) subtextParts.push(region.country);
+            if (region.country || region.country_name || region.country_code) subtextParts.push(region.country || region.country_name || region.country_code);
         } else {
             iconClass = 'fa-location-dot';
             if (region.state) subtextParts.push(region.state);
-            if (region.country) subtextParts.push(region.country);
+            if (region.country || region.country_name || region.country_code) subtextParts.push(region.country || region.country_name || region.country_code);
         }
 
         const subtext = subtextParts.join(', ');
