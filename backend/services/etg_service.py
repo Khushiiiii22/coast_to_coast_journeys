@@ -190,26 +190,37 @@ class ETGApiService:
             
             duration_ms = (datetime.now() - start_time).total_seconds() * 1000
             
-            response_json = response.json() if response.content else {}
+            try:
+                response_json = response.json() if response.content else {}
+            except Exception as parse_err:
+                print(f"⚠️ Failed to parse RateHawk JSON response ({response.status_code}): {parse_err}")
+                response_json = {
+                    "status": "error",
+                    "error": response.text[:300] if response.text else f"HTTP {response.status_code}"
+                }
             
             # Log the API call
             self._log_api_call(endpoint, data or {}, response_json, response.status_code, duration_ms)
             
             print(f"📥 Response Status: {response.status_code}")
             
-            # Handle 400 errors gracefully - return parsed response so callers
-            # can extract detailed validation errors from ETG's response body
-            if response.status_code == 400:
+            # Handle 400, 401, 403 errors gracefully - return parsed response so callers
+            # can extract detailed validation errors (like IP restriction) from ETG's response body
+            if response.status_code in (400, 401, 403):
                 validation_error = ''
+                err_code = 'API Access Error'
                 if isinstance(response_json, dict):
+                    err_code = response_json.get('error', 'API Access Error')
                     debug = response_json.get('debug', {})
                     if isinstance(debug, dict):
                         validation_error = debug.get('validation_error', '')
-                print(f"⚠️ ETG 400 Bad Request: {response_json.get('error', 'unknown')} | Validation: {validation_error}")
+                
+                clean_err = validation_error or err_code or f"HTTP {response.status_code}"
+                print(f"⚠️ RateHawk {response.status_code} Error: {err_code} | Validation: {validation_error}")
                 return {
                     "success": False,
-                    "error": response_json.get('error', 'Bad Request'),
-                    "status_code": 400,
+                    "error": f"RateHawk API Error ({response.status_code}): {clean_err}",
+                    "status_code": response.status_code,
                     "response": response_json
                 }
             

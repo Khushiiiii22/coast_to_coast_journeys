@@ -361,6 +361,7 @@
                                 <i class="fas fa-map-marker-alt"></i>
                                 <input type="text" id="destination" placeholder="Where to?" autocomplete="off" required
                                     title="Enter a city, hotel name, landmark, or airport code">
+                                <input type="hidden" id="regionId">
                                 <button type="button" class="clear-destination" id="clearDestination"
                                     style="display: none;">
                                     <i class="fas fa-times"></i>
@@ -996,9 +997,7 @@
     <!-- Footer -->
     <footer class="footer">
         <!-- Footer Video Background -->
-        <video autoplay loop muted playsinline class="footer-video-bg">
-            <source src="../assets/videos/hotel-footer-bg.mp4" type="video/mp4">
-        </video>
+        <img src="../assets/images/hotel-footer-bg.jpg" alt="Footer Background" class="footer-video-bg" style="pointer-events: none;">
         <div class="footer-overlay"></div>
 
         <div class="container">
@@ -1762,13 +1761,16 @@
             const nationality = document.getElementById('guestNationality').value;
 
             // Construct query parameters
-            const params = new URLSearchParams({
+            const regionId = document.getElementById('regionId')?.value || '';
+            const searchObj = {
                 destination: destination,
                 checkin: checkIn,
                 checkout: checkOut,
                 rooms: JSON.stringify(rooms),
                 residency: nationality  // ETG/RateHawk residency parameter
-            });
+            };
+            if (regionId) searchObj.region_id = regionId;
+            const params = new URLSearchParams(searchObj);
 
             // Redirect to results page
             window.location.href = `hotel-results.html?${params.toString()}`;
@@ -1814,6 +1816,7 @@
     <script src="../js/auth-guard.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="../js/main.js"></script>
+    <script src="../js/hotel-search.js?v=6.0"></script>
     
 </body>
 

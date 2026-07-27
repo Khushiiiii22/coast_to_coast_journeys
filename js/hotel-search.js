@@ -4,13 +4,13 @@
  */
 
 document.addEventListener('DOMContentLoaded', function () {
-    const input = document.getElementById('hotelDestination');
-    const regionIdInput = document.getElementById('hotelRegionId');
-    const dropdown = document.getElementById('hotelLocationDropdown');
-    const resultsContainer = document.getElementById('hotelDropdownResults');
-    const loading = document.getElementById('hotelDropdownLoading');
-    const empty = document.getElementById('hotelDropdownEmpty');
-    const clearBtn = document.getElementById('clearHotelDestination');
+    const input = document.getElementById('hotelDestination') || document.getElementById('destination');
+    const regionIdInput = document.getElementById('hotelRegionId') || document.getElementById('regionId');
+    const dropdown = document.getElementById('hotelLocationDropdown') || document.getElementById('locationDropdown');
+    const resultsContainer = document.getElementById('hotelDropdownResults') || document.getElementById('dropdownResults');
+    const loading = document.getElementById('hotelDropdownLoading') || document.getElementById('dropdownLoading');
+    const empty = document.getElementById('hotelDropdownEmpty') || document.getElementById('dropdownEmpty');
+    const clearBtn = document.getElementById('clearHotelDestination') || document.getElementById('clearDestination');
 
     // Popular destinations (sync with other pages)
     const popularDestinations = [

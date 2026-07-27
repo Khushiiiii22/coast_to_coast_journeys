@@ -226,8 +226,10 @@ function displayResults(result) {
     filteredHotels = [...hotels];
     console.log(`✅ Set allHotels: ${allHotels.length}, filteredHotels: ${filteredHotels.length}`);
 
-    document.getElementById('resultsCount').textContent = hotels.length;
+    const countEl = document.getElementById('resultsCount');
+    if (countEl) countEl.textContent = hotels.length;
 
+    updateFilterCounts();
     applyFiltersAndSort();
     showHotelsList();
 
@@ -595,63 +597,198 @@ function initFullMap() {
 }
 
 /**
+ * Update filter counts dynamically based on loaded hotels
+ */
+function updateFilterCounts() {
+    if (!allHotels || allHotels.length === 0) return;
+
+    const counts = {
+        city_center: 0,
+        hotel: 0,
+        breakfast: 0,
+        free_cancellation: 0,
+        pool: 0
+    };
+
+    allHotels.forEach(h => {
+        const addr = (h.address || '').toLowerCase();
+        const name = (h.name || '').toLowerCase();
+        const type = (h.property_type || '').toLowerCase();
+        const amenities = (h.amenities || []).map(a => String(a).toLowerCase());
+        const meal = (h.rates?.[0]?.meal_plan || h.meal_plan || '').toLowerCase();
+        const cancel = (h.rates?.[0]?.cancellation || h.cancellation || '').toLowerCase();
+
+        if (addr.includes('center') || addr.includes('downtown') || name.includes('center') || (h.guest_rating && h.guest_rating >= 4.5)) {
+            counts.city_center++;
+        }
+        if (!type || type.includes('hotel') || type.includes('resort')) {
+            counts.hotel++;
+        }
+        if (meal.includes('breakfast') || meal.includes('halfboard') || meal.includes('fullboard') || meal.includes('allinclusive') || amenities.includes('breakfast')) {
+            counts.breakfast++;
+        }
+        if (h.cancellation_info?.is_free_cancellation || h.rates?.[0]?.cancellation_info?.is_free_cancellation) {
+            counts.free_cancellation++;
+        }
+        if (amenities.some(a => a.includes('pool') || a.includes('swimming'))) {
+            counts.pool++;
+        }
+    });
+
+    document.querySelectorAll('.filter-checkbox').forEach(label => {
+        const input = label.querySelector('input');
+        const countSpan = label.querySelector('.filter-count');
+        if (input && countSpan && counts[input.value] !== undefined) {
+            countSpan.textContent = `(${counts[input.value]})`;
+        }
+    });
+}
+
+/**
  * Apply filters and sort
  */
 function applyFiltersAndSort() {
     let hotels = [...allHotels];
 
-    // Apply price filter
-    const maxPrice = parseInt(document.getElementById('priceRange').value);
-    hotels = hotels.filter(h => (h.price || h.rates?.[0]?.price || 0) <= maxPrice);
+    // 1. Tab navigation filter (All stays, Hotels, Homes)
+    const activeTabBtn = document.querySelector('.tab-btn.active');
+    const activeTab = activeTabBtn?.dataset?.tab || 'all';
+    if (activeTab === 'hotels') {
+        hotels = hotels.filter(h => {
+            const type = (h.property_type || 'hotel').toLowerCase();
+            return type.includes('hotel') || type.includes('resort') || type.includes('boutique');
+        });
+    } else if (activeTab === 'homes') {
+        hotels = hotels.filter(h => {
+            const type = (h.property_type || '').toLowerCase();
+            return type.includes('home') || type.includes('apartment') || type.includes('villa') || type.includes('house');
+        });
+    }
 
-    // Apply star filter
+    // 2. Apply price filter
+    const priceEl = document.getElementById('priceRange');
+    if (priceEl) {
+        const maxPrice = parseInt(priceEl.value);
+        hotels = hotels.filter(h => (h.price || h.rates?.[0]?.price || 0) <= maxPrice);
+    }
+
+    // 3. Apply star filter
     const starFilters = document.querySelectorAll('.star-filter input:checked');
     if (starFilters.length > 0) {
         const selectedStars = Array.from(starFilters).map(i => parseInt(i.value));
         hotels = hotels.filter(h => selectedStars.includes(h.star_rating || 4));
     }
 
-    // Apply property name search
-    const propertySearch = document.getElementById('propertySearch')?.value?.toLowerCase();
+    // 4. Apply property name search
+    const propertySearch = document.getElementById('propertySearch')?.value?.toLowerCase()?.trim();
     if (propertySearch) {
         hotels = hotels.filter(h => h.name.toLowerCase().includes(propertySearch));
     }
 
-    // Apply rating filter
+    // 5. Apply rating filter
     const activeRatingPill = document.querySelector('.rating-pill.active');
     if (activeRatingPill && activeRatingPill.dataset.rating !== 'any') {
         const minRating = parseFloat(activeRatingPill.dataset.rating);
         hotels = hotels.filter(h => parseFloat(h.guest_rating || 0) >= minRating);
     }
 
-    // Apply sort
-    const sortValue = document.getElementById('sortSelect').value;
-    switch (sortValue) {
-        case 'price_low':
-            hotels.sort((a, b) => (a.price || 0) - (b.price || 0));
-            break;
-        case 'price_high':
-            hotels.sort((a, b) => (b.price || 0) - (a.price || 0));
-            break;
-        case 'rating':
-            hotels.sort((a, b) => (b.guest_rating || 0) - (a.guest_rating || 0));
-            break;
-        case 'stars':
-            hotels.sort((a, b) => (b.star_rating || 0) - (a.star_rating || 0));
-            break;
+    // 6. Apply popular filters checkboxes
+    const popularFilters = document.querySelectorAll('.filter-checkbox input:checked');
+    popularFilters.forEach(checkbox => {
+        const val = checkbox.value;
+        if (val === 'city_center') {
+            hotels = hotels.filter(h => {
+                const addr = (h.address || '').toLowerCase();
+                const name = (h.name || '').toLowerCase();
+                return addr.includes('center') || addr.includes('downtown') || name.includes('center') || (h.guest_rating && h.guest_rating >= 4.5);
+            });
+        } else if (val === 'hotel') {
+            hotels = hotels.filter(h => {
+                const type = (h.property_type || 'hotel').toLowerCase();
+                return type.includes('hotel') || type.includes('resort');
+            });
+        } else if (val === 'breakfast') {
+            hotels = hotels.filter(h => {
+                const meal = (h.rates?.[0]?.meal_plan || h.meal_plan || '').toLowerCase();
+                const amenities = (h.amenities || []).map(a => String(a).toLowerCase());
+                return meal.includes('breakfast') || meal.includes('halfboard') || meal.includes('fullboard') || meal.includes('allinclusive') || amenities.includes('breakfast');
+            });
+        } else if (val === 'free_cancellation') {
+            hotels = hotels.filter(h => {
+                return h.cancellation_info?.is_free_cancellation || h.rates?.[0]?.cancellation_info?.is_free_cancellation;
+            });
+        } else if (val === 'pool') {
+            hotels = hotels.filter(h => {
+                const amenities = (h.amenities || []).map(a => String(a).toLowerCase());
+                return amenities.some(a => a.includes('pool') || a.includes('swimming'));
+            });
+        }
+    });
+
+    // 7. Apply amenities filters checkboxes
+    const amenityFilters = document.querySelectorAll('.amenity-filter input:checked');
+    if (amenityFilters.length > 0) {
+        const selectedAmenities = Array.from(amenityFilters).map(i => i.value.toLowerCase());
+        hotels = hotels.filter(h => {
+            const hAmenities = (h.amenities || []).map(a => String(a).toLowerCase());
+            return selectedAmenities.every(req => {
+                if (req === 'wifi') return hAmenities.some(a => a.includes('wifi') || a.includes('internet'));
+                if (req === 'pool') return hAmenities.some(a => a.includes('pool') || a.includes('swimming'));
+                if (req === 'parking') return hAmenities.some(a => a.includes('parking') || a.includes('valet'));
+                if (req === 'spa') return hAmenities.some(a => a.includes('spa') || a.includes('wellness'));
+                if (req === 'restaurant') return hAmenities.some(a => a.includes('restaurant') || a.includes('dining'));
+                if (req === 'gym') return hAmenities.some(a => a.includes('gym') || a.includes('fitness'));
+                if (req === 'ac') return hAmenities.some(a => a.includes('ac') || a.includes('air conditioning'));
+                return hAmenities.includes(req);
+            });
+        });
+    }
+
+    // 8. Apply meal plan filters checkboxes
+    const mealFilters = document.querySelectorAll('.meal-filter input:checked');
+    if (mealFilters.length > 0) {
+        const selectedMeals = Array.from(mealFilters).map(i => i.value.toLowerCase());
+        hotels = hotels.filter(h => {
+            const meal = (h.rates?.[0]?.meal_plan || h.meal_plan || '').toLowerCase();
+            return selectedMeals.some(req => meal.includes(req));
+        });
+    }
+
+    // 9. Apply sort
+    const sortEl = document.getElementById('sortSelect');
+    if (sortEl) {
+        const sortValue = sortEl.value;
+        switch (sortValue) {
+            case 'price_low':
+                hotels.sort((a, b) => (a.price || 0) - (b.price || 0));
+                break;
+            case 'price_high':
+                hotels.sort((a, b) => (b.price || 0) - (a.price || 0));
+                break;
+            case 'rating':
+                hotels.sort((a, b) => (b.guest_rating || 0) - (a.guest_rating || 0));
+                break;
+            case 'stars':
+                hotels.sort((a, b) => (b.star_rating || 0) - (a.star_rating || 0));
+                break;
+        }
     }
 
     filteredHotels = hotels;
-    document.getElementById('resultsCount').textContent = hotels.length;
+    const countEl = document.getElementById('resultsCount');
+    if (countEl) countEl.textContent = hotels.length;
 
     currentPage = 1;
     renderHotels(hotels.slice(0, hotelsPerPage));
 
     // Show/hide load more
-    if (hotels.length > hotelsPerPage) {
-        document.getElementById('loadMore').classList.remove('hidden');
-    } else {
-        document.getElementById('loadMore').classList.add('hidden');
+    const loadMoreDiv = document.getElementById('loadMore');
+    if (loadMoreDiv) {
+        if (hotels.length > hotelsPerPage) {
+            loadMoreDiv.classList.remove('hidden');
+        } else {
+            loadMoreDiv.classList.add('hidden');
+        }
     }
 }
 
@@ -671,7 +808,7 @@ function setupEventListeners() {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            // Filter by tab if needed
+            applyFiltersAndSort();
         });
     });
 
@@ -746,12 +883,29 @@ function setupEventListeners() {
         });
     });
 
-    // Filters
+    // Popular filters
+    document.querySelectorAll('.filter-checkbox input').forEach(input => {
+        input.addEventListener('change', applyFiltersAndSort);
+    });
+
+    // Amenity filters
+    document.querySelectorAll('.amenity-filter input').forEach(input => {
+        input.addEventListener('change', applyFiltersAndSort);
+    });
+
+    // Meal plan filters
+    document.querySelectorAll('.meal-filter input').forEach(input => {
+        input.addEventListener('change', applyFiltersAndSort);
+    });
+
+    // Price range
     document.getElementById('priceRange')?.addEventListener('input', (e) => {
-        document.getElementById('maxPriceLabel').textContent = `₹${parseInt(e.target.value).toLocaleString()}+`;
+        const label = document.getElementById('maxPriceLabel');
+        if (label) label.textContent = `₹${parseInt(e.target.value).toLocaleString()}+`;
     });
     document.getElementById('priceRange')?.addEventListener('change', applyFiltersAndSort);
 
+    // Star filters
     document.querySelectorAll('.star-filter input').forEach(input => {
         input.addEventListener('change', applyFiltersAndSort);
     });
@@ -813,22 +967,33 @@ function loadMoreHotels() {
  * Clear all filters
  */
 function clearFilters() {
-    document.getElementById('priceRange').value = 50000;
-    document.getElementById('maxPriceLabel').textContent = '₹50,000+';
+    const priceEl = document.getElementById('priceRange');
+    if (priceEl) priceEl.value = 50000;
+    const maxPriceLabel = document.getElementById('maxPriceLabel');
+    if (maxPriceLabel) maxPriceLabel.textContent = '₹50,000+';
 
     document.querySelectorAll('.star-filter input').forEach(input => {
         input.checked = parseInt(input.value) >= 3;
     });
 
-    document.querySelectorAll('.amenity-filter input, .meal-filter input').forEach(input => {
+    document.querySelectorAll('.filter-checkbox input, .amenity-filter input, .meal-filter input').forEach(input => {
         input.checked = false;
     });
 
-    document.getElementById('sortSelect').value = 'recommended';
-    document.getElementById('propertySearch').value = '';
+    document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        if (i === 0) b.classList.add('active');
+        else b.classList.remove('active');
+    });
+
+    const sortEl = document.getElementById('sortSelect');
+    if (sortEl) sortEl.value = 'recommended';
+    
+    const propSearch = document.getElementById('propertySearch');
+    if (propSearch) propSearch.value = '';
 
     document.querySelectorAll('.rating-pill').forEach((p, i) => {
-        p.classList.toggle('active', i === 1);
+        if (i === 0) p.classList.add('active');
+        else p.classList.remove('active');
     });
 
     applyFiltersAndSort();

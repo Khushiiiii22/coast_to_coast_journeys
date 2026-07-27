@@ -343,11 +343,104 @@ def debug_ip_check():
 # SUGGEST/AUTOCOMPLETE ENDPOINT
 # ==========================================
 
+FALLBACK_EXPEDIA_SUGGESTIONS = [
+    # DUBAI
+    {"id": 6053839, "name": "Dubai Emirate", "type": "region", "country": "United Arab Emirates", "state": ""},
+    {"id": 6053839, "name": "Dubai", "type": "city", "country": "United Arab Emirates", "state": "Dubai Emirate"},
+    {"id": 6053839, "name": "Dubai Marina", "type": "neighborhood", "city": "Dubai", "state": "Dubai Emirate", "country": "United Arab Emirates"},
+    {"id": 6053839, "name": "Palm Jumeirah", "type": "neighborhood", "city": "Dubai", "state": "Dubai Emirate", "country": "United Arab Emirates"},
+    {"id": 6053839, "name": "Dubai Mall", "type": "landmark", "city": "Dubai", "state": "Dubai Emirate", "country": "United Arab Emirates"},
+    {"id": 6053839, "name": "City Centre Deira", "type": "neighborhood", "city": "Dubai", "state": "Dubai Emirate", "country": "United Arab Emirates"},
+    {"id": 6053839, "name": "Dubai (DXB - All Airports)", "type": "airport", "iata": "DXB", "country": "United Arab Emirates"},
+
+    # MIAMI
+    {"id": 2348, "name": "Miami", "type": "city", "country": "United States", "state": "Florida"},
+    {"id": 2348, "name": "Miami Beach", "type": "city", "country": "United States", "state": "Florida"},
+    {"id": 2348, "name": "South Beach", "type": "neighborhood", "city": "Miami Beach", "state": "Florida", "country": "United States"},
+    {"id": 2348, "name": "Downtown Miami", "type": "neighborhood", "city": "Miami", "state": "Florida", "country": "United States"},
+    {"id": 2348, "name": "Miami International Airport (MIA)", "type": "airport", "iata": "MIA", "country": "United States"},
+
+    # LOS ANGELES
+    {"id": 2011, "name": "Los Angeles", "type": "city", "country": "United States", "state": "California"},
+    {"id": 2011, "name": "Hollywood", "type": "neighborhood", "city": "Los Angeles", "state": "California", "country": "United States"},
+    {"id": 2011, "name": "Santa Monica", "type": "city", "country": "United States", "state": "California"},
+    {"id": 2011, "name": "Beverly Hills", "type": "city", "country": "United States", "state": "California"},
+    {"id": 2011, "name": "Los Angeles Intl. Airport (LAX)", "type": "airport", "iata": "LAX", "country": "United States"},
+
+    # NEW YORK
+    {"id": 2621, "name": "New York", "type": "city", "country": "United States", "state": "New York"},
+    {"id": 2621, "name": "Manhattan", "type": "neighborhood", "city": "New York", "state": "New York", "country": "United States"},
+    {"id": 2621, "name": "Times Square", "type": "landmark", "city": "New York", "state": "New York", "country": "United States"},
+    {"id": 2621, "name": "Brooklyn", "type": "neighborhood", "city": "New York", "state": "New York", "country": "United States"},
+    {"id": 2621, "name": "John F. Kennedy Intl. (JFK)", "type": "airport", "iata": "JFK", "country": "United States"},
+
+    # PARIS
+    {"id": 2734, "name": "Paris", "type": "city", "country": "France", "state": "Ile-de-France"},
+    {"id": 2734, "name": "Eiffel Tower - Champs-Elysees", "type": "neighborhood", "city": "Paris", "state": "Ile-de-France", "country": "France"},
+    {"id": 2734, "name": "Le Marais", "type": "neighborhood", "city": "Paris", "state": "Ile-de-France", "country": "France"},
+    {"id": 2734, "name": "Charles de Gaulle Airport (CDG)", "type": "airport", "iata": "CDG", "country": "France"},
+
+    # LONDON
+    {"id": 2114, "name": "London", "type": "city", "country": "United Kingdom", "state": "England"},
+    {"id": 2114, "name": "Central London", "type": "neighborhood", "city": "London", "state": "England", "country": "United Kingdom"},
+    {"id": 2114, "name": "City of London", "type": "neighborhood", "city": "London", "state": "England", "country": "United Kingdom"},
+    {"id": 2114, "name": "London Heathrow Airport (LHR)", "type": "airport", "iata": "LHR", "country": "United Kingdom"},
+
+    # GOA
+    {"id": 6308855, "name": "Goa", "type": "region", "country": "India", "state": "Goa"},
+    {"id": 6308855, "name": "North Goa", "type": "neighborhood", "city": "Goa", "state": "Goa", "country": "India"},
+    {"id": 6308855, "name": "South Goa", "type": "neighborhood", "city": "Goa", "state": "Goa", "country": "India"},
+
+    # BANGALORE / BENGALURU
+    {"id": 6308822, "name": "Bangalore", "type": "city", "country": "India", "state": "Karnataka"},
+    {"id": 6308822, "name": "Bengaluru", "type": "city", "country": "India", "state": "Karnataka"},
+    {"id": 6308822, "name": "Whitefield", "type": "neighborhood", "city": "Bangalore", "state": "Karnataka", "country": "India"},
+    {"id": 6308822, "name": "Indiranagar", "type": "neighborhood", "city": "Bangalore", "state": "Karnataka", "country": "India"},
+    {"id": 6308822, "name": "Kempegowda Intl. Airport (BLR)", "type": "airport", "iata": "BLR", "country": "India"},
+
+    # MUMBAI
+    {"id": 6308862, "name": "Mumbai", "type": "city", "country": "India", "state": "Maharashtra"},
+    {"id": 6308862, "name": "South Mumbai", "type": "neighborhood", "city": "Mumbai", "state": "Maharashtra", "country": "India"},
+    {"id": 6308862, "name": "Bandra West", "type": "neighborhood", "city": "Mumbai", "state": "Maharashtra", "country": "India"},
+    {"id": 6308862, "name": "Chhatrapati Shivaji Maharaj Airport (BOM)", "type": "airport", "iata": "BOM", "country": "India"},
+
+    # DELHI
+    {"id": 6308838, "name": "New Delhi", "type": "city", "country": "India", "state": "Delhi"},
+    {"id": 6308838, "name": "Connaught Place", "type": "neighborhood", "city": "New Delhi", "state": "Delhi", "country": "India"},
+    {"id": 6308838, "name": "Indira Gandhi Intl. Airport (DEL)", "type": "airport", "iata": "DEL", "country": "India"},
+
+    # SINGAPORE
+    {"id": 6054984, "name": "Singapore", "type": "city", "country": "Singapore", "state": ""},
+    {"id": 6054984, "name": "Marina Bay", "type": "neighborhood", "city": "Singapore", "state": "", "country": "Singapore"},
+    {"id": 6054984, "name": "Orchard Road", "type": "neighborhood", "city": "Singapore", "state": "", "country": "Singapore"},
+    {"id": 6054984, "name": "Changi Airport (SIN)", "type": "airport", "iata": "SIN", "country": "Singapore"},
+
+    # TOKYO
+    {"id": 6055073, "name": "Tokyo", "type": "city", "country": "Japan", "state": "Tokyo Prefecture"},
+    {"id": 6055073, "name": "Shinjuku", "type": "neighborhood", "city": "Tokyo", "state": "Tokyo Prefecture", "country": "Japan"},
+
+    # BANGKOK
+    {"id": 6055058, "name": "Bangkok", "type": "city", "country": "Thailand", "state": "Bangkok"},
+    {"id": 6055058, "name": "Sukhumvit", "type": "neighborhood", "city": "Bangkok", "state": "Bangkok", "country": "Thailand"},
+
+    # BALI
+    {"id": 6046530, "name": "Bali", "type": "region", "country": "Indonesia", "state": "Bali"},
+    {"id": 6046530, "name": "Ubud", "type": "city", "country": "Indonesia", "state": "Bali"},
+
+    # LAS VEGAS
+    {"id": 2008, "name": "Las Vegas", "type": "city", "country": "United States", "state": "Nevada"},
+
+    # ORLANDO
+    {"id": 2642, "name": "Orlando", "type": "city", "country": "United States", "state": "Florida"},
+
+    # SAN FRANCISCO
+    {"id": 3012, "name": "San Francisco", "type": "city", "country": "United States", "state": "California"},
+]
+
 @hotel_bp.route('/suggest', methods=['GET', 'POST'])
 def suggest():
     """
     Search suggestions for hotels and regions (autocomplete)
-    
     Can handle GET (query params) or POST (JSON body)
     """
     try:
@@ -362,12 +455,35 @@ def suggest():
         if len(query) < 2:
             return jsonify({'success': False, 'error': 'Query must be at least 2 characters'}), 400
         
+        # Try RateHawk multicomplete first
         result = etg_service.suggest(
             query=query,
             language=language
         )
         
-        return jsonify(result)
+        if result.get('success') and result.get('data'):
+            inner = result['data'].get('data', result['data'])
+            if inner and (inner.get('regions') or inner.get('hotels')):
+                return jsonify(result)
+
+        # Fallback to rich Expedia-style static suggestions
+        q = query.lower().strip()
+        matched = []
+        for item in FALLBACK_EXPEDIA_SUGGESTIONS:
+            search_str = f"{item['name']} {item.get('country','')} {item.get('state','')} {item.get('city','')}".lower()
+            if q in search_str:
+                matched.append(item)
+
+        return jsonify({
+            "success": True,
+            "data": {
+                "data": {
+                    "regions": matched[:10],
+                    "hotels": []
+                }
+            },
+            "source": "fallback_expedia"
+        })
     
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -584,6 +700,13 @@ def search_by_destination():
             'name': 'Los Angeles', 
             'region_id': 2011
         },
+        'miami': {'latitude': 25.7617, 'longitude': -80.1918, 'region_id': 2348, 'name': 'Miami'},
+        'miami, florida': {'latitude': 25.7617, 'longitude': -80.1918, 'region_id': 2348, 'name': 'Miami'},
+        'miami beach': {'latitude': 25.7907, 'longitude': -80.1300, 'region_id': 2348, 'name': 'Miami Beach'},
+        'orlando': {'latitude': 28.5383, 'longitude': -81.3792, 'region_id': 2642, 'name': 'Orlando'},
+        'las vegas': {'latitude': 36.1699, 'longitude': -115.1398, 'region_id': 2008, 'name': 'Las Vegas'},
+        'chicago': {'latitude': 41.8781, 'longitude': -87.6298, 'region_id': 1146, 'name': 'Chicago'},
+        'san francisco': {'latitude': 37.7749, 'longitude': -122.4194, 'region_id': 3012, 'name': 'San Francisco'},
         'london': {'latitude': 51.5074, 'longitude': -0.1278, 'region_id': 2114, 'name': 'London'},
         'new york': {'latitude': 40.7128, 'longitude': -74.0060, 'region_id': 2621, 'name': 'New York'},
         'singapore': {'latitude': 1.3521, 'longitude': 103.8198, 'region_id': 6054984, 'name': 'Singapore'},
@@ -631,10 +754,10 @@ def search_by_destination():
         # ──────────────────────────────────────────────────────────
         hotel_ids_to_search = None
         
-        # 1a. Fast-path lookup for popular destinations (only for verified valid ETG region IDs)
+        # 1a. Fast-path lookup for popular destinations (skip multicomplete API round-trip)
         if not region_id and destination in POPULAR_DESTINATIONS:
             pop = POPULAR_DESTINATIONS[destination]
-            if pop.get('region_id') and not str(pop.get('region_id')).startswith('6308'):
+            if pop.get('region_id'):
                 region_id = pop.get('region_id')
                 location_name = pop.get('name', location_name)
                 print(f"⚡ Fast-path resolved popular destination '{destination}' -> region_id {region_id}")
@@ -1276,6 +1399,14 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
         # Create full location string
         location_str = f"{city}, {country}" if city and country else static_info.get('address') or location_name.title()
 
+        # Combine amenities from rates AND static data for comprehensive filtering
+        rate_amenities = extract_amenities(rates)
+        static_amenities = extract_amenities_from_static(static_info) if static_info else []
+        combined_amenities = list(dict.fromkeys(rate_amenities + static_amenities))[:8]  # dedupe, max 8
+
+        # Extract cancellation info from best rate for hotel-level filtering
+        best_rate_cancellation = format_cancellation_policies(best_rate) if best_rate else {'is_free_cancellation': False}
+
         # Create transformed hotel object
         transformed_hotel = {
             'id': hotel_id or f'hotel_{idx}',
@@ -1296,7 +1427,7 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
             'price': round(lowest_price, 2),
             'original_price': round(lowest_price * 1.25, 2),
             'currency': target_currency, # Use real currency from API
-            'amenities': extract_amenities(rates) or static_info.get('amenities', []),
+            'amenities': combined_amenities,
             'meal_plan': best_meal_value,
             'meal_info': {
                 'value': best_meal_value,
@@ -1304,6 +1435,8 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
                 'has_breakfast': has_breakfast,
                 'no_child_meal': no_child_meal
             },
+            'cancellation_info': best_rate_cancellation,
+            'property_payable_fees': best_rate_fees,
             'static_data': static_info,
             'discount': 15,
             'rates': transform_rates(rates, target_currency, conversion_rates, MEAL_TYPE_DISPLAY, room_groups, nights, hotel_images=all_images, markup_rule=markup_rule)
@@ -1556,6 +1689,52 @@ def extract_amenities(rates):
         amenities = {'wifi', 'parking'}
     
     return list(amenities)[:4]
+
+
+def extract_amenities_from_static(static_info):
+    """Extract amenities from RateHawk hotel static data (amenity_groups, facts, etc.)"""
+    amenities = set()
+    if not static_info or not isinstance(static_info, dict):
+        return []
+    
+    # Check amenity_groups (RateHawk static data structure)
+    for group in static_info.get('amenity_groups', []):
+        for amenity in group.get('amenities', []):
+            name = amenity.lower() if isinstance(amenity, str) else ''
+            if 'wifi' in name or 'internet' in name or 'wi-fi' in name:
+                amenities.add('wifi')
+            if 'pool' in name or 'swimming' in name:
+                amenities.add('pool')
+            if 'park' in name or 'valet' in name:
+                amenities.add('parking')
+            if 'spa' in name or 'sauna' in name or 'massage' in name:
+                amenities.add('spa')
+            if 'restaurant' in name or 'dining' in name or 'bar' in name:
+                amenities.add('restaurant')
+            if 'gym' in name or 'fitness' in name:
+                amenities.add('gym')
+            if 'air' in name and 'condition' in name:
+                amenities.add('ac')
+    
+    # Also check flat amenities list if present
+    for amenity in static_info.get('amenities', []):
+        name = amenity.lower() if isinstance(amenity, str) else ''
+        if 'wifi' in name or 'internet' in name:
+            amenities.add('wifi')
+        if 'pool' in name:
+            amenities.add('pool')
+        if 'parking' in name:
+            amenities.add('parking')
+        if 'spa' in name:
+            amenities.add('spa')
+        if 'restaurant' in name:
+            amenities.add('restaurant')
+        if 'gym' in name or 'fitness' in name:
+            amenities.add('gym')
+        if 'air conditioning' in name:
+            amenities.add('ac')
+
+    return list(amenities)
 
 
 def get_google_photo_url(photo_reference: str, max_width: int = 600) -> str:

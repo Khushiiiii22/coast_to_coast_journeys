@@ -58,11 +58,20 @@ const HotelAPI = {
             }
 
             if (!data) {
-                const text = await response.text();
                 try {
-                    data = JSON.parse(text);
+                    const text = await response.text();
+                    if (text && text.trim()) {
+                        try {
+                            data = JSON.parse(text);
+                        } catch (e) {
+                            data = { success: false, error: text };
+                        }
+                    }
                 } catch (e) {
-                    throw new Error('Received invalid response from server. Please try again.');
+                    console.error('Error reading response body:', e);
+                }
+                if (!data) {
+                    data = { success: false, error: 'Empty response received from search server.' };
                 }
             }
 
