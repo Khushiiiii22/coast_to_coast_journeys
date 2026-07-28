@@ -46,6 +46,15 @@ async function initHotelDetails() {
 
     // Display hotel data
     if (currentHotel) {
+        if (currentHotel.id && currentHotel.id.startsWith('mock_')) {
+            const demoData = generateDemoHotelDetails(currentHotel.id);
+            if (!currentHotel.rates || currentHotel.rates.length === 0) {
+                currentHotel.rates = demoData.rates;
+            }
+            if (!currentHotel.images || currentHotel.images.length <= 1) {
+                currentHotel.images = [currentHotel.images[0], ...demoData.images.slice(1)];
+            }
+        }
         displayHotelDetails(currentHotel);
 
         // For Google Places hotels, fetch additional photos for gallery is completely disabled
