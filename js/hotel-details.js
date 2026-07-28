@@ -276,7 +276,7 @@ function displayHotelDetails(hotel) {
     const rating = parseFloat(hotel.guest_rating || 4).toFixed(1);
     document.getElementById('hotelRating').textContent = rating;
     document.getElementById('ratingLabel').textContent = getRatingLabel(rating);
-    document.getElementById('reviewCount').textContent = `See all ${hotel.review_count || 0} reviews`;
+    document.getElementById('reviewCount').textContent = `Based on ${hotel.review_count || 0} reviews`;
 
     // Description
     document.getElementById('hotelDescription').textContent = hotel.description || 'Experience exceptional hospitality at this wonderful property.';

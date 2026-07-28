@@ -580,22 +580,22 @@
                 <!-- Hotels List -->
                 <div class="results-content">
                     <div class="results-header">
-                        <h2>Hotels in Mumbai</h2>
-                        <p class="results-count">Showing 156 properties</p>
+                        <h2>5 Star Hotels in United States</h2>
+                        <p class="results-count">Showing Top 5 Luxury Properties</p>
                     </div>
 
                     <div class="hotel-results-grid">
                         <!-- Hotel 1 -->
                         <div class="hotel-card">
                             <div class="hotel-image">
-                                <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                                    alt="The Taj Mahal Palace">
+                                <img src="https://images.unsplash.com/photo-1578683010236-d716f9a3f461?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                    alt="The Plaza">
                             </div>
                             <div class="hotel-info">
-                                <h3 class="hotel-name">The Taj Mahal Palace</h3>
+                                <h3 class="hotel-name">The Plaza</h3>
                                 <div class="hotel-location">
                                     <i class="fas fa-map-marker-alt"></i>
-                                    Colaba, Mumbai • 2.5 km from center
+                                    New York City, NY • 0.5 km from center
                                 </div>
                                 <div class="hotel-stars">
                                     <i class="fas fa-star"></i>
@@ -615,7 +615,7 @@
                             <div class="hotel-price-section">
                                 <div>
                                     <p class="price-label">Starting from</p>
-                                    <p class="price-amount">$15,999</p>
+                                    <p class="price-amount">$850</p>
                                     <p class="price-per-night">per night</p>
                                 </div>
                                 <button class="btn btn-accent">View Details</button>
@@ -625,14 +625,14 @@
                         <!-- Hotel 2 -->
                         <div class="hotel-card">
                             <div class="hotel-image">
-                                <img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                                    alt="The Oberoi Mumbai">
+                                <img src="https://images.unsplash.com/photo-1582719508461-905c673771fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                    alt="The Beverly Hills Hotel">
                             </div>
                             <div class="hotel-info">
-                                <h3 class="hotel-name">The Oberoi Mumbai</h3>
+                                <h3 class="hotel-name">The Beverly Hills Hotel</h3>
                                 <div class="hotel-location">
                                     <i class="fas fa-map-marker-alt"></i>
-                                    Nariman Point, Mumbai • 1.2 km from center
+                                    Los Angeles, CA • 2.0 km from center
                                 </div>
                                 <div class="hotel-stars">
                                     <i class="fas fa-star"></i>
@@ -663,13 +663,13 @@
                         <div class="hotel-card">
                             <div class="hotel-image">
                                 <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                                    alt="ITC Grand Central">
+                                    alt="Bellagio Hotel & Casino">
                             </div>
                             <div class="hotel-info">
-                                <h3 class="hotel-name">ITC Grand Central</h3>
+                                <h3 class="hotel-name">Bellagio Hotel & Casino</h3>
                                 <div class="hotel-location">
                                     <i class="fas fa-map-marker-alt"></i>
-                                    Parel, Mumbai • 4.8 km from center
+                                    Las Vegas, NV • 0.1 km from center
                                 </div>
                                 <div class="hotel-stars">
                                     <i class="fas fa-star"></i>
@@ -700,13 +700,13 @@
                         <div class="hotel-card">
                             <div class="hotel-image">
                                 <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                                    alt="Trident Nariman Point">
+                                    alt="Four Seasons Resort Maui">
                             </div>
                             <div class="hotel-info">
-                                <h3 class="hotel-name">Trident Nariman Point</h3>
+                                <h3 class="hotel-name">Four Seasons Resort Maui</h3>
                                 <div class="hotel-location">
                                     <i class="fas fa-map-marker-alt"></i>
-                                    Nariman Point, Mumbai • 0.8 km from center
+                                    Wailea, HI • Beachfront
                                 </div>
                                 <div class="hotel-stars">
                                     <i class="fas fa-star"></i>
@@ -740,10 +740,10 @@
                                     alt="JW Marriott Mumbai">
                             </div>
                             <div class="hotel-info">
-                                <h3 class="hotel-name">JW Marriott Mumbai Juhu</h3>
+                                <h3 class="hotel-name">The Waldorf Astoria</h3>
                                 <div class="hotel-location">
                                     <i class="fas fa-map-marker-alt"></i>
-                                    Juhu Beach, Mumbai • 12 km from center
+                                    Chicago, IL • 1.2 km from center
                                 </div>
                                 <div class="hotel-stars">
                                     <i class="fas fa-star"></i>
@@ -763,7 +763,7 @@
                             <div class="hotel-price-section">
                                 <div>
                                     <p class="price-label">Starting from</p>
-                                    <p class="price-amount">$14,500</p>
+                                    <p class="price-amount">$1,200</p>
                                     <p class="price-per-night">per night</p>
                                 </div>
                                 <button class="btn btn-accent">View Details</button>
@@ -1781,7 +1781,7 @@
             btn.addEventListener('click', function () {
                 const card = this.closest('.hotel-card');
                 const hotelName = card.querySelector('.hotel-name').textContent;
-                const destination = document.getElementById('destination').value || 'Mumbai';
+                const destination = document.getElementById('destination').value || 'New York';
                 const checkIn = document.getElementById('checkIn').value;
                 const checkOut = document.getElementById('checkOut').value;
 
