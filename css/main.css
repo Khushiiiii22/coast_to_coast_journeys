@@ -1139,8 +1139,8 @@ h6 {
 .footer {
     position: relative;
     overflow: hidden;
-    background: #0f172a; /* Sleek dark premium background */
-    color: #f8fafc; /* Light text for dark background */
+    background: #f8f9fa; /* Very light cream/gray */
+    color: var(--text-primary);
     padding: 64px 0 24px;
 }
 
@@ -1194,13 +1194,13 @@ h6 {
     font-family: 'Broadway', sans-serif;
     font-size: 1.25rem;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--primary);
 }
 
 .footer-brand p {
     font-size: 0.95rem; /* Slightly larger */
     line-height: 1.7;
-    color: #94a3b8; /* Light gray for visibility */
+    color: var(--text-secondary); /* Dark gray for visibility */
     font-weight: 400; 
 }
 
@@ -1209,7 +1209,7 @@ h6 {
     align-items: center;
     gap: 8px;
     font-size: 0.95rem; /* Slightly larger */
-    color: #cbd5e1; /* Lighter for better contrast */
+    color: var(--primary); /* Blue accent */
     font-style: italic;
     font-weight: 500; 
 }
@@ -1217,7 +1217,7 @@ h6 {
 .footer-col h4 {
     font-size: 1rem;
     font-weight: 600;
-    color: #ffffff; /* White */
+    color: var(--text-primary); /* Dark */
     margin-bottom: 20px;
 }
 
@@ -1229,9 +1229,9 @@ h6 {
 
 .footer-col a {
     font-size: 0.95rem;
-    color: #94a3b8; /* Light gray */
+    color: var(--primary); /* Blue links like Expedia */
     transition: var(--transition);
-    font-weight: 400;
+    font-weight: 500;
 }
 
 .footer-col a:hover {
@@ -1241,10 +1241,10 @@ h6 {
 
 .footer-bottom {
     padding-top: 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid #e2e8f0; /* Light gray border */
     text-align: center;
     font-size: 0.9rem; /* Slightly larger */
-    color: #64748b; /* Muted gray */
+    color: var(--text-secondary); /* Dark gray */
     font-weight: 400;
 }
 
