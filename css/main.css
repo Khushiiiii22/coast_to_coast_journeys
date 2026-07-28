@@ -1139,7 +1139,7 @@ h6 {
 .footer {
     position: relative;
     overflow: hidden;
-    background: #f8f9fa; /* Very light cream/gray */
+    background: #fcf9f2; /* Warm cream color */
     color: var(--text-primary);
     padding: 64px 0 24px;
 }
