@@ -22,35 +22,41 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
     <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="../css/main.css?v=5.1">
-    <link rel="stylesheet" href="../css/hotel-booking.css?v=5.1">
+    <link rel="stylesheet" href="../css/main.css?v=6.0">
+    <link rel="stylesheet" href="../css/hotel-booking.css?v=6.0">
 
     <!-- Location Autocomplete Styles -->
     <style>
         
-        /* Hotel Card Grid Styles */
+        /* Hotel Card Grid Styles (Horizontal Scroll like Expedia) */
         .hotel-results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
+            display: flex;
+            overflow-x: auto;
+            gap: 16px;
             margin-top: 20px;
+            padding-bottom: 20px;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none; /* Hide scrollbar */
+        }
+        .hotel-results-grid::-webkit-scrollbar {
+            display: none;
         }
         .hotel-card {
+            flex: 0 0 280px;
+            scroll-snap-align: start;
             background: #fff;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             border: 1px solid #e2e8f0;
             display: flex;
             flex-direction: column;
-            transition: transform 0.2s;
+            transition: box-shadow 0.2s; /* No movement on hover */
         }
         .hotel-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* Simple shadow only */
         }
         .hotel-image {
-            height: 180px;
+            height: 160px; /* Slightly smaller image */
             width: 100%;
             overflow: hidden;
         }
