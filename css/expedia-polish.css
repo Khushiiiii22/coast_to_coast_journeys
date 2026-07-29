@@ -266,3 +266,74 @@
         font-size: 1.25rem !important;
     }
 }
+
+/* NEW EXPEDIA STYLE HIGHLIGHTS AND SPA */
+.expedia-highlights-section {
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid var(--gray-200);
+}
+.highlights-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.highlights-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+.highlight-icon-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e0f2fe; /* light blue */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.highlight-icon-circle i {
+    font-size: 1.1rem;
+    color: #1e3a8a; /* dark blue */
+}
+.highlight-text strong {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--expedia-black);
+    margin-bottom: 4px;
+}
+.highlight-text p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.expedia-featured-amenity {
+    margin-top: 40px;
+    padding-top: 32px;
+    border-top: 1px solid var(--gray-200);
+}
+.featured-amenity-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+.featured-amenity-image img {
+    width: 100%;
+    border-radius: 12px;
+    object-fit: cover;
+    height: 250px;
+}
+.guest-quote {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--gray-200);
+}
