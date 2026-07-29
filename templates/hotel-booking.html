@@ -28,22 +28,15 @@
     <!-- Location Autocomplete Styles -->
     <style>
         
-        /* Hotel Card Grid Styles (Horizontal Scroll like Expedia) */
+        /* Hotel Card Grid Styles (Grid layout without hover movement) */
         .hotel-results-grid {
-            display: flex;
-            overflow-x: auto;
-            gap: 16px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
             margin-top: 20px;
             padding-bottom: 20px;
-            scroll-snap-type: x mandatory;
-            scrollbar-width: none; /* Hide scrollbar */
-        }
-        .hotel-results-grid::-webkit-scrollbar {
-            display: none;
         }
         .hotel-card {
-            flex: 0 0 280px;
-            scroll-snap-align: start;
             background: #fff;
             border-radius: 12px;
             overflow: hidden;
@@ -56,7 +49,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* Simple shadow only */
         }
         .hotel-image {
-            height: 160px; /* Slightly smaller image */
+            height: 180px; 
             width: 100%;
             overflow: hidden;
         }
@@ -623,7 +616,7 @@
                         <!-- Hotel 2 -->
                         <div class="hotel-card">
                             <div class="hotel-image">
-                                <img src="https://images.unsplash.com/photo-1582719508461-905c673771fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                                <img src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=600&q=80"
                                     alt="The Beverly Hills Hotel">
                             </div>
                             <div class="hotel-info">
