@@ -3088,9 +3088,6 @@ def make_rg_signature(rg_ext):
         return ""
     
     # Priority keys for structural matching (ETG v3)
-    # We must include all structural classifiers to ensure distinct room groups
-    # (like River View vs City View, or Balcony vs No Balcony) do not overwrite each other.
-    # Exclude 'rg' (dynamic hash) and 'floor' (often missing in dynamic rates).
     STABLE_KEYS = {
         'balcony', 'bathroom', 'bedding', 'bedrooms', 'capacity', 
         'club', 'family', 'quality', 'class', 'sex', 'view'
@@ -3098,13 +3095,14 @@ def make_rg_signature(rg_ext):
     
     parts = []
     for k in sorted(rg_ext.keys()):
-        if k in STABLE_KEYS and rg_ext[k] is not None:
+        # Ignore 0, None, or empty string because dynamic rates often omit falsy/unspecified keys
+        if k in STABLE_KEYS and rg_ext[k] not in (None, 0, '0', ''):
             parts.append(f"{k}:{rg_ext[k]}")
             
     # If no stable keys found, fall back to all keys (original behavior)
     if not parts:
         for k in sorted(rg_ext.keys()):
-            if k != 'rg' and k != 'floor' and rg_ext[k] is not None:
+            if k != 'rg' and k != 'floor' and rg_ext[k] not in (None, 0, '0', ''):
                 parts.append(f"{k}:{rg_ext[k]}")
                 
     return ",".join(parts)

@@ -1,13 +1,9 @@
-import sys
 import json
-sys.path.append('/Users/khushi22/coasttocoast/backend')
-from services.supabase_service import SupabaseService
 
-supabase = SupabaseService()
-# fetch any one hotel
-res = supabase.supabase.table('hotel_static_data').select('hotel_data').limit(1).execute()
-if res.data and len(res.data) > 0:
-    hotel = res.data[0]['hotel_data']
+with open('/Users/khushi22/coasttocoast/backend/data/hotel_static_cache.json', 'r') as f:
+    cache = json.load(f)
+
+for hotel_id, hotel in list(cache.items())[:1]:
     rooms = hotel.get('room_groups', [])
     print(f"Found {len(rooms)} room groups.")
     for i, rg in enumerate(rooms[:2]):
@@ -26,6 +22,3 @@ if res.data and len(res.data) > 0:
             print(f"images list len: {len(images)}")
             if images:
                 print(f"First image type: {type(images[0])}")
-        
-else:
-    print("No data found")
