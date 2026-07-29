@@ -3206,11 +3206,24 @@ def enrich_rate_with_room_data(rate: dict, room_groups: dict, hotel_images: list
     # Try Exact Match on 'rg' key
     room_data = room_groups.get(rg_key, {}) if rg_key is not None else {}
     
-    # Fallback: Try match on structural signature of rg_ext features
+    # Fallback 1: Try match on structural signature of rg_ext features
     if not room_data:
         sig = make_rg_signature(rg_ext)
         if sig:
             room_data = room_groups.get(sig, {})
+            
+    # Fallback 2: Try match on room name
+    if not room_data:
+        rate_room_name = rate.get('room_name', '').lower().strip()
+        if not rate_room_name:
+            rate_room_name = rate.get('room_data_trans', {}).get('main_room_type', '').lower().strip()
+            
+        if rate_room_name:
+            for rg_val, rg_data_copy in room_groups.items():
+                static_name = rg_data_copy.get('name', '').lower().strip()
+                if static_name and (static_name in rate_room_name or rate_room_name in static_name):
+                    room_data = rg_data_copy
+                    break
 
     if room_data:
         # Safely extract and process image URLs (handles both strings and dicts from ETG API)
