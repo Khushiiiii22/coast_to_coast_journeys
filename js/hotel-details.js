@@ -1560,8 +1560,6 @@ function createRateCard(rate, index, customBadge = null) {
     const popularityBadge = customBadge || (index < popularityBadges.length ? popularityBadges[index] : '');
     const badgeClass = index === 0 ? 'popular' : (index === 1 ? 'upgrade' : 'value');
 
-    // Store rate data on card for showRoomDetails to read
-    try { card.dataset.rateJson = JSON.stringify(rate); } catch (e) { }
 
     // Room static data
     const roomStatic = rate.room_static || {};
@@ -1578,9 +1576,27 @@ function createRateCard(rate, index, customBadge = null) {
         nameHash = nameHash & nameHash;
     }
     
-    if ((roomImages.length === 0 || roomStatic.matched === false || roomStatic.image_source === 'hotel_fallback') && hotelImages && hotelImages.length > 0) {
-        const offset = Math.abs(nameHash) % hotelImages.length;
-        roomImages = [...hotelImages.slice(offset), ...hotelImages.slice(0, offset)].slice(0, 5);
+    if (roomImages.length === 0 || roomStatic.matched === false || roomStatic.image_source === 'hotel_fallback') {
+        // Fallback exclusively to generic room images (never hotel exterior/lobby) to ensure room galleries only show rooms
+        const genericRoomImages = [
+            'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600',
+            'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600',
+            'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=600',
+            'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600',
+            'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600'
+        ];
+        const offset = Math.abs(nameHash) % genericRoomImages.length;
+        roomImages = [...genericRoomImages.slice(offset), ...genericRoomImages.slice(0, offset)].slice(0, 5);
+        
+        // Also update the underlying rate object so the modal sees the exact same fallback images
+        if (!rate.room_static) rate.room_static = {};
+        rate.room_static.images = roomImages;
+    }
+    
+    // Hard cap at 5 images for the room gallery
+    if (roomImages.length > 5) {
+        roomImages = roomImages.slice(0, 5);
+        if (rate.room_static) rate.room_static.images = roomImages;
     }
 
     // Get room type config if available
@@ -1613,6 +1629,9 @@ function createRateCard(rate, index, customBadge = null) {
             <span class="room-image-count"><i class="fas fa-camera"></i> ${imageCount}</span>
         </div>
     `;
+
+    // Store rate data on card for showRoomDetails to read (after modifications)
+    try { card.dataset.rateJson = JSON.stringify(rate); } catch (e) { }
 
     // Features grid - use room type config view if available
     const viewType = roomTypeConfig.viewType || getViewType(roomName);
@@ -1870,6 +1889,10 @@ function showRoomDetails(rateIndex) {
         } else {
             roomImages = ['https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800'];
         }
+    }
+    
+    if (roomImages.length > 5) {
+        roomImages = roomImages.slice(0, 5);
     }
 
     currentRoomModalImages = roomImages;
