@@ -270,8 +270,11 @@
     padding: 1.5rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     height: fit-content;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
     position: sticky;
-    top: 100px;
+    top: 80px;
+    align-self: start;
 }
 
 .filters-header {

@@ -43,6 +43,39 @@
       gtag('js', new Date());
       gtag('config', 'AW-XXXXXXXXXX');
     </script>
+    <!-- Expedia Spacing Overrides -->
+    <style>
+        /* Tighten space below navbar */
+        .hotel-results-main {
+            padding-top: 90px !important; /* Adjust based on navbar height, typically ~80px */
+        }
+        
+        /* Search bar spacing */
+        .results-top-bar {
+            padding-top: 10px !important;
+            padding-bottom: 10px !important;
+            margin-bottom: 0 !important;
+        }
+        
+        /* Tabs spacing */
+        .tab-navigation {
+            padding-top: 10px !important;
+            padding-bottom: 0 !important;
+            margin-bottom: 0 !important;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .tabs-container {
+            margin-bottom: -1px; /* To overlap the border */
+        }
+        
+        /* Results grid spacing */
+        .results-section {
+            padding-top: 24px !important;
+            background: #f8fafc;
+        }
+    </style>
 </head>
 
 <body class="hotel-results-page">
@@ -99,8 +132,8 @@
 
     <!-- Main Content -->
     <main class="hotel-results-main">
-        <!-- Breadcrumb -->
-        <nav class="breadcrumb-nav">
+        <!-- Breadcrumb (Hidden to match Expedia) -->
+        <nav class="breadcrumb-nav" style="display: none;">
             <div class="container">
                 <a href="index.html">Home</a>
                 <i class="fas fa-chevron-right separator"></i>
