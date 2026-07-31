@@ -260,7 +260,10 @@ function displayHotelDetails(hotel) {
     document.title = `${hotel.name} | Coast To Coast Journeys`;
 
     // Store images for gallery
-    hotelImages = hotel.images || [hotel.image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800'];
+    let rawImages = hotel.images || (hotel.image ? [hotel.image] : []);
+    hotelImages = rawImages.length > 0 
+        ? rawImages.map(img => typeof img === 'string' ? img.replace('{size}', '1024x768') : img)
+        : ['https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800'];
 
     // Photo Gallery Grid (Expedia Style)
     displayPhotoGallery(hotelImages);
@@ -1563,7 +1566,8 @@ function createRateCard(rate, index, customBadge = null) {
 
     // Room static data
     const roomStatic = rate.room_static || {};
-    let roomImages = roomStatic.images || [];
+    let roomImagesRaw = roomStatic.images || [];
+    let roomImages = roomImagesRaw.map(img => typeof img === 'string' ? img.replace('{size}', '1024x768') : img);
 
     // Fallback to distinct overall hotel photos from ETG API if room images are empty
     const roomName = rate.room_name || roomStatic.room_name || 'Standard Room';

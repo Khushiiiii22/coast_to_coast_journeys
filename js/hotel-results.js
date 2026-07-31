@@ -297,9 +297,9 @@ function createHotelCardHorizontal(hotel) {
     let images = [];
 
     if (hotel.images && Array.isArray(hotel.images) && hotel.images.length > 0) {
-        images = hotel.images;
+        images = hotel.images.map(img => typeof img === 'string' ? img.replace('{size}', '1024x768') : img);
     } else if (hotel.image) {
-        images = [hotel.image];
+        images = [typeof hotel.image === 'string' ? hotel.image.replace('{size}', '1024x768') : hotel.image];
     } else {
         images = [fallbackImage];
     }
@@ -569,18 +569,19 @@ function initFullMap() {
     // Add markers for all hotels
     allHotels.forEach(hotel => {
         if (hotel.latitude && hotel.longitude) {
-            const price = HotelUtils.formatPrice(hotel.price || 0, hotel.currency);
-
+            let popupImg = hotel.image || hotel.images?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=200';
+            if (typeof popupImg === 'string') popupImg = popupImg.replace('{size}', '1024x768');
+            
             const marker = L.marker([hotel.latitude, hotel.longitude])
                 .bindPopup(`
                     <div class="hotel-map-popup">
-                        <div class="popup-image" style="background-image: url('${hotel.image || hotel.images?.[0]}')"></div>
+                        <div class="popup-image" style="background-image: url('${popupImg}')"></div>
                         <div class="popup-title">${hotel.name}</div>
                         <div class="popup-rating">
                             <span class="rating-badge">${hotel.guest_rating || '4.0'}</span>
                             <span>${getRatingText(hotel.guest_rating)}</span>
                         </div>
-                        <div class="popup-price">${price} / night</div>
+                        <div class="popup-price">${HotelUtils.formatPrice(hotel.price || hotel.rates?.[0]?.price || 0, hotel.currency)} / night</div>
                     </div>
                 `)
                 .addTo(map);

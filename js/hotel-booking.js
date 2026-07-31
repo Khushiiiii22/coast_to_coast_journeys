@@ -44,7 +44,8 @@ function initBookingPage() {
  */
 function populateBookingSummary() {
     // Hotel info
-    const hotelImage = hotel.images?.[0] || hotel.image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=200';
+    let hotelImage = hotel.images?.[0] || hotel.image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=200';
+    if (typeof hotelImage === 'string') hotelImage = hotelImage.replace('{size}', '1024x768');
     document.getElementById('summaryHotelImage').style.backgroundImage = `url('${hotelImage}')`;
     document.getElementById('summaryHotelStars').innerHTML = HotelUtils.generateStars(hotel.star_rating || 4);
     document.getElementById('summaryHotelName').textContent = hotel.name;
