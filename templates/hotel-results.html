@@ -22,9 +22,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="../css/main.css?v=6.0">
-    <link rel="stylesheet" href="../css/main.css?v=6.0">
-    <link rel="stylesheet" href="../css/hotel-booking.css?v=6.0">
+    <link rel="stylesheet" href="../css/main.css?v=6.2">
+    <link rel="stylesheet" href="../css/hotel-booking.css?v=6.2">
 
     <!-- Google tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
@@ -47,7 +46,7 @@
     <style>
         /* Tighten space below navbar */
         .hotel-results-main {
-            padding-top: 90px !important; /* Adjust based on navbar height, typically ~80px */
+            padding-top: 0px !important; /* Body already has 80px padding for the navbar */
         }
         
         /* Search bar spacing */
@@ -72,8 +71,24 @@
         
         /* Results grid spacing */
         .results-section {
-            padding-top: 24px !important;
+            padding-top: 16px !important;
             background: #f8fafc;
+            overflow: visible !important;
+        }
+        
+        .results-layout {
+            overflow: visible !important;
+        }
+
+        /* Force Sticky Sidebar */
+        .filters-sidebar {
+            position: -webkit-sticky !important;
+            position: sticky !important;
+            top: 100px !important; /* Below navbar + small gap */
+            max-height: calc(100vh - 120px) !important;
+            overflow-y: auto !important;
+            align-self: flex-start !important;
+            display: block !important;
         }
     </style>
 </head>
