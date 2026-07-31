@@ -22,25 +22,26 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="../css/main.css?v=6.2">
-    <link rel="stylesheet" href="../css/hotel-booking.css?v=6.2">
+    <link rel="stylesheet" href="../css/main.css?v=6.0">
+    <link rel="stylesheet" href="../css/main.css?v=6.0">
+    <link rel="stylesheet" href="../css/hotel-booking.css?v=6.0">
 
     <!-- Google tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-XXXXXXXXXX');
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX');
     </script>
 
     <!-- Google tag (gtag.js) - Google Ads: AW-XXXXXXXXXX -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'AW-XXXXXXXXXX');
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'AW-XXXXXXXXXX');
     </script>
     <!-- Expedia Spacing Overrides -->
     <style>
@@ -73,22 +74,6 @@
         .results-section {
             padding-top: 16px !important;
             background: #f8fafc;
-            overflow: visible !important;
-        }
-        
-        .results-layout {
-            overflow: visible !important;
-        }
-
-        /* Force Sticky Sidebar */
-        .filters-sidebar {
-            position: -webkit-sticky !important;
-            position: sticky !important;
-            top: 100px !important; /* Below navbar + small gap */
-            max-height: calc(100vh - 120px) !important;
-            overflow-y: auto !important;
-            align-self: flex-start !important;
-            display: block !important;
         }
     </style>
 </head>
@@ -111,7 +96,7 @@
                         <li><a href="index.html" class="nav-link">Home</a></li>
                         <li><a href="flight-booking.html" class="nav-link">Flights</a></li>
                         <li><a href="hotel-booking.html" class="nav-link active">Hotels</a></li>
-                                                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
                     </ul>
 
                     <div class="nav-actions">
@@ -228,6 +213,27 @@
         <!-- Results Section -->
         <section class="results-section">
             <div class="container">
+                <!-- Full width Results Header -->
+                <div class="results-header-bar">
+                    <div class="results-info">
+                        <span id="resultsCount">0</span> properties
+                        <button class="how-sort-works" id="howSortWorks">
+                            <i class="fas fa-info-circle"></i> How our sort order works
+                        </button>
+                    </div>
+                    <div class="sort-dropdown">
+                        <label>Sort by:</label>
+                        <select id="sortSelect">
+                            <option value="recommended">Recommended for you</option>
+                            <option value="price_low">Price: Low to High</option>
+                            <option value="price_high">Price: High to Low</option>
+                            <option value="rating">Guest Rating</option>
+                            <option value="stars">Star Rating</option>
+                            <option value="distance">Distance from center</option>
+                        </select>
+                    </div>
+                </div>
+                
                 <div class="results-layout">
                     <!-- Filters Sidebar - Expedia Style -->
                     <aside class="filters-sidebar" id="filtersSidebar">
@@ -419,30 +425,11 @@
 
                     <!-- Results Grid -->
                     <div class="results-content">
-                        <!-- Results Header -->
-                        <div class="results-header-bar">
-                            <div class="results-info">
-                                <span id="resultsCount">0</span> properties
-                                <button class="how-sort-works" id="howSortWorks">
-                                    <i class="fas fa-info-circle"></i> How our sort order works
-                                </button>
-                            </div>
-                            <div class="sort-dropdown">
-                                <label>Sort by:</label>
-                                <select id="sortSelect">
-                                    <option value="recommended">Recommended for you</option>
-                                    <option value="price_low">Price: Low to High</option>
-                                    <option value="price_high">Price: High to Low</option>
-                                    <option value="rating">Guest Rating</option>
-                                    <option value="stars">Star Rating</option>
-                                    <option value="distance">Distance from center</option>
-                                </select>
-                            </div>
-                        </div>
 
                         <!-- Loading State with Skeleton Cards -->
                         <div class="loading-state" id="loadingState">
-                            <div id="loadingMessage" style="text-align: center; margin-bottom: 20px; font-size: 1.1rem; color: #3b82f6; font-weight: 600;">
+                            <div id="loadingMessage"
+                                style="text-align: center; margin-bottom: 20px; font-size: 1.1rem; color: #3b82f6; font-weight: 600;">
                                 Searching for the best available hotels...
                             </div>
                             <div class="skeleton-cards">
@@ -641,7 +628,8 @@
                     <button type="button" id="modifyAddRoomBtn" class="btn btn-outline-primary btn-sm" style="flex: 1;">
                         <i class="fas fa-plus"></i> Add Room
                     </button>
-                    <button type="button" id="modifyRemoveRoomBtn" class="btn btn-outline-danger btn-sm" style="flex: 1; display: none;">
+                    <button type="button" id="modifyRemoveRoomBtn" class="btn btn-outline-danger btn-sm"
+                        style="flex: 1; display: none;">
                         <i class="fas fa-minus"></i> Remove Room
                     </button>
                 </div>
@@ -690,7 +678,7 @@
     <!-- Footer -->
     <footer class="footer">
         <!-- Footer Video Background -->
-        
+
         <div class="footer-overlay"></div>
 
         <div class="container">
@@ -811,8 +799,7 @@
                     style="display: flex; gap: 10px; max-width: 480px; margin: 0 auto; flex-wrap: wrap; justify-content: center;">
                     <input type="email" placeholder="Enter your email" required
                         style="flex: 1; min-width: 220px; padding: 12px 18px; border: 1px solid #cbd5e1; border-radius: 10px; background: #ffffff; color: #1e293b; font-size: 0.95rem; outline: none; transition: border-color 0.2s; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);"
-                        onfocus="this.style.borderColor='#60a5fa'"
-                        onblur="this.style.borderColor='#cbd5e1'">
+                        onfocus="this.style.borderColor='#60a5fa'" onblur="this.style.borderColor='#cbd5e1'">
                     <button type="submit"
                         style="padding: 12px 28px; background: linear-gradient(135deg, #056cb9, #034b85); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; white-space: nowrap;"
                         onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 15px rgba(5,108,185,0.4)'"
@@ -853,7 +840,7 @@
 
     <script src="../js/hotel-api.js?v=6.0"></script>
     <script src="../js/hotel-results.js?v=6"></script>
-    
+
 </body>
 
 </html>
