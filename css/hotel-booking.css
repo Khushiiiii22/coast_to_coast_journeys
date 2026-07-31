@@ -246,17 +246,13 @@
 
 .results-layout {
     display: grid;
-    grid-template-columns: 280px 1fr 200px;
+    grid-template-columns: 280px 1fr;
     gap: 2rem;
 }
 
 @media (max-width: 992px) {
     .results-layout {
         grid-template-columns: 1fr;
-    }
-    
-    .right-banners-sidebar {
-        display: none !important;
     }
 
     .filters-sidebar {
