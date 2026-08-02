@@ -602,6 +602,24 @@ function displayAmenities(amenities) {
 
     if (!grid) return;
 
+    // Check for Spa to conditionally show the Featured Spa section
+    const spaSection = document.getElementById('featuredSpaAmenity');
+    if (spaSection) {
+        // Handle both simple array of strings and complex objects
+        const hasSpa = amenities.some(a => {
+            if (typeof a === 'string') return a.toLowerCase().includes('spa');
+            if (a && a.id) return a.id.toLowerCase().includes('spa') || a.id.toLowerCase() === 'health_spa';
+            if (a && a.name) return a.name.toLowerCase().includes('spa');
+            return false;
+        });
+        
+        if (hasSpa) {
+            spaSection.style.display = 'block';
+        } else {
+            spaSection.style.display = 'none';
+        }
+    }
+
     grid.innerHTML = '';
     amenities.slice(0, 8).forEach(a => {
         const data = amenityData[a] || { icon: 'fa-check', label: a };
