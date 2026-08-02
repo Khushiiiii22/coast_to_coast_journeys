@@ -271,17 +271,16 @@
     flex-direction: column;
     gap: 20px;
     padding-top: 24px;
+    position: sticky;
+    top: 24px;
+    height: fit-content;
 }
 
 .floating-banners img {
     width: 100%;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    position: sticky;
 }
-
-.floating-banners img:nth-child(1) { top: 24px; }
-.floating-banners img:nth-child(2) { top: 340px; }
 
 @media (max-width: 1600px) {
     .floating-banners {
