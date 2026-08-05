@@ -104,12 +104,15 @@
 
 html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
 }
 
 body {
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     color: var(--text-primary);
     line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
     background: var(--white);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -3540,14 +3543,57 @@ input:disabled+.date-display-content {
 
     .search-row {
         flex-direction: column !important;
-        gap: 15px !important;
+        gap: 12px !important;
         align-items: stretch !important;
-        /* Fix the right-pushed alignment */
     }
 
     .form-field-improved {
         width: 100% !important;
         flex: none !important;
+    }
+
+    .form-field-improved input[type="date"] {
+        width: 100% !important;
+        min-height: 48px !important;
+        padding: 12px 14px !important;
+        border: 2px solid var(--gray-200, #e9ecef) !important;
+        border-radius: 8px !important;
+        font-size: 0.95rem !important;
+        background-color: #fff !important;
+        color: var(--text-primary, #212529) !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        box-sizing: border-box !important;
+    }
+
+    .form-field-improved.date-field {
+        width: 100% !important;
+    }
+
+    .form-field-improved input[type="text"],
+    .form-field-improved select {
+        width: 100% !important;
+        min-height: 48px !important;
+        padding: 12px 14px !important;
+        border: 2px solid var(--gray-200, #e9ecef) !important;
+        border-radius: 8px !important;
+        font-size: 0.95rem !important;
+        box-sizing: border-box !important;
+    }
+
+    .travelers-dropdown {
+        min-height: 48px !important;
+        padding: 12px 14px !important;
+        border: 2px solid var(--gray-200, #e9ecef) !important;
+        border-radius: 8px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        box-sizing: border-box !important;
+    }
+
+    .nationality-select {
+        min-height: 48px !important;
     }
 
     .swap-cities-btn {
@@ -4336,20 +4382,58 @@ body {
 /* ===== Mobile Responsive Fixes for Theme Updates ===== */
 @media (max-width: 768px) {
     .hero {
-        padding: 100px 0 40px; /* Reduce padding so search box is visible */
+        padding: 110px 0 40px; /* Ensure hero text not cropped behind header */
     }
     
     .hero-video-bg, .footer-video-bg {
-        /* display: none !important; Removed to allow videos on mobile */
         pointer-events: none;
     }
     
     .hero::before {
-        opacity: 0.7; /* Make the fallback background image more visible */
+        opacity: 0.7;
     }
     
     .search-box {
-        padding: 20px;
+        padding: 18px;
+        border-radius: 16px;
+        margin: 0 8px;
+        width: calc(100% - 16px);
+        box-sizing: border-box;
+    }
+
+    .search-box .search-tabs {
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+    }
+
+    .search-box .search-tab {
+        padding: 8px 16px;
+        font-size: 0.88rem;
+    }
+
+    .btn-search-main,
+    .btn-search,
+    .btn-search-improved {
+        width: 100% !important;
+        padding: 14px !important;
+        margin-top: 8px !important;
+        border-radius: 10px !important;
+        font-size: 1rem !important;
+    }
+
+    /* Container padding for mobile */
+    .container {
+        padding: 0 16px !important;
+    }
+
+    /* Footer mobile compact */
+    .footer-grid {
+        gap: 24px !important;
+    }
+
+    .footer-partners .partners-logos {
+        gap: 16px !important;
+        justify-content: center !important;
     }
 }
 

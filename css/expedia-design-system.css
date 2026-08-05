@@ -598,7 +598,16 @@ body, p, span, div {
     }
     
     .amenities-modal-content {
-        width: 95%;2xl) 0;
+        width: 95%;
+    }
+}
+
+/* ============================================
+   Policies Section
+   ============================================ */
+
+.policies-section {
+    padding: var(--spacing-2xl) 0;
     border-bottom: 1px solid var(--expedia-border-gray);
 }
 
@@ -613,20 +622,10 @@ body, p, span, div {
 
 .policies-section h2 i {
     color: var(--expedia-action-blue);
-    font-size: 1.25rem
-
-.policies-section h2 {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    margin-bottom: var(--spacing-md);
+    font-size: 1.25rem;
 }
 
-.policies-section h2 i {
-    color: var(--expedia-brilliant-blue);
-}
-
-.policies-intro 
+.policies-intro {
     font-size: 1.05rem;
     color: var(--expedia-medium-gray);
     margin-bottom: var(--spacing-xl);
