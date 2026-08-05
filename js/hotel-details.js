@@ -607,9 +607,10 @@ function displayAmenities(amenities) {
     if (spaSection) {
         // Handle both simple array of strings and complex objects
         const hasSpa = amenities.some(a => {
-            if (typeof a === 'string') return a.toLowerCase().includes('spa');
-            if (a && a.id) return a.id.toLowerCase().includes('spa') || a.id.toLowerCase() === 'health_spa';
-            if (a && a.name) return a.name.toLowerCase().includes('spa');
+            const spaRegex = /\bspa\b/i;
+            if (typeof a === 'string') return spaRegex.test(a);
+            if (a && a.id) return spaRegex.test(a.id) || a.id.toLowerCase() === 'health_spa';
+            if (a && a.name) return spaRegex.test(a.name);
             return false;
         });
         
@@ -1300,178 +1301,17 @@ function displayRates(rates) {
     // Sort by price ascending
     rates.sort((a, b) => (a.price || 0) - (b.price || 0));
 
-    // ── CASE A: multiple real ETG rates ────────────────────────────────────
-    // Each rate already has its own API-sourced cancellation_info — render directly.
-    if (rates.length > 1) {
-        const ratesToShow = rates.slice(0, 20);
-        const badges = ['Cheapest Option', 'Best Seller', 'Great Value', 'Popular', 'Upgrade your stay', 'Limited Availability'];
-        ratesToShow.forEach((rate, index) => {
-            const badge = index === 0 ? 'Cheapest Option' : badges[index % badges.length];
-            const card = createRateCard(rate, index, badge);
-            container.appendChild(card);
-        });
-        updateMainCancellationPolicy(rates);
-        return;
-    }
-
-    // ── CASE B: single/demo rate → expand into realistic tiers ────────────
-    const baseRate = rates[0];
-    const basePrice = baseRate.price || 5000;
-
-    // Free-cancellation deadline: 72 hours before check-in (industry standard)
-    const freeCancelDate = new Date();
-    if (searchParams?.checkin) {
-        freeCancelDate.setTime(new Date(searchParams.checkin + 'T14:00:00').getTime() - 72 * 60 * 60 * 1000);
-    } else {
-        freeCancelDate.setDate(freeCancelDate.getDate() + 3);
-    }
-    const freeCancelStr = freeCancelDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) + ', ' + freeCancelDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) + ' (UTC+0)';
-
-    function makeFreeCancelInfo(deadline) {
-        return {
-            is_free_cancellation: true,
-            free_cancellation_formatted: { datetime: deadline },
-            description: `Free cancellation until ${deadline}. After this time, the full charge applies.`,
-            policies: [
-                { type: 'free', penalty_amount: '0' },
-                { type: 'full_penalty', start_formatted: deadline, penalty_amount: String(basePrice * (searchParams ? Math.max(1, Math.round((new Date(searchParams.checkout) - new Date(searchParams.checkin)) / 86400000)) : 1)) }
-            ]
-        };
-    }
-
-    function makeNonRefundInfo() {
-        return {
-            is_free_cancellation: false,
-            free_cancellation_formatted: null,
-            description: 'This rate is non-refundable. No refund will be provided for cancellations or no-shows.',
-            policies: [{ type: 'full_penalty', start_formatted: 'At time of booking', penalty_amount: '100%' }]
-        };
-    }
-
-    // Room tier definitions — mirrors what real hotels publish
-    const roomTiers = [
-        {
-            name: 'Standard Room',
-            badge: 'Non-refundable deal',
-            priceMultiplier: 1.0,
-            mealPlan: 'nomeal',
-            mealDisplay: 'Room Only (No Meals)',
-            cancellable: false,   // ← cheapest non-refundable option (like Booking.com)
-            bedType: '1 Queen Bed',
-            size: 250,
-            sleeps: 2,
-            viewType: null
-        },
-        {
-            name: 'Standard Room',
-            badge: 'Free cancellation',
-            priceMultiplier: 1.08,
-            mealPlan: 'nomeal',
-            mealDisplay: 'Room Only (No Meals)',
-            cancellable: true,    // ← slightly pricier, fully refundable
-            bedType: '1 Queen Bed',
-            size: 250,
-            sleeps: 2,
-            viewType: null
-        },
-        {
-            name: 'Deluxe Room',
-            badge: 'Popular · Free cancellation',
-            priceMultiplier: 1.3,
-            mealPlan: 'breakfast',
-            mealDisplay: 'Breakfast Included',
-            cancellable: true,
-            bedType: '1 King Bed',
-            size: 320,
-            sleeps: 2,
-            viewType: 'City view'
-        },
-        {
-            name: 'Superior Room',
-            badge: 'Best seller · Free cancellation',
-            priceMultiplier: 1.5,
-            mealPlan: 'breakfast',
-            mealDisplay: 'Breakfast Included',
-            cancellable: true,
-            bedType: '2 Double Beds',
-            size: 360,
-            sleeps: 3,
-            viewType: 'Garden view'
-        },
-        {
-            name: 'Junior Suite',
-            badge: 'Spacious · Free cancellation',
-            priceMultiplier: 1.85,
-            mealPlan: 'half-board',
-            mealDisplay: 'Half Board (Breakfast + Dinner)',
-            cancellable: true,
-            bedType: '1 King Bed',
-            size: 480,
-            sleeps: 3,
-            viewType: 'Premium view'
-        },
-        {
-            name: 'Executive Suite',
-            badge: 'Luxury · All inclusive',
-            priceMultiplier: 2.5,
-            mealPlan: 'all-inclusive',
-            mealDisplay: 'All Inclusive',
-            cancellable: true,
-            bedType: '1 King Bed + Living Area',
-            size: 650,
-            sleeps: 4,
-            viewType: 'Panoramic view'
-        }
-    ];
-
-    const roomImages = {
-        'Standard Room': ['https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600'],
-        'Deluxe Room': ['https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600'],
-        'Superior Room': ['https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600'],
-        'Junior Suite': ['https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600'],
-        'Executive Suite': ['https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=600']
-    };
-
-    roomTiers.forEach((tier, i) => {
-        const tierPrice = Math.round(basePrice * tier.priceMultiplier);
-        const cancelInfo = tier.cancellable ? makeFreeCancelInfo(freeCancelStr) : makeNonRefundInfo();
-
-        const modifiedRate = {
-            ...baseRate,
-            room_name: tier.name,
-            price: tierPrice,
-            original_price: Math.round(tierPrice * 1.25),
-            meal: tier.mealPlan,
-            meal_plan: tier.mealPlan,
-            meal_info: {
-                value: tier.mealPlan,
-                display_name: tier.mealDisplay,
-                has_breakfast: tier.mealPlan !== 'nomeal',
-                no_child_meal: false,
-                is_fixed_count: false
-            },
-            cancellation_info: cancelInfo,
-            room_static: {
-                matched: true,
-                images: roomImages[tier.name] || roomImages['Standard Room']
-            },
-            _roomTypeConfig: {
-                ...tier,
-                features: ['hasWifi', 'hasAC',
-                    tier.priceMultiplier >= 1.3 ? 'hasMiniFridge' : null,
-                    tier.viewType ? 'hasView' : null
-                ].filter(Boolean)
-            }
-        };
-
-        const card = createRateCard(modifiedRate, i, tier.badge);
+    // ── Render Real ETG Rates Natively ────────────────────────────────────
+    const ratesToShow = rates.slice(0, 20);
+    const badges = ['Cheapest Option', 'Best Seller', 'Great Value', 'Popular', 'Upgrade your stay', 'Limited Availability'];
+    
+    ratesToShow.forEach((rate, index) => {
+        const badge = index === 0 ? 'Cheapest Option' : badges[index % badges.length];
+        const card = createRateCard(rate, index, badge);
         container.appendChild(card);
     });
-
-    // Update the Policies tab cancellation summary using the (virtual) refundable rates
-    updateMainCancellationPolicy(roomTiers.filter(t => t.cancellable).map(t => ({
-        cancellation_info: makeFreeCancelInfo(freeCancelStr)
-    })));
+    
+    updateMainCancellationPolicy(rates);
 }
 
 /**
