@@ -823,7 +823,7 @@
                         if (searchString.includes('india') || searchString.includes('mumbai') || searchString.includes('delhi') || searchString.includes('goa') || searchString.includes('bangalore') || searchString.includes('chennai') || searchString.includes('jaipur')) return false;
                         if (h.image && h.image.includes('maps.google')) return false;
                         return true;
-                    });
+                    }).slice(0, 6);
                     
                     if (viewed.length === 0) return;
 

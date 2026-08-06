@@ -347,7 +347,7 @@ function displayHotelDetails(hotel) {
     // Track recently viewed hotel
     try {
         const RV_KEY = 'ctc_recently_viewed';
-        const MAX_VIEWED = 6;
+        const MAX_VIEWED = 15; // Store 15 to ensure we can display 6 valid ones after filtering
         const viewed = JSON.parse(localStorage.getItem(RV_KEY) || '[]');
         const hotelEntry = {
             id: hotel.id || hotel.hid,
