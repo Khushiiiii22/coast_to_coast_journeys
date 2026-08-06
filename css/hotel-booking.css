@@ -336,7 +336,7 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-@media (max-width: 1600px) {
+@media (max-width: 1600px) and (min-width: 993px) {
     .floating-banners {
         display: none;
     }
@@ -351,6 +351,35 @@
 @media (max-width: 992px) {
     .results-layout {
         grid-template-columns: 1fr;
+    }
+
+    .results-page-wrapper {
+        flex-direction: column;
+    }
+
+    .floating-banners {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 10px 0;
+        position: static;
+        gap: 12px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .floating-banners::-webkit-scrollbar {
+        display: none;
+    }
+
+    .floating-banners img {
+        width: 280px;
+        flex-shrink: 0;
+    }
+
+    .floating-banners.right-banners {
+        order: 3;
     }
 
     .filters-sidebar {
@@ -3549,6 +3578,25 @@
     .search-block {
         flex: 1 1 100% !important;
         margin-bottom: 4px;
+    }
+
+    .search-bar-container-expedia {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+    }
+
+    .search-block-expedia {
+        width: 100% !important;
+        flex: none !important;
+        box-sizing: border-box;
+    }
+
+    .btn-edit-search {
+        width: 100% !important;
+        border-radius: 8px !important;
+        margin-top: 4px !important;
+        height: 48px !important;
     }
 }
 
