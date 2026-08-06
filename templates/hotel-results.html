@@ -220,6 +220,16 @@
                     </button>
 
                 </div>
+                
+                <!-- Mobile specific search summary (Expedia style) -->
+                <div class="mobile-search-summary-expedia" onclick="openModifyModal()" style="display: none; border: 1px solid #9ca3af; border-radius: 12px; padding: 12px 16px; background: white; cursor: pointer; position: relative; margin: 0 auto; width: 100%;">
+                    <div style="font-size: 1.05rem; color: #111827; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 30px;" id="mobileSearchDestination">Destination</div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 0.85rem; color: #4b5563;">
+                        <span id="mobileSearchDates">Dates</span>
+                        <span id="mobileSearchTravelers">Travelers</span>
+                    </div>
+                    <i class="fas fa-pencil-alt" style="position: absolute; right: 16px; top: 16px; color: #4b5563;"></i>
+                </div>
             </div>
         </section>
 
@@ -228,13 +238,13 @@
             <div class="container">
                 <div class="tabs-container">
                     <button class="tab-btn active" data-tab="all">
-                        <i class="fas fa-building"></i> All stays
+                        <i class="fas fa-building tab-icon"></i> Any
                     </button>
                     <button class="tab-btn" data-tab="hotels">
-                        <i class="fas fa-hotel"></i> Hotels
+                        <i class="fas fa-hotel tab-icon"></i> Hotels
                     </button>
                     <button class="tab-btn" data-tab="homes">
-                        <i class="fas fa-home"></i> Homes
+                        <i class="fas fa-home tab-icon"></i> Homes
                     </button>
                 </div>
             </div>

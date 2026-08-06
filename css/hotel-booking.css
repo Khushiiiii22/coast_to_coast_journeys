@@ -3507,18 +3507,36 @@
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         -ms-overflow-style: none;
-        padding-bottom: 2px;
+        padding-bottom: 0;
+        border-bottom: 1px solid #e2e8f0;
     }
 
     .tabs-container::-webkit-scrollbar {
         display: none;
     }
 
+    .tab-icon {
+        display: none !important;
+    }
+
     .tab-btn {
-        padding: 0.75rem 1rem;
+        padding: 12px 0 !important;
+        margin: 0 16px !important;
         white-space: nowrap;
         flex-shrink: 0;
-        font-size: 0.88rem;
+        font-size: 0.95rem !important;
+        font-weight: 500 !important;
+        background: transparent !important;
+        border: none !important;
+        border-bottom: 2px solid transparent !important;
+        border-radius: 0 !important;
+        color: #6b7280 !important;
+        box-shadow: none !important;
+    }
+
+    .tab-btn.active {
+        color: #111827 !important;
+        border-bottom: 2px solid #0e64a6 !important;
     }
 
     .results-header-bar {
@@ -3581,22 +3599,11 @@
     }
 
     .search-bar-container-expedia {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 8px !important;
+        display: none !important;
     }
 
-    .search-block-expedia {
-        width: 100% !important;
-        flex: none !important;
-        box-sizing: border-box;
-    }
-
-    .btn-edit-search {
-        width: 100% !important;
-        border-radius: 8px !important;
-        margin-top: 4px !important;
-        height: 48px !important;
+    .mobile-search-summary-expedia {
+        display: block !important;
     }
 }
 
