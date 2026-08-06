@@ -1302,7 +1302,19 @@ function displayRates(rates) {
     rates.sort((a, b) => (a.price || 0) - (b.price || 0));
 
     // ── Render Real ETG Rates Natively ────────────────────────────────────
-    const ratesToShow = rates.slice(0, 20);
+    // Deduplicate rates by room name so we don't show the exact same suite multiple times
+    const uniqueRates = [];
+    const seenRooms = new Set();
+    
+    for (const rate of rates) {
+        const roomName = (rate.room_name || 'Standard Room').toLowerCase().trim();
+        if (!seenRooms.has(roomName)) {
+            seenRooms.add(roomName);
+            uniqueRates.push(rate);
+        }
+    }
+
+    const ratesToShow = uniqueRates.slice(0, 12); // Show up to 12 unique room types
     const badges = ['Cheapest Option', 'Best Seller', 'Great Value', 'Popular', 'Upgrade your stay', 'Limited Availability'];
     
     ratesToShow.forEach((rate, index) => {
