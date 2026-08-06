@@ -35,10 +35,35 @@ function generatePropertyHighlights(hotelData) {
     // Location-based highlight
     if (hotelData.address || hotelData.city) {
         const city = extractCity(hotelData);
+        let title = `Prime Location in ${city}`;
+        let description = `Conveniently located near major attractions and landmarks in ${city}`;
+
+        // If the city is unknown or we want to highlight actual attractions, use getAttractionsForHotel if available
+        if (typeof window.getAttractionsForHotel === 'function') {
+            const categories = window.getAttractionsForHotel(hotelData);
+            const allAttractions = [
+                ...(categories.categoryInterest || []),
+                ...(categories.categoryNearby || []),
+                ...(categories.categorySubway || [])
+            ];
+            
+            if (allAttractions.length > 0) {
+                const nearest = allAttractions[0];
+                title = `Steps from ${nearest.name}`;
+                description = `Conveniently located ${nearest.distance || 'nearby'} from ${nearest.name}.`;
+            } else if (city.toLowerCase() === 'unknown location' || city.toLowerCase() === 'the area') {
+                title = 'Prime Location';
+                description = 'Conveniently located near major attractions and landmarks.';
+            }
+        } else if (city.toLowerCase() === 'unknown location' || city.toLowerCase() === 'the area') {
+            title = 'Prime Location';
+            description = 'Conveniently located near major attractions and landmarks.';
+        }
+
         highlights.push({
             icon: 'fa-map-marker-alt',
-            title: `Prime ${city} Location`,
-            description: `Conveniently located near major attractions and landmarks in ${city}`
+            title: title,
+            description: description
         });
     }
 
