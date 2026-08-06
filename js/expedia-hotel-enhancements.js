@@ -170,22 +170,32 @@ function populateAboutSection(hotelData) {
 
     // Generate narrative description
     const name = hotelData.name || 'this property';
-    const city = extractCity(hotelData);
+    let city = extractCity(hotelData);
     const propertyType = hotelData.property_type || 'hotel';
     const starRating = hotelData.star_rating ? `${hotelData.star_rating}-star ` : '';
 
+    let locationPhrase = `located in the heart of ${city}`;
+    let accessPhrase = `in ${city}`;
+    let exploringPhrase = `everything ${city} has to offer`;
+
+    if (city.toLowerCase() === 'unknown location' || city.toLowerCase() === 'the area') {
+        locationPhrase = `in a prime location`;
+        accessPhrase = `in the surrounding area`;
+        exploringPhrase = `everything the area has to offer`;
+    }
+
     const narrative = `
-        <p>Welcome to ${name}, a ${starRating}${propertyType} located in the heart of ${city}. 
+        <p>Welcome to ${name}, a ${starRating}${propertyType} ${locationPhrase}. 
         This property offers a perfect blend of comfort and convenience for both business and leisure travelers.</p>
         
         <p>The hotel features well-appointed rooms and suites, designed with your comfort in mind. 
         Each accommodation includes modern amenities to ensure a pleasant stay.</p>
         
         <p>Guests can enjoy a range of facilities and services during their visit. 
-        The property's prime location provides easy access to major attractions, shopping areas, and dining options in ${city}.</p>
+        The property's prime location provides easy access to major attractions, shopping areas, and dining options ${accessPhrase}.</p>
         
         <p>Whether you're visiting for business or pleasure, ${name} provides an ideal base 
-        for exploring everything ${city} has to offer.</p>
+        for exploring ${exploringPhrase}.</p>
     `;
 
     aboutNarrative.innerHTML = narrative;
