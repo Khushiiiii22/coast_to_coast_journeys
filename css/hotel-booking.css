@@ -2146,7 +2146,7 @@
 .hotel-search-grid {
     display: grid;
     /* Balanced grid for hotel search fields */
-    grid-template-columns: minmax(180px, 2fr) minmax(140px, 1fr) minmax(140px, 1fr) minmax(200px, 1.5fr) minmax(160px, 1.2fr) auto;
+    grid-template-columns: minmax(180px, 2fr) minmax(130px, 1fr) minmax(130px, 1fr) minmax(180px, 1.5fr) minmax(200px, 1.5fr) auto;
     gap: 12px;
     align-items: end;
 }
