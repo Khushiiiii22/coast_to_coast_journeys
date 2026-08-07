@@ -1246,9 +1246,8 @@
 
             // Collect guest data
             const guests = [];
+            const constructedRooms = []; // Construct array exactly as RateHawk and payment.html expect
             
-            // Re-construct rooms data array to match RateHawk format if needed, 
-            // but for simple guest list, just array of {first_name, last_name, is_child, age}
             const roomsData = bookingData.search_params.rooms || [{
                 adults: bookingData.search_params.adults || 2,
                 children: bookingData.search_params.children_ages ? bookingData.search_params.children_ages.length : 0,
@@ -1256,14 +1255,13 @@
             }];
             
             roomsData.forEach((room, roomIndex) => {
+                const roomGuests = [];
                 for (let a = 0; a < (room.adults || 1); a++) {
                     const fname = document.getElementById(`firstName_${roomIndex}_${a}`).value.trim();
                     const lname = document.getElementById(`lastName_${roomIndex}_${a}`).value.trim();
-                    guests.push({
-                        first_name: fname,
-                        last_name: lname,
-                        is_child: false
-                    });
+                    const g = { first_name: fname, last_name: lname, is_child: false };
+                    guests.push(g);
+                    roomGuests.push(g);
                 }
                 
                 const numChildren = room.childAges ? room.childAges.length : (room.children || 0);
@@ -1271,22 +1269,25 @@
                     const fname = document.getElementById(`childFirstName_${roomIndex}_${c}`).value.trim();
                     const lname = document.getElementById(`childLastName_${roomIndex}_${c}`).value.trim();
                     const age = room.childAges && room.childAges[c] !== undefined ? room.childAges[c] : 10;
-                    guests.push({
-                        first_name: fname,
-                        last_name: lname,
-                        is_child: true,
-                        age: age
-                    });
+                    const g = { first_name: fname, last_name: lname, is_child: true, age: age };
+                    guests.push(g);
+                    roomGuests.push(g);
                 }
+                constructedRooms.push({ guests: roomGuests });
             });
 
-            // Save contact info & guests
+            // Save contact info & guests (Legacy format)
             bookingData.contact = {
                 email: email.value.trim(),
                 phone: phone.value.trim(),
                 special_requests: specialRequests,
                 guests: guests
             };
+
+            // Save top-level data for payment.html and API compatibility
+            bookingData.email = email.value.trim();
+            bookingData.phone = phone.value.trim();
+            bookingData.rooms = constructedRooms;
 
             sessionStorage.setItem('ctc_booking_data', JSON.stringify(bookingData));
             localStorage.setItem('ctc_booking_data_backup', JSON.stringify(bookingData));
