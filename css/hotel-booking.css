@@ -375,6 +375,8 @@
 
     .floating-banners img {
         width: 280px;
+        height: 120px;
+        object-fit: cover;
         flex-shrink: 0;
     }
 

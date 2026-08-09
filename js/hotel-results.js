@@ -121,29 +121,35 @@ function updateSearchBar(params) {
     const destinationEl = document.getElementById('searchDestination');
     const datesEl = document.getElementById('searchDates');
     const travelersEl = document.getElementById('searchTravelers');
+    const mobileDestinationEl = document.getElementById('mobileSearchDestination');
+    const mobileDatesEl = document.getElementById('mobileSearchDates');
+    const mobileTravelersEl = document.getElementById('mobileSearchTravelers');
 
-    if (destinationEl) {
-        destinationEl.textContent = params.destination || 'Select destination';
-    }
+    const destinationText = params.destination || 'Select destination';
+    if (destinationEl) destinationEl.textContent = destinationText;
+    if (mobileDestinationEl) mobileDestinationEl.textContent = destinationText;
 
-    if (datesEl && params.checkin && params.checkout) {
+    if (params.checkin && params.checkout) {
+        let datesText = `${params.checkin} - ${params.checkout}`;
         try {
             const checkinDate = parseSafeDate(params.checkin);
             const checkoutDate = parseSafeDate(params.checkout);
             const options = { weekday: 'short', month: 'short', day: 'numeric' };
-            datesEl.textContent = `${checkinDate.toLocaleDateString('en-US', options)} - ${checkoutDate.toLocaleDateString('en-US', options)}`;
-        } catch (e) {
-            datesEl.textContent = `${params.checkin} - ${params.checkout}`;
-        }
+            datesText = `${checkinDate.toLocaleDateString('en-US', options)} - ${checkoutDate.toLocaleDateString('en-US', options)}`;
+        } catch (e) { }
+        
+        if (datesEl) datesEl.textContent = datesText;
+        if (mobileDatesEl) mobileDatesEl.textContent = datesText;
     }
 
-    if (travelersEl) {
-        let roomCount = Array.isArray(params.rooms) ? params.rooms.length : (params.rooms || 1);
-        let adultCount = Array.isArray(params.rooms)
-            ? params.rooms.reduce((sum, r) => sum + (r.adults || 0) + (r.children || r.childAges?.length || 0), 0)
-            : ((params.adults || 2) + (params.children_ages ? params.children_ages.length : 0));
-        travelersEl.textContent = `${adultCount} traveler${adultCount > 1 ? 's' : ''}, ${roomCount} room${roomCount > 1 ? 's' : ''}`;
-    }
+    let roomCount = Array.isArray(params.rooms) ? params.rooms.length : (params.rooms || 1);
+    let adultCount = Array.isArray(params.rooms)
+        ? params.rooms.reduce((sum, r) => sum + (r.adults || 0) + (r.children || r.childAges?.length || 0), 0)
+        : ((params.adults || 2) + (params.children_ages ? params.children_ages.length : 0));
+    const travelersText = `${adultCount} traveler${adultCount > 1 ? 's' : ''}, ${roomCount} room${roomCount > 1 ? 's' : ''}`;
+    
+    if (travelersEl) travelersEl.textContent = travelersText;
+    if (mobileTravelersEl) mobileTravelersEl.textContent = travelersText;
 }
 
 function parseRoomsParam(param) {
