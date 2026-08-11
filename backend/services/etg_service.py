@@ -505,7 +505,9 @@ class ETGApiService:
         currency: str = "USD",
         residency: str = "gb",
         language: str = "en",
-        limit: int = 500
+        limit: int = 500,
+        hotels_limit: int = 250,
+        timeout: int = 25
     ) -> dict:
         """
         Endpoint 11: Search by region
@@ -520,7 +522,9 @@ class ETGApiService:
             "guests": guest_data,
             "region_id": int(region_id),
             "currency": currency.upper() if currency else "USD",
-            "limit": limit
+            "limit": limit,
+            "hotels_limit": hotels_limit,
+            "timeout": timeout
         }
         return self._make_request("/search/serp/region/", data)
     

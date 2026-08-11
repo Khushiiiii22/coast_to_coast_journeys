@@ -299,7 +299,8 @@ function createHotelCardHorizontal(hotel) {
     }
 
     // Ensure we have valid image data with fallbacks
-    const fallbackImage = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80';
+    // Use a neutral placeholder instead of misleading luxury stock photos
+    const fallbackImage = 'https://placehold.co/800x600/f8fafc/64748b?text=No+Photo+Available';
     let images = [];
 
     if (hotel.images && Array.isArray(hotel.images) && hotel.images.length > 0) {
@@ -575,7 +576,7 @@ function initFullMap() {
     // Add markers for all hotels
     allHotels.forEach(hotel => {
         if (hotel.latitude && hotel.longitude) {
-            let popupImg = hotel.image || hotel.images?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=200';
+            let popupImg = hotel.image || hotel.images?.[0] || 'https://placehold.co/400x300/f8fafc/64748b?text=No+Photo';
             if (typeof popupImg === 'string') popupImg = popupImg.replace('{size}', '1024x768');
             
             const marker = L.marker([hotel.latitude, hotel.longitude])

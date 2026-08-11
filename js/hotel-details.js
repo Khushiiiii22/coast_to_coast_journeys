@@ -1456,15 +1456,9 @@ function createRateCard(rate, index, customBadge = null) {
             // Use up to 5 images from the hotel's general photos
             roomImages = window.hotelImages.slice(0, 5);
         } else {
-            const genericRoomImages = [
-                'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600',
-                'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600',
-                'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=600',
-                'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600',
-                'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600'
-            ];
-            const offset = Math.abs(nameHash) % genericRoomImages.length;
-            roomImages = [...genericRoomImages.slice(offset), ...genericRoomImages.slice(0, offset)].slice(0, 5);
+            // No generic misleading stock photos. If there are absolutely no images, 
+            // the UI will handle the empty array or we use a simple transparent placeholder
+            roomImages = [];
         }
         
         // Also update the underlying rate object so the modal sees the exact same fallback images

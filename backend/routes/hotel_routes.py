@@ -534,7 +534,9 @@ def search_by_region():
             checkout=data['checkout'],
             guests=guests,
             currency=data.get('currency', 'USD'),
-            residency=data.get('residency', 'gb')
+            residency=data.get('residency', 'gb'),
+            hotels_limit=250,
+            timeout=25
         )
         
         # Save search to history (async, don't wait)
