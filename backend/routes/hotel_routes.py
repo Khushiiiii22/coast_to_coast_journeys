@@ -2846,6 +2846,11 @@ def get_enriched_hotel_details():
                 # Each static room_group's rg_ext array contains the rg values
                 # that dynamic rates reference via rate['rg_ext']['rg'].
                 rg_ext_list = rg.get('rg_ext') or []
+                
+                # Normalize to list for consistent processing
+                if isinstance(rg_ext_list, dict):
+                    rg_ext_list = [rg_ext_list]
+                    
                 if isinstance(rg_ext_list, list):
                     for rg_ext_entry in rg_ext_list:
                         rg_val = rg_ext_entry.get('rg') if isinstance(rg_ext_entry, dict) else None
@@ -2855,25 +2860,12 @@ def get_enriched_hotel_details():
                             room_groups[rg_val] = rg_data_copy
                         
                         # ETG Certification Fix: Map by structural signature as fallback
-                        sig = make_rg_signature(rg_ext_entry)
-                        if sig:
-                            rg_data_copy = dict(rg_data)
-                            rg_data_copy['rg_key'] = sig
-                            room_groups[sig] = rg_data_copy
-                elif isinstance(rg_ext_list, dict):
-                    # Occasionally rg_ext may arrive as a plain dict
-                    rg_val = rg_ext_list.get('rg')
-                    if rg_val is not None:
-                        rg_data_copy = dict(rg_data)
-                        rg_data_copy['rg_key'] = rg_val
-                        room_groups[rg_val] = rg_data_copy
-                    
-                    # ETG Certification Fix: Map by structural signature as fallback
-                    sig = make_rg_signature(rg_ext_list)
-                    if sig:
-                        rg_data_copy = dict(rg_data)
-                        rg_data_copy['rg_key'] = sig
-                        room_groups[sig] = rg_data_copy
+                        if isinstance(rg_ext_entry, dict):
+                            sig = make_rg_signature(rg_ext_entry)
+                            if sig:
+                                rg_data_copy = dict(rg_data)
+                                rg_data_copy['rg_key'] = sig
+                                room_groups[sig] = rg_data_copy
         
         # 3. Transform and enrich!
         # transform_etg_hotels expects a list of hotels from the search response
@@ -3214,18 +3206,44 @@ def enrich_rate_with_room_data(rate: dict, room_groups: dict, hotel_images: list
         if sig:
             room_data = room_groups.get(sig, {})
             
-    # Fallback 2: Try match on room name
+    # Fallback 2: Try match on room name (robust token matching)
     if not room_data:
         rate_room_name = rate.get('room_name', '').lower().strip()
         if not rate_room_name:
             rate_room_name = rate.get('room_data_trans', {}).get('main_room_type', '').lower().strip()
             
         if rate_room_name:
+            # Clean punctuation and tokenize
+            import re
+            rate_tokens = set(re.findall(r'\b\w+\b', rate_room_name))
+            
+            best_match = None
+            best_score = 0.0
+            
             for rg_val, rg_data_copy in room_groups.items():
                 static_name = rg_data_copy.get('name', '').lower().strip()
-                if static_name and (static_name in rate_room_name or rate_room_name in static_name):
-                    room_data = rg_data_copy
+                if not static_name: continue
+                
+                static_tokens = set(re.findall(r'\b\w+\b', static_name))
+                if not static_tokens or not rate_tokens: continue
+                
+                # Check for exact substring first
+                if static_name in rate_room_name or rate_room_name in static_name:
+                    best_match = rg_data_copy
+                    best_score = 1.0
                     break
+                    
+                # Jaccard similarity
+                intersection = rate_tokens.intersection(static_tokens)
+                union = rate_tokens.union(static_tokens)
+                score = len(intersection) / len(union) if union else 0
+                
+                if score > best_score and score >= 0.3: # Minimum threshold 30% overlap
+                    best_score = score
+                    best_match = rg_data_copy
+                    
+            if best_match:
+                room_data = best_match
 
     if room_data:
         # Safely extract and process image URLs (handles both strings and dicts from ETG API)

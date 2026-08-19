@@ -825,7 +825,8 @@
             // Carousel setup
             window.expCarouselImages = hotel.images || [hotel.image || 'https://via.placeholder.com/800x400?text=Hotel'];
             if (!Array.isArray(window.expCarouselImages)) window.expCarouselImages = [window.expCarouselImages];
-            window.expCarouselImages = window.expCarouselImages.slice(0, 5); // Max 5 images
+            // Limit removed as per client requirement to show all images
+            // window.expCarouselImages = window.expCarouselImages.slice(0, 5);
             window.currentExpSlide = 0;
             
             document.getElementById('expHotelImage').src = window.expCarouselImages[0];
