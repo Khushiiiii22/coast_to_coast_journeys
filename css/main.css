@@ -199,7 +199,7 @@ h6 {
 
 /* === Header === */
 .header {
-    background: var(--white);
+    background: url('../assets/images/IMG-20260812-WA0000.jpg') center/cover no-repeat, var(--white);
     box-shadow: var(--shadow);
     position: fixed;
     top: 0;
