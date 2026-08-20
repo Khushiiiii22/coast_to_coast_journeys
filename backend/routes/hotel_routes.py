@@ -2866,6 +2866,14 @@ def get_enriched_hotel_details():
                                 rg_data_copy = dict(rg_data)
                                 rg_data_copy['rg_key'] = sig
                                 room_groups[sig] = rg_data_copy
+                
+                # CRITICAL FIX: Ensure EVERY room is in room_groups so Jaccard similarity can find it
+                # even if RateHawk omitted the rg_ext mapping for this room!
+                if rg_data.get('name'):
+                    name_key = f"name_fallback_{hash(rg_data['name'])}"
+                    rg_data_copy = dict(rg_data)
+                    rg_data_copy['rg_key'] = name_key
+                    room_groups[name_key] = rg_data_copy
         
         # 3. Transform and enrich!
         # transform_etg_hotels expects a list of hotels from the search response
