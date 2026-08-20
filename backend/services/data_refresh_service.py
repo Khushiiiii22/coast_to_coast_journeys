@@ -3,8 +3,8 @@ C2C Journeys - Data Refresh Service
 Handles scheduled refresh of hotel static data from ETG/RateHawk dumps.
 
 Schedule:
-  - WEEKLY: Full dump via /hotel/dump/ — complete refresh of all hotel data
-  - DAILY:  Incremental dump via /hotel/dump/incremental/ — captures daily changes
+  - WEEKLY: Full dump via /hotel/info/dump/ — complete refresh of all hotel data
+  - DAILY:  Incremental dump via /hotel/info/dump/incremental/ — captures daily changes
 
 This avoids hammering /hotel/info/ for every search and protects RPM limits.
 If a daily incremental dump is missed, the weekly full dump acts as a safety net.
@@ -25,7 +25,7 @@ class DataRefreshService:
     
     def run_full_dump(self, max_hotels: int = 5000) -> dict:
         """
-        Weekly full dump: /hotel/dump/
+        Weekly full dump: /hotel/info/dump/
         Downloads the complete hotel inventory and updates the cache.
         This is the safety net — even if incremental dumps are missed,
         this brings the cache fully up to date.
@@ -52,11 +52,11 @@ class DataRefreshService:
         print(f"🔄 Starting WEEKLY full hotel dump refresh...")
         
         try:
-            # Call ETG /hotel/dump/ endpoint
+            # Call ETG /hotel/info/dump/ endpoint
             result = etg_service.get_hotel_dump(language="en", inventory="all")
             
             if not result.get('success'):
-                error_msg = result.get('error', 'Unknown error from /hotel/dump/')
+                error_msg = result.get('error', 'Unknown error from /hotel/info/dump/')
                 print(f"❌ Full dump failed: {error_msg}")
                 stats['error'] = error_msg
                 return {'success': False, 'error': error_msg, 'stats': stats}
@@ -129,7 +129,7 @@ class DataRefreshService:
     
     def run_incremental_dump(self) -> dict:
         """
-        Daily incremental dump: /hotel/dump/incremental/
+        Daily incremental dump: /hotel/info/dump/incremental/
         Downloads only hotels that changed since the last dump.
         Much faster and lighter than a full dump.
         
@@ -155,7 +155,7 @@ class DataRefreshService:
             result = etg_service.get_hotel_incremental_dump(language="en")
             
             if not result.get('success'):
-                error_msg = result.get('error', 'Unknown error from /hotel/dump/incremental/')
+                error_msg = result.get('error', 'Unknown error from /hotel/info/dump/incremental/')
                 print(f"❌ Incremental dump failed: {error_msg}")
                 stats['error'] = error_msg
                 return {'success': False, 'error': error_msg, 'stats': stats}
@@ -240,8 +240,8 @@ class DataRefreshService:
             'last_full_dump': self._last_full_dump.isoformat() if self._last_full_dump else None,
             'last_incremental_dump': self._last_incremental_dump.isoformat() if self._last_incremental_dump else None,
             'schedule': {
-                'full_dump': 'Weekly (every 7 days) — /hotel/dump/',
-                'incremental_dump': 'Daily — /hotel/dump/incremental/',
+                'full_dump': 'Weekly (every 7 days) — /hotel/info/dump/',
+                'incremental_dump': 'Daily — /hotel/info/dump/incremental/',
                 'note': 'Weekly full dump acts as safety net if daily incremental is missed'
             }
         }

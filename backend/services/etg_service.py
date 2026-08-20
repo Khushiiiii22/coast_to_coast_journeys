@@ -291,21 +291,20 @@ class ETGApiService:
     def get_hotel_dump(self, language: str = "en", inventory: str = "all") -> dict:
         """
         Endpoint 2: Retrieve hotel dump
-        POST /hotel/dump/
+        POST /hotel/info/dump/
         """
         data = {
             "inventory": inventory,
             "language": language
         }
-        return self._make_request("/hotel/dump/", data)
+        return self._make_request("/hotel/info/dump/", data)
     
     def get_hotel_incremental_dump(self, language: str = "en") -> dict:
         """
-        Endpoint 3: Retrieve hotel incremental dump
-        POST /hotel/dump/incremental/
+        POST /hotel/info/dump/incremental/
         """
         data = {"language": language}
-        return self._make_request("/hotel/dump/incremental/", data)
+        return self._make_request("/hotel/info/dump/incremental/", data)
     
     def get_hotel_reviews_dump(self, language: str = "en") -> dict:
         """
