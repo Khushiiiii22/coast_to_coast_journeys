@@ -1459,12 +1459,6 @@ function createRateCard(rate, index, customBadge = null) {
         if (!rate.room_static) rate.room_static = {};
         rate.room_static.images = roomImages;
     }
-    
-    // Hard cap at 5 images for the room gallery
-    if (roomImages.length > 5) {
-        roomImages = roomImages.slice(0, 5);
-        if (rate.room_static) rate.room_static.images = roomImages;
-    }
 
     // Get room type config if available
     const roomTypeConfig = rate._roomTypeConfig || {};
@@ -1484,8 +1478,9 @@ function createRateCard(rate, index, customBadge = null) {
 
     // Room image HTML with carousel
     let roomImageHtml = '';
-    const imageCount = roomImages.length || (hotelImages ? hotelImages.length : 1);
-    const mainImage = roomImages[0] || (hotelImages && hotelImages[0]) || '';
+    const placeholderImage = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800';
+    const imageCount = roomImages.length || 1;
+    const mainImage = roomImages[0] || placeholderImage;
 
     roomImageHtml = `
         <div class="room-image-carousel" data-index="0" data-images='${JSON.stringify(roomImages.slice(0, 8))}'>
@@ -1751,15 +1746,7 @@ function showRoomDetails(rateIndex) {
     let roomImages = roomStatic.images || [];
 
     if (!roomImages || roomImages.length === 0) {
-        if (hotelImages && hotelImages.length > 0) {
-            roomImages = hotelImages;
-        } else {
-            roomImages = ['https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800'];
-        }
-    }
-    
-    if (roomImages.length > 5) {
-        roomImages = roomImages.slice(0, 5);
+        roomImages = ['https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800'];
     }
 
     currentRoomModalImages = roomImages;
