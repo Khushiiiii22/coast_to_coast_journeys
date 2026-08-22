@@ -1362,21 +1362,10 @@ def transform_etg_hotels(hotels_data, target_currency='USD', conversion_rates=No
         
         # 3. Use fallback only as last resort
         if not all_images:
-            fallback_images = [
-                'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600',
-                'https://images.unsplash.com/photo-1582719478250-c894e4dc240e?w=600',
-                'https://images.unsplash.com/photo-1542314831-c6a4d14d8373?w=600',
-                'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=600',
-                'https://images.unsplash.com/photo-1551882547-ff40c0d5b5fa?w=600',
-                'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600',
-                'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=600',
-                'https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?w=600',
-                'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=600',
-                'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600'
-            ]
-            all_images = [fallback_images[idx % len(fallback_images)]]
+            all_images = []
         
-        image_url = all_images[0]
+        image_url = all_images[0] if all_images else ''
+
         
         # Log image info for debugging
         if all_images and not all_images[0].startswith('https://images.unsplash.com'):
@@ -1787,15 +1776,6 @@ def search_hotels_via_google(destination: str, checkin: str, checkout: str) -> l
         hotels = []
         
         # Fallback images only if Google Places doesn't return photos
-        fallback_images = [
-            'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600',
-            'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600',
-            'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=600',
-            'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600',
-            'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=600',
-            'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=600',
-        ]
-        
         for idx, place in enumerate(google_places[:20]):  # Limit to 20 hotels
             rating = place.get('rating', 4.0)
             review_count = place.get('user_ratings_total', 0)
@@ -1809,11 +1789,7 @@ def search_hotels_via_google(destination: str, checkin: str, checkout: str) -> l
             # Google Places photos are completely disabled to rely strictly on RateHawk/ETG images.
             hotel_images = []
             
-            # Use fallback if no Google photos available
-            if not hotel_images:
-                hotel_images = [fallback_images[idx % len(fallback_images)]]
-            
-            primary_image = hotel_images[0] if hotel_images else fallback_images[idx % len(fallback_images)]
+            primary_image = hotel_images[0] if hotel_images else ''
             
             # Extract city and country from destination
             destination_parts = destination.split(',')
@@ -2836,7 +2812,7 @@ def get_enriched_hotel_details():
                 rg_data = {
                     'name': rg.get('name', rg.get('room_name', '')),
                     'name_struct': rg.get('name_struct', {}),
-                    'images': processed_images,
+                    'images': processed_images[:5],
                     'room_amenities': rg.get('room_amenities') or [],
                     'bed_type': rg.get('name_struct', {}).get('bedding_type', ''),
                     'bathroom': rg.get('name_struct', {}).get('bathroom', ''),
@@ -3265,7 +3241,7 @@ def enrich_rate_with_room_data(rate: dict, room_groups: dict, hotel_images: list
                     processed_images.append(processed_url)
 
         # Determine final image set
-        final_images = processed_images[:10]
+        final_images = processed_images[:5]
         image_source = 'room_static'
         
         if not final_images:

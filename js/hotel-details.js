@@ -1478,19 +1478,30 @@ function createRateCard(rate, index, customBadge = null) {
 
     // Room image HTML with carousel
     let roomImageHtml = '';
-    const placeholderImage = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800';
-    const imageCount = roomImages.length || 1;
-    const mainImage = roomImages[0] || placeholderImage;
+    const imageCount = roomImages.length || 0;
 
-    roomImageHtml = `
-        <div class="room-image-carousel" data-index="0" data-images='${JSON.stringify(roomImages.slice(0, 8))}'>
-            ${popularityBadge ? `<div class="room-popularity-badge ${badgeClass}">${popularityBadge}</div>` : ''}
-            <button class="carousel-nav prev" onclick="navigateRoomImage(this, -1)"><i class="fas fa-chevron-left"></i></button>
-            <div class="room-carousel-image" style="background-image: url('${mainImage}');"></div>
-            <button class="carousel-nav next" onclick="navigateRoomImage(this, 1)"><i class="fas fa-chevron-right"></i></button>
-            <span class="room-image-count"><i class="fas fa-camera"></i> ${imageCount}</span>
-        </div>
-    `;
+    if (imageCount > 0) {
+        const mainImage = roomImages[0];
+        roomImageHtml = `
+            <div class="room-image-carousel" data-index="0" data-images='${JSON.stringify(roomImages.slice(0, 5))}'>
+                ${popularityBadge ? `<div class="room-popularity-badge ${badgeClass}">${popularityBadge}</div>` : ''}
+                <button class="carousel-nav prev" onclick="navigateRoomImage(this, -1)"><i class="fas fa-chevron-left"></i></button>
+                <div class="room-carousel-image" style="background-image: url('${mainImage}');"></div>
+                <button class="carousel-nav next" onclick="navigateRoomImage(this, 1)"><i class="fas fa-chevron-right"></i></button>
+                <span class="room-image-count"><i class="fas fa-camera"></i> ${imageCount}</span>
+            </div>
+        `;
+    } else {
+        roomImageHtml = `
+            <div class="room-image-carousel" style="background-color: #f3f4f6; display: flex; align-items: center; justify-content: center; position: relative;">
+                ${popularityBadge ? `<div class="room-popularity-badge ${badgeClass}">${popularityBadge}</div>` : ''}
+                <div style="color: #9ca3af; text-align: center; padding: 2rem;">
+                    <i class="fas fa-image" style="font-size: 2.5rem; margin-bottom: 0.75rem;"></i>
+                    <p style="font-size: 0.875rem; margin: 0; font-weight: 500;">No images available</p>
+                </div>
+            </div>
+        `;
+    }
 
     // Store rate data on card for showRoomDetails to read (after modifications)
     try { card.dataset.rateJson = JSON.stringify(rate); } catch (e) { }
@@ -1789,6 +1800,7 @@ function showRoomDetails(rateIndex) {
 
             <div style="padding:20px;">
                 <!-- Main Image Carousel (Expedia Style) -->
+                ${roomImages.length > 0 ? `
                 <div style="position:relative;width:100%;height:320px;border-radius:16px;overflow:hidden;background:#0f172a;margin-bottom:20px;box-shadow:0 8px 24px rgba(0,0,0,0.12);">
                     <img id="expediaRoomModalImg" src="${roomImages[0]}" alt="${roomName}" style="width:100%;height:100%;object-fit:cover;transition:opacity 0.2s ease-in-out;" />
                     
@@ -1799,11 +1811,19 @@ function showRoomDetails(rateIndex) {
                         <button onclick="navigateExpediaRoomModalImage(1)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.92);border:none;box-shadow:0 4px 12px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#0f172a;">
                             <i class="fas fa-chevron-right" style="font-size:1.1rem;"></i>
                         </button>
-                        <div id="expediaRoomImgCounter" style="position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,0.75);color:#ffffff;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:600;backdrop-filter:blur(4px);">
-                            1 / ${roomImages.length}
+                        <div style="position:absolute;bottom:12px;right:12px;background:rgba(15,23,42,0.75);color:#fff;padding:4px 12px;border-radius:12px;font-size:0.85rem;font-weight:600;backdrop-filter:blur(4px);">
+                            <span id="expediaRoomModalImgCounter">1 / ${roomImages.length}</span>
                         </div>
                     ` : ''}
                 </div>
+                ` : `
+                <div style="position:relative;width:100%;height:160px;border-radius:16px;background:#f3f4f6;margin-bottom:20px;display:flex;align-items:center;justify-content:center;">
+                    <div style="color: #9ca3af; text-align: center;">
+                        <i class="fas fa-image" style="font-size: 2.5rem; margin-bottom: 0.75rem;"></i>
+                        <p style="font-size: 0.875rem; margin: 0; font-weight: 500;">No images available</p>
+                    </div>
+                </div>
+                `}
 
                 <!-- Room Title -->
                 <h2 style="font-size:1.35rem;font-weight:700;color:#0f172a;margin:0 0 16px;line-height:1.3;">${roomName}</h2>
