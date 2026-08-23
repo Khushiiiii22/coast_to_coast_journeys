@@ -1451,11 +1451,25 @@ function createRateCard(rate, index, customBadge = null) {
     }
     
     if (roomImages.length === 0 || roomStatic.matched === false || roomStatic.image_source === 'hotel_fallback') {
-        // As per client requirements: ONLY show the exact room photos inside the room section.
-        // No misleading hotel-level fallbacks. If there are no room photos, we strictly use an empty array.
-        roomImages = [];
+        // Fallback to hotel images, but slice a unique chunk of 5 images based on the room index
+        // so that different room types get different hotel images (making it look much better!)
+        if (hotelImages && hotelImages.length > 0) {
+            const startIndex = (index * 5) % hotelImages.length;
+            const endIndex = startIndex + 5;
+            
+            if (endIndex > hotelImages.length) {
+                roomImages = [
+                    ...hotelImages.slice(startIndex),
+                    ...hotelImages.slice(0, endIndex - hotelImages.length)
+                ];
+            } else {
+                roomImages = hotelImages.slice(startIndex, endIndex);
+            }
+        } else {
+            roomImages = [];
+        }
         
-        // Also update the underlying rate object so the modal sees the exact same fallback images
+        // Update the underlying rate object so the modal sees the exact same fallback images
         if (!rate.room_static) rate.room_static = {};
         rate.room_static.images = roomImages;
     }
