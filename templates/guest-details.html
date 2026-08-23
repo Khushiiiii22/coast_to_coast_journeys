@@ -497,7 +497,7 @@
                 <!-- Booking Summary (Expedia Style) -->
                 <div class="exp-booking-card">
                     <div class="exp-carousel-container" id="expCarouselContainer">
-                        <img id="expHotelImage" src="" alt="Hotel" class="exp-carousel-img">
+                        <img id="expHotelImage" src="" alt="Hotel" class="exp-carousel-img" style="cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" onclick="openFullscreenGallery()">
                         <div class="exp-carousel-nav exp-carousel-prev" onclick="prevExpSlide()"><i class="fas fa-chevron-left"></i></div>
                         <div class="exp-carousel-nav exp-carousel-next" onclick="nextExpSlide()"><i class="fas fa-chevron-right"></i></div>
                         <div class="exp-carousel-counter" id="expCarouselCounter">1/1</div>
@@ -843,8 +843,82 @@
                 document.getElementById('expHotelImage').src = window.expCarouselImages[window.currentExpSlide];
                 document.getElementById('expCarouselCounter').textContent = `${window.currentExpSlide + 1}/${window.expCarouselImages.length}`;
             };
-
-            // Booking details
+            
+            // Fullscreen Gallery Logic
+            window.openFullscreenGallery = function() {
+                const images = window.expCarouselImages;
+                if (!images || images.length === 0) return;
+                
+                const modal = document.createElement('div');
+                modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;backdrop-filter:blur(8px);';
+                
+                const closeBtn = document.createElement('button');
+                closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                closeBtn.style.cssText = 'position:absolute;top:24px;right:32px;background:none;border:none;color:white;font-size:2.5rem;cursor:pointer;z-index:10;transition:opacity 0.2s;';
+                closeBtn.onmouseover = () => closeBtn.style.opacity = '0.7';
+                closeBtn.onmouseout = () => closeBtn.style.opacity = '1';
+                closeBtn.onclick = () => document.body.removeChild(modal);
+                
+                const mainImg = document.createElement('img');
+                mainImg.src = images[window.currentExpSlide];
+                mainImg.style.cssText = 'max-width:90%;max-height:80vh;object-fit:contain;transition:opacity 0.2s;';
+                
+                const counter = document.createElement('div');
+                counter.style.cssText = 'position:absolute;bottom:30px;color:white;font-size:1.2rem;font-weight:600;letter-spacing:2px;background:rgba(0,0,0,0.5);padding:8px 16px;border-radius:20px;';
+                counter.textContent = `${window.currentExpSlide + 1} / ${images.length}`;
+                
+                let currentIdx = window.currentExpSlide;
+                
+                const updateSlide = (dir) => {
+                    currentIdx = (currentIdx + dir + images.length) % images.length;
+                    mainImg.style.opacity = '0';
+                    setTimeout(() => {
+                        mainImg.src = images[currentIdx];
+                        mainImg.style.opacity = '1';
+                        counter.textContent = `${currentIdx + 1} / ${images.length}`;
+                        
+                        // Keep underlying checkout carousel synced!
+                        window.currentExpSlide = currentIdx;
+                        document.getElementById('expHotelImage').src = images[currentIdx];
+                        document.getElementById('expCarouselCounter').textContent = `${currentIdx + 1}/${images.length}`;
+                    }, 150);
+                };
+                
+                const prevBtn = document.createElement('button');
+                prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                prevBtn.style.cssText = 'position:absolute;left:32px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:white;font-size:2rem;cursor:pointer;width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.2s;';
+                prevBtn.onmouseover = () => prevBtn.style.background = 'rgba(255,255,255,0.3)';
+                prevBtn.onmouseout = () => prevBtn.style.background = 'rgba(255,255,255,0.15)';
+                prevBtn.onclick = (e) => { e.stopPropagation(); updateSlide(-1); };
+                
+                const nextBtn = document.createElement('button');
+                nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                nextBtn.style.cssText = 'position:absolute;right:32px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:white;font-size:2rem;cursor:pointer;width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.2s;';
+                nextBtn.onmouseover = () => nextBtn.style.background = 'rgba(255,255,255,0.3)';
+                nextBtn.onmouseout = () => nextBtn.style.background = 'rgba(255,255,255,0.15)';
+                nextBtn.onclick = (e) => { e.stopPropagation(); updateSlide(1); };
+                
+                // Keyboard navigation
+                const handleKeyDown = (e) => {
+                    if (e.key === 'Escape') {
+                        document.removeEventListener('keydown', handleKeyDown);
+                        document.body.removeChild(modal);
+                    } else if (e.key === 'ArrowLeft') {
+                        updateSlide(-1);
+                    } else if (e.key === 'ArrowRight') {
+                        updateSlide(1);
+                    }
+                };
+                document.addEventListener('keydown', handleKeyDown);
+                
+                modal.appendChild(closeBtn);
+                if (images.length > 1) modal.appendChild(prevBtn);
+                modal.appendChild(mainImg);
+                if (images.length > 1) modal.appendChild(nextBtn);
+                modal.appendChild(counter);
+                
+                document.body.appendChild(modal);
+            };
             const ciDate = new Date(searchParams.checkin);
             const coDate = new Date(searchParams.checkout);
             const dateOpts = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
