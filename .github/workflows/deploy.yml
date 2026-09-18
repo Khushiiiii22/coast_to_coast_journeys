@@ -19,7 +19,7 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
 
       - name: Deploy to VPS via rsync
-        run: rsync -e "ssh -o StrictHostKeyChecking=no" -avz --delete --exclude '.venv' --exclude 'venv' --exclude '__pycache__' --exclude '.git' --exclude 'node_modules' ./ root@${{ secrets.SERVER_IP }}:/var/www/c2cjourneys/
+        run: rsync -e "ssh -o StrictHostKeyChecking=no" -avz --delete --exclude '.venv' --exclude 'venv' --exclude '__pycache__' --exclude '.git' --exclude 'node_modules' ./ root@2.24.196.78:/var/www/c2cjourneys/
 
       - name: Restart Backend Service
-        run: ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} "systemctl restart c2cjourneys"
+        run: ssh -o StrictHostKeyChecking=no root@2.24.196.78 "systemctl restart c2cjourneys"
