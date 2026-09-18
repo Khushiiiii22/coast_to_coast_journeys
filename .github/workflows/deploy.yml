@@ -13,10 +13,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
 
       - name: Deploy to VPS via rsync
         run: rsync -e "ssh -o StrictHostKeyChecking=no" -avz --delete --exclude '.venv' --exclude 'venv' --exclude '__pycache__' --exclude '.git' --exclude 'node_modules' ./ root@2.24.196.78:/var/www/c2cjourneys/
