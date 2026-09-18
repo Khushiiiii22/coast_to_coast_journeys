@@ -17,10 +17,9 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
       - name: Deploy to VPS via rsync
-        run: rsync -avz --delete --exclude '.venv' --exclude 'venv' --exclude '__pycache__' --exclude '.git' --exclude 'node_modules' ./ root@${{ secrets.SERVER_IP }}:/var/www/c2cjourneys/
+        run: rsync -e "ssh -o StrictHostKeyChecking=no" -avz --delete --exclude '.venv' --exclude 'venv' --exclude '__pycache__' --exclude '.git' --exclude 'node_modules' ./ root@${{ secrets.SERVER_IP }}:/var/www/c2cjourneys/
 
       - name: Restart Backend Service
-        run: ssh root@${{ secrets.SERVER_IP }} "systemctl restart c2cjourneys"
+        run: ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} "systemctl restart c2cjourneys"
