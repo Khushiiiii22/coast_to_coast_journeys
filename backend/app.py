@@ -179,11 +179,16 @@ def create_app():
                 print(f"Error serving admin static: {e}")
                 pass
         
-        # 3. Last fallback: try to serve from project root
-        try:
-            return send_from_directory(base_dir, filename)
-        except:
-            return f"File '{filename}' not found", 404
+        # 3. Last fallback: only serve specific safe files from project root
+        safe_files = ['favicon.ico', 'robots.txt', 'sitemap.xml']
+        if filename in safe_files:
+            try:
+                return send_from_directory(base_dir, filename)
+            except:
+                pass
+                
+        # Return 404 for everything else to prevent directory traversal and secret leakage
+        return f"File '{filename}' not found", 404
 
     # Health check endpoint
     @app.route('/api/health', methods=['GET'])
